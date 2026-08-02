@@ -9,9 +9,10 @@ import {
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Plus, Trash2 } from "lucide-react";
+import { ArrowUpDown, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -77,11 +78,19 @@ export default function GuestsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rsvpFilter, setRsvpFilter] = useState<(typeof RSVP_FILTER_OPTIONS)[number]>("all");
   const [eventFilter, setEventFilter] = useState<(typeof EVENT_FILTER_OPTIONS)[number]>("all");
+  const [search, setSearch] = useState("");
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
   const totalListed = guests.reduce((sum, g) => sum + 1 + g.plusOnes, 0);
   const totalHeadcount = guests
     .filter((g) => g.rsvpStatus === "yes")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+  const bothCount = guests.filter((g) => g.eventType === "Both").length;
+  const receptionCount = guests.filter(
+    (g) => g.eventType === "Reception" || g.eventType === "Both",
+  ).length;
+  const matrimonyCount = guests.filter(
+    (g) => g.eventType === "Matrimony" || g.eventType === "Both",
+  ).length;
 
   const orderIndex = useMemo(() => {
     const map = new Map<string, number>();
@@ -90,12 +99,17 @@ export default function GuestsPage() {
   }, [guests]);
 
   const filteredGuests = useMemo(() => {
+    const term = search.trim().toLowerCase();
     return guests.filter((g) => {
       if (rsvpFilter !== "all" && g.rsvpStatus !== rsvpFilter) return false;
       if (eventFilter !== "all" && g.eventType !== eventFilter) return false;
+      if (term) {
+        const haystack = `${g.name} ${g.connection} ${g.country} ${g.allergies}`.toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
       return true;
     });
-  }, [guests, rsvpFilter, eventFilter]);
+  }, [guests, rsvpFilter, eventFilter, search]);
 
   const columns = useMemo<ColumnDef<Guest>[]>(
     () => [
@@ -281,6 +295,9 @@ export default function GuestsPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {totalListed} listed (incl. plus-ones) · {attending} attending · {totalHeadcount} total headcount with plus-ones
           </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {bothCount} both · {receptionCount} reception · {matrimonyCount} matrimony
+          </p>
         </div>
         <Button onClick={() => createGuest()} className="gap-1.5 self-start sm:self-auto">
           <Plus className="size-4" />
@@ -289,6 +306,15 @@ export default function GuestsPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:w-64">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search guests..."
+            className="h-8 pl-8"
+          />
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">RSVP</span>
           <Select value={rsvpFilter} onValueChange={(v) => setRsvpFilter(v as typeof rsvpFilter)}>
