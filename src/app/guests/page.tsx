@@ -269,6 +269,15 @@ export default function GuestsPage() {
           </Table>
         </div>
       </Card>
+
+      <Button
+        onClick={() => createGuest()}
+        className="fixed bottom-4 right-4 z-50 gap-1.5 rounded-full shadow-lg"
+        size="lg"
+      >
+        <Plus className="size-4" />
+        Add guest
+      </Button>
     </div>
   );
 }
