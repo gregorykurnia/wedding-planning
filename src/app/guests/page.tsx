@@ -163,7 +163,7 @@ export default function GuestsPage() {
       },
       {
         accessorKey: "allergies",
-        header: ({ column }) => <SortableHeader label="Allergies" column={column} />,
+        header: ({ column }) => <SortableHeader label="Food Notes" column={column} />,
         cell: ({ row }) => {
           const guest = row.original;
           return (
