@@ -45,10 +45,11 @@ export type RsvpStatus = "pending" | "yes" | "no";
 export interface Guest {
   id: string;
   name: string;
+  connection: string;
+  country: string;
   rsvpStatus: RsvpStatus;
-  mealChoice: string;
   plusOnes: number;
-  tableAssignment: string;
+  allergies: string;
   createdAt: number | null;
   updatedAt: number | null;
 }

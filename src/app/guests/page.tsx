@@ -1,6 +1,15 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
+import { ArrowUpDown, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +36,7 @@ import {
   updateGuest,
   useGuests,
 } from "@/lib/collections/guests";
-import type { RsvpStatus } from "@/lib/types";
+import type { Guest, RsvpStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const RSVP_OPTIONS: RsvpStatus[] = ["pending", "yes", "no"];
@@ -42,12 +51,160 @@ const RSVP_LABELS: Record<RsvpStatus, string> = {
   no: "Not attending",
 };
 
+function SortableHeader({ label, column }: { label: string; column: { toggleSorting: (desc: boolean) => void; getIsSorted: () => false | "asc" | "desc" } }) {
+  return (
+    <button
+      className="flex items-center gap-1"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {label} <ArrowUpDown className="size-3.5" />
+    </button>
+  );
+}
+
 export default function GuestsPage() {
   const { data: guests, loading } = useGuests();
+  const [sorting, setSorting] = useState<SortingState>([]);
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
   const totalHeadcount = guests
     .filter((g) => g.rsvpStatus === "yes")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+
+  const columns = useMemo<ColumnDef<Guest>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: ({ column }) => <SortableHeader label="Name" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <EditableText
+              value={guest.name}
+              onSave={(name) => updateGuest(guest.id, { name })}
+              placeholder="Guest name"
+              className="font-medium text-foreground"
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "connection",
+        header: ({ column }) => <SortableHeader label="Connection" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <EditableText
+              value={guest.connection}
+              onSave={(connection) => updateGuest(guest.id, { connection })}
+              placeholder="—"
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "country",
+        header: ({ column }) => <SortableHeader label="Country" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <EditableText
+              value={guest.country}
+              onSave={(country) => updateGuest(guest.id, { country })}
+              placeholder="—"
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "rsvpStatus",
+        header: ({ column }) => <SortableHeader label="RSVP" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <Select
+              value={guest.rsvpStatus}
+              onValueChange={(v) =>
+                updateGuest(guest.id, { rsvpStatus: v as RsvpStatus })
+              }
+            >
+              <SelectTrigger
+                size="sm"
+                className={cn(
+                  "h-7 w-auto gap-1 rounded-full border px-3 text-xs font-medium shadow-none",
+                  RSVP_STYLES[guest.rsvpStatus],
+                )}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RSVP_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {RSVP_LABELS[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+      {
+        accessorKey: "plusOnes",
+        header: ({ column }) => <SortableHeader label="Plus Ones" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <EditableNumber
+              value={guest.plusOnes}
+              onSave={(plusOnes) => updateGuest(guest.id, { plusOnes })}
+              formatDisplay={(v) => String(v)}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "allergies",
+        header: ({ column }) => <SortableHeader label="Allergies" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <EditableText
+              value={guest.allergies}
+              onSave={(allergies) => updateGuest(guest.id, { allergies })}
+              placeholder="—"
+            />
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={() => deleteGuest(guest.id)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: guests,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,98 +225,43 @@ export default function GuestsPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RSVP</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Meal choice</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Plus-ones</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Table</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
             </TableHeader>
             <TableBody>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {columns.map((_, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-6 w-full" />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
-              ) : guests.length === 0 ? (
+              ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={columns.length} className="py-10 text-center text-muted-foreground">
                     No guests added yet.
                   </TableCell>
                 </TableRow>
               ) : (
-                guests.map((guest) => (
-                  <TableRow key={guest.id} className="transition-colors hover:bg-accent/30">
-                    <TableCell className="align-top font-medium">
-                      <EditableText
-                        value={guest.name}
-                        onSave={(name) => updateGuest(guest.id, { name })}
-                        placeholder="Guest name"
-                      />
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <Select
-                        value={guest.rsvpStatus}
-                        onValueChange={(v) =>
-                          updateGuest(guest.id, { rsvpStatus: v as RsvpStatus })
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className={cn(
-                            "h-7 w-auto gap-1 rounded-full border px-3 text-xs font-medium shadow-none",
-                            RSVP_STYLES[guest.rsvpStatus],
-                          )}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RSVP_OPTIONS.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {RSVP_LABELS[s]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <EditableText
-                        value={guest.mealChoice}
-                        onSave={(mealChoice) => updateGuest(guest.id, { mealChoice })}
-                        placeholder="—"
-                      />
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <EditableNumber
-                        value={guest.plusOnes}
-                        onSave={(plusOnes) => updateGuest(guest.id, { plusOnes })}
-                        formatDisplay={(v) => String(v)}
-                      />
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <EditableText
-                        value={guest.tableAssignment}
-                        onSave={(tableAssignment) => updateGuest(guest.id, { tableAssignment })}
-                        placeholder="—"
-                      />
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive"
-                        onClick={() => deleteGuest(guest.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </TableCell>
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} className="transition-colors hover:bg-accent/30">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="align-top">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))
               )}

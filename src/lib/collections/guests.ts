@@ -16,10 +16,11 @@ function fromDoc(id: string, data: DocumentData): Guest {
   return {
     id,
     name: data.name ?? "",
+    connection: data.connection ?? "",
+    country: data.country ?? "",
     rsvpStatus: (data.rsvpStatus as RsvpStatus) ?? "pending",
-    mealChoice: data.mealChoice ?? "",
     plusOnes: typeof data.plusOnes === "number" ? data.plusOnes : 0,
-    tableAssignment: data.tableAssignment ?? "",
+    allergies: data.allergies ?? "",
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
   };
@@ -32,10 +33,11 @@ export function useGuests() {
 export function createGuest() {
   return addDocument(COLLECTION, {
     name: "New Guest",
+    connection: "",
+    country: "",
     rsvpStatus: "pending" as RsvpStatus,
-    mealChoice: "",
     plusOnes: 0,
-    tableAssignment: "",
+    allergies: "",
   });
 }
 
