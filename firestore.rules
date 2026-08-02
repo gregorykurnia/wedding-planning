@@ -1,21 +1,24 @@
 rules_version = '2';
 
+// No login flow in the app right now — anyone with the site URL can
+// read/write. Revisit if this ever needs to be more than a private,
+// unlisted planning tool.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /guests/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
     match /vendors/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
     match /venues/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
     match /budgetItems/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
     match /checklistItems/{docId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
   }
 }

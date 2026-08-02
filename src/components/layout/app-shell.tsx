@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   BadgeCheck,
   CalendarHeart,
@@ -38,22 +37,13 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, loading, isFirebaseConfigured, signOut } = useAuth();
+  const { user, isFirebaseConfigured, signOut } = useAuth();
 
   const isLoginPage = pathname === "/login";
-
-  useEffect(() => {
-    if (isFirebaseConfigured && !loading && !user && !isLoginPage) {
-      router.replace("/login");
-    }
-  }, [isFirebaseConfigured, loading, user, isLoginPage, router]);
 
   if (isLoginPage) {
     return <main className="flex min-h-screen flex-1 flex-col">{children}</main>;
   }
-
-  const showGate = isFirebaseConfigured && !loading && !user;
 
   return (
     <div className="flex min-h-screen flex-1 flex-col">
@@ -138,18 +128,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </AlertDescription>
           </Alert>
         )}
-        {showGate ? (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
-            <Heart className="size-10 text-primary" />
-            <h2 className="font-heading text-2xl font-semibold">Please sign in</h2>
-            <p className="max-w-sm text-muted-foreground">
-              Sign in to view and edit your wedding plans.
-            </p>
-            <Button render={<Link href="/login" />}>Go to sign in</Button>
-          </div>
-        ) : (
-          children
-        )}
+        {children}
       </main>
     </div>
   );
