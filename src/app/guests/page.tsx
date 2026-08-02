@@ -71,8 +71,22 @@ export default function GuestsPage() {
     .filter((g) => g.rsvpStatus === "yes")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
 
+  const orderIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    guests.forEach((g, i) => map.set(g.id, i + 1));
+    return map;
+  }, [guests]);
+
   const columns = useMemo<ColumnDef<Guest>[]>(
     () => [
+      {
+        id: "number",
+        header: "Number",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{orderIndex.get(row.original.id)}</span>
+        ),
+      },
       {
         accessorKey: "name",
         header: ({ column }) => <SortableHeader label="Name" column={column} />,
@@ -195,7 +209,7 @@ export default function GuestsPage() {
         },
       },
     ],
-    [],
+    [orderIndex],
   );
 
   const table = useReactTable({
