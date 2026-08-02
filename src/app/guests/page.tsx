@@ -66,6 +66,7 @@ export default function GuestsPage() {
   const { data: guests, loading } = useGuests();
   const [sorting, setSorting] = useState<SortingState>([]);
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
+  const totalListed = guests.reduce((sum, g) => sum + 1 + g.plusOnes, 0);
   const totalHeadcount = guests
     .filter((g) => g.rsvpStatus === "yes")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
@@ -212,7 +213,7 @@ export default function GuestsPage() {
         <div>
           <h1 className="font-heading text-3xl font-semibold text-foreground">Guests</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {guests.length} listed · {attending} attending · {totalHeadcount} total headcount with plus-ones
+            {totalListed} listed (incl. plus-ones) · {attending} attending · {totalHeadcount} total headcount with plus-ones
           </p>
         </div>
         <Button onClick={() => createGuest()} className="gap-1.5 self-start sm:self-auto">
