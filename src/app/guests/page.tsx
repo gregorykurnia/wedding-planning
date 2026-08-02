@@ -84,13 +84,15 @@ export default function GuestsPage() {
   const totalHeadcount = guests
     .filter((g) => g.rsvpStatus === "yes")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
-  const bothCount = guests.filter((g) => g.eventType === "Both").length;
-  const receptionCount = guests.filter(
-    (g) => g.eventType === "Reception" || g.eventType === "Both",
-  ).length;
-  const matrimonyCount = guests.filter(
-    (g) => g.eventType === "Matrimony" || g.eventType === "Both",
-  ).length;
+  const bothCount = guests
+    .filter((g) => g.eventType === "Both")
+    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+  const receptionCount = guests
+    .filter((g) => g.eventType === "Reception" || g.eventType === "Both")
+    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+  const matrimonyCount = guests
+    .filter((g) => g.eventType === "Matrimony" || g.eventType === "Both")
+    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
 
   const orderIndex = useMemo(() => {
     const map = new Map<string, number>();
