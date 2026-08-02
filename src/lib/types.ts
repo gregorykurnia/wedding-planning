@@ -42,12 +42,15 @@ export interface Vendor {
 
 export type RsvpStatus = "pending" | "yes" | "no";
 
+export type EventType = "Both" | "Matrimony" | "Reception";
+
 export interface Guest {
   id: string;
   name: string;
   connection: string;
   country: string;
   rsvpStatus: RsvpStatus;
+  eventType: EventType;
   plusOnes: number;
   allergies: string;
   createdAt: number | null;

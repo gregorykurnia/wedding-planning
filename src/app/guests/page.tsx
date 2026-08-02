@@ -36,7 +36,7 @@ import {
   updateGuest,
   useGuests,
 } from "@/lib/collections/guests";
-import type { Guest, RsvpStatus } from "@/lib/types";
+import type { EventType, Guest, RsvpStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const RSVP_OPTIONS: RsvpStatus[] = ["pending", "yes", "no"];
@@ -50,6 +50,16 @@ const RSVP_LABELS: Record<RsvpStatus, string> = {
   yes: "Attending",
   no: "Not attending",
 };
+
+const EVENT_OPTIONS: EventType[] = ["Both", "Matrimony", "Reception"];
+const EVENT_STYLES: Record<EventType, string> = {
+  Both: "bg-sky-100 text-sky-800 border-sky-200",
+  Matrimony: "bg-violet-100 text-violet-800 border-violet-200",
+  Reception: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+};
+
+const RSVP_FILTER_OPTIONS = ["all", ...RSVP_OPTIONS] as const;
+const EVENT_FILTER_OPTIONS = ["all", ...EVENT_OPTIONS] as const;
 
 function SortableHeader({ label, column }: { label: string; column: { toggleSorting: (desc: boolean) => void; getIsSorted: () => false | "asc" | "desc" } }) {
   return (
@@ -65,6 +75,8 @@ function SortableHeader({ label, column }: { label: string; column: { toggleSort
 export default function GuestsPage() {
   const { data: guests, loading } = useGuests();
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [rsvpFilter, setRsvpFilter] = useState<(typeof RSVP_FILTER_OPTIONS)[number]>("all");
+  const [eventFilter, setEventFilter] = useState<(typeof EVENT_FILTER_OPTIONS)[number]>("all");
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
   const totalListed = guests.reduce((sum, g) => sum + 1 + g.plusOnes, 0);
   const totalHeadcount = guests
@@ -76,6 +88,14 @@ export default function GuestsPage() {
     guests.forEach((g, i) => map.set(g.id, i + 1));
     return map;
   }, [guests]);
+
+  const filteredGuests = useMemo(() => {
+    return guests.filter((g) => {
+      if (rsvpFilter !== "all" && g.rsvpStatus !== rsvpFilter) return false;
+      if (eventFilter !== "all" && g.eventType !== eventFilter) return false;
+      return true;
+    });
+  }, [guests, rsvpFilter, eventFilter]);
 
   const columns = useMemo<ColumnDef<Guest>[]>(
     () => [
@@ -163,6 +183,38 @@ export default function GuestsPage() {
         },
       },
       {
+        accessorKey: "eventType",
+        header: ({ column }) => <SortableHeader label="Event" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <Select
+              value={guest.eventType}
+              onValueChange={(v) =>
+                updateGuest(guest.id, { eventType: v as EventType })
+              }
+            >
+              <SelectTrigger
+                size="sm"
+                className={cn(
+                  "h-7 w-auto gap-1 rounded-full border px-3 text-xs font-medium shadow-none",
+                  EVENT_STYLES[guest.eventType],
+                )}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EVENT_OPTIONS.map((e) => (
+                  <SelectItem key={e} value={e}>
+                    {e}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+      {
         accessorKey: "plusOnes",
         header: ({ column }) => <SortableHeader label="Plus Ones" column={column} />,
         cell: ({ row }) => {
@@ -213,7 +265,7 @@ export default function GuestsPage() {
   );
 
   const table = useReactTable({
-    data: guests,
+    data: filteredGuests,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -234,6 +286,41 @@ export default function GuestsPage() {
           <Plus className="size-4" />
           Add guest
         </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">RSVP</span>
+          <Select value={rsvpFilter} onValueChange={(v) => setRsvpFilter(v as typeof rsvpFilter)}>
+            <SelectTrigger size="sm" className="h-8 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {RSVP_OPTIONS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {RSVP_LABELS[s]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Event</span>
+          <Select value={eventFilter} onValueChange={(v) => setEventFilter(v as typeof eventFilter)}>
+            <SelectTrigger size="sm" className="h-8 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {EVENT_OPTIONS.map((e) => (
+                <SelectItem key={e} value={e}>
+                  {e}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
@@ -266,7 +353,7 @@ export default function GuestsPage() {
               ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="py-10 text-center text-muted-foreground">
-                    No guests added yet.
+                    {guests.length === 0 ? "No guests added yet." : "No guests match the current filters."}
                   </TableCell>
                 </TableRow>
               ) : (

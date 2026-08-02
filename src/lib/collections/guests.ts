@@ -8,7 +8,7 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
-import type { Guest, RsvpStatus } from "@/lib/types";
+import type { EventType, Guest, RsvpStatus } from "@/lib/types";
 
 const COLLECTION = "guests";
 
@@ -19,6 +19,7 @@ function fromDoc(id: string, data: DocumentData): Guest {
     connection: data.connection ?? "",
     country: data.country ?? "",
     rsvpStatus: (data.rsvpStatus as RsvpStatus) ?? "pending",
+    eventType: (data.eventType as EventType) ?? "Both",
     plusOnes: typeof data.plusOnes === "number" ? data.plusOnes : 0,
     allergies: data.allergies ?? "",
     createdAt: timestampToMillis(data.createdAt),
@@ -36,6 +37,7 @@ export function createGuest() {
     connection: "",
     country: "",
     rsvpStatus: "pending" as RsvpStatus,
+    eventType: "Both" as EventType,
     plusOnes: 0,
     allergies: "",
   });
