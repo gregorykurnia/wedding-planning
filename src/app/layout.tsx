@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShell } from "@/components/layout/app-shell";
+import { MusicPlayer } from "@/components/layout/music-player";
 import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <TooltipProvider>
             <AppShell>{children}</AppShell>
+            <MusicPlayer />
           </TooltipProvider>
         </AuthProvider>
       </body>
