@@ -1,4 +1,4 @@
-export type VenueStatus = "Considering" | "Toured" | "Booked" | "Rejected";
+export type VenueStatus = "Shortlist" | "Contacted" | "Toured" | "Booked" | "Rejected";
 
 export interface Venue {
   id: string;
