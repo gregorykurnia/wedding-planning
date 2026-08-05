@@ -114,6 +114,20 @@ export function VenuesTable() {
         },
       },
       {
+        accessorKey: "location",
+        header: "Location",
+        cell: ({ row }) => {
+          const venue = row.original;
+          return (
+            <EditableText
+              value={venue.location}
+              onSave={(location) => updateVenue(venue.id, { location })}
+              placeholder="Location"
+            />
+          );
+        },
+      },
+      {
         accessorKey: "budgetEstimate",
         header: ({ column }) => (
           <button

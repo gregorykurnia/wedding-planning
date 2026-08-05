@@ -5,6 +5,7 @@ export interface Venue {
   name: string;
   budgetEstimate: number; // raw IDR number
   guestMax: number;
+  location: string;
   status: VenueStatus;
   notes: string;
   images: string[];
