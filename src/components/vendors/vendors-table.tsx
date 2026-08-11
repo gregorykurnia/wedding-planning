@@ -97,7 +97,14 @@ export function VendorsTable() {
       },
       {
         accessorKey: "name",
-        header: "Vendor",
+        header: ({ column }) => (
+          <button
+            className="flex items-center gap-1"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Vendor <ArrowUpDown className="size-3.5" />
+          </button>
+        ),
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -149,7 +156,14 @@ export function VendorsTable() {
       },
       {
         accessorKey: "contractStatus",
-        header: "Status",
+        header: ({ column }) => (
+          <button
+            className="flex items-center gap-1"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Status <ArrowUpDown className="size-3.5" />
+          </button>
+        ),
         cell: ({ row }) => {
           const vendor = row.original;
           return (
