@@ -27,6 +27,11 @@ export type VendorCategory =
 
 export type ContractStatus = "Not Contacted" | "In Talks" | "Contracted" | "Paid";
 
+export interface VendorFile {
+  name: string;
+  url: string;
+}
+
 export interface Vendor {
   id: string;
   name: string;
@@ -35,8 +40,10 @@ export interface Vendor {
   contactPhone: string;
   contactEmail: string;
   contractStatus: ContractStatus;
+  price: number;
   notes: string;
   images: string[];
+  files: VendorFile[];
   createdAt: number | null;
   updatedAt: number | null;
 }

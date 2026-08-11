@@ -61,10 +61,15 @@ export function createBudgetItemFromVenue(venue: {
 }
 
 /** Creates a budget line pre-filled from a contracted vendor, linked back to it. */
-export function createBudgetItemFromVendor(vendor: { id: string; name: string; category: string }) {
+export function createBudgetItemFromVendor(vendor: {
+  id: string;
+  name: string;
+  category: string;
+  price?: number;
+}) {
   return addDocument(COLLECTION, {
     category: `${vendor.category} — ${vendor.name}`,
-    estimatedAmount: 0,
+    estimatedAmount: vendor.price ?? 0,
     actualAmount: 0,
     paymentStatus: "unpaid" as PaymentStatus,
     notes: "",

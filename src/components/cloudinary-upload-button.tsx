@@ -21,7 +21,10 @@ declare global {
         options: Record<string, unknown>,
         callback: (
           error: unknown,
-          result: { event: string; info?: { secure_url: string } },
+          result: {
+            event: string;
+            info?: { secure_url: string; original_filename?: string };
+          },
         ) => void,
       ) => { open: () => void };
     };
@@ -48,11 +51,13 @@ function loadCloudinaryScript(): Promise<void> {
 }
 
 interface CloudinaryUploadButtonProps {
-  onUpload: (url: string) => void;
+  onUpload: (url: string, filename?: string) => void;
   label?: string;
   variant?: "default" | "outline" | "ghost" | "secondary";
   size?: "default" | "sm" | "icon";
   className?: string;
+  /** Restrict the widget to a specific resource type. Defaults to "auto" (images, PDFs, docs, etc). */
+  resourceType?: "auto" | "image";
 }
 
 export function CloudinaryUploadButton({
@@ -61,6 +66,7 @@ export function CloudinaryUploadButton({
   variant = "outline",
   size = "sm",
   className,
+  resourceType = "auto",
 }: CloudinaryUploadButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const widgetRef = useRef<{ open: () => void } | null>(null);
@@ -83,6 +89,7 @@ export function CloudinaryUploadButton({
           cloudName: CLOUD_NAME,
           uploadPreset: UPLOAD_PRESET,
           multiple: true,
+          resourceType,
           sources: ["local", "url", "camera"],
           styles: {
             palette: {
@@ -108,7 +115,7 @@ export function CloudinaryUploadButton({
             return;
           }
           if (result?.event === "success" && result.info?.secure_url) {
-            onUpload(result.info.secure_url);
+            onUpload(result.info.secure_url, result.info.original_filename);
           }
         },
       );
