@@ -7,6 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnSizingState,
   type SortingState,
 } from "@tanstack/react-table";
 import { ArrowUpDown, PiggyBank, Plus, Search, Trash2 } from "lucide-react";
@@ -40,6 +41,7 @@ import {
 } from "@/lib/collections/vendors";
 import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/budget-items";
 import { formatIDR } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
 
 export function VendorsTable() {
@@ -50,6 +52,7 @@ export function VendorsTable() {
     [budgetItems],
   );
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<VendorCategory | "All">("All");
 
@@ -84,6 +87,8 @@ export function VendorsTable() {
         id: "thumbnail",
         header: "",
         enableSorting: false,
+        size: 64,
+        minSize: 56,
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -105,6 +110,8 @@ export function VendorsTable() {
             Vendor <ArrowUpDown className="size-3.5" />
           </button>
         ),
+        size: 240,
+        minSize: 160,
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -143,6 +150,8 @@ export function VendorsTable() {
             Price <ArrowUpDown className="size-3.5" />
           </button>
         ),
+        size: 160,
+        minSize: 120,
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -164,6 +173,8 @@ export function VendorsTable() {
             Status <ArrowUpDown className="size-3.5" />
           </button>
         ),
+        size: 140,
+        minSize: 120,
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -178,6 +189,8 @@ export function VendorsTable() {
         accessorKey: "notes",
         header: "Notes",
         enableSorting: false,
+        size: 240,
+        minSize: 120,
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -192,12 +205,16 @@ export function VendorsTable() {
         id: "files",
         header: "Files",
         enableSorting: false,
+        size: 200,
+        minSize: 140,
         cell: ({ row }) => <VendorFilesCell vendor={row.original} />,
       },
       {
         id: "actions",
         header: "",
         enableSorting: false,
+        enableResizing: false,
+        size: 120,
         cell: ({ row }) => {
           const vendor = row.original;
           const alreadyLinked = linkedVendorIds.has(vendor.id);
@@ -253,8 +270,11 @@ export function VendorsTable() {
   const table = useReactTable({
     data: filtered,
     columns,
-    state: { sorting },
+    state: { sorting, columnSizing },
     onSortingChange: setSorting,
+    onColumnSizingChange: setColumnSizing,
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
@@ -293,15 +313,30 @@ export function VendorsTable() {
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
         <div className="overflow-x-auto">
-          <Table>
+          <Table style={{ width: table.getTotalSize(), tableLayout: "fixed" }}>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <TableHead
+                      key={header.id}
+                      style={{ width: header.getSize() }}
+                      className="relative overflow-hidden text-xs font-semibold uppercase tracking-wide text-ellipsis whitespace-nowrap text-muted-foreground"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
+                      {header.column.getCanResize() && (
+                        <div
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          onDoubleClick={() => header.column.resetSize()}
+                          className={cn(
+                            "absolute top-0 right-0 h-full w-1.5 cursor-col-resize touch-none select-none bg-transparent hover:bg-primary/40",
+                            header.column.getIsResizing() && "bg-primary",
+                          )}
+                        />
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -328,7 +363,11 @@ export function VendorsTable() {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} className="transition-colors hover:bg-accent/30">
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="align-top">
+                      <TableCell
+                        key={cell.id}
+                        style={{ width: cell.column.getSize() }}
+                        className="align-top break-words whitespace-normal"
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
