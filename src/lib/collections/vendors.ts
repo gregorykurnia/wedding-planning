@@ -1,6 +1,7 @@
 "use client";
 
 import type { DocumentData } from "firebase/firestore";
+import { orderBy } from "firebase/firestore";
 import {
   addDocument,
   deleteDocument,
@@ -31,7 +32,7 @@ function fromDoc(id: string, data: DocumentData): Vendor {
 }
 
 export function useVendors() {
-  return useCollection<Vendor>(COLLECTION, fromDoc);
+  return useCollection<Vendor>(COLLECTION, fromDoc, [orderBy("createdAt", "desc")]);
 }
 
 export function createVendor(category?: VendorCategory) {
