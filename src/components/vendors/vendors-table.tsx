@@ -366,7 +366,7 @@ export function VendorsTable() {
                       <TableCell
                         key={cell.id}
                         style={{ width: cell.column.getSize() }}
-                        className="align-top break-words whitespace-normal"
+                        className="align-top break-words whitespace-normal overflow-hidden"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>

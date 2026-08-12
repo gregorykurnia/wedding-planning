@@ -14,7 +14,7 @@ export function VenueNotesCell({ value, onSave }: VenueNotesCellProps) {
 
   if (expanded) {
     return (
-      <div className="min-w-[220px]">
+      <div className="min-w-0 max-w-full">
         <EditableText value={value} onSave={onSave} multiline className="min-h-16" />
         <button
           type="button"
@@ -28,7 +28,7 @@ export function VenueNotesCell({ value, onSave }: VenueNotesCellProps) {
   }
 
   return (
-    <div className="min-w-[180px] max-w-[240px]">
+    <div className="min-w-0 max-w-full">
       <EditableText
         value={value}
         onSave={onSave}
