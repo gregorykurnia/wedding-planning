@@ -29,6 +29,7 @@ import { EditableText } from "@/components/shared/editable-text";
 import { EditableNumber } from "@/components/shared/editable-number";
 import { VenueGalleryDialog } from "@/components/venues/venue-gallery-dialog";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
+import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorContractPill } from "@/components/vendors/vendor-contract-pill";
 import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
 import { VendorFilesCell } from "@/components/vendors/vendor-files-cell";
@@ -137,6 +138,28 @@ export function VendorsTable() {
                 />
               </div>
             </div>
+          );
+        },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => (
+          <button
+            className="flex items-center gap-1"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Type <ArrowUpDown className="size-3.5" />
+          </button>
+        ),
+        size: 160,
+        minSize: 130,
+        cell: ({ row }) => {
+          const vendor = row.original;
+          return (
+            <VendorCategoryPill
+              value={vendor.category}
+              onChange={(category) => updateVendor(vendor.id, { category })}
+            />
           );
         },
       },
