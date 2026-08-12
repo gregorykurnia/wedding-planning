@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { EyeOff, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,8 @@ interface VenuesToolbarProps {
   onBudgetMaxChange: (value: string) => void;
   guestMin: string;
   onGuestMinChange: (value: string) => void;
+  hideRejected: boolean;
+  onHideRejectedChange: (value: boolean) => void;
 }
 
 export function VenuesToolbar({
@@ -33,6 +35,8 @@ export function VenuesToolbar({
   onBudgetMaxChange,
   guestMin,
   onGuestMinChange,
+  hideRejected,
+  onHideRejectedChange,
 }: VenuesToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -65,6 +69,20 @@ export function VenuesToolbar({
             </button>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => onHideRejectedChange(!hideRejected)}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+            hideRejected
+              ? "border-border bg-accent text-foreground"
+              : "border-border bg-transparent text-muted-foreground hover:bg-accent/60",
+          )}
+        >
+          <EyeOff className="size-3.5" />
+          Hide rejected
+        </button>
 
         <Popover>
           <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>

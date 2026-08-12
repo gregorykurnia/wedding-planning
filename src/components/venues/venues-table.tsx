@@ -56,6 +56,7 @@ export function VenuesTable() {
   const [activeStatuses, setActiveStatuses] = useState<VenueStatus[]>([]);
   const [budgetMax, setBudgetMax] = useState("");
   const [guestMin, setGuestMin] = useState("");
+  const [hideRejected, setHideRejected] = useState(false);
 
   const toggleStatus = (status: VenueStatus) => {
     setActiveStatuses((prev) =>
@@ -65,6 +66,7 @@ export function VenuesTable() {
 
   const filtered = useMemo(() => {
     return venues.filter((v) => {
+      if (hideRejected && v.status === "Rejected") return false;
       if (activeStatuses.length > 0 && !activeStatuses.includes(v.status)) return false;
       if (budgetMax && v.budgetEstimate > Number(budgetMax)) return false;
       if (guestMin && v.guestMax < Number(guestMin)) return false;
@@ -79,7 +81,7 @@ export function VenuesTable() {
       }
       return true;
     });
-  }, [venues, activeStatuses, budgetMax, guestMin, search]);
+  }, [venues, activeStatuses, budgetMax, guestMin, search, hideRejected]);
 
   const columns = useMemo<ColumnDef<Venue>[]>(
     () => [
@@ -282,6 +284,8 @@ export function VenuesTable() {
         onBudgetMaxChange={setBudgetMax}
         guestMin={guestMin}
         onGuestMinChange={setGuestMin}
+        hideRejected={hideRejected}
+        onHideRejectedChange={setHideRejected}
       />
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
