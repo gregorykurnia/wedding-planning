@@ -50,7 +50,7 @@ export interface Vendor {
 
 export type RsvpStatus = "pending" | "yes" | "no";
 
-export type EventType = "Both" | "Matrimony" | "Reception";
+export type EventType = "Both" | "Matrimony" | "Reception" | "Unsure (Abroad)" | "Reception Shortlist";
 
 export interface Guest {
   id: string;

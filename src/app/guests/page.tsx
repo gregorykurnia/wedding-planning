@@ -52,11 +52,13 @@ const RSVP_LABELS: Record<RsvpStatus, string> = {
   no: "Not attending",
 };
 
-const EVENT_OPTIONS: EventType[] = ["Both", "Matrimony", "Reception"];
+const EVENT_OPTIONS: EventType[] = ["Both", "Matrimony", "Reception", "Reception Shortlist", "Unsure (Abroad)"];
 const EVENT_STYLES: Record<EventType, string> = {
   Both: "bg-sky-100 text-sky-800 border-sky-200",
   Matrimony: "bg-violet-100 text-violet-800 border-violet-200",
   Reception: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+  "Reception Shortlist": "bg-amber-100 text-amber-800 border-amber-200",
+  "Unsure (Abroad)": "bg-gray-100 text-gray-700 border-gray-200",
 };
 
 const RSVP_FILTER_OPTIONS = ["all", ...RSVP_OPTIONS] as const;
@@ -91,7 +93,12 @@ export default function GuestsPage() {
     .filter((g) => g.eventType === "Reception" || g.eventType === "Both")
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
   const matrimonyCount = guests
-    .filter((g) => g.eventType === "Matrimony" || g.eventType === "Both")
+    .filter(
+      (g) =>
+        g.eventType === "Matrimony" ||
+        g.eventType === "Both" ||
+        g.eventType === "Reception Shortlist"
+    )
     .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
 
   const orderIndex = useMemo(() => {
