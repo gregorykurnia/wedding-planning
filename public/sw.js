@@ -1,4 +1,4 @@
-const CACHE_NAME = "wedding-planner-v1";
+const CACHE_NAME = "wedding-planner-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -16,15 +16,22 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  // Only cache same-origin app assets/pages. Never touch Firestore/Auth or
+  // other cross-origin requests — caching their streaming responses breaks
+  // Firestore's realtime listeners, which is how all app data loads.
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(request))
   );
 });
