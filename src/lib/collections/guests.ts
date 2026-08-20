@@ -20,6 +20,7 @@ function fromDoc(id: string, data: DocumentData): Guest {
     country: data.country ?? "",
     rsvpStatus: (data.rsvpStatus as RsvpStatus) ?? "pending",
     eventType: (data.eventType as EventType) ?? "Both",
+    inviteSent: data.inviteSent === true,
     plusOnes: typeof data.plusOnes === "number" ? data.plusOnes : 0,
     allergies: data.allergies ?? "",
     createdAt: timestampToMillis(data.createdAt),
@@ -38,6 +39,7 @@ export function createGuest() {
     country: "",
     rsvpStatus: "pending" as RsvpStatus,
     eventType: "Both" as EventType,
+    inviteSent: false,
     plusOnes: 0,
     allergies: "",
   });

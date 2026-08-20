@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -234,6 +235,21 @@ export default function GuestsPage() {
                 ))}
               </SelectContent>
             </Select>
+          );
+        },
+      },
+      {
+        accessorKey: "inviteSent",
+        header: ({ column }) => <SortableHeader label="Invite Sent" column={column} />,
+        cell: ({ row }) => {
+          const guest = row.original;
+          return (
+            <Checkbox
+              checked={guest.inviteSent}
+              onCheckedChange={(checked) =>
+                updateGuest(guest.id, { inviteSent: checked === true })
+              }
+            />
           );
         },
       },

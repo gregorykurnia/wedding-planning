@@ -59,6 +59,7 @@ export interface Guest {
   country: string;
   rsvpStatus: RsvpStatus;
   eventType: EventType;
+  inviteSent: boolean;
   plusOnes: number;
   allergies: string;
   createdAt: number | null;
