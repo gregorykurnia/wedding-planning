@@ -20,5 +20,8 @@ service cloud.firestore {
     match /checklistItems/{docId} {
       allow read, write: if true;
     }
+    match /todos/{docId} {
+      allow read, write: if true;
+    }
   }
 }
