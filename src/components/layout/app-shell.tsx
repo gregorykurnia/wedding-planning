@@ -8,6 +8,7 @@ import {
   CheckSquare,
   Heart,
   LayoutDashboard,
+  ListTodo,
   LogOut,
   Menu,
   PiggyBank,
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
   { href: "/guests", label: "Guests", icon: Users },
   { href: "/budget", label: "Budget", icon: PiggyBank },
   { href: "/checklist", label: "Checklist", icon: CheckSquare },
+  { href: "/todo", label: "To Do", icon: ListTodo },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

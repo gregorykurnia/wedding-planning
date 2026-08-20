@@ -83,6 +83,25 @@ export interface BudgetItem {
   updatedAt: number | null;
 }
 
+export interface TodoSubtask {
+  id: string;
+  title: string;
+  notes: string;
+  dueDate: string | null; // ISO date string
+  done: boolean;
+}
+
+export interface TodoItem {
+  id: string;
+  title: string;
+  notes: string;
+  dueDate: string | null; // ISO date string
+  done: boolean;
+  subtasks: TodoSubtask[];
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
 export type ChecklistPhase =
   | "12 Months Out"
   | "6 Months Out"
