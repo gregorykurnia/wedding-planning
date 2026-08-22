@@ -32,6 +32,13 @@ export interface VendorFile {
   url: string;
 }
 
+export interface VendorPriceOption {
+  id: string;
+  description: string;
+  price: number;
+  selected: boolean;
+}
+
 export interface Vendor {
   id: string;
   name: string;
@@ -40,7 +47,7 @@ export interface Vendor {
   contactPhone: string;
   contactEmail: string;
   contractStatus: ContractStatus;
-  price: number;
+  priceOptions: VendorPriceOption[];
   notes: string;
   starred: boolean;
   images: string[];

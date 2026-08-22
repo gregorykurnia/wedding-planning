@@ -26,13 +26,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CloudinaryUploadButton } from "@/components/cloudinary-upload-button";
 import { EditableText } from "@/components/shared/editable-text";
-import { EditableNumber } from "@/components/shared/editable-number";
 import { VenueGalleryDialog } from "@/components/venues/venue-gallery-dialog";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorContractPill } from "@/components/vendors/vendor-contract-pill";
 import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
 import { VendorFilesCell } from "@/components/vendors/vendor-files-cell";
+import { VendorPriceOptionsCell } from "@/components/vendors/vendor-price-options-cell";
 import {
   addVendorImage,
   createVendor,
@@ -42,7 +42,6 @@ import {
   useVendors,
 } from "@/lib/collections/vendors";
 import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/budget-items";
-import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
 
@@ -196,27 +195,12 @@ export function VendorsTable() {
         },
       },
       {
-        accessorKey: "price",
-        header: ({ column }) => (
-          <button
-            className="flex items-center gap-1"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Price <ArrowUpDown className="size-3.5" />
-          </button>
-        ),
-        size: 160,
-        minSize: 120,
-        cell: ({ row }) => {
-          const vendor = row.original;
-          return (
-            <EditableNumber
-              value={vendor.price}
-              onSave={(price) => updateVendor(vendor.id, { price })}
-              formatDisplay={formatIDR}
-            />
-          );
-        },
+        id: "price",
+        header: "Pricing",
+        enableSorting: false,
+        size: 220,
+        minSize: 180,
+        cell: ({ row }) => <VendorPriceOptionsCell vendor={row.original} />,
       },
       {
         accessorKey: "contractStatus",
