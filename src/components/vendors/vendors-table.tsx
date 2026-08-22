@@ -10,7 +10,7 @@ import {
   type ColumnSizingState,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, PiggyBank, Plus, Search, Star, Trash2 } from "lucide-react";
+import { ArrowUpDown, MessageCircle, PiggyBank, Plus, Search, Star, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -135,18 +135,25 @@ export function VendorsTable() {
                 className="font-medium text-foreground"
               />
               <div className="flex flex-col text-xs text-muted-foreground">
-                <EditableText
-                  value={vendor.contactPhone}
-                  onSave={(contactPhone) => updateVendor(vendor.id, { contactPhone })}
-                  placeholder="Add phone"
-                  className="px-0 text-xs"
-                />
-                <EditableText
-                  value={vendor.contactEmail}
-                  onSave={(contactEmail) => updateVendor(vendor.id, { contactEmail })}
-                  placeholder="Add email"
-                  className="px-0 text-xs"
-                />
+                <div className="flex items-center gap-1">
+                  <EditableText
+                    value={vendor.contactPhone}
+                    onSave={(contactPhone) => updateVendor(vendor.id, { contactPhone })}
+                    placeholder="Add phone"
+                    className="px-0 text-xs"
+                  />
+                  {vendor.contactPhone && (
+                    <a
+                      href={`https://wa.me/${vendor.contactPhone.replace(/[^\d]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open WhatsApp chat"
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <MessageCircle className="size-3.5" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           );
