@@ -177,6 +177,14 @@ export function VendorsTable() {
         ),
         size: 160,
         minSize: 130,
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.category;
+          const b = rowB.original.category;
+          if (a === "Other" && b === "Other") return 0;
+          if (a === "Other") return 1;
+          if (b === "Other") return -1;
+          return a.localeCompare(b);
+        },
         cell: ({ row }) => {
           const vendor = row.original;
           return (
@@ -423,6 +431,17 @@ export function VendorsTable() {
           </Table>
         </div>
       </Card>
+
+      <Button
+        variant="outline"
+        onClick={() =>
+          createVendor(activeCategory === "All" ? undefined : activeCategory)
+        }
+        className="gap-1.5 self-start"
+      >
+        <Plus className="size-4" />
+        Add vendor
+      </Button>
     </div>
   );
 }
