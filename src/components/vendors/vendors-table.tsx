@@ -154,6 +154,12 @@ export function VendorsTable() {
                     className="w-auto px-0 text-xs"
                   />
                 </div>
+                <EditableText
+                  value={vendor.contactName}
+                  onSave={(contactName) => updateVendor(vendor.id, { contactName })}
+                  placeholder="Add PIC name"
+                  className="px-0 text-xs"
+                />
               </div>
             </div>
           );
