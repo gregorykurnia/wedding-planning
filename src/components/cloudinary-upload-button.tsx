@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ImageUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,49 +14,13 @@ const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 export const isCloudinaryConfigured = Boolean(CLOUD_NAME && UPLOAD_PRESET);
 
-declare global {
-  interface Window {
-    cloudinary?: {
-      createUploadWidget: (
-        options: Record<string, unknown>,
-        callback: (
-          error: unknown,
-          result: {
-            event: string;
-            info?: { secure_url: string; original_filename?: string };
-          },
-        ) => void,
-      ) => { open: () => void };
-    };
-  }
-}
-
-const WIDGET_SCRIPT_SRC = "https://upload-widget.cloudinary.com/global/all.js";
-let scriptLoadingPromise: Promise<void> | null = null;
-
-function loadCloudinaryScript(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.cloudinary) return Promise.resolve();
-  if (scriptLoadingPromise) return scriptLoadingPromise;
-
-  scriptLoadingPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = WIDGET_SCRIPT_SRC;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Cloudinary widget script"));
-    document.body.appendChild(script);
-  });
-  return scriptLoadingPromise;
-}
-
 interface CloudinaryUploadButtonProps {
   onUpload: (url: string, filename?: string) => void;
   label?: string;
   variant?: "default" | "outline" | "ghost" | "secondary";
   size?: "default" | "sm" | "icon";
   className?: string;
-  /** Restrict the widget to a specific resource type. Defaults to "auto" (images, PDFs, docs, etc). */
+  /** Restrict uploads to a specific resource type. Defaults to "auto" (images, PDFs, docs, etc). */
   resourceType?: "auto" | "image";
 }
 
@@ -69,64 +33,44 @@ export function CloudinaryUploadButton({
   resourceType = "auto",
 }: CloudinaryUploadButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const widgetRef = useRef<{ open: () => void } | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    return () => {
-      widgetRef.current = null;
-    };
+  const handleClick = useCallback(() => {
+    if (!isCloudinaryConfigured) return;
+    inputRef.current?.click();
   }, []);
 
-  const handleClick = useCallback(async () => {
-    if (!isCloudinaryConfigured) return;
-    setIsLoading(true);
-    try {
-      await loadCloudinaryScript();
-      if (!window.cloudinary) throw new Error("Cloudinary widget unavailable");
+  const handleChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      e.target.value = "";
+      if (files.length === 0) return;
 
-      const widget = window.cloudinary.createUploadWidget(
-        {
-          cloudName: CLOUD_NAME,
-          uploadPreset: UPLOAD_PRESET,
-          multiple: true,
-          resourceType,
-          sources: ["local", "url", "camera"],
-          styles: {
-            palette: {
-              window: "#FDF8F2",
-              windowBorder: "#D8C3A5",
-              tabIcon: "#B6714A",
-              menuIcons: "#8A7355",
-              textDark: "#3A2E22",
-              textLight: "#FFFFFF",
-              link: "#B6714A",
-              action: "#B6714A",
-              inactiveTabIcon: "#B6B0A5",
-              error: "#C0392B",
-              inProgress: "#B6714A",
-              complete: "#7C9A72",
-              sourceBg: "#F4EEE3",
-            },
-          },
-        },
-        (error, result) => {
-          if (error) {
-            console.error("Cloudinary upload error:", error);
-            return;
-          }
-          if (result?.event === "success" && result.info?.secure_url) {
-            onUpload(result.info.secure_url, result.info.original_filename);
-          }
-        },
-      );
-      widgetRef.current = widget;
-      widget.open();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onUpload]);
+      setIsLoading(true);
+      try {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("upload_preset", UPLOAD_PRESET as string);
+
+          const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
+            { method: "POST", body: formData },
+          );
+          if (!res.ok) throw new Error("Upload failed");
+          const data = await res.json();
+          onUpload(data.secure_url, data.original_filename ?? file.name);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onUpload, resourceType],
+  );
+
+  const accept = resourceType === "image" ? "image/*" : undefined;
 
   const button = (
     <Button
@@ -146,15 +90,29 @@ export function CloudinaryUploadButton({
     </Button>
   );
 
-  if (isCloudinaryConfigured) return button;
-
   return (
-    <Tooltip>
-      <TooltipTrigger render={<span tabIndex={0} />}>{button}</TooltipTrigger>
-      <TooltipContent>
-        Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and
-        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to enable photo uploads.
-      </TooltipContent>
-    </Tooltip>
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept={accept}
+        className="hidden"
+        onChange={handleChange}
+      />
+      {isCloudinaryConfigured ? (
+        button
+      ) : (
+        <Tooltip>
+          <TooltipTrigger render={<span tabIndex={0} />}>
+            {button}
+          </TooltipTrigger>
+          <TooltipContent>
+            Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and
+            NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to enable photo uploads.
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </>
   );
 }
