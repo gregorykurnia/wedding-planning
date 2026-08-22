@@ -88,12 +88,6 @@ export function toggleVendorStar(vendor: Vendor) {
   return updateDocument(COLLECTION, vendor.id, { starred: !vendor.starred });
 }
 
-export function addVendorImage(vendor: Vendor, url: string) {
-  return updateDocument(COLLECTION, vendor.id, {
-    images: [...vendor.images, url],
-  });
-}
-
 export function addVendorFile(vendor: Vendor, file: VendorFile) {
   return updateDocument(COLLECTION, vendor.id, {
     files: [...vendor.files, file],

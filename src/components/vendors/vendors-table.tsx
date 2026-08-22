@@ -24,9 +24,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { CloudinaryUploadButton } from "@/components/cloudinary-upload-button";
 import { EditableText } from "@/components/shared/editable-text";
-import { VenueGalleryDialog } from "@/components/venues/venue-gallery-dialog";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorContractPill } from "@/components/vendors/vendor-contract-pill";
@@ -34,7 +32,6 @@ import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
 import { VendorFilesCell } from "@/components/vendors/vendor-files-cell";
 import { VendorPriceOptionsCell } from "@/components/vendors/vendor-price-options-cell";
 import {
-  addVendorImage,
   createVendor,
   deleteVendor,
   toggleVendorStar,
@@ -112,23 +109,6 @@ export function VendorsTable() {
                 )}
               />
             </Button>
-          );
-        },
-      },
-      {
-        id: "thumbnail",
-        header: "",
-        enableSorting: false,
-        size: 64,
-        minSize: 56,
-        cell: ({ row }) => {
-          const vendor = row.original;
-          return (
-            <VenueGalleryDialog
-              name={vendor.name}
-              images={vendor.images}
-              coverImage={null}
-            />
           );
         },
       },
@@ -282,13 +262,6 @@ export function VendorsTable() {
                   </TooltipContent>
                 </Tooltip>
               )}
-              <CloudinaryUploadButton
-                size="icon"
-                variant="ghost"
-                label="Upload photo"
-                resourceType="image"
-                onUpload={(url) => addVendorImage(vendor, url)}
-              />
               <Button
                 type="button"
                 variant="ghost"
