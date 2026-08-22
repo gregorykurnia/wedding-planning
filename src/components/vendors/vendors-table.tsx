@@ -136,23 +136,23 @@ export function VendorsTable() {
               />
               <div className="flex flex-col text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <EditableText
-                    value={vendor.contactPhone}
-                    onSave={(contactPhone) => updateVendor(vendor.id, { contactPhone })}
-                    placeholder="Add phone"
-                    className="px-0 text-xs"
-                  />
                   {vendor.contactPhone && (
                     <a
                       href={`https://wa.me/${vendor.contactPhone.replace(/[^\d]/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Open WhatsApp chat"
-                      className="text-green-600 hover:text-green-700"
+                      className="shrink-0 text-green-600 hover:text-green-700"
                     >
                       <MessageCircle className="size-3.5" />
                     </a>
                   )}
+                  <EditableText
+                    value={vendor.contactPhone}
+                    onSave={(contactPhone) => updateVendor(vendor.id, { contactPhone })}
+                    placeholder="Add phone"
+                    className="w-auto px-0 text-xs"
+                  />
                 </div>
               </div>
             </div>
