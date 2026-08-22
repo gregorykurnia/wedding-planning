@@ -12,35 +12,22 @@ export function VenueNotesCell({ value, onSave }: VenueNotesCellProps) {
   const [expanded, setExpanded] = useState(false);
   const isLong = value.length > 60;
 
-  if (expanded) {
-    return (
-      <div className="min-w-0 max-w-full">
-        <EditableText value={value} onSave={onSave} multiline className="min-h-16" />
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          className="mt-1 text-xs text-primary hover:underline"
-        >
-          Collapse
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-w-0 max-w-full">
       <EditableText
         value={value}
         onSave={onSave}
-        displayFormatter={(v) => (isLong ? `${v.slice(0, 60)}…` : v)}
+        multiline
+        className={expanded ? "min-h-16" : undefined}
+        displayFormatter={(v) => (isLong && !expanded ? `${v.slice(0, 60)}…` : v)}
       />
       {isLong && (
         <button
           type="button"
-          onClick={() => setExpanded(true)}
+          onClick={() => setExpanded((e) => !e)}
           className="mt-0.5 text-xs text-primary hover:underline"
         >
-          Expand
+          {expanded ? "Collapse" : "Expand"}
         </button>
       )}
     </div>
