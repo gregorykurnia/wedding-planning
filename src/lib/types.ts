@@ -25,7 +25,7 @@ export type VendorCategory =
   | "Wedding Organizer"
   | "Other";
 
-export type ContractStatus = "Not Contacted" | "In Talks" | "Contracted" | "Paid";
+export type ContractStatus = "Inquiring" | "Consideration" | "Chosen" | "Done" | "Rejected";
 
 export interface VendorFile {
   name: string;
@@ -42,6 +42,7 @@ export interface Vendor {
   contractStatus: ContractStatus;
   price: number;
   notes: string;
+  starred: boolean;
   images: string[];
   files: VendorFile[];
   createdAt: number | null;

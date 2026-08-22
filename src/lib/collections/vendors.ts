@@ -21,9 +21,10 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     contactName: data.contactName ?? "",
     contactPhone: data.contactPhone ?? "",
     contactEmail: data.contactEmail ?? "",
-    contractStatus: (data.contractStatus as ContractStatus) ?? "Not Contacted",
+    contractStatus: (data.contractStatus as ContractStatus) ?? "Inquiring",
     price: typeof data.price === "number" ? data.price : 0,
     notes: data.notes ?? "",
+    starred: data.starred === true,
     images: Array.isArray(data.images) ? data.images : [],
     files: Array.isArray(data.files) ? data.files : [],
     createdAt: timestampToMillis(data.createdAt),
@@ -42,9 +43,10 @@ export function createVendor(category?: VendorCategory) {
     contactName: "",
     contactPhone: "",
     contactEmail: "",
-    contractStatus: "Not Contacted" as ContractStatus,
+    contractStatus: "Inquiring" as ContractStatus,
     price: 0,
     notes: "",
+    starred: false,
     images: [],
     files: [],
   });
@@ -58,6 +60,10 @@ export function updateVendor(id: string, data: Partial<Vendor>) {
 
 export function deleteVendor(id: string) {
   return deleteDocument(COLLECTION, id);
+}
+
+export function toggleVendorStar(vendor: Vendor) {
+  return updateDocument(COLLECTION, vendor.id, { starred: !vendor.starred });
 }
 
 export function addVendorImage(vendor: Vendor, url: string) {

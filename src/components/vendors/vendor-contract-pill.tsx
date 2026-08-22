@@ -11,17 +11,19 @@ import type { ContractStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const CONTRACT_STATUSES: ContractStatus[] = [
-  "Not Contacted",
-  "In Talks",
-  "Contracted",
-  "Paid",
+  "Inquiring",
+  "Consideration",
+  "Chosen",
+  "Done",
+  "Rejected",
 ];
 
 export const CONTRACT_STYLES: Record<ContractStatus, string> = {
-  "Not Contacted": "bg-muted text-muted-foreground border-border",
-  "In Talks": "bg-amber-100 text-amber-800 border-amber-200",
-  Contracted: "bg-sky-100 text-sky-800 border-sky-200",
-  Paid: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Inquiring: "bg-muted text-muted-foreground border-border",
+  Consideration: "bg-amber-100 text-amber-800 border-amber-200",
+  Chosen: "bg-sky-100 text-sky-800 border-sky-200",
+  Done: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Rejected: "bg-pink-100 text-pink-800 border-pink-200",
 };
 
 interface VendorContractPillProps {

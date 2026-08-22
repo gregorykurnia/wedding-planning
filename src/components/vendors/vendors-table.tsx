@@ -10,7 +10,7 @@ import {
   type ColumnSizingState,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, PiggyBank, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, PiggyBank, Plus, Search, Star, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ import {
   addVendorImage,
   createVendor,
   deleteVendor,
+  toggleVendorStar,
   updateVendor,
   useVendors,
 } from "@/lib/collections/vendors";
@@ -56,6 +57,7 @@ export function VendorsTable() {
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<VendorCategory | "All">("All");
+  const [starredOnly, setStarredOnly] = useState(false);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { All: vendors.length };
@@ -67,6 +69,7 @@ export function VendorsTable() {
 
   const filtered = useMemo(() => {
     return vendors.filter((v) => {
+      if (starredOnly && !v.starred) return false;
       if (activeCategory !== "All" && v.category !== activeCategory) return false;
       if (search) {
         const term = search.toLowerCase();
@@ -80,10 +83,39 @@ export function VendorsTable() {
       }
       return true;
     });
-  }, [vendors, activeCategory, search]);
+  }, [vendors, activeCategory, search, starredOnly]);
 
   const columns = useMemo<ColumnDef<Vendor>[]>(
     () => [
+      {
+        id: "star",
+        header: "",
+        enableSorting: false,
+        enableResizing: false,
+        size: 40,
+        minSize: 40,
+        cell: ({ row }) => {
+          const vendor = row.original;
+          return (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={() => toggleVendorStar(vendor)}
+            >
+              <Star
+                className={cn(
+                  "size-4",
+                  vendor.starred
+                    ? "fill-yellow-400 text-yellow-500"
+                    : "text-muted-foreground",
+                )}
+              />
+            </Button>
+          );
+        },
+      },
       {
         id: "thumbnail",
         header: "",
@@ -242,7 +274,7 @@ export function VendorsTable() {
           const vendor = row.original;
           const alreadyLinked = linkedVendorIds.has(vendor.id);
           const isConfirmed =
-            vendor.contractStatus === "Contracted" || vendor.contractStatus === "Paid";
+            vendor.contractStatus === "Chosen" || vendor.contractStatus === "Done";
           return (
             <div className="flex items-center gap-1.5">
               {isConfirmed && (
@@ -324,14 +356,26 @@ export function VendorsTable() {
 
       <VendorCategoryTabs active={activeCategory} onChange={setActiveCategory} counts={counts} />
 
-      <div className="relative w-full sm:max-w-xs">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, contact or notes…"
-          className="pl-9"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, contact or notes…"
+            className="pl-9"
+          />
+        </div>
+        <Button
+          type="button"
+          variant={starredOnly ? "default" : "outline"}
+          size="sm"
+          className="gap-1.5 self-start sm:self-auto"
+          onClick={() => setStarredOnly((v) => !v)}
+        >
+          <Star className={cn("size-4", starredOnly && "fill-current")} />
+          Starred only
+        </Button>
       </div>
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
@@ -384,7 +428,15 @@ export function VendorsTable() {
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="transition-colors hover:bg-accent/30">
+                  <TableRow
+                    key={row.id}
+                    className={cn(
+                      "transition-colors hover:bg-accent/30",
+                      row.original.starred &&
+                        "outline outline-2 -outline-offset-2 outline-yellow-300",
+                      row.original.contractStatus === "Rejected" && "bg-pink-50",
+                    )}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}

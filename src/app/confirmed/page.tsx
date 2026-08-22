@@ -26,7 +26,7 @@ export default function ConfirmedPage() {
   const loading = venuesLoading || vendorsLoading || budgetLoading;
   const bookedVenue = venues.find((v) => v.status === "Booked");
   const confirmedVendors = vendors.filter(
-    (v) => v.contractStatus === "Contracted" || v.contractStatus === "Paid",
+    (v) => v.contractStatus === "Chosen" || v.contractStatus === "Done",
   );
   const linkedBudgetItems = budgetItems.filter(
     (b) => b.linkedVenueId || b.linkedVendorId,
@@ -159,7 +159,7 @@ export default function ConfirmedPage() {
                     </p>
                     <Badge
                       className={
-                        vendor.contractStatus === "Paid"
+                        vendor.contractStatus === "Done"
                           ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-100"
                           : "bg-sky-100 text-sky-800 hover:bg-sky-100"
                       }
