@@ -49,7 +49,7 @@ export function VendorsTable() {
     () => new Set(budgetItems.map((b) => b.linkedVendorId).filter(Boolean)),
     [budgetItems],
   );
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "category", desc: false }]);
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<VendorCategory | "All">("All");
@@ -310,7 +310,7 @@ export function VendorsTable() {
         <div>
           <h1 className="font-heading text-3xl font-semibold text-foreground">Vendors</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Caterers, florists, photographers and everyone else making the day happen.
+            Food, photos and videos, decor and everyone else making the day happen.
           </p>
         </div>
         <Button

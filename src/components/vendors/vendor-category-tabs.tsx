@@ -4,13 +4,14 @@ import type { VendorCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const VENDOR_CATEGORIES: VendorCategory[] = [
-  "Caterer",
-  "Florist",
-  "Photographer",
-  "Videographer",
-  "Music/DJ",
-  "Makeup Artist",
   "Decoration",
+  "Food",
+  "Invites",
+  "Makeup Artist",
+  "Music/DJ",
+  "Photos and Videos",
+  "Transportation",
+  "Wedding Cake",
   "Wedding Organizer",
   "Other",
 ];

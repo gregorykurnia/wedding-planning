@@ -15,13 +15,14 @@ export interface Venue {
 }
 
 export type VendorCategory =
-  | "Caterer"
-  | "Florist"
-  | "Photographer"
-  | "Videographer"
-  | "Music/DJ"
-  | "Makeup Artist"
   | "Decoration"
+  | "Food"
+  | "Invites"
+  | "Makeup Artist"
+  | "Music/DJ"
+  | "Photos and Videos"
+  | "Transportation"
+  | "Wedding Cake"
   | "Wedding Organizer"
   | "Other";
 
