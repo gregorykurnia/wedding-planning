@@ -60,14 +60,14 @@ export function useVendors() {
   return useCollection<Vendor>(COLLECTION, fromDoc, [orderBy("createdAt", "desc")]);
 }
 
-export function createVendor(category?: VendorCategory) {
+export function createVendor(category?: VendorCategory, contractStatus?: ContractStatus) {
   return addDocument(COLLECTION, {
     name: "New Vendor",
     category: category ?? ("Other" as VendorCategory),
     contactName: "",
     contactPhone: "",
     contactEmail: "",
-    contractStatus: "Inquiring" as ContractStatus,
+    contractStatus: contractStatus ?? ("Inquiring" as ContractStatus),
     priceOptions: [
       { id: crypto.randomUUID(), description: "", price: 0, selected: true },
     ] as VendorPriceOption[],

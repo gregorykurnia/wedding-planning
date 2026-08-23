@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { PiggyBank } from "lucide-react";
+import { useState } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown, PiggyBank, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,11 +17,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EditableNumber } from "@/components/shared/editable-number";
+import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { useVenues, updateVenue, addVenueFile, removeVenueFile } from "@/lib/collections/venues";
-import { useVendors, updateVendor, addVendorFile, removeVendorFile } from "@/lib/collections/vendors";
+import {
+  useVendors,
+  updateVendor,
+  createVendor,
+  addVendorFile,
+  removeVendorFile,
+} from "@/lib/collections/vendors";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
@@ -28,6 +36,38 @@ import type { Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
 type ConfirmedRow =
   | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Venue }
   | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Vendor };
+
+type SortKey = "name" | "type" | "totalPrice" | "budgetSpent" | "remaining" | "nextTargetDate" | "nextAction";
+type SortDir = "asc" | "desc";
+
+const SORT_COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "type", label: "Type" },
+  { key: "totalPrice", label: "Total price" },
+  { key: "budgetSpent", label: "Budget spent" },
+  { key: "remaining", label: "Remaining budget" },
+  { key: "nextTargetDate", label: "Next target date" },
+  { key: "nextAction", label: "Next actions" },
+];
+
+function sortValue(row: ConfirmedRow, key: SortKey): string | number {
+  switch (key) {
+    case "name":
+      return row.name.toLowerCase();
+    case "type":
+      return row.type.toLowerCase();
+    case "totalPrice":
+      return row.totalPrice;
+    case "budgetSpent":
+      return row.budgetSpent;
+    case "remaining":
+      return row.totalPrice - row.budgetSpent;
+    case "nextTargetDate":
+      return row.nextTargetDate ?? "9999-99-99";
+    case "nextAction":
+      return row.nextAction.toLowerCase();
+  }
+}
 
 /**
  * A read/write rollup of everything that's actually locked in — the
@@ -38,6 +78,8 @@ type ConfirmedRow =
 export default function ConfirmedPage() {
   const { data: venues, loading: venuesLoading } = useVenues();
   const { data: vendors, loading: vendorsLoading } = useVendors();
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const loading = venuesLoading || vendorsLoading;
   const bookedVenue = venues.find((v) => v.status === "Booked");
@@ -79,6 +121,26 @@ export default function ConfirmedPage() {
   const totalPrice = rows.reduce((sum, r) => sum + r.totalPrice, 0);
   const totalSpent = rows.reduce((sum, r) => sum + r.budgetSpent, 0);
   const totalRemaining = totalPrice - totalSpent;
+
+  const sortedRows = sortKey
+    ? [...rows].sort((a, b) => {
+        const av = sortValue(a, sortKey);
+        const bv = sortValue(b, sortKey);
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return sortDir === "desc" ? -cmp : cmp;
+      })
+    : rows;
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -146,9 +208,19 @@ export default function ConfirmedPage() {
           <h2 className="font-heading text-xl font-semibold text-foreground">
             Confirmed ({rows.length})
           </h2>
-          <Button variant="link" render={<Link href="/vendors" />} className="h-auto px-0">
-            Compare more vendors
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              size="sm"
+              className="gap-1.5"
+              onClick={() => createVendor("Other", "Chosen")}
+            >
+              <Plus className="size-4" />
+              Add vendor
+            </Button>
+            <Button variant="link" render={<Link href="/vendors" />} className="h-auto px-0">
+              Compare more vendors
+            </Button>
+          </div>
         </div>
 
         {rows.length === 0 ? (
@@ -166,23 +238,43 @@ export default function ConfirmedPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total price</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Budget spent</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Remaining budget</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next target date</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next actions</TableHead>
+                    {SORT_COLUMNS.map((col) => (
+                      <TableHead key={col.key} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(col.key)}
+                          className="flex items-center gap-1 hover:text-foreground"
+                        >
+                          {col.label}
+                          {sortKey === col.key ? (
+                            sortDir === "asc" ? (
+                              <ArrowUp className="size-3" />
+                            ) : (
+                              <ArrowDown className="size-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="size-3 opacity-40" />
+                          )}
+                        </button>
+                      </TableHead>
+                    ))}
                     <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Attachments</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((row) => {
+                  {sortedRows.map((row) => {
                     const remaining = row.totalPrice - row.budgetSpent;
                     return (
                       <TableRow key={`${row.kind}-${row.id}`} className="transition-colors hover:bg-accent/30">
-                        <TableCell className="align-top font-medium text-foreground">
-                          {row.name}
+                        <TableCell className="align-top font-medium text-foreground min-w-[160px]">
+                          <EditableText
+                            value={row.name}
+                            onSave={(name) =>
+                              row.kind === "venue"
+                                ? updateVenue(row.id, { name })
+                                : updateVendor(row.id, { name })
+                            }
+                          />
                         </TableCell>
                         <TableCell className="align-top">
                           {row.kind === "venue" ? (
