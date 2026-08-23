@@ -10,11 +10,12 @@ import {
 import {
   GoogleAuthProvider,
   browserPopupRedirectResolver,
+  getRedirectResult,
   initializeAuth,
   inMemoryPersistence,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   type Auth,
@@ -44,6 +45,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isFirebaseConfigured: boolean;
+  redirectError: Error | null;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string) => Promise<void>;
@@ -56,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(isFirebaseConfigured);
   const [activeAuth, setActiveAuth] = useState<Auth | null>(auth);
+  const [redirectError, setRedirectError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !activeAuth) {
@@ -67,6 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return () => unsubscribe();
   }, [activeAuth]);
+
+  // Completes a signInWithRedirect flow after Google sends the browser back.
+  useEffect(() => {
+    if (!activeAuth) return;
+    getRedirectResult(activeAuth).catch((err) => {
+      if (isIndexedDbError(err)) {
+        setActiveAuth(getFallbackAuth());
+        return;
+      }
+      setRedirectError(err instanceof Error ? err : new Error(String(err)));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Runs `fn` against the current auth instance; if IndexedDB is broken
   // (common in private browsing), switches to an in-memory-only instance
@@ -86,7 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    await withAuth((a) => signInWithPopup(a, new GoogleAuthProvider()));
+    if (!activeAuth) throw new Error("Firebase is not configured.");
+    // Redirect-based flow avoids relying on window.closed/close, which the
+    // platform's Cross-Origin-Opener-Policy header blocks for popups.
+    await signInWithRedirect(activeAuth, new GoogleAuthProvider());
   };
 
   const signInWithEmail = async (email: string, password: string) => {
@@ -108,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         isFirebaseConfigured,
+        redirectError,
         signInWithGoogle,
         signInWithEmail,
         registerWithEmail,
