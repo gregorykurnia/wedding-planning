@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 export const VENDOR_CATEGORIES: VendorCategory[] = [
   "Decoration",
   "Food",
+  "Groom Suit",
+  "Bride Dress",
   "Invites",
   "Makeup Artist",
   "Music/DJ",

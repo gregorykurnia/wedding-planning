@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 export const CATEGORY_STYLES: Record<VendorCategory, string> = {
   Decoration: "bg-lime-100 text-lime-800 border-lime-200",
   Food: "bg-orange-100 text-orange-800 border-orange-200",
+  "Groom Suit": "bg-indigo-100 text-indigo-800 border-indigo-200",
+  "Bride Dress": "bg-pink-100 text-pink-800 border-pink-200",
   Invites: "bg-amber-100 text-amber-800 border-amber-200",
   "Makeup Artist": "bg-rose-100 text-rose-800 border-rose-200",
   "Music/DJ": "bg-cyan-100 text-cyan-800 border-cyan-200",

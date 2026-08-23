@@ -15,8 +15,10 @@ export interface Venue {
 }
 
 export type VendorCategory =
+  | "Bride Dress"
   | "Decoration"
   | "Food"
+  | "Groom Suit"
   | "Invites"
   | "Makeup Artist"
   | "Music/DJ"
