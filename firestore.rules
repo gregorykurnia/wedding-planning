@@ -17,6 +17,9 @@ service cloud.firestore {
     match /budgetItems/{docId} {
       allow read, write: if true;
     }
+    match /hypotheticalItems/{docId} {
+      allow read, write: if true;
+    }
     match /checklistItems/{docId} {
       allow read, write: if true;
     }

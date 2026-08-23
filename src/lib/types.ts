@@ -163,6 +163,23 @@ export interface ChecklistItem {
   updatedAt: number | null;
 }
 
+// A standalone "what if I booked this" entry — same shape as a Confirmed
+// row but not backed by a real Venue/Vendor, so it never affects the
+// Confirmed page's totals.
+export interface HypotheticalItem {
+  id: string;
+  name: string;
+  type: ConfirmedType;
+  totalPrice: number;
+  budgetSpent: number;
+  nextTargetDate: string | null; // ISO date string
+  nextAction: string;
+  files: VendorFile[];
+  subEntries: ConfirmedSubEntry[];
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
 export interface Note {
   id: string;
   text: string;

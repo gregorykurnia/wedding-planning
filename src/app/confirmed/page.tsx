@@ -7,6 +7,7 @@ import {
   ArrowUp,
   ArrowUpDown,
   CornerDownRight,
+  FlaskConical,
   PiggyBank,
   Plus,
   Trash2,
@@ -52,9 +53,29 @@ import {
   addVendorSubEntryFile,
   removeVendorSubEntryFile,
 } from "@/lib/collections/vendors";
+import {
+  useHypotheticalItems,
+  createHypotheticalItem,
+  updateHypotheticalItem,
+  deleteHypotheticalItem,
+  addHypotheticalItemFile,
+  removeHypotheticalItemFile,
+  addHypotheticalItemSubEntry,
+  updateHypotheticalItemSubEntry,
+  removeHypotheticalItemSubEntry,
+  addHypotheticalItemSubEntryFile,
+  removeHypotheticalItemSubEntryFile,
+} from "@/lib/collections/hypothetical-items";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { ConfirmedSubEntry, ConfirmedType, Vendor, VendorFile, Venue } from "@/lib/types";
+import type {
+  ConfirmedSubEntry,
+  ConfirmedType,
+  HypotheticalItem,
+  Vendor,
+  VendorFile,
+  Venue,
+} from "@/lib/types";
 
 type ConfirmedRow =
   | { kind: "venue"; id: string; name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
@@ -73,7 +94,10 @@ const SORT_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "nextAction", label: "Next actions" },
 ];
 
-function sortValue(row: ConfirmedRow, key: SortKey): string | number {
+function sortValue(
+  row: { name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string },
+  key: SortKey,
+): string | number {
   switch (key) {
     case "name":
       return row.name.toLowerCase();
@@ -92,25 +116,29 @@ function sortValue(row: ConfirmedRow, key: SortKey): string | number {
   }
 }
 
+type Tab = "confirmed" | "hypothetical";
+
 /**
  * A read/write rollup of everything that's actually locked in — the
  * booked venue, contracted/paid vendors — as a single editable list with
  * its own budget tracking (Total Price / Budget Spent / Remaining),
- * independent of the general Budget page.
+ * independent of the general Budget page. Also hosts a "Hypothetical"
+ * subtab of scratch entries that project onto the total without ever
+ * feeding back into the real Confirmed numbers.
  */
 export default function ConfirmedPage() {
+  const [tab, setTab] = useState<Tab>("confirmed");
   const { data: venues, loading: venuesLoading } = useVenues();
   const { data: vendors, loading: vendorsLoading } = useVendors();
-  const [sortKey, setSortKey] = useState<SortKey | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const { data: hypotheticals, loading: hypotheticalsLoading } = useHypotheticalItems();
 
-  const loading = venuesLoading || vendorsLoading;
+  const loading = venuesLoading || vendorsLoading || hypotheticalsLoading;
   const bookedVenue = venues.find((v) => v.status === "Booked");
   const confirmedVendors = vendors.filter(
     (v) => v.contractStatus === "Chosen" || v.contractStatus === "Done",
   );
 
-  const rows: ConfirmedRow[] = [
+  const confirmedRows: ConfirmedRow[] = [
     ...(bookedVenue
       ? [
           {
@@ -158,29 +186,19 @@ export default function ConfirmedPage() {
   // Rows with sub-entries already fold those totals into totalPrice/
   // budgetSpent above, so summing rows alone (no separate sub-entry pass)
   // avoids double-counting them in the recap.
-  const totalPrice = rows.reduce((sum, r) => sum + r.totalPrice, 0);
-  const totalSpent = rows.reduce((sum, r) => sum + r.budgetSpent, 0);
-  const totalRemaining = totalPrice - totalSpent;
+  const confirmedTotalPrice = confirmedRows.reduce((sum, r) => sum + r.totalPrice, 0);
+  const confirmedTotalSpent = confirmedRows.reduce((sum, r) => sum + r.budgetSpent, 0);
 
-  const sortedRows = sortKey
-    ? [...rows].sort((a, b) => {
-        const av = sortValue(a, sortKey);
-        const bv = sortValue(b, sortKey);
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return sortDir === "desc" ? -cmp : cmp;
-      })
-    : rows;
-
-  const toggleSort = (key: SortKey) => {
-    if (sortKey !== key) {
-      setSortKey(key);
-      setSortDir("asc");
-    } else if (sortDir === "asc") {
-      setSortDir("desc");
-    } else {
-      setSortKey(null);
-    }
-  };
+  const hypotheticalTotalPrice = hypotheticals.reduce(
+    (sum, h) =>
+      sum + (h.subEntries.length > 0 ? h.subEntries.reduce((s, e) => s + e.totalPrice, 0) : h.totalPrice),
+    0,
+  );
+  const hypotheticalTotalSpent = hypotheticals.reduce(
+    (sum, h) =>
+      sum + (h.subEntries.length > 0 ? h.subEntries.reduce((s, e) => s + e.budgetSpent, 0) : h.budgetSpent),
+    0,
+  );
 
   if (loading) {
     return (
@@ -206,6 +224,89 @@ export default function ConfirmedPage() {
         </p>
       </div>
 
+      <div className="flex w-fit items-center gap-1 rounded-full border border-border/70 bg-muted/40 p-1">
+        <button
+          type="button"
+          onClick={() => setTab("confirmed")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+            tab === "confirmed"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <PiggyBank className="size-3.5" />
+          Confirmed
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("hypothetical")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+            tab === "hypothetical"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <FlaskConical className="size-3.5" />
+          Hypothetical
+        </button>
+      </div>
+
+      {tab === "confirmed" ? (
+        <ConfirmedTab
+          rows={confirmedRows}
+          totalPrice={confirmedTotalPrice}
+          totalSpent={confirmedTotalSpent}
+        />
+      ) : (
+        <HypotheticalTab
+          items={hypotheticals}
+          hypotheticalTotalPrice={hypotheticalTotalPrice}
+          hypotheticalTotalSpent={hypotheticalTotalSpent}
+          confirmedTotalPrice={confirmedTotalPrice}
+          confirmedTotalSpent={confirmedTotalSpent}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmedTab({
+  rows,
+  totalPrice,
+  totalSpent,
+}: {
+  rows: ConfirmedRow[];
+  totalPrice: number;
+  totalSpent: number;
+}) {
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const totalRemaining = totalPrice - totalSpent;
+
+  const sortedRows = sortKey
+    ? [...rows].sort((a, b) => {
+        const av = sortValue(a, sortKey);
+        const bv = sortValue(b, sortKey);
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return sortDir === "desc" ? -cmp : cmp;
+      })
+    : rows;
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border-border/70 bg-gradient-to-br from-blush/50 to-card shadow-sm">
           <CardContent className="flex items-start gap-3 pt-6">
@@ -534,6 +635,343 @@ export default function ConfirmedPage() {
                                   ? removeVenueSubEntry(row.data, entry.id)
                                   : removeVendorSubEntry(row.data, entry.id)
                               }
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
+
+                    return [mainRow, ...subRows];
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HypotheticalTab({
+  items,
+  hypotheticalTotalPrice,
+  hypotheticalTotalSpent,
+  confirmedTotalPrice,
+  confirmedTotalSpent,
+}: {
+  items: HypotheticalItem[];
+  hypotheticalTotalPrice: number;
+  hypotheticalTotalSpent: number;
+  confirmedTotalPrice: number;
+  confirmedTotalSpent: number;
+}) {
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const hypotheticalRemaining = hypotheticalTotalPrice - hypotheticalTotalSpent;
+  const projectedTotalPrice = confirmedTotalPrice + hypotheticalTotalPrice;
+  const projectedTotalSpent = confirmedTotalSpent + hypotheticalTotalSpent;
+
+  const sortedItems = sortKey
+    ? [...items].sort((a, b) => {
+        const av = sortValue(a, sortKey);
+        const bv = sortValue(b, sortKey);
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return sortDir === "desc" ? -cmp : cmp;
+      })
+    : items;
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
+      <p className="-mt-4 max-w-2xl text-sm text-muted-foreground">
+        Scratch entries only — these never affect the Confirmed tab&apos;s totals. Use them to
+        see what your budget would look like if you added something.
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="border-border/70 bg-gradient-to-br from-blush/50 to-card shadow-sm">
+          <CardContent className="flex items-start gap-3 pt-6">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <FlaskConical className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Hypothetical total price</p>
+              <p className="font-heading text-2xl font-semibold text-foreground">
+                {formatIDR(hypotheticalTotalPrice)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Hypothetical remaining</p>
+            <p
+              className={cn(
+                "font-heading text-2xl font-semibold",
+                hypotheticalRemaining < 0 ? "text-destructive" : "text-foreground",
+              )}
+            >
+              {formatIDR(hypotheticalRemaining)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-dashed border-border/70 shadow-none">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Confirmed + Hypothetical (projected)</p>
+            <p className="font-heading text-2xl font-semibold text-foreground">
+              {formatIDR(projectedTotalPrice)}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Spent so far: {formatIDR(projectedTotalSpent)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-heading text-xl font-semibold text-foreground">
+            Hypothetical ({items.length})
+            {items.some((i) => i.subEntries.length > 0) && (
+              <span className="ml-1 text-sm font-normal text-muted-foreground">
+                + {items.reduce((sum, i) => sum + i.subEntries.length, 0)} sub-entries
+              </span>
+            )}
+          </h2>
+          <Button size="sm" className="gap-1.5" onClick={() => createHypotheticalItem()}>
+            <Plus className="size-4" />
+            Add hypothetical
+          </Button>
+        </div>
+
+        {items.length === 0 ? (
+          <Card className="border-dashed border-border/70 shadow-none">
+            <CardContent className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
+              <p>No hypothetical entries yet — add one to see how it&apos;d affect your budget.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    {SORT_COLUMNS.map((col) => (
+                      <TableHead key={col.key} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(col.key)}
+                          className="flex items-center gap-1 hover:text-foreground"
+                        >
+                          {col.label}
+                          {sortKey === col.key ? (
+                            sortDir === "asc" ? (
+                              <ArrowUp className="size-3" />
+                            ) : (
+                              <ArrowDown className="size-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="size-3 opacity-40" />
+                          )}
+                        </button>
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Attachments</TableHead>
+                    <TableHead className="w-8" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedItems.flatMap((item) => {
+                    const remaining = item.totalPrice - item.budgetSpent;
+                    const mainRow = (
+                      <TableRow key={item.id} className="transition-colors hover:bg-accent/30">
+                        <TableCell className="align-top font-medium text-foreground min-w-[160px]">
+                          <EditableText
+                            value={item.name}
+                            onSave={(name) => updateHypotheticalItem(item.id, { name })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addHypotheticalItemSubEntry(item)}
+                            className="mt-0.5 flex items-center gap-1 px-2 text-xs text-muted-foreground hover:text-primary hover:underline"
+                          >
+                            <Plus className="size-3" />
+                            Add sub-entry
+                          </button>
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <ConfirmedTypePill
+                            value={item.type}
+                            onChange={(type) => updateHypotheticalItem(item.id, { type })}
+                          />
+                        </TableCell>
+                        <TableCell className="align-top">
+                          {item.subEntries.length > 0 ? (
+                            <p
+                              title="Sum of sub-entries — edit them individually"
+                              className="px-2 py-1.5 text-sm tabular-nums text-muted-foreground"
+                            >
+                              {formatIDR(item.totalPrice)}
+                            </p>
+                          ) : (
+                            <EditableNumber
+                              value={item.totalPrice}
+                              onSave={(totalPrice) => updateHypotheticalItem(item.id, { totalPrice })}
+                              formatDisplay={formatIDR}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top">
+                          {item.subEntries.length > 0 ? (
+                            <p
+                              title="Sum of sub-entries — edit them individually"
+                              className="px-2 py-1.5 text-sm tabular-nums text-muted-foreground"
+                            >
+                              {formatIDR(item.budgetSpent)}
+                            </p>
+                          ) : (
+                            <EditableNumber
+                              value={item.budgetSpent}
+                              onSave={(budgetSpent) => updateHypotheticalItem(item.id, { budgetSpent })}
+                              formatDisplay={formatIDR}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            "align-top py-1.5 px-2 text-sm tabular-nums",
+                            remaining < 0 && "text-destructive",
+                          )}
+                        >
+                          {formatIDR(remaining)}
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <EditableDate
+                            value={item.nextTargetDate}
+                            onSave={(nextTargetDate) => updateHypotheticalItem(item.id, { nextTargetDate })}
+                          />
+                        </TableCell>
+                        <TableCell className="align-top min-w-[220px]">
+                          <VenueNotesCell
+                            value={item.nextAction}
+                            onSave={(nextAction) => updateHypotheticalItem(item.id, { nextAction })}
+                          />
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <FilesCell
+                            files={item.files}
+                            onAdd={(file) => addHypotheticalItemFile(item, file)}
+                            onRemove={(url) => removeHypotheticalItemFile(item, url)}
+                          />
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteHypotheticalItem(item.id)}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+
+                    const subRows = item.subEntries.map((entry) => {
+                      const subRemaining = entry.totalPrice - entry.budgetSpent;
+                      return (
+                        <TableRow
+                          key={`${item.id}-sub-${entry.id}`}
+                          className="bg-muted/20 transition-colors hover:bg-accent/20"
+                        >
+                          <TableCell className="align-top min-w-[160px] pl-8">
+                            <div className="flex items-start gap-1.5">
+                              <CornerDownRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground" />
+                              <EditableText
+                                value={entry.name}
+                                onSave={(name) =>
+                                  updateHypotheticalItemSubEntry(item, entry.id, { name })
+                                }
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Badge
+                              variant="secondary"
+                              className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+                            >
+                              Sub-entry
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <EditableNumber
+                              value={entry.totalPrice}
+                              onSave={(totalPrice) =>
+                                updateHypotheticalItemSubEntry(item, entry.id, { totalPrice })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <EditableNumber
+                              value={entry.budgetSpent}
+                              onSave={(budgetSpent) =>
+                                updateHypotheticalItemSubEntry(item, entry.id, { budgetSpent })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "align-top py-1.5 px-2 text-sm tabular-nums",
+                              subRemaining < 0 && "text-destructive",
+                            )}
+                          >
+                            {formatIDR(subRemaining)}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <EditableDate
+                              value={entry.nextTargetDate}
+                              onSave={(nextTargetDate) =>
+                                updateHypotheticalItemSubEntry(item, entry.id, { nextTargetDate })
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="align-top min-w-[220px]">
+                            <VenueNotesCell
+                              value={entry.nextAction}
+                              onSave={(nextAction) =>
+                                updateHypotheticalItemSubEntry(item, entry.id, { nextAction })
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <FilesCell
+                              files={entry.files}
+                              onAdd={(file) => addHypotheticalItemSubEntryFile(item, entry.id, file)}
+                              onRemove={(url) => removeHypotheticalItemSubEntryFile(item, entry.id, url)}
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeHypotheticalItemSubEntry(item, entry.id)}
                             >
                               <Trash2 className="size-3.5" />
                             </Button>
