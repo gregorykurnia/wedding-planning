@@ -23,6 +23,9 @@ function fromDoc(id: string, data: DocumentData): Venue {
     notes: data.notes ?? "",
     images: Array.isArray(data.images) ? data.images : [],
     coverImage: data.coverImage ?? null,
+    budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
+    nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
+    nextAction: data.nextAction ?? "",
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
   };
@@ -42,6 +45,9 @@ export function createVenue() {
     notes: "",
     images: [],
     coverImage: null,
+    budgetSpent: 0,
+    nextTargetDate: null,
+    nextAction: "",
   });
 }
 

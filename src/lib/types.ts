@@ -10,6 +10,10 @@ export interface Venue {
   notes: string;
   images: string[];
   coverImage: string | null;
+  // Confirmed-list tracking fields (see Vendor for the vendor-side equivalents).
+  budgetSpent: number;
+  nextTargetDate: string | null; // ISO date string
+  nextAction: string;
   createdAt: number | null;
   updatedAt: number | null;
 }
@@ -55,6 +59,12 @@ export interface Vendor {
   starred: boolean;
   images: string[];
   files: VendorFile[];
+  // Confirmed-list tracking fields, independent of priceOptions (which is
+  // for comparing options pre-booking) — set once a vendor is locked in.
+  totalPrice: number;
+  budgetSpent: number;
+  nextTargetDate: string | null; // ISO date string
+  nextAction: string;
   createdAt: number | null;
   updatedAt: number | null;
 }
