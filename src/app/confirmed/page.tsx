@@ -15,7 +15,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -24,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EditableDate } from "@/components/shared/editable-date";
 import { EditableNumber } from "@/components/shared/editable-number";
 import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
@@ -393,15 +393,13 @@ export default function ConfirmedPage() {
                           {formatIDR(remaining)}
                         </TableCell>
                         <TableCell className="align-top">
-                          <Input
-                            type="date"
-                            value={row.nextTargetDate ?? ""}
-                            onChange={(e) =>
+                          <EditableDate
+                            value={row.nextTargetDate}
+                            onSave={(nextTargetDate) =>
                               row.kind === "venue"
-                                ? updateVenue(row.id, { nextTargetDate: e.target.value || null })
-                                : updateVendor(row.id, { nextTargetDate: e.target.value || null })
+                                ? updateVenue(row.id, { nextTargetDate })
+                                : updateVendor(row.id, { nextTargetDate })
                             }
-                            className="h-8 w-36 border-none bg-transparent text-xs text-muted-foreground shadow-none"
                           />
                         </TableCell>
                         <TableCell className="align-top min-w-[220px]">
@@ -492,19 +490,13 @@ export default function ConfirmedPage() {
                             {formatIDR(subRemaining)}
                           </TableCell>
                           <TableCell className="align-top">
-                            <Input
-                              type="date"
-                              value={entry.nextTargetDate ?? ""}
-                              onChange={(e) =>
+                            <EditableDate
+                              value={entry.nextTargetDate}
+                              onSave={(nextTargetDate) =>
                                 row.kind === "venue"
-                                  ? updateVenueSubEntry(row.data, entry.id, {
-                                      nextTargetDate: e.target.value || null,
-                                    })
-                                  : updateVendorSubEntry(row.data, entry.id, {
-                                      nextTargetDate: e.target.value || null,
-                                    })
+                                  ? updateVenueSubEntry(row.data, entry.id, { nextTargetDate })
+                                  : updateVendorSubEntry(row.data, entry.id, { nextTargetDate })
                               }
-                              className="h-8 w-36 border-none bg-transparent text-xs text-muted-foreground shadow-none"
                             />
                           </TableCell>
                           <TableCell className="align-top min-w-[220px]">
