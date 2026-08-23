@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
   initializeAuth,
   inMemoryPersistence,
   onAuthStateChanged,
@@ -34,6 +35,7 @@ const getFallbackAuth = (): Auth => {
   const fallbackApp = initializeApp(firebaseConfig, "auth-fallback");
   fallbackAuth = initializeAuth(fallbackApp, {
     persistence: inMemoryPersistence,
+    popupRedirectResolver: browserPopupRedirectResolver,
   });
   return fallbackAuth;
 };
@@ -72,17 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const withAuth = async <T,>(fn: (a: Auth) => Promise<T>): Promise<T> => {
     if (!activeAuth) throw new Error("Firebase is not configured.");
     try {
-      // eslint-disable-next-line no-console
-      console.log("[auth] trying primary", activeAuth.name);
       return await fn(activeAuth);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.log("[auth] primary failed", err);
       if (isIndexedDbError(err)) {
         const fallback = getFallbackAuth();
         setActiveAuth(fallback);
-        // eslint-disable-next-line no-console
-        console.log("[auth] trying fallback", fallback.name);
         return await fn(fallback);
       }
       throw err;
