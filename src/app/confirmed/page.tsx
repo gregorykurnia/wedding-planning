@@ -16,17 +16,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EditableNumber } from "@/components/shared/editable-number";
+import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
-import { useVenues, updateVenue } from "@/lib/collections/venues";
-import { useVendors, updateVendor } from "@/lib/collections/vendors";
+import { useVenues, updateVenue, addVenueFile, removeVenueFile } from "@/lib/collections/venues";
+import { useVendors, updateVendor, addVendorFile, removeVendorFile } from "@/lib/collections/vendors";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Vendor, VendorCategory, Venue } from "@/lib/types";
+import type { Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
 
 type ConfirmedRow =
-  | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; data: Venue }
-  | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; data: Vendor };
+  | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Venue }
+  | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Vendor };
 
 /**
  * A read/write rollup of everything that's actually locked in — the
@@ -56,6 +57,7 @@ export default function ConfirmedPage() {
             budgetSpent: bookedVenue.budgetSpent,
             nextTargetDate: bookedVenue.nextTargetDate,
             nextAction: bookedVenue.nextAction,
+            files: bookedVenue.files,
             data: bookedVenue,
           },
         ]
@@ -69,6 +71,7 @@ export default function ConfirmedPage() {
       budgetSpent: vendor.budgetSpent,
       nextTargetDate: vendor.nextTargetDate,
       nextAction: vendor.nextAction,
+      files: vendor.files,
       data: vendor,
     })),
   ];
@@ -170,6 +173,7 @@ export default function ConfirmedPage() {
                     <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Remaining budget</TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next target date</TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next actions</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Attachments</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -241,6 +245,21 @@ export default function ConfirmedPage() {
                               row.kind === "venue"
                                 ? updateVenue(row.id, { nextAction })
                                 : updateVendor(row.id, { nextAction })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <FilesCell
+                            files={row.files}
+                            onAdd={(file) =>
+                              row.kind === "venue"
+                                ? addVenueFile(row.data, file)
+                                : addVendorFile(row.data, file)
+                            }
+                            onRemove={(url) =>
+                              row.kind === "venue"
+                                ? removeVenueFile(row.data, url)
+                                : removeVendorFile(row.data, url)
                             }
                           />
                         </TableCell>

@@ -10,6 +10,7 @@ export interface Venue {
   notes: string;
   images: string[];
   coverImage: string | null;
+  files: VendorFile[];
   // Confirmed-list tracking fields (see Vendor for the vendor-side equivalents).
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string

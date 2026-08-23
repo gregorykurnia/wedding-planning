@@ -1,6 +1,6 @@
 "use client";
 
-import { arrayUnion, type DocumentData } from "firebase/firestore";
+import { arrayRemove, arrayUnion, type DocumentData } from "firebase/firestore";
 import {
   addDocument,
   deleteDocument,
@@ -8,7 +8,7 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
-import type { Venue, VenueStatus } from "@/lib/types";
+import type { Venue, VenueStatus, VendorFile } from "@/lib/types";
 
 const COLLECTION = "venues";
 
@@ -23,6 +23,7 @@ function fromDoc(id: string, data: DocumentData): Venue {
     notes: data.notes ?? "",
     images: Array.isArray(data.images) ? data.images : [],
     coverImage: data.coverImage ?? null,
+    files: Array.isArray(data.files) ? data.files : [],
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
     nextAction: data.nextAction ?? "",
@@ -45,6 +46,7 @@ export function createVenue() {
     notes: "",
     images: [],
     coverImage: null,
+    files: [],
     budgetSpent: 0,
     nextTargetDate: null,
     nextAction: "",
@@ -65,5 +67,19 @@ export function addVenueImage(venue: Venue, url: string) {
   return updateDocument(COLLECTION, venue.id, {
     images: arrayUnion(url),
     ...(venue.coverImage ? {} : { coverImage: url }),
+  });
+}
+
+export function addVenueFile(venue: Venue, file: VendorFile) {
+  return updateDocument(COLLECTION, venue.id, {
+    files: arrayUnion(file),
+  });
+}
+
+export function removeVenueFile(venue: Venue, url: string) {
+  const file = venue.files.find((f) => f.url === url);
+  if (!file) return Promise.resolve();
+  return updateDocument(COLLECTION, venue.id, {
+    files: arrayRemove(file),
   });
 }
