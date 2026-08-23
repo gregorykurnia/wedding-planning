@@ -28,12 +28,12 @@ function fromDoc(id: string, data: DocumentData): Guest {
   };
 }
 
-export function useGuests() {
-  return useCollection<Guest>(COLLECTION, fromDoc);
+export function useGuests(workspaceId: string | null) {
+  return useCollection<Guest>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createGuest() {
-  return addDocument(COLLECTION, {
+export function createGuest(workspaceId: string) {
+  return addDocument(workspaceId, COLLECTION, {
     name: "New Guest",
     connection: "",
     country: "",
@@ -45,12 +45,12 @@ export function createGuest() {
   });
 }
 
-export function updateGuest(id: string, data: Partial<Guest>) {
+export function updateGuest(workspaceId: string, id: string, data: Partial<Guest>) {
   const { id: _id, ...rest } = data as Guest;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteGuest(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteGuest(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }

@@ -68,6 +68,7 @@ import {
 } from "@/lib/collections/hypothetical-items";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/lib/workspace-context";
 import type {
   ConfirmedSubEntry,
   ConfirmedType,
@@ -127,10 +128,13 @@ type Tab = "confirmed" | "hypothetical";
  * feeding back into the real Confirmed numbers.
  */
 export default function ConfirmedPage() {
+  const { workspace } = useWorkspace();
   const [tab, setTab] = useState<Tab>("confirmed");
-  const { data: venues, loading: venuesLoading } = useVenues();
-  const { data: vendors, loading: vendorsLoading } = useVendors();
-  const { data: hypotheticals, loading: hypotheticalsLoading } = useHypotheticalItems();
+  const { data: venues, loading: venuesLoading } = useVenues(workspace?.id ?? null);
+  const { data: vendors, loading: vendorsLoading } = useVendors(workspace?.id ?? null);
+  const { data: hypotheticals, loading: hypotheticalsLoading } = useHypotheticalItems(
+    workspace?.id ?? null,
+  );
 
   const loading = venuesLoading || vendorsLoading || hypotheticalsLoading;
   const bookedVenue = venues.find((v) => v.status === "Booked");
@@ -255,12 +259,14 @@ export default function ConfirmedPage() {
 
       {tab === "confirmed" ? (
         <ConfirmedTab
+          workspaceId={workspace!.id}
           rows={confirmedRows}
           totalPrice={confirmedTotalPrice}
           totalSpent={confirmedTotalSpent}
         />
       ) : (
         <HypotheticalTab
+          workspaceId={workspace!.id}
           items={hypotheticals}
           hypotheticalTotalPrice={hypotheticalTotalPrice}
           hypotheticalTotalSpent={hypotheticalTotalSpent}
@@ -273,10 +279,12 @@ export default function ConfirmedPage() {
 }
 
 function ConfirmedTab({
+  workspaceId,
   rows,
   totalPrice,
   totalSpent,
 }: {
+  workspaceId: string;
   rows: ConfirmedRow[];
   totalPrice: number;
   totalSpent: number;
@@ -358,7 +366,7 @@ function ConfirmedTab({
             <Button
               size="sm"
               className="gap-1.5"
-              onClick={() => createVendor("Other", "Chosen")}
+              onClick={() => createVendor(workspaceId, "Other", "Chosen")}
             >
               <Plus className="size-4" />
               Add vendor
@@ -418,16 +426,16 @@ function ConfirmedTab({
                             value={row.name}
                             onSave={(name) =>
                               row.kind === "venue"
-                                ? updateVenue(row.id, { name })
-                                : updateVendor(row.id, { name })
+                                ? updateVenue(workspaceId, row.id, { name })
+                                : updateVendor(workspaceId, row.id, { name })
                             }
                           />
                           <button
                             type="button"
                             onClick={() =>
                               row.kind === "venue"
-                                ? addVenueSubEntry(row.data)
-                                : addVendorSubEntry(row.data)
+                                ? addVenueSubEntry(workspaceId, row.data)
+                                : addVendorSubEntry(workspaceId, row.data)
                             }
                             className="mt-0.5 flex items-center gap-1 px-2 text-xs text-muted-foreground hover:text-primary hover:underline"
                           >
@@ -440,8 +448,8 @@ function ConfirmedTab({
                             value={row.type}
                             onChange={(confirmedType) =>
                               row.kind === "venue"
-                                ? updateVenue(row.id, { confirmedType })
-                                : updateVendor(row.id, { confirmedType })
+                                ? updateVenue(workspaceId, row.id, { confirmedType })
+                                : updateVendor(workspaceId, row.id, { confirmedType })
                             }
                           />
                         </TableCell>
@@ -458,8 +466,8 @@ function ConfirmedTab({
                               value={row.totalPrice}
                               onSave={(totalPrice) =>
                                 row.kind === "venue"
-                                  ? updateVenue(row.id, { budgetEstimate: totalPrice })
-                                  : updateVendor(row.id, { totalPrice })
+                                  ? updateVenue(workspaceId, row.id, { budgetEstimate: totalPrice })
+                                  : updateVendor(workspaceId, row.id, { totalPrice })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -478,8 +486,8 @@ function ConfirmedTab({
                               value={row.budgetSpent}
                               onSave={(budgetSpent) =>
                                 row.kind === "venue"
-                                  ? updateVenue(row.id, { budgetSpent })
-                                  : updateVendor(row.id, { budgetSpent })
+                                  ? updateVenue(workspaceId, row.id, { budgetSpent })
+                                  : updateVendor(workspaceId, row.id, { budgetSpent })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -498,8 +506,8 @@ function ConfirmedTab({
                             value={row.nextTargetDate}
                             onSave={(nextTargetDate) =>
                               row.kind === "venue"
-                                ? updateVenue(row.id, { nextTargetDate })
-                                : updateVendor(row.id, { nextTargetDate })
+                                ? updateVenue(workspaceId, row.id, { nextTargetDate })
+                                : updateVendor(workspaceId, row.id, { nextTargetDate })
                             }
                           />
                         </TableCell>
@@ -508,8 +516,8 @@ function ConfirmedTab({
                             value={row.nextAction}
                             onSave={(nextAction) =>
                               row.kind === "venue"
-                                ? updateVenue(row.id, { nextAction })
-                                : updateVendor(row.id, { nextAction })
+                                ? updateVenue(workspaceId, row.id, { nextAction })
+                                : updateVendor(workspaceId, row.id, { nextAction })
                             }
                           />
                         </TableCell>
@@ -518,13 +526,13 @@ function ConfirmedTab({
                             files={row.files}
                             onAdd={(file) =>
                               row.kind === "venue"
-                                ? addVenueFile(row.data, file)
-                                : addVendorFile(row.data, file)
+                                ? addVenueFile(workspaceId, row.data, file)
+                                : addVendorFile(workspaceId, row.data, file)
                             }
                             onRemove={(url) =>
                               row.kind === "venue"
-                                ? removeVenueFile(row.data, url)
-                                : removeVendorFile(row.data, url)
+                                ? removeVenueFile(workspaceId, row.data, url)
+                                : removeVendorFile(workspaceId, row.data, url)
                             }
                           />
                         </TableCell>
@@ -546,8 +554,8 @@ function ConfirmedTab({
                                 value={entry.name}
                                 onSave={(name) =>
                                   row.kind === "venue"
-                                    ? updateVenueSubEntry(row.data, entry.id, { name })
-                                    : updateVendorSubEntry(row.data, entry.id, { name })
+                                    ? updateVenueSubEntry(workspaceId, row.data, entry.id, { name })
+                                    : updateVendorSubEntry(workspaceId, row.data, entry.id, { name })
                                 }
                               />
                             </div>
@@ -565,8 +573,8 @@ function ConfirmedTab({
                               value={entry.totalPrice}
                               onSave={(totalPrice) =>
                                 row.kind === "venue"
-                                  ? updateVenueSubEntry(row.data, entry.id, { totalPrice })
-                                  : updateVendorSubEntry(row.data, entry.id, { totalPrice })
+                                  ? updateVenueSubEntry(workspaceId, row.data, entry.id, { totalPrice })
+                                  : updateVendorSubEntry(workspaceId, row.data, entry.id, { totalPrice })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -576,8 +584,8 @@ function ConfirmedTab({
                               value={entry.budgetSpent}
                               onSave={(budgetSpent) =>
                                 row.kind === "venue"
-                                  ? updateVenueSubEntry(row.data, entry.id, { budgetSpent })
-                                  : updateVendorSubEntry(row.data, entry.id, { budgetSpent })
+                                  ? updateVenueSubEntry(workspaceId, row.data, entry.id, { budgetSpent })
+                                  : updateVendorSubEntry(workspaceId, row.data, entry.id, { budgetSpent })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -595,8 +603,8 @@ function ConfirmedTab({
                               value={entry.nextTargetDate}
                               onSave={(nextTargetDate) =>
                                 row.kind === "venue"
-                                  ? updateVenueSubEntry(row.data, entry.id, { nextTargetDate })
-                                  : updateVendorSubEntry(row.data, entry.id, { nextTargetDate })
+                                  ? updateVenueSubEntry(workspaceId, row.data, entry.id, { nextTargetDate })
+                                  : updateVendorSubEntry(workspaceId, row.data, entry.id, { nextTargetDate })
                               }
                             />
                           </TableCell>
@@ -605,8 +613,8 @@ function ConfirmedTab({
                               value={entry.nextAction}
                               onSave={(nextAction) =>
                                 row.kind === "venue"
-                                  ? updateVenueSubEntry(row.data, entry.id, { nextAction })
-                                  : updateVendorSubEntry(row.data, entry.id, { nextAction })
+                                  ? updateVenueSubEntry(workspaceId, row.data, entry.id, { nextAction })
+                                  : updateVendorSubEntry(workspaceId, row.data, entry.id, { nextAction })
                               }
                             />
                           </TableCell>
@@ -615,13 +623,13 @@ function ConfirmedTab({
                               files={entry.files}
                               onAdd={(file) =>
                                 row.kind === "venue"
-                                  ? addVenueSubEntryFile(row.data, entry.id, file)
-                                  : addVendorSubEntryFile(row.data, entry.id, file)
+                                  ? addVenueSubEntryFile(workspaceId, row.data, entry.id, file)
+                                  : addVendorSubEntryFile(workspaceId, row.data, entry.id, file)
                               }
                               onRemove={(url) =>
                                 row.kind === "venue"
-                                  ? removeVenueSubEntryFile(row.data, entry.id, url)
-                                  : removeVendorSubEntryFile(row.data, entry.id, url)
+                                  ? removeVenueSubEntryFile(workspaceId, row.data, entry.id, url)
+                                  : removeVendorSubEntryFile(workspaceId, row.data, entry.id, url)
                               }
                             />
                           </TableCell>
@@ -632,8 +640,8 @@ function ConfirmedTab({
                               className="size-7 text-muted-foreground hover:text-destructive"
                               onClick={() =>
                                 row.kind === "venue"
-                                  ? removeVenueSubEntry(row.data, entry.id)
-                                  : removeVendorSubEntry(row.data, entry.id)
+                                  ? removeVenueSubEntry(workspaceId, row.data, entry.id)
+                                  : removeVendorSubEntry(workspaceId, row.data, entry.id)
                               }
                             >
                               <Trash2 className="size-3.5" />
@@ -656,12 +664,14 @@ function ConfirmedTab({
 }
 
 function HypotheticalTab({
+  workspaceId,
   items,
   hypotheticalTotalPrice,
   hypotheticalTotalSpent,
   confirmedTotalPrice,
   confirmedTotalSpent,
 }: {
+  workspaceId: string;
   items: HypotheticalItem[];
   hypotheticalTotalPrice: number;
   hypotheticalTotalSpent: number;
@@ -752,7 +762,7 @@ function HypotheticalTab({
               </span>
             )}
           </h2>
-          <Button size="sm" className="gap-1.5" onClick={() => createHypotheticalItem()}>
+          <Button size="sm" className="gap-1.5" onClick={() => createHypotheticalItem(workspaceId)}>
             <Plus className="size-4" />
             Add hypothetical
           </Button>
@@ -802,11 +812,11 @@ function HypotheticalTab({
                         <TableCell className="align-top font-medium text-foreground min-w-[160px]">
                           <EditableText
                             value={item.name}
-                            onSave={(name) => updateHypotheticalItem(item.id, { name })}
+                            onSave={(name) => updateHypotheticalItem(workspaceId, item.id, { name })}
                           />
                           <button
                             type="button"
-                            onClick={() => addHypotheticalItemSubEntry(item)}
+                            onClick={() => addHypotheticalItemSubEntry(workspaceId, item)}
                             className="mt-0.5 flex items-center gap-1 px-2 text-xs text-muted-foreground hover:text-primary hover:underline"
                           >
                             <Plus className="size-3" />
@@ -816,7 +826,7 @@ function HypotheticalTab({
                         <TableCell className="align-top">
                           <ConfirmedTypePill
                             value={item.type}
-                            onChange={(type) => updateHypotheticalItem(item.id, { type })}
+                            onChange={(type) => updateHypotheticalItem(workspaceId, item.id, { type })}
                           />
                         </TableCell>
                         <TableCell className="align-top">
@@ -830,7 +840,7 @@ function HypotheticalTab({
                           ) : (
                             <EditableNumber
                               value={item.totalPrice}
-                              onSave={(totalPrice) => updateHypotheticalItem(item.id, { totalPrice })}
+                              onSave={(totalPrice) => updateHypotheticalItem(workspaceId, item.id, { totalPrice })}
                               formatDisplay={formatIDR}
                             />
                           )}
@@ -846,7 +856,7 @@ function HypotheticalTab({
                           ) : (
                             <EditableNumber
                               value={item.budgetSpent}
-                              onSave={(budgetSpent) => updateHypotheticalItem(item.id, { budgetSpent })}
+                              onSave={(budgetSpent) => updateHypotheticalItem(workspaceId, item.id, { budgetSpent })}
                               formatDisplay={formatIDR}
                             />
                           )}
@@ -862,20 +872,20 @@ function HypotheticalTab({
                         <TableCell className="align-top">
                           <EditableDate
                             value={item.nextTargetDate}
-                            onSave={(nextTargetDate) => updateHypotheticalItem(item.id, { nextTargetDate })}
+                            onSave={(nextTargetDate) => updateHypotheticalItem(workspaceId, item.id, { nextTargetDate })}
                           />
                         </TableCell>
                         <TableCell className="align-top min-w-[220px]">
                           <VenueNotesCell
                             value={item.nextAction}
-                            onSave={(nextAction) => updateHypotheticalItem(item.id, { nextAction })}
+                            onSave={(nextAction) => updateHypotheticalItem(workspaceId, item.id, { nextAction })}
                           />
                         </TableCell>
                         <TableCell className="align-top">
                           <FilesCell
                             files={item.files}
-                            onAdd={(file) => addHypotheticalItemFile(item, file)}
-                            onRemove={(url) => removeHypotheticalItemFile(item, url)}
+                            onAdd={(file) => addHypotheticalItemFile(workspaceId, item, file)}
+                            onRemove={(url) => removeHypotheticalItemFile(workspaceId, item, url)}
                           />
                         </TableCell>
                         <TableCell className="align-top">
@@ -883,7 +893,7 @@ function HypotheticalTab({
                             variant="ghost"
                             size="icon"
                             className="size-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => deleteHypotheticalItem(item.id)}
+                            onClick={() => deleteHypotheticalItem(workspaceId, item.id)}
                           >
                             <Trash2 className="size-3.5" />
                           </Button>
@@ -904,7 +914,7 @@ function HypotheticalTab({
                               <EditableText
                                 value={entry.name}
                                 onSave={(name) =>
-                                  updateHypotheticalItemSubEntry(item, entry.id, { name })
+                                  updateHypotheticalItemSubEntry(workspaceId, item, entry.id, { name })
                                 }
                               />
                             </div>
@@ -921,7 +931,7 @@ function HypotheticalTab({
                             <EditableNumber
                               value={entry.totalPrice}
                               onSave={(totalPrice) =>
-                                updateHypotheticalItemSubEntry(item, entry.id, { totalPrice })
+                                updateHypotheticalItemSubEntry(workspaceId, item, entry.id, { totalPrice })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -930,7 +940,7 @@ function HypotheticalTab({
                             <EditableNumber
                               value={entry.budgetSpent}
                               onSave={(budgetSpent) =>
-                                updateHypotheticalItemSubEntry(item, entry.id, { budgetSpent })
+                                updateHypotheticalItemSubEntry(workspaceId, item, entry.id, { budgetSpent })
                               }
                               formatDisplay={formatIDR}
                             />
@@ -947,7 +957,7 @@ function HypotheticalTab({
                             <EditableDate
                               value={entry.nextTargetDate}
                               onSave={(nextTargetDate) =>
-                                updateHypotheticalItemSubEntry(item, entry.id, { nextTargetDate })
+                                updateHypotheticalItemSubEntry(workspaceId, item, entry.id, { nextTargetDate })
                               }
                             />
                           </TableCell>
@@ -955,15 +965,15 @@ function HypotheticalTab({
                             <VenueNotesCell
                               value={entry.nextAction}
                               onSave={(nextAction) =>
-                                updateHypotheticalItemSubEntry(item, entry.id, { nextAction })
+                                updateHypotheticalItemSubEntry(workspaceId, item, entry.id, { nextAction })
                               }
                             />
                           </TableCell>
                           <TableCell className="align-top">
                             <FilesCell
                               files={entry.files}
-                              onAdd={(file) => addHypotheticalItemSubEntryFile(item, entry.id, file)}
-                              onRemove={(url) => removeHypotheticalItemSubEntryFile(item, entry.id, url)}
+                              onAdd={(file) => addHypotheticalItemSubEntryFile(workspaceId, item, entry.id, file)}
+                              onRemove={(url) => removeHypotheticalItemSubEntryFile(workspaceId, item, entry.id, url)}
                             />
                           </TableCell>
                           <TableCell className="align-top">
@@ -971,7 +981,7 @@ function HypotheticalTab({
                               variant="ghost"
                               size="icon"
                               className="size-7 text-muted-foreground hover:text-destructive"
-                              onClick={() => removeHypotheticalItemSubEntry(item, entry.id)}
+                              onClick={() => removeHypotheticalItemSubEntry(workspaceId, item, entry.id)}
                             >
                               <Trash2 className="size-3.5" />
                             </Button>

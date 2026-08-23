@@ -35,6 +35,7 @@ import {
   updateVenue,
   useVenues,
 } from "@/lib/collections/venues";
+import { useWorkspace } from "@/lib/workspace-context";
 import { createBudgetItemFromVenue, useBudgetItems } from "@/lib/collections/budget-items";
 import { formatIDR } from "@/lib/format";
 import type { Venue, VenueStatus } from "@/lib/types";
@@ -45,8 +46,9 @@ import {
 } from "@/components/ui/tooltip";
 
 export function VenuesTable() {
-  const { data: venues, loading } = useVenues();
-  const { data: budgetItems } = useBudgetItems();
+  const { workspace } = useWorkspace();
+  const { data: venues, loading } = useVenues(workspace?.id ?? null);
+  const { data: budgetItems } = useBudgetItems(workspace?.id ?? null);
   const linkedVenueIds = useMemo(
     () => new Set(budgetItems.map((b) => b.linkedVenueId).filter(Boolean)),
     [budgetItems],
@@ -108,7 +110,7 @@ export function VenuesTable() {
           return (
             <EditableText
               value={venue.name}
-              onSave={(name) => updateVenue(venue.id, { name })}
+              onSave={(name) => updateVenue(workspace!.id, venue.id, { name })}
               placeholder="Venue name"
               className="font-medium text-foreground"
             />
@@ -123,7 +125,7 @@ export function VenuesTable() {
           return (
             <EditableText
               value={venue.location}
-              onSave={(location) => updateVenue(venue.id, { location })}
+              onSave={(location) => updateVenue(workspace!.id, venue.id, { location })}
               placeholder="Location"
             />
           );
@@ -144,7 +146,7 @@ export function VenuesTable() {
           return (
             <EditableNumber
               value={venue.budgetEstimate}
-              onSave={(budgetEstimate) => updateVenue(venue.id, { budgetEstimate })}
+              onSave={(budgetEstimate) => updateVenue(workspace!.id, venue.id, { budgetEstimate })}
               formatDisplay={formatIDR}
             />
           );
@@ -165,7 +167,7 @@ export function VenuesTable() {
           return (
             <EditableNumber
               value={venue.guestMax}
-              onSave={(guestMax) => updateVenue(venue.id, { guestMax })}
+              onSave={(guestMax) => updateVenue(workspace!.id, venue.id, { guestMax })}
               formatDisplay={(v) => `${v} guests`}
             />
           );
@@ -179,7 +181,7 @@ export function VenuesTable() {
           return (
             <VenueStatusPill
               value={venue.status}
-              onChange={(status) => updateVenue(venue.id, { status })}
+              onChange={(status) => updateVenue(workspace!.id, venue.id, { status })}
             />
           );
         },
@@ -193,7 +195,7 @@ export function VenuesTable() {
           return (
             <VenueNotesCell
               value={venue.notes}
-              onSave={(notes) => updateVenue(venue.id, { notes })}
+              onSave={(notes) => updateVenue(workspace!.id, venue.id, { notes })}
             />
           );
         },
@@ -217,7 +219,7 @@ export function VenuesTable() {
                         size="icon"
                         disabled={alreadyLinked}
                         className={alreadyLinked ? "text-emerald-600" : "text-muted-foreground"}
-                        onClick={() => createBudgetItemFromVenue(venue)}
+                        onClick={() => createBudgetItemFromVenue(workspace!.id, venue)}
                       />
                     }
                   >
@@ -232,14 +234,14 @@ export function VenuesTable() {
                 size="icon"
                 variant="ghost"
                 label="Upload photo"
-                onUpload={(url) => addVenueImage(venue, url)}
+                onUpload={(url) => addVenueImage(workspace!.id, venue, url)}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-destructive"
-                onClick={() => deleteVenue(venue.id)}
+                onClick={() => deleteVenue(workspace!.id, venue.id)}
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -269,7 +271,7 @@ export function VenuesTable() {
             Compare, tour and track every venue you&apos;re considering.
           </p>
         </div>
-        <Button onClick={() => createVenue()} className="gap-1.5 self-start sm:self-auto">
+        <Button onClick={() => createVenue(workspace!.id)} className="gap-1.5 self-start sm:self-auto">
           <Plus className="size-4" />
           Add venue
         </Button>

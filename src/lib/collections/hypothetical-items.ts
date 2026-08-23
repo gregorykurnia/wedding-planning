@@ -38,12 +38,12 @@ function fromDoc(id: string, data: DocumentData): HypotheticalItem {
   };
 }
 
-export function useHypotheticalItems() {
-  return useCollection<HypotheticalItem>(COLLECTION, fromDoc);
+export function useHypotheticalItems(workspaceId: string | null) {
+  return useCollection<HypotheticalItem>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createHypotheticalItem() {
-  return addDocument(COLLECTION, {
+export function createHypotheticalItem(workspaceId: string) {
+  return addDocument(workspaceId, COLLECTION, {
     name: "New hypothetical",
     type: "Other" as ConfirmedType,
     totalPrice: 0,
@@ -55,58 +55,73 @@ export function createHypotheticalItem() {
   });
 }
 
-export function updateHypotheticalItem(id: string, data: Partial<HypotheticalItem>) {
+export function updateHypotheticalItem(
+  workspaceId: string,
+  id: string,
+  data: Partial<HypotheticalItem>,
+) {
   const { id: _id, ...rest } = data as HypotheticalItem;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteHypotheticalItem(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteHypotheticalItem(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }
 
-export function addHypotheticalItemFile(item: HypotheticalItem, file: VendorFile) {
-  return updateDocument(COLLECTION, item.id, {
+export function addHypotheticalItemFile(
+  workspaceId: string,
+  item: HypotheticalItem,
+  file: VendorFile,
+) {
+  return updateDocument(workspaceId, COLLECTION, item.id, {
     files: arrayUnion(file),
   });
 }
 
-export function removeHypotheticalItemFile(item: HypotheticalItem, url: string) {
+export function removeHypotheticalItemFile(workspaceId: string, item: HypotheticalItem, url: string) {
   const file = item.files.find((f) => f.url === url);
   if (!file) return Promise.resolve();
-  return updateDocument(COLLECTION, item.id, {
+  return updateDocument(workspaceId, COLLECTION, item.id, {
     files: arrayRemove(file),
   });
 }
 
-export function addHypotheticalItemSubEntry(item: HypotheticalItem) {
-  return addSubEntry(COLLECTION, item);
+export function addHypotheticalItemSubEntry(workspaceId: string, item: HypotheticalItem) {
+  return addSubEntry(workspaceId, COLLECTION, item);
 }
 
 export function updateHypotheticalItemSubEntry(
+  workspaceId: string,
   item: HypotheticalItem,
   subId: string,
   data: Partial<Omit<HypotheticalItem["subEntries"][number], "id">>,
 ) {
-  return updateSubEntry(COLLECTION, item, subId, data);
+  return updateSubEntry(workspaceId, COLLECTION, item, subId, data);
 }
 
-export function removeHypotheticalItemSubEntry(item: HypotheticalItem, subId: string) {
-  return removeSubEntry(COLLECTION, item, subId);
+export function removeHypotheticalItemSubEntry(
+  workspaceId: string,
+  item: HypotheticalItem,
+  subId: string,
+) {
+  return removeSubEntry(workspaceId, COLLECTION, item, subId);
 }
 
 export function addHypotheticalItemSubEntryFile(
+  workspaceId: string,
   item: HypotheticalItem,
   subId: string,
   file: VendorFile,
 ) {
-  return addSubEntryFile(COLLECTION, item, subId, file);
+  return addSubEntryFile(workspaceId, COLLECTION, item, subId, file);
 }
 
 export function removeHypotheticalItemSubEntryFile(
+  workspaceId: string,
   item: HypotheticalItem,
   subId: string,
   url: string,
 ) {
-  return removeSubEntryFile(COLLECTION, item, subId, url);
+  return removeSubEntryFile(workspaceId, COLLECTION, item, subId, url);
 }

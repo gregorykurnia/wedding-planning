@@ -27,12 +27,12 @@ function fromDoc(id: string, data: DocumentData): BudgetItem {
   };
 }
 
-export function useBudgetItems() {
-  return useCollection<BudgetItem>(COLLECTION, fromDoc);
+export function useBudgetItems(workspaceId: string | null) {
+  return useCollection<BudgetItem>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createBudgetItem() {
-  return addDocument(COLLECTION, {
+export function createBudgetItem(workspaceId: string) {
+  return addDocument(workspaceId, COLLECTION, {
     category: "New Category",
     estimatedAmount: 0,
     actualAmount: 0,
@@ -44,12 +44,15 @@ export function createBudgetItem() {
 }
 
 /** Creates a budget line pre-filled from a booked venue, linked back to it. */
-export function createBudgetItemFromVenue(venue: {
-  id: string;
-  name: string;
-  budgetEstimate: number;
-}) {
-  return addDocument(COLLECTION, {
+export function createBudgetItemFromVenue(
+  workspaceId: string,
+  venue: {
+    id: string;
+    name: string;
+    budgetEstimate: number;
+  },
+) {
+  return addDocument(workspaceId, COLLECTION, {
     category: `Venue — ${venue.name}`,
     estimatedAmount: venue.budgetEstimate,
     actualAmount: 0,
@@ -61,17 +64,20 @@ export function createBudgetItemFromVenue(venue: {
 }
 
 /** Creates a budget line pre-filled from a contracted vendor, linked back to it. */
-export function createBudgetItemFromVendor(vendor: {
-  id: string;
-  name: string;
-  category: string;
-  priceOptions?: { price: number; selected: boolean }[];
-}) {
+export function createBudgetItemFromVendor(
+  workspaceId: string,
+  vendor: {
+    id: string;
+    name: string;
+    category: string;
+    priceOptions?: { price: number; selected: boolean }[];
+  },
+) {
   const selectedPrice =
     vendor.priceOptions?.find((o) => o.selected)?.price ??
     vendor.priceOptions?.[0]?.price ??
     0;
-  return addDocument(COLLECTION, {
+  return addDocument(workspaceId, COLLECTION, {
     category: `${vendor.category} — ${vendor.name}`,
     estimatedAmount: selectedPrice,
     actualAmount: 0,
@@ -82,12 +88,12 @@ export function createBudgetItemFromVendor(vendor: {
   });
 }
 
-export function updateBudgetItem(id: string, data: Partial<BudgetItem>) {
+export function updateBudgetItem(workspaceId: string, id: string, data: Partial<BudgetItem>) {
   const { id: _id, ...rest } = data as BudgetItem;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteBudgetItem(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteBudgetItem(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }

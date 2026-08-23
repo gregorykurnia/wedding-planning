@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useBudgetItems } from "@/lib/collections/budget-items";
 import { useChecklistItems } from "@/lib/collections/checklist-items";
 import { formatIDR } from "@/lib/format";
+import { useWorkspace } from "@/lib/workspace-context";
 
 // Set your wedding date here once you know it.
 const WEDDING_DATE = new Date("2027-06-12T09:00:00");
@@ -20,8 +21,11 @@ function useCountdown(target: Date) {
 }
 
 export default function DashboardPage() {
-  const { data: budgetItems, loading: budgetLoading } = useBudgetItems();
-  const { data: checklistItems, loading: checklistLoading } = useChecklistItems();
+  const { workspace } = useWorkspace();
+  const { data: budgetItems, loading: budgetLoading } = useBudgetItems(workspace?.id ?? null);
+  const { data: checklistItems, loading: checklistLoading } = useChecklistItems(
+    workspace?.id ?? null,
+  );
   const daysLeft = useCountdown(WEDDING_DATE);
 
   const totalEstimated = budgetItems.reduce((sum, b) => sum + b.estimatedAmount, 0);

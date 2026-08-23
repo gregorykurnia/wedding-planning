@@ -30,6 +30,7 @@ import {
 import { formatIDR } from "@/lib/format";
 import type { PaymentStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/lib/workspace-context";
 
 const PAYMENT_OPTIONS: PaymentStatus[] = ["unpaid", "deposit", "paid"];
 const PAYMENT_STYLES: Record<PaymentStatus, string> = {
@@ -44,7 +45,8 @@ const PAYMENT_LABELS: Record<PaymentStatus, string> = {
 };
 
 export default function BudgetPage() {
-  const { data: items, loading } = useBudgetItems();
+  const { workspace } = useWorkspace();
+  const { data: items, loading } = useBudgetItems(workspace?.id ?? null);
   const totalEstimated = items.reduce((sum, i) => sum + i.estimatedAmount, 0);
   const totalActual = items.reduce((sum, i) => sum + i.actualAmount, 0);
   const remaining = totalEstimated - totalActual;
@@ -58,7 +60,10 @@ export default function BudgetPage() {
             Track estimated vs. actual spend across every category.
           </p>
         </div>
-        <Button onClick={() => createBudgetItem()} className="gap-1.5 self-start sm:self-auto">
+        <Button
+          onClick={() => workspace && createBudgetItem(workspace.id)}
+          className="gap-1.5 self-start sm:self-auto"
+        >
           <Plus className="size-4" />
           Add category
         </Button>
@@ -133,7 +138,9 @@ export default function BudgetPage() {
                       <div className="flex items-center gap-1.5">
                         <EditableText
                           value={item.category}
-                          onSave={(category) => updateBudgetItem(item.id, { category })}
+                          onSave={(category) =>
+                            workspace && updateBudgetItem(workspace.id, item.id, { category })
+                          }
                         />
                         {(item.linkedVenueId || item.linkedVendorId) && (
                           <span
@@ -149,7 +156,8 @@ export default function BudgetPage() {
                       <EditableNumber
                         value={item.estimatedAmount}
                         onSave={(estimatedAmount) =>
-                          updateBudgetItem(item.id, { estimatedAmount })
+                          workspace &&
+                          updateBudgetItem(workspace.id, item.id, { estimatedAmount })
                         }
                         formatDisplay={formatIDR}
                       />
@@ -157,7 +165,9 @@ export default function BudgetPage() {
                     <TableCell className="align-top">
                       <EditableNumber
                         value={item.actualAmount}
-                        onSave={(actualAmount) => updateBudgetItem(item.id, { actualAmount })}
+                        onSave={(actualAmount) =>
+                          workspace && updateBudgetItem(workspace.id, item.id, { actualAmount })
+                        }
                         formatDisplay={formatIDR}
                       />
                     </TableCell>
@@ -165,7 +175,10 @@ export default function BudgetPage() {
                       <Select
                         value={item.paymentStatus}
                         onValueChange={(v) =>
-                          updateBudgetItem(item.id, { paymentStatus: v as PaymentStatus })
+                          workspace &&
+                          updateBudgetItem(workspace.id, item.id, {
+                            paymentStatus: v as PaymentStatus,
+                          })
                         }
                       >
                         <SelectTrigger
@@ -189,7 +202,9 @@ export default function BudgetPage() {
                     <TableCell className="align-top min-w-[180px]">
                       <EditableText
                         value={item.notes}
-                        onSave={(notes) => updateBudgetItem(item.id, { notes })}
+                        onSave={(notes) =>
+                          workspace && updateBudgetItem(workspace.id, item.id, { notes })
+                        }
                         placeholder="—"
                       />
                     </TableCell>
@@ -198,7 +213,7 @@ export default function BudgetPage() {
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-destructive"
-                        onClick={() => deleteBudgetItem(item.id)}
+                        onClick={() => workspace && deleteBudgetItem(workspace.id, item.id)}
                       >
                         <Trash2 className="size-4" />
                       </Button>

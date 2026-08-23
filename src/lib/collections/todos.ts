@@ -25,12 +25,12 @@ function fromDoc(id: string, data: DocumentData): TodoItem {
   };
 }
 
-export function useTodos() {
-  return useCollection<TodoItem>(COLLECTION, fromDoc);
+export function useTodos(workspaceId: string | null) {
+  return useCollection<TodoItem>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createTodo() {
-  return addDocument(COLLECTION, {
+export function createTodo(workspaceId: string) {
+  return addDocument(workspaceId, COLLECTION, {
     title: "New task",
     notes: "",
     dueDate: null,
@@ -39,14 +39,14 @@ export function createTodo() {
   });
 }
 
-export function updateTodo(id: string, data: Partial<TodoItem>) {
+export function updateTodo(workspaceId: string, id: string, data: Partial<TodoItem>) {
   const { id: _id, ...rest } = data as TodoItem;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteTodo(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteTodo(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }
 
 function newSubtaskId() {
@@ -55,7 +55,7 @@ function newSubtaskId() {
     : `subtask-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function addSubtask(todo: TodoItem) {
+export function addSubtask(workspaceId: string, todo: TodoItem) {
   const subtask: TodoSubtask = {
     id: newSubtaskId(),
     title: "New subtask",
@@ -63,21 +63,22 @@ export function addSubtask(todo: TodoItem) {
     dueDate: null,
     done: false,
   };
-  return updateTodo(todo.id, { subtasks: [...todo.subtasks, subtask] });
+  return updateTodo(workspaceId, todo.id, { subtasks: [...todo.subtasks, subtask] });
 }
 
 export function updateSubtask(
+  workspaceId: string,
   todo: TodoItem,
   subtaskId: string,
   data: Partial<TodoSubtask>,
 ) {
-  return updateTodo(todo.id, {
+  return updateTodo(workspaceId, todo.id, {
     subtasks: todo.subtasks.map((s) => (s.id === subtaskId ? { ...s, ...data } : s)),
   });
 }
 
-export function deleteSubtask(todo: TodoItem, subtaskId: string) {
-  return updateTodo(todo.id, {
+export function deleteSubtask(workspaceId: string, todo: TodoItem, subtaskId: string) {
+  return updateTodo(workspaceId, todo.id, {
     subtasks: todo.subtasks.filter((s) => s.id !== subtaskId),
   });
 }

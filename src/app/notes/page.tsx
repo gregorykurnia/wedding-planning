@@ -7,16 +7,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { createNote, deleteNote, updateNote, useNotes } from "@/lib/collections/notes";
+import { useWorkspace } from "@/lib/workspace-context";
 
 export default function NotesPage() {
-  const { data: notes, loading } = useNotes();
+  const { workspace } = useWorkspace();
+  const { data: notes, loading } = useNotes(workspace?.id ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const sorted = [...notes].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
   const handleCreate = () => {
+    if (!workspace) return;
     setError(null);
-    createNote().catch((err) => {
+    createNote(workspace.id).catch((err) => {
       console.error(err);
       setError(err instanceof Error ? err.message : "Failed to add note");
     });
@@ -67,8 +70,8 @@ export default function NotesPage() {
                   defaultValue={note.text}
                   placeholder="Type a note..."
                   onBlur={(e) => {
-                    if (e.target.value !== note.text) {
-                      updateNote(note.id, { text: e.target.value });
+                    if (workspace && e.target.value !== note.text) {
+                      updateNote(workspace.id, note.id, { text: e.target.value });
                     }
                   }}
                   className="min-h-28 resize-none border-none bg-transparent p-0 shadow-none focus-visible:ring-0"
@@ -78,7 +81,7 @@ export default function NotesPage() {
                     variant="ghost"
                     size="icon"
                     className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                    onClick={() => deleteNote(note.id)}
+                    onClick={() => workspace && deleteNote(workspace.id, note.id)}
                   >
                     <Trash2 className="size-3.5" />
                   </Button>

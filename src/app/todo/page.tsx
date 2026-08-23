@@ -19,12 +19,13 @@ import {
 } from "@/lib/collections/todos";
 import type { TodoItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/lib/workspace-context";
 
 function byDueDate(a: TodoItem, b: TodoItem) {
   return (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
 }
 
-function TodoRow({ todo }: { todo: TodoItem }) {
+function TodoRow({ todo, workspaceId }: { todo: TodoItem; workspaceId: string }) {
   const [expanded, setExpanded] = useState(false);
   const doneSubtasks = todo.subtasks.filter((s) => s.done).length;
 
@@ -33,7 +34,9 @@ function TodoRow({ todo }: { todo: TodoItem }) {
       <div className="group flex items-center gap-3 px-2 py-2">
         <Checkbox
           checked={todo.done}
-          onCheckedChange={(checked) => updateTodo(todo.id, { done: Boolean(checked) })}
+          onCheckedChange={(checked) =>
+            updateTodo(workspaceId, todo.id, { done: Boolean(checked) })
+          }
         />
         <button
           type="button"
@@ -49,7 +52,7 @@ function TodoRow({ todo }: { todo: TodoItem }) {
         <div className="flex-1">
           <EditableText
             value={todo.title}
-            onSave={(title) => updateTodo(todo.id, { title })}
+            onSave={(title) => updateTodo(workspaceId, todo.id, { title })}
             className={cn("px-0", todo.done && "text-muted-foreground line-through")}
           />
         </div>
@@ -61,14 +64,14 @@ function TodoRow({ todo }: { todo: TodoItem }) {
         <Input
           type="date"
           value={todo.dueDate ?? ""}
-          onChange={(e) => updateTodo(todo.id, { dueDate: e.target.value || null })}
+          onChange={(e) => updateTodo(workspaceId, todo.id, { dueDate: e.target.value || null })}
           className="h-8 w-36 border-none bg-transparent text-xs text-muted-foreground shadow-none"
         />
         <Button
           variant="ghost"
           size="icon"
           className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-          onClick={() => deleteTodo(todo.id)}
+          onClick={() => deleteTodo(workspaceId, todo.id)}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -78,7 +81,7 @@ function TodoRow({ todo }: { todo: TodoItem }) {
         <div className="flex flex-col gap-2 border-t border-border/60 bg-accent/20 px-2 py-2 pl-9">
           <EditableText
             value={todo.notes}
-            onSave={(notes) => updateTodo(todo.id, { notes })}
+            onSave={(notes) => updateTodo(workspaceId, todo.id, { notes })}
             placeholder="Add notes…"
             multiline
             className="text-xs"
@@ -93,13 +96,13 @@ function TodoRow({ todo }: { todo: TodoItem }) {
                 <Checkbox
                   checked={subtask.done}
                   onCheckedChange={(checked) =>
-                    updateSubtask(todo, subtask.id, { done: Boolean(checked) })
+                    updateSubtask(workspaceId, todo, subtask.id, { done: Boolean(checked) })
                   }
                 />
                 <div className="flex-1">
                   <EditableText
                     value={subtask.title}
-                    onSave={(title) => updateSubtask(todo, subtask.id, { title })}
+                    onSave={(title) => updateSubtask(workspaceId, todo, subtask.id, { title })}
                     className={cn(
                       "px-0 text-sm",
                       subtask.done && "text-muted-foreground line-through",
@@ -110,7 +113,7 @@ function TodoRow({ todo }: { todo: TodoItem }) {
                   type="date"
                   value={subtask.dueDate ?? ""}
                   onChange={(e) =>
-                    updateSubtask(todo, subtask.id, { dueDate: e.target.value || null })
+                    updateSubtask(workspaceId, todo, subtask.id, { dueDate: e.target.value || null })
                   }
                   className="h-7 w-32 border-none bg-transparent text-xs text-muted-foreground shadow-none"
                 />
@@ -118,7 +121,7 @@ function TodoRow({ todo }: { todo: TodoItem }) {
                   variant="ghost"
                   size="icon"
                   className="size-6 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover/sub:opacity-100"
-                  onClick={() => deleteSubtask(todo, subtask.id)}
+                  onClick={() => deleteSubtask(workspaceId, todo, subtask.id)}
                 >
                   <Trash2 className="size-3" />
                 </Button>
@@ -130,7 +133,7 @@ function TodoRow({ todo }: { todo: TodoItem }) {
             variant="ghost"
             size="sm"
             className="w-fit gap-1 text-xs text-muted-foreground"
-            onClick={() => addSubtask(todo)}
+            onClick={() => addSubtask(workspaceId, todo)}
           >
             <Plus className="size-3.5" />
             Add subtask
@@ -142,7 +145,8 @@ function TodoRow({ todo }: { todo: TodoItem }) {
 }
 
 export default function TodoPage() {
-  const { data: todos, loading } = useTodos();
+  const { workspace } = useWorkspace();
+  const { data: todos, loading } = useTodos(workspace?.id ?? null);
   const [showArchived, setShowArchived] = useState(false);
 
   const active = todos.filter((t) => !t.done).sort(byDueDate);
@@ -157,7 +161,7 @@ export default function TodoPage() {
             Track tasks with subtasks. Completed tasks move to the archive.
           </p>
         </div>
-        <Button className="gap-1" onClick={() => createTodo()}>
+        <Button className="gap-1" onClick={() => workspace && createTodo(workspace.id)}>
           <Plus className="size-4" />
           Add task
         </Button>
@@ -183,7 +187,9 @@ export default function TodoPage() {
             {active.length === 0 ? (
               <p className="py-4 text-sm text-muted-foreground">No active tasks. Nice.</p>
             ) : (
-              active.map((todo) => <TodoRow key={todo.id} todo={todo} />)
+              active.map((todo) => (
+                <TodoRow key={todo.id} todo={todo} workspaceId={workspace!.id} />
+              ))
             )}
           </CardContent>
         </Card>
@@ -214,7 +220,9 @@ export default function TodoPage() {
                   Nothing archived yet.
                 </p>
               ) : (
-                archived.map((todo) => <TodoRow key={todo.id} todo={todo} />)
+                archived.map((todo) => (
+                  <TodoRow key={todo.id} todo={todo} workspaceId={workspace!.id} />
+                ))
               )}
             </CardContent>
           )}

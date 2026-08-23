@@ -24,12 +24,12 @@ function fromDoc(id: string, data: DocumentData): ChecklistItem {
   };
 }
 
-export function useChecklistItems() {
-  return useCollection<ChecklistItem>(COLLECTION, fromDoc);
+export function useChecklistItems(workspaceId: string | null) {
+  return useCollection<ChecklistItem>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createChecklistItem(phase: ChecklistPhase) {
-  return addDocument(COLLECTION, {
+export function createChecklistItem(workspaceId: string, phase: ChecklistPhase) {
+  return addDocument(workspaceId, COLLECTION, {
     title: "New task",
     phase,
     dueDate: null,
@@ -37,12 +37,16 @@ export function createChecklistItem(phase: ChecklistPhase) {
   });
 }
 
-export function updateChecklistItem(id: string, data: Partial<ChecklistItem>) {
+export function updateChecklistItem(
+  workspaceId: string,
+  id: string,
+  data: Partial<ChecklistItem>,
+) {
   const { id: _id, ...rest } = data as ChecklistItem;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteChecklistItem(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteChecklistItem(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }

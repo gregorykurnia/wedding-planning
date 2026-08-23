@@ -21,20 +21,20 @@ function fromDoc(id: string, data: DocumentData): Note {
   };
 }
 
-export function useNotes() {
-  return useCollection<Note>(COLLECTION, fromDoc);
+export function useNotes(workspaceId: string | null) {
+  return useCollection<Note>(workspaceId, COLLECTION, fromDoc);
 }
 
-export function createNote() {
-  return addDocument(COLLECTION, { text: "" });
+export function createNote(workspaceId: string) {
+  return addDocument(workspaceId, COLLECTION, { text: "" });
 }
 
-export function updateNote(id: string, data: Partial<Note>) {
+export function updateNote(workspaceId: string, id: string, data: Partial<Note>) {
   const { id: _id, ...rest } = data as Note;
   void _id;
-  return updateDocument(COLLECTION, id, rest);
+  return updateDocument(workspaceId, COLLECTION, id, rest);
 }
 
-export function deleteNote(id: string) {
-  return deleteDocument(COLLECTION, id);
+export function deleteNote(workspaceId: string, id: string) {
+  return deleteDocument(workspaceId, COLLECTION, id);
 }

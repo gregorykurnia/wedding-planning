@@ -10,6 +10,7 @@ import {
   selectVendorPriceOption,
   updateVendorPriceOption,
 } from "@/lib/collections/vendors";
+import { useWorkspace } from "@/lib/workspace-context";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Vendor } from "@/lib/types";
@@ -19,6 +20,7 @@ interface VendorPriceOptionsCellProps {
 }
 
 export function VendorPriceOptionsCell({ vendor }: VendorPriceOptionsCellProps) {
+  const { workspace } = useWorkspace();
   const options = vendor.priceOptions;
 
   return (
@@ -37,7 +39,7 @@ export function VendorPriceOptionsCell({ vendor }: VendorPriceOptionsCellProps) 
           <button
             type="button"
             title={option.selected ? "Selected pricing" : "Use this pricing"}
-            onClick={() => selectVendorPriceOption(vendor, option.id)}
+            onClick={() => selectVendorPriceOption(workspace!.id, vendor, option.id)}
             className={cn(
               "mt-2 size-2.5 shrink-0 rounded-full border",
               option.selected
@@ -49,14 +51,14 @@ export function VendorPriceOptionsCell({ vendor }: VendorPriceOptionsCellProps) 
             <EditableText
               value={option.description}
               onSave={(description) =>
-                updateVendorPriceOption(vendor, option.id, { description })
+                updateVendorPriceOption(workspace!.id, vendor, option.id, { description })
               }
               placeholder="Description (e.g. Silver package)"
               className="px-1 text-xs"
             />
             <EditableNumber
               value={option.price}
-              onSave={(price) => updateVendorPriceOption(vendor, option.id, { price })}
+              onSave={(price) => updateVendorPriceOption(workspace!.id, vendor, option.id, { price })}
               formatDisplay={formatIDR}
               className="px-1 font-medium"
             />
@@ -66,7 +68,7 @@ export function VendorPriceOptionsCell({ vendor }: VendorPriceOptionsCellProps) 
             variant="ghost"
             size="icon"
             className="mt-0.5 size-6 shrink-0 text-muted-foreground hover:text-destructive"
-            onClick={() => removeVendorPriceOption(vendor, option.id)}
+            onClick={() => removeVendorPriceOption(workspace!.id, vendor, option.id)}
           >
             <Trash2 className="size-3.5" />
           </Button>
@@ -77,7 +79,7 @@ export function VendorPriceOptionsCell({ vendor }: VendorPriceOptionsCellProps) 
         variant="outline"
         size="sm"
         className="h-7 w-fit gap-1 text-xs"
-        onClick={() => addVendorPriceOption(vendor)}
+        onClick={() => addVendorPriceOption(workspace!.id, vendor)}
       >
         <Plus className="size-3" />
         Add pricing
