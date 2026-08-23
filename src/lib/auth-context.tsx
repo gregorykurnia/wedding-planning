@@ -9,16 +9,34 @@ import {
 } from "react";
 import {
   GoogleAuthProvider,
+  initializeAuth,
+  inMemoryPersistence,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
-  setPersistence,
-  inMemoryPersistence,
+  type Auth,
   type User,
 } from "firebase/auth";
-import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { initializeApp } from "firebase/app";
+import { app, auth, isFirebaseConfigured, firebaseConfig } from "@/lib/firebase";
+
+const isIndexedDbError = (err: unknown) =>
+  err instanceof Error && err.message.includes("closing/hidden");
+
+// Lazily-created auth instance that never touches IndexedDB, for browsers
+// (e.g. private browsing) where it's unreliable and closes mid-write.
+let fallbackAuth: Auth | null = null;
+const getFallbackAuth = (): Auth => {
+  if (fallbackAuth) return fallbackAuth;
+  if (!app) throw new Error("Firebase is not configured.");
+  const fallbackApp = initializeApp(firebaseConfig, "auth-fallback");
+  fallbackAuth = initializeAuth(fallbackApp, {
+    persistence: inMemoryPersistence,
+  });
+  return fallbackAuth;
+};
 
 interface AuthContextValue {
   user: User | null;
@@ -35,48 +53,51 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(isFirebaseConfigured);
+  const [activeAuth, setActiveAuth] = useState<Auth | null>(auth);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
+    if (!isFirebaseConfigured || !activeAuth) {
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(activeAuth, (u) => {
       setUser(u);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [activeAuth]);
 
-  const signInWithGoogle = async () => {
-    if (!auth) throw new Error("Firebase is not configured.");
+  // Runs `fn` against the current auth instance; if IndexedDB is broken
+  // (common in private browsing), switches to an in-memory-only instance
+  // and retries once.
+  const withAuth = async <T,>(fn: (a: Auth) => Promise<T>): Promise<T> => {
+    if (!activeAuth) throw new Error("Firebase is not configured.");
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      return await fn(activeAuth);
     } catch (err) {
-      // IndexedDB can be unreliable in private browsing (it may close
-      // mid-write, surfacing as "Database is closing/hidden"). Retry once
-      // with in-memory persistence, which doesn't touch IndexedDB.
-      if (err instanceof Error && err.message.includes("closing/hidden")) {
-        await setPersistence(auth, inMemoryPersistence);
-        await signInWithPopup(auth, new GoogleAuthProvider());
-        return;
+      if (isIndexedDbError(err)) {
+        const fallback = getFallbackAuth();
+        setActiveAuth(fallback);
+        return await fn(fallback);
       }
       throw err;
     }
   };
 
+  const signInWithGoogle = async () => {
+    await withAuth((a) => signInWithPopup(a, new GoogleAuthProvider()));
+  };
+
   const signInWithEmail = async (email: string, password: string) => {
-    if (!auth) throw new Error("Firebase is not configured.");
-    await signInWithEmailAndPassword(auth, email, password);
+    await withAuth((a) => signInWithEmailAndPassword(a, email, password));
   };
 
   const registerWithEmail = async (email: string, password: string) => {
-    if (!auth) throw new Error("Firebase is not configured.");
-    await createUserWithEmailAndPassword(auth, email, password);
+    await withAuth((a) => createUserWithEmailAndPassword(a, email, password));
   };
 
   const signOut = async () => {
-    if (!auth) return;
-    await firebaseSignOut(auth);
+    if (!activeAuth) return;
+    await firebaseSignOut(activeAuth);
   };
 
   return (
