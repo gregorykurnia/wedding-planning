@@ -126,3 +126,10 @@ export interface ChecklistItem {
   createdAt: number | null;
   updatedAt: number | null;
 }
+
+export interface Note {
+  id: string;
+  text: string;
+  createdAt: number | null;
+  updatedAt: number | null;
+}

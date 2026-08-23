@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   PiggyBank,
+  StickyNote,
   Users,
   Warehouse,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { href: "/budget", label: "Budget", icon: PiggyBank },
   { href: "/checklist", label: "Checklist", icon: CheckSquare },
   { href: "/todo", label: "To Do", icon: ListTodo },
+  { href: "/notes", label: "Notes", icon: StickyNote },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
