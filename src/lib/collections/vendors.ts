@@ -16,6 +16,14 @@ import type {
   VendorFile,
   VendorPriceOption,
 } from "@/lib/types";
+import {
+  addSubEntry,
+  addSubEntryFile,
+  fromDocSubEntry,
+  removeSubEntry,
+  removeSubEntryFile,
+  updateSubEntry,
+} from "@/lib/confirmed-sub-entries";
 
 const COLLECTION = "vendors";
 
@@ -51,6 +59,9 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
     nextAction: data.nextAction ?? "",
+    subEntries: Array.isArray(data.subEntries)
+      ? data.subEntries.map(fromDocSubEntry).filter((s): s is NonNullable<typeof s> => s !== null)
+      : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
   };
@@ -79,6 +90,7 @@ export function createVendor(category?: VendorCategory, contractStatus?: Contrac
     budgetSpent: 0,
     nextTargetDate: null,
     nextAction: "",
+    subEntries: [],
   });
 }
 
@@ -149,4 +161,28 @@ export function removeVendorPriceOption(vendor: Vendor, optionId: string) {
     remaining[0] = { ...remaining[0], selected: true };
   }
   return updateDocument(COLLECTION, vendor.id, { priceOptions: remaining });
+}
+
+export function addVendorSubEntry(vendor: Vendor) {
+  return addSubEntry(COLLECTION, vendor);
+}
+
+export function updateVendorSubEntry(
+  vendor: Vendor,
+  subId: string,
+  data: Partial<Omit<Vendor["subEntries"][number], "id">>,
+) {
+  return updateSubEntry(COLLECTION, vendor, subId, data);
+}
+
+export function removeVendorSubEntry(vendor: Vendor, subId: string) {
+  return removeSubEntry(COLLECTION, vendor, subId);
+}
+
+export function addVendorSubEntryFile(vendor: Vendor, subId: string, file: VendorFile) {
+  return addSubEntryFile(COLLECTION, vendor, subId, file);
+}
+
+export function removeVendorSubEntryFile(vendor: Vendor, subId: string, url: string) {
+  return removeSubEntryFile(COLLECTION, vendor, subId, url);
 }

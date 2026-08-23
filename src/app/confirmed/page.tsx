@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, PiggyBank, Plus } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CornerDownRight,
+  PiggyBank,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,21 +29,36 @@ import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
-import { useVenues, updateVenue, addVenueFile, removeVenueFile } from "@/lib/collections/venues";
+import {
+  useVenues,
+  updateVenue,
+  addVenueFile,
+  removeVenueFile,
+  addVenueSubEntry,
+  updateVenueSubEntry,
+  removeVenueSubEntry,
+  addVenueSubEntryFile,
+  removeVenueSubEntryFile,
+} from "@/lib/collections/venues";
 import {
   useVendors,
   updateVendor,
   createVendor,
   addVendorFile,
   removeVendorFile,
+  addVendorSubEntry,
+  updateVendorSubEntry,
+  removeVendorSubEntry,
+  addVendorSubEntryFile,
+  removeVendorSubEntryFile,
 } from "@/lib/collections/vendors";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
+import type { ConfirmedSubEntry, Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
 
 type ConfirmedRow =
-  | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Venue }
-  | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; data: Vendor };
+  | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
+  | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Vendor };
 
 type SortKey = "name" | "type" | "totalPrice" | "budgetSpent" | "remaining" | "nextTargetDate" | "nextAction";
 type SortDir = "asc" | "desc";
@@ -100,6 +123,7 @@ export default function ConfirmedPage() {
             nextTargetDate: bookedVenue.nextTargetDate,
             nextAction: bookedVenue.nextAction,
             files: bookedVenue.files,
+            subEntries: bookedVenue.subEntries,
             data: bookedVenue,
           },
         ]
@@ -114,12 +138,19 @@ export default function ConfirmedPage() {
       nextTargetDate: vendor.nextTargetDate,
       nextAction: vendor.nextAction,
       files: vendor.files,
+      subEntries: vendor.subEntries,
       data: vendor,
     })),
   ];
 
-  const totalPrice = rows.reduce((sum, r) => sum + r.totalPrice, 0);
-  const totalSpent = rows.reduce((sum, r) => sum + r.budgetSpent, 0);
+  const totalPrice = rows.reduce(
+    (sum, r) => sum + r.totalPrice + r.subEntries.reduce((s, e) => s + e.totalPrice, 0),
+    0,
+  );
+  const totalSpent = rows.reduce(
+    (sum, r) => sum + r.budgetSpent + r.subEntries.reduce((s, e) => s + e.budgetSpent, 0),
+    0,
+  );
   const totalRemaining = totalPrice - totalSpent;
 
   const sortedRows = sortKey
@@ -207,6 +238,11 @@ export default function ConfirmedPage() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-heading text-xl font-semibold text-foreground">
             Confirmed ({rows.length})
+            {rows.some((r) => r.subEntries.length > 0) && (
+              <span className="ml-1 text-sm font-normal text-muted-foreground">
+                + {rows.reduce((sum, r) => sum + r.subEntries.length, 0)} sub-entries
+              </span>
+            )}
           </h2>
           <div className="flex items-center gap-4">
             <Button
@@ -259,12 +295,13 @@ export default function ConfirmedPage() {
                       </TableHead>
                     ))}
                     <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Attachments</TableHead>
+                    <TableHead className="w-8" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedRows.map((row) => {
+                  {sortedRows.flatMap((row) => {
                     const remaining = row.totalPrice - row.budgetSpent;
-                    return (
+                    const mainRow = (
                       <TableRow key={`${row.kind}-${row.id}`} className="transition-colors hover:bg-accent/30">
                         <TableCell className="align-top font-medium text-foreground min-w-[160px]">
                           <EditableText
@@ -275,6 +312,18 @@ export default function ConfirmedPage() {
                                 : updateVendor(row.id, { name })
                             }
                           />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              row.kind === "venue"
+                                ? addVenueSubEntry(row.data)
+                                : addVendorSubEntry(row.data)
+                            }
+                            className="mt-0.5 flex items-center gap-1 px-2 text-xs text-primary hover:underline"
+                          >
+                            <Plus className="size-3" />
+                            Add sub-entry
+                          </button>
                         </TableCell>
                         <TableCell className="align-top">
                           {row.kind === "venue" ? (
@@ -355,8 +404,128 @@ export default function ConfirmedPage() {
                             }
                           />
                         </TableCell>
+                        <TableCell className="align-top" />
                       </TableRow>
                     );
+
+                    const subRows = row.subEntries.map((entry) => {
+                      const subRemaining = entry.totalPrice - entry.budgetSpent;
+                      return (
+                        <TableRow
+                          key={`${row.kind}-${row.id}-sub-${entry.id}`}
+                          className="bg-muted/20 transition-colors hover:bg-accent/20"
+                        >
+                          <TableCell className="align-top min-w-[160px] pl-8">
+                            <div className="flex items-start gap-1.5">
+                              <CornerDownRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground" />
+                              <EditableText
+                                value={entry.name}
+                                onSave={(name) =>
+                                  row.kind === "venue"
+                                    ? updateVenueSubEntry(row.data, entry.id, { name })
+                                    : updateVendorSubEntry(row.data, entry.id, { name })
+                                }
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Badge
+                              variant="secondary"
+                              className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+                            >
+                              Sub-entry
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <EditableNumber
+                              value={entry.totalPrice}
+                              onSave={(totalPrice) =>
+                                row.kind === "venue"
+                                  ? updateVenueSubEntry(row.data, entry.id, { totalPrice })
+                                  : updateVendorSubEntry(row.data, entry.id, { totalPrice })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <EditableNumber
+                              value={entry.budgetSpent}
+                              onSave={(budgetSpent) =>
+                                row.kind === "venue"
+                                  ? updateVenueSubEntry(row.data, entry.id, { budgetSpent })
+                                  : updateVendorSubEntry(row.data, entry.id, { budgetSpent })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "align-top py-1.5 px-2 text-sm tabular-nums",
+                              subRemaining < 0 && "text-destructive",
+                            )}
+                          >
+                            {formatIDR(subRemaining)}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Input
+                              type="date"
+                              value={entry.nextTargetDate ?? ""}
+                              onChange={(e) =>
+                                row.kind === "venue"
+                                  ? updateVenueSubEntry(row.data, entry.id, {
+                                      nextTargetDate: e.target.value || null,
+                                    })
+                                  : updateVendorSubEntry(row.data, entry.id, {
+                                      nextTargetDate: e.target.value || null,
+                                    })
+                              }
+                              className="h-8 w-36 border-none bg-transparent text-xs text-muted-foreground shadow-none"
+                            />
+                          </TableCell>
+                          <TableCell className="align-top min-w-[220px]">
+                            <VenueNotesCell
+                              value={entry.nextAction}
+                              onSave={(nextAction) =>
+                                row.kind === "venue"
+                                  ? updateVenueSubEntry(row.data, entry.id, { nextAction })
+                                  : updateVendorSubEntry(row.data, entry.id, { nextAction })
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <FilesCell
+                              files={entry.files}
+                              onAdd={(file) =>
+                                row.kind === "venue"
+                                  ? addVenueSubEntryFile(row.data, entry.id, file)
+                                  : addVendorSubEntryFile(row.data, entry.id, file)
+                              }
+                              onRemove={(url) =>
+                                row.kind === "venue"
+                                  ? removeVenueSubEntryFile(row.data, entry.id, url)
+                                  : removeVendorSubEntryFile(row.data, entry.id, url)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-destructive"
+                              onClick={() =>
+                                row.kind === "venue"
+                                  ? removeVenueSubEntry(row.data, entry.id)
+                                  : removeVendorSubEntry(row.data, entry.id)
+                              }
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
+
+                    return [mainRow, ...subRows];
                   })}
                 </TableBody>
               </Table>

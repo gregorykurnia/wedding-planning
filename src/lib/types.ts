@@ -15,6 +15,7 @@ export interface Venue {
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string
   nextAction: string;
+  subEntries: ConfirmedSubEntry[];
   createdAt: number | null;
   updatedAt: number | null;
 }
@@ -38,6 +39,20 @@ export type ContractStatus = "Inquiring" | "Consideration" | "Chosen" | "Done" |
 export interface VendorFile {
   name: string;
   url: string;
+}
+
+// A line item nested under a Confirmed-list entry (venue or vendor) — e.g.
+// a DP vs. final payment split, or an add-on booked separately. Mirrors the
+// parent's own tracking fields so it can be edited the same way, but rolls
+// up into the parent's row rather than standing as its own entry.
+export interface ConfirmedSubEntry {
+  id: string;
+  name: string;
+  totalPrice: number;
+  budgetSpent: number;
+  nextTargetDate: string | null; // ISO date string
+  nextAction: string;
+  files: VendorFile[];
 }
 
 export interface VendorPriceOption {
@@ -66,6 +81,7 @@ export interface Vendor {
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string
   nextAction: string;
+  subEntries: ConfirmedSubEntry[];
   createdAt: number | null;
   updatedAt: number | null;
 }

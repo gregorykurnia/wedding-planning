@@ -9,6 +9,14 @@ import {
   useCollection,
 } from "@/lib/use-collection";
 import type { Venue, VenueStatus, VendorFile } from "@/lib/types";
+import {
+  addSubEntry,
+  addSubEntryFile,
+  fromDocSubEntry,
+  removeSubEntry,
+  removeSubEntryFile,
+  updateSubEntry,
+} from "@/lib/confirmed-sub-entries";
 
 const COLLECTION = "venues";
 
@@ -27,6 +35,9 @@ function fromDoc(id: string, data: DocumentData): Venue {
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
     nextAction: data.nextAction ?? "",
+    subEntries: Array.isArray(data.subEntries)
+      ? data.subEntries.map(fromDocSubEntry).filter((s): s is NonNullable<typeof s> => s !== null)
+      : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
   };
@@ -50,6 +61,7 @@ export function createVenue() {
     budgetSpent: 0,
     nextTargetDate: null,
     nextAction: "",
+    subEntries: [],
   });
 }
 
@@ -82,4 +94,28 @@ export function removeVenueFile(venue: Venue, url: string) {
   return updateDocument(COLLECTION, venue.id, {
     files: arrayRemove(file),
   });
+}
+
+export function addVenueSubEntry(venue: Venue) {
+  return addSubEntry(COLLECTION, venue);
+}
+
+export function updateVenueSubEntry(
+  venue: Venue,
+  subId: string,
+  data: Partial<Omit<Venue["subEntries"][number], "id">>,
+) {
+  return updateSubEntry(COLLECTION, venue, subId, data);
+}
+
+export function removeVenueSubEntry(venue: Venue, subId: string) {
+  return removeSubEntry(COLLECTION, venue, subId);
+}
+
+export function addVenueSubEntryFile(venue: Venue, subId: string, file: VendorFile) {
+  return addSubEntryFile(COLLECTION, venue, subId, file);
+}
+
+export function removeVenueSubEntryFile(venue: Venue, subId: string, url: string) {
+  return removeSubEntryFile(COLLECTION, venue, subId, url);
 }
