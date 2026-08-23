@@ -118,8 +118,14 @@ export default function ConfirmedPage() {
             id: bookedVenue.id,
             name: bookedVenue.name,
             type: bookedVenue.confirmedType,
-            totalPrice: bookedVenue.budgetEstimate,
-            budgetSpent: bookedVenue.budgetSpent,
+            totalPrice:
+              bookedVenue.subEntries.length > 0
+                ? bookedVenue.subEntries.reduce((s, e) => s + e.totalPrice, 0)
+                : bookedVenue.budgetEstimate,
+            budgetSpent:
+              bookedVenue.subEntries.length > 0
+                ? bookedVenue.subEntries.reduce((s, e) => s + e.budgetSpent, 0)
+                : bookedVenue.budgetSpent,
             nextTargetDate: bookedVenue.nextTargetDate,
             nextAction: bookedVenue.nextAction,
             files: bookedVenue.files,
@@ -133,8 +139,14 @@ export default function ConfirmedPage() {
       id: vendor.id,
       name: vendor.name,
       type: vendor.confirmedType,
-      totalPrice: vendor.totalPrice,
-      budgetSpent: vendor.budgetSpent,
+      totalPrice:
+        vendor.subEntries.length > 0
+          ? vendor.subEntries.reduce((s, e) => s + e.totalPrice, 0)
+          : vendor.totalPrice,
+      budgetSpent:
+        vendor.subEntries.length > 0
+          ? vendor.subEntries.reduce((s, e) => s + e.budgetSpent, 0)
+          : vendor.budgetSpent,
       nextTargetDate: vendor.nextTargetDate,
       nextAction: vendor.nextAction,
       files: vendor.files,
@@ -143,14 +155,11 @@ export default function ConfirmedPage() {
     })),
   ];
 
-  const totalPrice = rows.reduce(
-    (sum, r) => sum + r.totalPrice + r.subEntries.reduce((s, e) => s + e.totalPrice, 0),
-    0,
-  );
-  const totalSpent = rows.reduce(
-    (sum, r) => sum + r.budgetSpent + r.subEntries.reduce((s, e) => s + e.budgetSpent, 0),
-    0,
-  );
+  // Rows with sub-entries already fold those totals into totalPrice/
+  // budgetSpent above, so summing rows alone (no separate sub-entry pass)
+  // avoids double-counting them in the recap.
+  const totalPrice = rows.reduce((sum, r) => sum + r.totalPrice, 0);
+  const totalSpent = rows.reduce((sum, r) => sum + r.budgetSpent, 0);
   const totalRemaining = totalPrice - totalSpent;
 
   const sortedRows = sortKey
@@ -336,26 +345,44 @@ export default function ConfirmedPage() {
                           />
                         </TableCell>
                         <TableCell className="align-top">
-                          <EditableNumber
-                            value={row.totalPrice}
-                            onSave={(totalPrice) =>
-                              row.kind === "venue"
-                                ? updateVenue(row.id, { budgetEstimate: totalPrice })
-                                : updateVendor(row.id, { totalPrice })
-                            }
-                            formatDisplay={formatIDR}
-                          />
+                          {row.subEntries.length > 0 ? (
+                            <p
+                              title="Sum of sub-entries — edit them individually"
+                              className="px-2 py-1.5 text-sm tabular-nums text-muted-foreground"
+                            >
+                              {formatIDR(row.totalPrice)}
+                            </p>
+                          ) : (
+                            <EditableNumber
+                              value={row.totalPrice}
+                              onSave={(totalPrice) =>
+                                row.kind === "venue"
+                                  ? updateVenue(row.id, { budgetEstimate: totalPrice })
+                                  : updateVendor(row.id, { totalPrice })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          )}
                         </TableCell>
                         <TableCell className="align-top">
-                          <EditableNumber
-                            value={row.budgetSpent}
-                            onSave={(budgetSpent) =>
-                              row.kind === "venue"
-                                ? updateVenue(row.id, { budgetSpent })
-                                : updateVendor(row.id, { budgetSpent })
-                            }
-                            formatDisplay={formatIDR}
-                          />
+                          {row.subEntries.length > 0 ? (
+                            <p
+                              title="Sum of sub-entries — edit them individually"
+                              className="px-2 py-1.5 text-sm tabular-nums text-muted-foreground"
+                            >
+                              {formatIDR(row.budgetSpent)}
+                            </p>
+                          ) : (
+                            <EditableNumber
+                              value={row.budgetSpent}
+                              onSave={(budgetSpent) =>
+                                row.kind === "venue"
+                                  ? updateVenue(row.id, { budgetSpent })
+                                  : updateVendor(row.id, { budgetSpent })
+                              }
+                              formatDisplay={formatIDR}
+                            />
+                          )}
                         </TableCell>
                         <TableCell
                           className={cn(
