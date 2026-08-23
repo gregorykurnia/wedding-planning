@@ -319,7 +319,7 @@ export default function ConfirmedPage() {
                                 ? addVenueSubEntry(row.data)
                                 : addVendorSubEntry(row.data)
                             }
-                            className="mt-0.5 flex items-center gap-1 px-2 text-xs text-primary hover:underline"
+                            className="mt-0.5 flex items-center gap-1 px-2 text-xs text-muted-foreground hover:text-primary hover:underline"
                           >
                             <Plus className="size-3" />
                             Add sub-entry
