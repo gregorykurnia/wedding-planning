@@ -32,8 +32,14 @@ export default function LoginPage() {
   }
 
   const handleError = (err: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error("Auth error:", err);
     if (err instanceof FirebaseError) {
       setError(err.message.replace("Firebase: ", ""));
+    } else if (err && typeof err === "object" && "code" in err) {
+      // Handles cases where the error crosses a module boundary and isn't
+      // recognized by `instanceof FirebaseError` (duplicate firebase copies).
+      setError(String((err as { code: unknown }).code));
     } else {
       setError("Something went wrong. Please try again.");
     }
