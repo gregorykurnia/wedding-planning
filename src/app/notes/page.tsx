@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +10,17 @@ import { createNote, deleteNote, updateNote, useNotes } from "@/lib/collections/
 
 export default function NotesPage() {
   const { data: notes, loading } = useNotes();
+  const [error, setError] = useState<string | null>(null);
 
   const sorted = [...notes].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+
+  const handleCreate = () => {
+    setError(null);
+    createNote().catch((err) => {
+      console.error(err);
+      setError(err instanceof Error ? err.message : "Failed to add note");
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,10 +31,13 @@ export default function NotesPage() {
             Random thoughts, ideas, and reminders — jot them down here.
           </p>
         </div>
-        <Button onClick={() => createNote()} className="gap-1.5 shrink-0">
-          <Plus className="size-4" />
-          Add note
-        </Button>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <Button onClick={handleCreate} className="gap-1.5">
+            <Plus className="size-4" />
+            Add note
+          </Button>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
       </div>
 
       {loading ? (
@@ -39,7 +52,7 @@ export default function NotesPage() {
             <p className="text-sm text-muted-foreground">
               No notes yet. Add one to jot down a quick thought.
             </p>
-            <Button variant="outline" size="sm" onClick={() => createNote()} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={handleCreate} className="gap-1.5">
               <Plus className="size-3.5" />
               Add note
             </Button>
