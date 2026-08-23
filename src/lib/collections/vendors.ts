@@ -10,6 +10,7 @@ import {
   useCollection,
 } from "@/lib/use-collection";
 import type {
+  ConfirmedType,
   ContractStatus,
   Vendor,
   VendorCategory,
@@ -55,6 +56,7 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     starred: data.starred === true,
     images: Array.isArray(data.images) ? data.images : [],
     files: Array.isArray(data.files) ? data.files : [],
+    confirmedType: (data.confirmedType as ConfirmedType) ?? (data.category as VendorCategory) ?? "Other",
     totalPrice: typeof data.totalPrice === "number" ? data.totalPrice : 0,
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
@@ -86,6 +88,7 @@ export function createVendor(category?: VendorCategory, contractStatus?: Contrac
     starred: false,
     images: [],
     files: [],
+    confirmedType: category ?? ("Other" as VendorCategory),
     totalPrice: 0,
     budgetSpent: 0,
     nextTargetDate: null,

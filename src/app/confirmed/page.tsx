@@ -28,7 +28,7 @@ import { EditableNumber } from "@/components/shared/editable-number";
 import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
-import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
+import { ConfirmedTypePill } from "@/components/shared/confirmed-type-pill";
 import {
   useVenues,
   updateVenue,
@@ -54,11 +54,11 @@ import {
 } from "@/lib/collections/vendors";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { ConfirmedSubEntry, Vendor, VendorCategory, VendorFile, Venue } from "@/lib/types";
+import type { ConfirmedSubEntry, ConfirmedType, Vendor, VendorFile, Venue } from "@/lib/types";
 
 type ConfirmedRow =
-  | { kind: "venue"; id: string; name: string; type: "Venue"; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
-  | { kind: "vendor"; id: string; name: string; type: VendorCategory; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Vendor };
+  | { kind: "venue"; id: string; name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
+  | { kind: "vendor"; id: string; name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Vendor };
 
 type SortKey = "name" | "type" | "totalPrice" | "budgetSpent" | "remaining" | "nextTargetDate" | "nextAction";
 type SortDir = "asc" | "desc";
@@ -117,7 +117,7 @@ export default function ConfirmedPage() {
             kind: "venue" as const,
             id: bookedVenue.id,
             name: bookedVenue.name,
-            type: "Venue" as const,
+            type: bookedVenue.confirmedType,
             totalPrice: bookedVenue.budgetEstimate,
             budgetSpent: bookedVenue.budgetSpent,
             nextTargetDate: bookedVenue.nextTargetDate,
@@ -132,7 +132,7 @@ export default function ConfirmedPage() {
       kind: "vendor" as const,
       id: vendor.id,
       name: vendor.name,
-      type: vendor.category,
+      type: vendor.confirmedType,
       totalPrice: vendor.totalPrice,
       budgetSpent: vendor.budgetSpent,
       nextTargetDate: vendor.nextTargetDate,
@@ -326,16 +326,14 @@ export default function ConfirmedPage() {
                           </button>
                         </TableCell>
                         <TableCell className="align-top">
-                          {row.kind === "venue" ? (
-                            <Badge className="rounded-full bg-primary/15 text-primary hover:bg-primary/15">
-                              Venue
-                            </Badge>
-                          ) : (
-                            <VendorCategoryPill
-                              value={row.type}
-                              onChange={(category) => updateVendor(row.id, { category })}
-                            />
-                          )}
+                          <ConfirmedTypePill
+                            value={row.type}
+                            onChange={(confirmedType) =>
+                              row.kind === "venue"
+                                ? updateVenue(row.id, { confirmedType })
+                                : updateVendor(row.id, { confirmedType })
+                            }
+                          />
                         </TableCell>
                         <TableCell className="align-top">
                           <EditableNumber

@@ -12,6 +12,7 @@ export interface Venue {
   coverImage: string | null;
   files: VendorFile[];
   // Confirmed-list tracking fields (see Vendor for the vendor-side equivalents).
+  confirmedType: ConfirmedType;
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string
   nextAction: string;
@@ -33,6 +34,11 @@ export type VendorCategory =
   | "Wedding Cake"
   | "Wedding Organizer"
   | "Other";
+
+// The Confirmed list's "Type" column spans both entity kinds, so it needs
+// its own value space rather than reusing VendorCategory (which drives the
+// Vendors page's own category tabs) or VenueStatus.
+export type ConfirmedType = VendorCategory | "Venue";
 
 export type ContractStatus = "Inquiring" | "Consideration" | "Chosen" | "Done" | "Rejected";
 
@@ -77,6 +83,7 @@ export interface Vendor {
   files: VendorFile[];
   // Confirmed-list tracking fields, independent of priceOptions (which is
   // for comparing options pre-booking) — set once a vendor is locked in.
+  confirmedType: ConfirmedType;
   totalPrice: number;
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string
