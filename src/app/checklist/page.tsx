@@ -15,7 +15,6 @@ import {
 } from "@/lib/collections/checklist-items";
 import type { ChecklistPhase } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useWorkspace } from "@/lib/workspace-context";
 
 const PHASES: ChecklistPhase[] = [
   "12 Months Out",
@@ -25,8 +24,7 @@ const PHASES: ChecklistPhase[] = [
 ];
 
 export default function ChecklistPage() {
-  const { workspace } = useWorkspace();
-  const { data: items, loading } = useChecklistItems(workspace?.id ?? null);
+  const { data: items, loading } = useChecklistItems();
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,7 +62,7 @@ export default function ChecklistPage() {
                     variant="ghost"
                     size="sm"
                     className="gap-1 text-muted-foreground"
-                    onClick={() => workspace && createChecklistItem(workspace.id, phase)}
+                    onClick={() => createChecklistItem(phase)}
                   >
                     <Plus className="size-3.5" />
                     Add task
@@ -82,16 +80,13 @@ export default function ChecklistPage() {
                         <Checkbox
                           checked={item.done}
                           onCheckedChange={(checked) =>
-                            workspace &&
-                            updateChecklistItem(workspace.id, item.id, { done: Boolean(checked) })
+                            updateChecklistItem(item.id, { done: Boolean(checked) })
                           }
                         />
                         <div className="flex-1">
                           <EditableText
                             value={item.title}
-                            onSave={(title) =>
-                              workspace && updateChecklistItem(workspace.id, item.id, { title })
-                            }
+                            onSave={(title) => updateChecklistItem(item.id, { title })}
                             className={cn(
                               "px-0",
                               item.done && "text-muted-foreground line-through",
@@ -102,10 +97,7 @@ export default function ChecklistPage() {
                           type="date"
                           value={item.dueDate ?? ""}
                           onChange={(e) =>
-                            workspace &&
-                            updateChecklistItem(workspace.id, item.id, {
-                              dueDate: e.target.value || null,
-                            })
+                            updateChecklistItem(item.id, { dueDate: e.target.value || null })
                           }
                           className="h-8 w-36 border-none bg-transparent text-xs text-muted-foreground shadow-none"
                         />
@@ -113,7 +105,7 @@ export default function ChecklistPage() {
                           variant="ghost"
                           size="icon"
                           className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                          onClick={() => workspace && deleteChecklistItem(workspace.id, item.id)}
+                          onClick={() => deleteChecklistItem(item.id)}
                         >
                           <Trash2 className="size-3.5" />
                         </Button>

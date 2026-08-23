@@ -40,7 +40,6 @@ import {
 } from "@/lib/collections/guests";
 import type { EventType, Guest, RsvpStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useWorkspace } from "@/lib/workspace-context";
 
 const RSVP_OPTIONS: RsvpStatus[] = ["pending", "yes", "no"];
 const RSVP_STYLES: Record<RsvpStatus, string> = {
@@ -78,8 +77,7 @@ function SortableHeader({ label, column }: { label: string; column: { toggleSort
 }
 
 export default function GuestsPage() {
-  const { workspace } = useWorkspace();
-  const { data: guests, loading } = useGuests(workspace?.id ?? null);
+  const { data: guests, loading } = useGuests();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rsvpFilter, setRsvpFilter] = useState<(typeof RSVP_FILTER_OPTIONS)[number]>("all");
   const [eventFilter, setEventFilter] = useState<(typeof EVENT_FILTER_OPTIONS)[number]>("all");
@@ -141,7 +139,7 @@ export default function GuestsPage() {
           return (
             <EditableText
               value={guest.name}
-              onSave={(name) => updateGuest(workspace!.id, guest.id, { name })}
+              onSave={(name) => updateGuest(guest.id, { name })}
               placeholder="Guest name"
               className="font-medium text-foreground"
             />
@@ -156,7 +154,7 @@ export default function GuestsPage() {
           return (
             <EditableText
               value={guest.connection}
-              onSave={(connection) => updateGuest(workspace!.id, guest.id, { connection })}
+              onSave={(connection) => updateGuest(guest.id, { connection })}
               placeholder="—"
             />
           );
@@ -170,7 +168,7 @@ export default function GuestsPage() {
           return (
             <EditableText
               value={guest.country}
-              onSave={(country) => updateGuest(workspace!.id, guest.id, { country })}
+              onSave={(country) => updateGuest(guest.id, { country })}
               placeholder="—"
             />
           );
@@ -185,7 +183,7 @@ export default function GuestsPage() {
             <Select
               value={guest.rsvpStatus}
               onValueChange={(v) =>
-                updateGuest(workspace!.id, guest.id, { rsvpStatus: v as RsvpStatus })
+                updateGuest(guest.id, { rsvpStatus: v as RsvpStatus })
               }
             >
               <SelectTrigger
@@ -217,7 +215,7 @@ export default function GuestsPage() {
             <Select
               value={guest.eventType}
               onValueChange={(v) =>
-                updateGuest(workspace!.id, guest.id, { eventType: v as EventType })
+                updateGuest(guest.id, { eventType: v as EventType })
               }
             >
               <SelectTrigger
@@ -249,7 +247,7 @@ export default function GuestsPage() {
             <Checkbox
               checked={guest.inviteSent}
               onCheckedChange={(checked) =>
-                updateGuest(workspace!.id, guest.id, { inviteSent: checked === true })
+                updateGuest(guest.id, { inviteSent: checked === true })
               }
             />
           );
@@ -263,7 +261,7 @@ export default function GuestsPage() {
           return (
             <EditableNumber
               value={guest.plusOnes}
-              onSave={(plusOnes) => updateGuest(workspace!.id, guest.id, { plusOnes })}
+              onSave={(plusOnes) => updateGuest(guest.id, { plusOnes })}
               formatDisplay={(v) => String(v)}
             />
           );
@@ -277,7 +275,7 @@ export default function GuestsPage() {
           return (
             <EditableText
               value={guest.allergies}
-              onSave={(allergies) => updateGuest(workspace!.id, guest.id, { allergies })}
+              onSave={(allergies) => updateGuest(guest.id, { allergies })}
               placeholder="—"
             />
           );
@@ -294,7 +292,7 @@ export default function GuestsPage() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-destructive"
-              onClick={() => deleteGuest(workspace!.id, guest.id)}
+              onClick={() => deleteGuest(guest.id)}
             >
               <Trash2 className="size-4" />
             </Button>
@@ -326,7 +324,7 @@ export default function GuestsPage() {
             {bothCount} both · {receptionCount} reception · {matrimonyCount} matrimony
           </p>
         </div>
-        <Button onClick={() => workspace && createGuest(workspace.id)} className="gap-1.5 self-start sm:self-auto">
+        <Button onClick={() => createGuest()} className="gap-1.5 self-start sm:self-auto">
           <Plus className="size-4" />
           Add guest
         </Button>
@@ -426,7 +424,7 @@ export default function GuestsPage() {
       </Card>
 
       <Button
-        onClick={() => workspace && createGuest(workspace.id)}
+        onClick={() => createGuest()}
         className="fixed bottom-4 right-4 z-50 gap-1.5 rounded-full shadow-lg"
         size="lg"
       >

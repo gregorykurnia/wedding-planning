@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   BadgeCheck,
   CalendarHeart,
@@ -18,7 +17,6 @@ import {
   Warehouse,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { useWorkspace } from "@/lib/workspace-context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -43,43 +41,12 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, loading: authLoading, isFirebaseConfigured, signOut } = useAuth();
-  const { workspace, loading: workspaceLoading } = useWorkspace();
+  const { user, isFirebaseConfigured, signOut } = useAuth();
 
   const isLoginPage = pathname === "/login";
-  const isOnboardingPage = pathname === "/onboarding";
 
-  useEffect(() => {
-    if (!isFirebaseConfigured || authLoading) return;
-    if (!user && !isLoginPage) {
-      router.replace("/login");
-      return;
-    }
-    if (user && !workspaceLoading && !workspace && !isOnboardingPage) {
-      router.replace("/onboarding");
-      return;
-    }
-    if (user && workspace && (isLoginPage || isOnboardingPage)) {
-      router.replace("/");
-    }
-  }, [
-    isFirebaseConfigured,
-    authLoading,
-    user,
-    workspaceLoading,
-    workspace,
-    isLoginPage,
-    isOnboardingPage,
-    router,
-  ]);
-
-  if (isLoginPage || isOnboardingPage) {
+  if (isLoginPage) {
     return <main className="flex min-h-screen flex-1 flex-col">{children}</main>;
-  }
-
-  if (isFirebaseConfigured && (authLoading || !user || workspaceLoading || !workspace)) {
-    return <main className="flex min-h-screen flex-1 flex-col" />;
   }
 
   return (
@@ -116,11 +83,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            {workspace && (
-              <span className="hidden text-xs text-muted-foreground sm:inline">
-                Invite code: <span className="font-mono font-medium">{workspace.inviteCode}</span>
-              </span>
-            )}
             {isFirebaseConfigured && user && (
               <Button
                 variant="ghost"
@@ -148,11 +110,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     {item.label}
                   </DropdownMenuItem>
                 ))}
-                {workspace && (
-                  <DropdownMenuItem disabled className="opacity-100">
-                    Invite code: {workspace.inviteCode}
-                  </DropdownMenuItem>
-                )}
                 {isFirebaseConfigured && user && (
                   <DropdownMenuItem onClick={() => signOut()}>
                     <LogOut className="size-4" />

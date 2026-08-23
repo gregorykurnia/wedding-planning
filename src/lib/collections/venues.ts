@@ -44,12 +44,12 @@ function fromDoc(id: string, data: DocumentData): Venue {
   };
 }
 
-export function useVenues(workspaceId: string | null) {
-  return useCollection<Venue>(workspaceId, COLLECTION, fromDoc);
+export function useVenues() {
+  return useCollection<Venue>(COLLECTION, fromDoc);
 }
 
-export function createVenue(workspaceId: string) {
-  return addDocument(workspaceId, COLLECTION, {
+export function createVenue() {
+  return addDocument(COLLECTION, {
     name: "New Venue",
     budgetEstimate: 0,
     guestMax: 0,
@@ -67,68 +67,57 @@ export function createVenue(workspaceId: string) {
   });
 }
 
-export function updateVenue(workspaceId: string, id: string, data: Partial<Venue>) {
+export function updateVenue(id: string, data: Partial<Venue>) {
   const { id: _id, ...rest } = data as Venue;
   void _id;
-  return updateDocument(workspaceId, COLLECTION, id, rest);
+  return updateDocument(COLLECTION, id, rest);
 }
 
-export function deleteVenue(workspaceId: string, id: string) {
-  return deleteDocument(workspaceId, COLLECTION, id);
+export function deleteVenue(id: string) {
+  return deleteDocument(COLLECTION, id);
 }
 
-export function addVenueImage(workspaceId: string, venue: Venue, url: string) {
-  return updateDocument(workspaceId, COLLECTION, venue.id, {
+export function addVenueImage(venue: Venue, url: string) {
+  return updateDocument(COLLECTION, venue.id, {
     images: arrayUnion(url),
     ...(venue.coverImage ? {} : { coverImage: url }),
   });
 }
 
-export function addVenueFile(workspaceId: string, venue: Venue, file: VendorFile) {
-  return updateDocument(workspaceId, COLLECTION, venue.id, {
+export function addVenueFile(venue: Venue, file: VendorFile) {
+  return updateDocument(COLLECTION, venue.id, {
     files: arrayUnion(file),
   });
 }
 
-export function removeVenueFile(workspaceId: string, venue: Venue, url: string) {
+export function removeVenueFile(venue: Venue, url: string) {
   const file = venue.files.find((f) => f.url === url);
   if (!file) return Promise.resolve();
-  return updateDocument(workspaceId, COLLECTION, venue.id, {
+  return updateDocument(COLLECTION, venue.id, {
     files: arrayRemove(file),
   });
 }
 
-export function addVenueSubEntry(workspaceId: string, venue: Venue) {
-  return addSubEntry(workspaceId, COLLECTION, venue);
+export function addVenueSubEntry(venue: Venue) {
+  return addSubEntry(COLLECTION, venue);
 }
 
 export function updateVenueSubEntry(
-  workspaceId: string,
   venue: Venue,
   subId: string,
   data: Partial<Omit<Venue["subEntries"][number], "id">>,
 ) {
-  return updateSubEntry(workspaceId, COLLECTION, venue, subId, data);
+  return updateSubEntry(COLLECTION, venue, subId, data);
 }
 
-export function removeVenueSubEntry(workspaceId: string, venue: Venue, subId: string) {
-  return removeSubEntry(workspaceId, COLLECTION, venue, subId);
+export function removeVenueSubEntry(venue: Venue, subId: string) {
+  return removeSubEntry(COLLECTION, venue, subId);
 }
 
-export function addVenueSubEntryFile(
-  workspaceId: string,
-  venue: Venue,
-  subId: string,
-  file: VendorFile,
-) {
-  return addSubEntryFile(workspaceId, COLLECTION, venue, subId, file);
+export function addVenueSubEntryFile(venue: Venue, subId: string, file: VendorFile) {
+  return addSubEntryFile(COLLECTION, venue, subId, file);
 }
 
-export function removeVenueSubEntryFile(
-  workspaceId: string,
-  venue: Venue,
-  subId: string,
-  url: string,
-) {
-  return removeSubEntryFile(workspaceId, COLLECTION, venue, subId, url);
+export function removeVenueSubEntryFile(venue: Venue, subId: string, url: string) {
+  return removeSubEntryFile(COLLECTION, venue, subId, url);
 }

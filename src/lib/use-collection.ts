@@ -17,21 +17,10 @@ import {
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 
 /**
- * Every data collection (venues, vendors, guests, ...) lives nested under a
- * workspace document, so each wedding's data is fully isolated:
- * workspaces/{workspaceId}/{collectionName}/{docId}
- */
-function collectionPath(workspaceId: string, collectionName: string): string {
-  return `workspaces/${workspaceId}/${collectionName}`;
-}
-
-/**
- * Generic realtime Firestore collection hook, scoped to one workspace.
- * Gracefully returns an empty, non-loading state when Firebase isn't
- * configured or no workspace is selected yet, instead of crashing.
+ * Generic realtime Firestore collection hook. Gracefully returns an empty,
+ * non-loading state when Firebase isn't configured instead of crashing.
  */
 export function useCollection<T extends { id: string }>(
-  workspaceId: string | null,
   collectionName: string,
   fromDoc: (id: string, data: DocumentData) => T,
   constraints: QueryConstraint[] = [orderBy("createdAt", "asc")],
@@ -41,12 +30,10 @@ export function useCollection<T extends { id: string }>(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db || !workspaceId) {
-      setData([]);
-      setLoading(false);
+    if (!isFirebaseConfigured || !db) {
       return;
     }
-    const q = query(collection(db, collectionPath(workspaceId, collectionName)), ...constraints);
+    const q = query(collection(db, collectionName), ...constraints);
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -62,20 +49,19 @@ export function useCollection<T extends { id: string }>(
     );
     return () => unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId, collectionName]);
+  }, [collectionName]);
 
   return { data, loading, error };
 }
 
 export async function addDocument(
-  workspaceId: string,
   collectionName: string,
   data: Record<string, unknown>,
 ) {
   if (!isFirebaseConfigured || !db) {
     throw new Error("Firebase is not configured.");
   }
-  return addDoc(collection(db, collectionPath(workspaceId, collectionName)), {
+  return addDoc(collection(db, collectionName), {
     ...data,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -83,7 +69,6 @@ export async function addDocument(
 }
 
 export async function updateDocument(
-  workspaceId: string,
   collectionName: string,
   id: string,
   data: Record<string, unknown>,
@@ -91,21 +76,17 @@ export async function updateDocument(
   if (!isFirebaseConfigured || !db) {
     throw new Error("Firebase is not configured.");
   }
-  return updateDoc(doc(db, collectionPath(workspaceId, collectionName), id), {
+  return updateDoc(doc(db, collectionName, id), {
     ...data,
     updatedAt: serverTimestamp(),
   });
 }
 
-export async function deleteDocument(
-  workspaceId: string,
-  collectionName: string,
-  id: string,
-) {
+export async function deleteDocument(collectionName: string, id: string) {
   if (!isFirebaseConfigured || !db) {
     throw new Error("Firebase is not configured.");
   }
-  return deleteDoc(doc(db, collectionPath(workspaceId, collectionName), id));
+  return deleteDoc(doc(db, collectionName, id));
 }
 
 export function timestampToMillis(ts: unknown): number | null {

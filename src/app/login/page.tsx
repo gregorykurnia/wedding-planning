@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FirebaseError } from "firebase/app";
 import { Heart, Loader2 } from "lucide-react";
@@ -20,14 +20,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginPage() {
   const router = useRouter();
-  const {
-    isFirebaseConfigured,
-    signInWithGoogle,
-    signInWithEmail,
-    registerWithEmail,
-    user,
-    redirectError,
-  } = useAuth();
+  const { isFirebaseConfigured, signInWithGoogle, signInWithEmail, registerWithEmail, user } =
+    useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -38,33 +32,22 @@ export default function LoginPage() {
   }
 
   const handleError = (err: unknown) => {
-    // eslint-disable-next-line no-console
-    console.error("Auth error:", err);
     if (err instanceof FirebaseError) {
       setError(err.message.replace("Firebase: ", ""));
-    } else if (err && typeof err === "object" && "code" in err) {
-      // Handles cases where the error crosses a module boundary and isn't
-      // recognized by `instanceof FirebaseError` (duplicate firebase copies).
-      setError(String((err as { code: unknown }).code));
     } else {
       setError("Something went wrong. Please try again.");
     }
   };
 
-  useEffect(() => {
-    if (redirectError) handleError(redirectError);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectError]);
-
   const handleGoogle = async () => {
     setError(null);
     setLoading(true);
     try {
-      // Navigates away to Google; the page reloads on return, so there's
-      // nothing to await here besides a possible synchronous failure.
       await signInWithGoogle();
+      router.replace("/");
     } catch (err) {
       handleError(err);
+    } finally {
       setLoading(false);
     }
   };

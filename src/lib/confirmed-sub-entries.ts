@@ -23,7 +23,7 @@ interface HasSubEntries {
   subEntries: ConfirmedSubEntry[];
 }
 
-export function addSubEntry(workspaceId: string, collection: string, parent: HasSubEntries) {
+export function addSubEntry(collection: string, parent: HasSubEntries) {
   const entry: ConfirmedSubEntry = {
     id: crypto.randomUUID(),
     name: "New sub-entry",
@@ -33,42 +33,35 @@ export function addSubEntry(workspaceId: string, collection: string, parent: Has
     nextAction: "",
     files: [],
   };
-  return updateDocument(workspaceId, collection, parent.id, {
+  return updateDocument(collection, parent.id, {
     subEntries: [...parent.subEntries, entry],
   });
 }
 
 export function updateSubEntry(
-  workspaceId: string,
   collection: string,
   parent: HasSubEntries,
   subId: string,
   data: Partial<Omit<ConfirmedSubEntry, "id">>,
 ) {
-  return updateDocument(workspaceId, collection, parent.id, {
+  return updateDocument(collection, parent.id, {
     subEntries: parent.subEntries.map((s) => (s.id === subId ? { ...s, ...data } : s)),
   });
 }
 
-export function removeSubEntry(
-  workspaceId: string,
-  collection: string,
-  parent: HasSubEntries,
-  subId: string,
-) {
-  return updateDocument(workspaceId, collection, parent.id, {
+export function removeSubEntry(collection: string, parent: HasSubEntries, subId: string) {
+  return updateDocument(collection, parent.id, {
     subEntries: parent.subEntries.filter((s) => s.id !== subId),
   });
 }
 
 export function addSubEntryFile(
-  workspaceId: string,
   collection: string,
   parent: HasSubEntries,
   subId: string,
   file: VendorFile,
 ) {
-  return updateDocument(workspaceId, collection, parent.id, {
+  return updateDocument(collection, parent.id, {
     subEntries: parent.subEntries.map((s) =>
       s.id === subId ? { ...s, files: [...s.files, file] } : s,
     ),
@@ -76,13 +69,12 @@ export function addSubEntryFile(
 }
 
 export function removeSubEntryFile(
-  workspaceId: string,
   collection: string,
   parent: HasSubEntries,
   subId: string,
   url: string,
 ) {
-  return updateDocument(workspaceId, collection, parent.id, {
+  return updateDocument(collection, parent.id, {
     subEntries: parent.subEntries.map((s) =>
       s.id === subId ? { ...s, files: s.files.filter((f) => f.url !== url) } : s,
     ),

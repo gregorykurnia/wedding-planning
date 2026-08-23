@@ -4,7 +4,6 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShell } from "@/components/layout/app-shell";
 import { AuthProvider } from "@/lib/auth-context";
-import { WorkspaceProvider } from "@/lib/workspace-context";
 import { ServiceWorkerRegister } from "@/components/layout/sw-register";
 
 const inter = Inter({
@@ -46,11 +45,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <AuthProvider>
-          <WorkspaceProvider>
-            <TooltipProvider>
-              <AppShell>{children}</AppShell>
-            </TooltipProvider>
-          </WorkspaceProvider>
+          <TooltipProvider>
+            <AppShell>{children}</AppShell>
+          </TooltipProvider>
         </AuthProvider>
         <ServiceWorkerRegister />
       </body>

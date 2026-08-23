@@ -1,49 +1,33 @@
 rules_version = '2';
 
-// Each wedding's data lives under workspaces/{workspaceId}/... . A user can
-// only read/write a workspace (and everything nested under it) if their uid
-// is listed in that workspace's memberIds. Workspace membership itself is
-// managed through the app's join/create flow (see src/lib/collections/workspaces.ts),
-// not directly by clients, aside from a member being able to add themself
-// via a valid invite code.
+// No login flow in the app right now — anyone with the site URL can
+// read/write. Revisit if this ever needs to be more than a private,
+// unlisted planning tool.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isMember(workspaceId) {
-      return request.auth != null &&
-        request.auth.uid in get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.memberIds;
+    match /guests/{docId} {
+      allow read, write: if true;
     }
-
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    match /vendors/{docId} {
+      allow read, write: if true;
     }
-
-    match /workspaces/{workspaceId} {
-      allow read: if isMember(workspaceId);
-      // Creation happens via the create-workspace flow (caller must place
-      // themself as the sole member). Updates are allowed to any current
-      // member, or to a signed-in user joining via invite code (adding only
-      // their own uid/email into the arrays).
-      allow create: if request.auth != null &&
-        request.resource.data.memberIds == [request.auth.uid];
-      allow update: if isMember(workspaceId) ||
-        (request.auth != null &&
-          request.resource.data.memberIds.hasAll(resource.data.memberIds) &&
-          request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1 &&
-          request.resource.data.memberIds[request.resource.data.memberIds.size() - 1] == request.auth.uid);
+    match /venues/{docId} {
+      allow read, write: if true;
     }
-
-    match /workspaces/{workspaceId}/{collectionName}/{docId} {
-      allow read, write: if isMember(workspaceId);
+    match /budgetItems/{docId} {
+      allow read, write: if true;
     }
-
-    // TEMPORARY: read/delete access to the pre-workspace flat collections,
-    // so the one-time migration in src/app/migrate-legacy-data can copy
-    // them into a workspace and clean up. Remove once migration is done.
-    match /{legacyCollection}/{docId} {
-      allow read, delete: if request.auth != null &&
-        legacyCollection in
-          ["venues", "vendors", "guests", "budgetItems", "checklistItems",
-           "todos", "notes", "hypotheticalItems"];
+    match /hypotheticalItems/{docId} {
+      allow read, write: if true;
+    }
+    match /checklistItems/{docId} {
+      allow read, write: if true;
+    }
+    match /todos/{docId} {
+      allow read, write: if true;
+    }
+    match /notes/{docId} {
+      allow read, write: if true;
     }
   }
 }

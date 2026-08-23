@@ -186,27 +186,3 @@ export interface Note {
   createdAt: number | null;
   updatedAt: number | null;
 }
-
-// One wedding's worth of data lives under a Workspace. All the collections
-// above (venues, vendors, guests, ...) are subcollections of a workspace
-// document, so two couples using the app never see each other's data.
-export interface Workspace {
-  id: string;
-  name: string;
-  ownerId: string; // uid of the member who created the workspace
-  memberIds: string[]; // uids allowed to read/write this workspace's data
-  memberEmails: string[]; // lowercased emails, mirrored for invite lookups
-  inviteCode: string; // short code a second member enters to join
-  createdAt: number | null;
-  updatedAt: number | null;
-}
-
-// Maps a signed-in user to the workspace they belong to. One doc per uid,
-// keyed by uid itself (users/{uid}), so membership resolution is a single
-// point read instead of a query over all workspaces.
-export interface UserProfile {
-  uid: string;
-  email: string;
-  workspaceId: string | null;
-  createdAt: number | null;
-}

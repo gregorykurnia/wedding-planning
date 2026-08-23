@@ -38,15 +38,13 @@ import {
   updateVendor,
   useVendors,
 } from "@/lib/collections/vendors";
-import { useWorkspace } from "@/lib/workspace-context";
 import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/budget-items";
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
 
 export function VendorsTable() {
-  const { workspace } = useWorkspace();
-  const { data: vendors, loading } = useVendors(workspace?.id ?? null);
-  const { data: budgetItems } = useBudgetItems(workspace?.id ?? null);
+  const { data: vendors, loading } = useVendors();
+  const { data: budgetItems } = useBudgetItems();
   const linkedVendorIds = useMemo(
     () => new Set(budgetItems.map((b) => b.linkedVendorId).filter(Boolean)),
     [budgetItems],
@@ -100,7 +98,7 @@ export function VendorsTable() {
               variant="ghost"
               size="icon"
               className="size-7"
-              onClick={() => toggleVendorStar(workspace!.id, vendor)}
+              onClick={() => toggleVendorStar(vendor)}
             >
               <Star
                 className={cn(
@@ -132,7 +130,7 @@ export function VendorsTable() {
             <div className="flex flex-col gap-1">
               <EditableText
                 value={vendor.name}
-                onSave={(name) => updateVendor(workspace!.id, vendor.id, { name })}
+                onSave={(name) => updateVendor(vendor.id, { name })}
                 placeholder="Vendor name"
                 className="font-medium text-foreground"
               />
@@ -151,14 +149,14 @@ export function VendorsTable() {
                   )}
                   <EditableText
                     value={vendor.contactPhone}
-                    onSave={(contactPhone) => updateVendor(workspace!.id, vendor.id, { contactPhone })}
+                    onSave={(contactPhone) => updateVendor(vendor.id, { contactPhone })}
                     placeholder="Add phone"
                     className="w-auto px-0 text-xs"
                   />
                 </div>
                 <EditableText
                   value={vendor.contactName}
-                  onSave={(contactName) => updateVendor(workspace!.id, vendor.id, { contactName })}
+                  onSave={(contactName) => updateVendor(vendor.id, { contactName })}
                   placeholder="Add PIC name"
                   className="px-0 text-xs"
                 />
@@ -192,7 +190,7 @@ export function VendorsTable() {
           return (
             <VendorCategoryPill
               value={vendor.category}
-              onChange={(category) => updateVendor(workspace!.id, vendor.id, { category })}
+              onChange={(category) => updateVendor(vendor.id, { category })}
             />
           );
         },
@@ -222,7 +220,7 @@ export function VendorsTable() {
           return (
             <VendorContractPill
               value={vendor.contractStatus}
-              onChange={(contractStatus) => updateVendor(workspace!.id, vendor.id, { contractStatus })}
+              onChange={(contractStatus) => updateVendor(vendor.id, { contractStatus })}
             />
           );
         },
@@ -238,7 +236,7 @@ export function VendorsTable() {
           return (
             <VenueNotesCell
               value={vendor.notes}
-              onSave={(notes) => updateVendor(workspace!.id, vendor.id, { notes })}
+              onSave={(notes) => updateVendor(vendor.id, { notes })}
             />
           );
         },
@@ -274,7 +272,7 @@ export function VendorsTable() {
                         size="icon"
                         disabled={alreadyLinked}
                         className={alreadyLinked ? "text-emerald-600" : "text-muted-foreground"}
-                        onClick={() => createBudgetItemFromVendor(workspace!.id, vendor)}
+                        onClick={() => createBudgetItemFromVendor(vendor)}
                       />
                     }
                   >
@@ -290,7 +288,7 @@ export function VendorsTable() {
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-destructive"
-                onClick={() => deleteVendor(workspace!.id, vendor.id)}
+                onClick={() => deleteVendor(vendor.id)}
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -325,7 +323,7 @@ export function VendorsTable() {
         </div>
         <Button
           onClick={() =>
-            createVendor(workspace!.id, activeCategory === "All" ? undefined : activeCategory)
+            createVendor(activeCategory === "All" ? undefined : activeCategory)
           }
           className="gap-1.5 self-start sm:self-auto"
         >
@@ -437,7 +435,7 @@ export function VendorsTable() {
       <Button
         variant="outline"
         onClick={() =>
-          createVendor(workspace!.id, activeCategory === "All" ? undefined : activeCategory)
+          createVendor(activeCategory === "All" ? undefined : activeCategory)
         }
         className="gap-1.5 self-start"
       >
