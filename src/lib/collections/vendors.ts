@@ -1,7 +1,7 @@
 "use client";
 
 import type { DocumentData } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
+import { arrayRemove, arrayUnion, orderBy } from "firebase/firestore";
 import {
   addDocument,
   deleteDocument,
@@ -90,13 +90,15 @@ export function toggleVendorStar(vendor: Vendor) {
 
 export function addVendorFile(vendor: Vendor, file: VendorFile) {
   return updateDocument(COLLECTION, vendor.id, {
-    files: [...vendor.files, file],
+    files: arrayUnion(file),
   });
 }
 
 export function removeVendorFile(vendor: Vendor, url: string) {
+  const file = vendor.files.find((f) => f.url === url);
+  if (!file) return Promise.resolve();
   return updateDocument(COLLECTION, vendor.id, {
-    files: vendor.files.filter((f) => f.url !== url),
+    files: arrayRemove(file),
   });
 }
 

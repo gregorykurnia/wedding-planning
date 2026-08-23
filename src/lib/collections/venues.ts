@@ -1,6 +1,6 @@
 "use client";
 
-import type { DocumentData } from "firebase/firestore";
+import { arrayUnion, type DocumentData } from "firebase/firestore";
 import {
   addDocument,
   deleteDocument,
@@ -56,9 +56,8 @@ export function deleteVenue(id: string) {
 }
 
 export function addVenueImage(venue: Venue, url: string) {
-  const images = [...venue.images, url];
   return updateDocument(COLLECTION, venue.id, {
-    images,
-    coverImage: venue.coverImage ?? images[0],
+    images: arrayUnion(url),
+    ...(venue.coverImage ? {} : { coverImage: url }),
   });
 }
