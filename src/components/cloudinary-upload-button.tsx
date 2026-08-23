@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CLOUDINARY_FREE_PLAN_MAX_BYTES, compressPdf } from "@/lib/compress-pdf";
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -51,7 +52,19 @@ export function CloudinaryUploadButton({
       setIsLoading(true);
       setError(null);
       try {
-        for (const file of files) {
+        for (let file of files) {
+          if (
+            file.type === "application/pdf" &&
+            file.size > CLOUDINARY_FREE_PLAN_MAX_BYTES
+          ) {
+            file = await compressPdf(file);
+            if (file.size > CLOUDINARY_FREE_PLAN_MAX_BYTES) {
+              throw new Error(
+                `"${file.name}" is still too large after compressing. Try a smaller file.`,
+              );
+            }
+          }
+
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", UPLOAD_PRESET as string);
