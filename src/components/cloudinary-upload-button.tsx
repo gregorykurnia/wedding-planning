@@ -33,10 +33,12 @@ export function CloudinaryUploadButton({
   resourceType = "auto",
 }: CloudinaryUploadButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleClick = useCallback(() => {
     if (!isCloudinaryConfigured) return;
+    setError(null);
     inputRef.current?.click();
   }, []);
 
@@ -47,6 +49,7 @@ export function CloudinaryUploadButton({
       if (files.length === 0) return;
 
       setIsLoading(true);
+      setError(null);
       try {
         for (const file of files) {
           const formData = new FormData();
@@ -57,12 +60,15 @@ export function CloudinaryUploadButton({
             `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
             { method: "POST", body: formData },
           );
-          if (!res.ok) throw new Error("Upload failed");
           const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data?.error?.message || "Upload failed");
+          }
           onUpload(data.secure_url, data.original_filename ?? file.name);
         }
       } catch (err) {
         console.error(err);
+        setError(err instanceof Error ? err.message : "Upload failed");
       } finally {
         setIsLoading(false);
       }
@@ -91,7 +97,7 @@ export function CloudinaryUploadButton({
   );
 
   return (
-    <>
+    <div className="flex flex-col items-start gap-1">
       <input
         ref={inputRef}
         type="file"
@@ -113,6 +119,7 @@ export function CloudinaryUploadButton({
           </TooltipContent>
         </Tooltip>
       )}
-    </>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
   );
 }
