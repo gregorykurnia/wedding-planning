@@ -14,6 +14,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
+  setPersistence,
+  inMemoryPersistence,
   type User,
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
@@ -47,7 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!auth) throw new Error("Firebase is not configured.");
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (err) {
+      // IndexedDB can be unreliable in private browsing (it may close
+      // mid-write, surfacing as "Database is closing/hidden"). Retry once
+      // with in-memory persistence, which doesn't touch IndexedDB.
+      if (err instanceof Error && err.message.includes("closing/hidden")) {
+        await setPersistence(auth, inMemoryPersistence);
+        await signInWithPopup(auth, new GoogleAuthProvider());
+        return;
+      }
+      throw err;
+    }
   };
 
   const signInWithEmail = async (email: string, password: string) => {
