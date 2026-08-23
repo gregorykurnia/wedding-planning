@@ -35,5 +35,15 @@ service cloud.firestore {
     match /workspaces/{workspaceId}/{collectionName}/{docId} {
       allow read, write: if isMember(workspaceId);
     }
+
+    // TEMPORARY: read/delete access to the pre-workspace flat collections,
+    // so the one-time migration in src/app/migrate-legacy-data can copy
+    // them into a workspace and clean up. Remove once migration is done.
+    match /{legacyCollection}/{docId} {
+      allow read, delete: if request.auth != null &&
+        legacyCollection in
+          ["venues", "vendors", "guests", "budgetItems", "checklistItems",
+           "todos", "notes", "hypotheticalItems"];
+    }
   }
 }
