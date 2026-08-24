@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,9 @@ export function EditableNumber({
   const [draft, setDraft] = useState(String(value));
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // useLayoutEffect (not useEffect) so focus happens before the browser
+    // paints the input, avoiding a visible flash before the caret shows.
     if (editing) {
       inputRef.current?.focus();
       inputRef.current?.select();

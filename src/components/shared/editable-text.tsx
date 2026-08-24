@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,9 @@ export function EditableText({
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // useLayoutEffect (not useEffect) so focus happens before the browser
+    // paints the textarea, avoiding a visible flash before the caret shows.
     if (editing) {
       inputRef.current?.focus();
       inputRef.current?.select();
