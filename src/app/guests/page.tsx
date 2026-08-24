@@ -310,6 +310,11 @@ export default function GuestsPage() {
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    // Without this, rows key off array position, so a guest reordering
+    // (e.g. a new row's createdAt resolving from a pending server
+    // timestamp to its real value) remounts whichever cell happens to
+    // land at that index mid-edit, dropping focus/caret.
+    getRowId: (row) => row.id,
   });
 
   return (
