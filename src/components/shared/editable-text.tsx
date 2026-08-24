@@ -71,7 +71,13 @@ export function EditableText({
   return (
     <button
       type="button"
-      onClick={() => {
+      onMouseDown={(e) => {
+        // Enter edit mode on mousedown, not click: blur on a still-open
+        // cell elsewhere fires synchronously during this same mousedown,
+        // and batching the two state updates together avoids a stale
+        // re-render eating the click (which otherwise required a second
+        // click to actually focus this cell).
+        e.preventDefault();
         setDraft(value);
         setEditing(true);
       }}

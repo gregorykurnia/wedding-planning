@@ -61,7 +61,12 @@ export function EditableNumber({
   return (
     <button
       type="button"
-      onClick={() => {
+      onMouseDown={(e) => {
+        // See editable-text.tsx: entering edit mode on mousedown (not
+        // click) lets React batch this with a blur-triggered commit
+        // elsewhere in the same tick, so one click reliably focuses this
+        // cell instead of needing a second click.
+        e.preventDefault();
         setDraft(String(value));
         setEditing(true);
       }}
