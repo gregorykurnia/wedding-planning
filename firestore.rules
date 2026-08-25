@@ -1,33 +1,41 @@
 rules_version = '2';
 
-// No login flow in the app right now — anyone with the site URL can
-// read/write. Revisit if this ever needs to be more than a private,
-// unlisted planning tool.
+// Access is restricted to a fixed allowlist of Google accounts (the couple).
+// The data model itself is unchanged — still flat, shared collections — this
+// just gates who can read/write them.
 service cloud.firestore {
+  function isAllowed() {
+    return request.auth != null &&
+      request.auth.token.email in [
+        "gregory.kurnia@gmail.com",
+        "bellabarliana15@gmail.com"
+      ];
+  }
+
   match /databases/{database}/documents {
     match /guests/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /vendors/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /venues/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /budgetItems/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /hypotheticalItems/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /checklistItems/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /todos/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
     match /notes/{docId} {
-      allow read, write: if true;
+      allow read, write: if isAllowed();
     }
   }
 }

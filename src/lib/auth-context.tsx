@@ -9,9 +9,10 @@ import {
 } from "react";
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   type User,
@@ -38,6 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isFirebaseConfigured || !auth) {
       return;
     }
+    // Surfaces errors (e.g. account not on the allowlist's rules) from a
+    // signInWithRedirect() that just completed.
+    getRedirectResult(auth).catch((err) => {
+      console.error("Google redirect sign-in failed:", err);
+    });
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
@@ -47,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!auth) throw new Error("Firebase is not configured.");
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    await signInWithRedirect(auth, new GoogleAuthProvider());
   };
 
   const signInWithEmail = async (email: string, password: string) => {

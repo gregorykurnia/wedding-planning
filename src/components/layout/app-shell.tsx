@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   BadgeCheck,
   CalendarHeart,
@@ -41,12 +42,31 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isFirebaseConfigured, signOut } = useAuth();
+  const router = useRouter();
+  const { user, loading, isFirebaseConfigured, signOut } = useAuth();
 
   const isLoginPage = pathname === "/login";
+  const needsAuth = isFirebaseConfigured && !loading && !user && !isLoginPage;
+
+  useEffect(() => {
+    if (needsAuth) {
+      router.replace("/login");
+    }
+  }, [needsAuth, router]);
 
   if (isLoginPage) {
     return <main className="flex min-h-screen flex-1 flex-col">{children}</main>;
+  }
+
+  if (!isFirebaseConfigured) {
+    // No Firebase project configured — fall through to the demo/empty view
+    // below rather than gating on auth that can't work anyway.
+  } else if (loading || needsAuth) {
+    return (
+      <main className="flex min-h-screen flex-1 items-center justify-center">
+        <span className="text-sm text-muted-foreground">Loading…</span>
+      </main>
+    );
   }
 
   return (
