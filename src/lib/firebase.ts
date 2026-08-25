@@ -1,6 +1,7 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import {
   browserLocalPersistence,
+  browserPopupRedirectResolver,
   browserSessionPersistence,
   getAuth,
   inMemoryPersistence,
@@ -52,6 +53,10 @@ if (isFirebaseConfigured) {
           browserSessionPersistence,
           inMemoryPersistence,
         ],
+        // initializeAuth() doesn't wire this up automatically the way
+        // getAuth() does — without it, signInWithRedirect/getRedirectResult
+        // throw auth/argument-error.
+        popupRedirectResolver: browserPopupRedirectResolver,
       });
     } catch {
       // Already initialized on this FirebaseApp instance (e.g. dev-mode
