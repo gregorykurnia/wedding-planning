@@ -23,6 +23,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -103,17 +105,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            {isFirebaseConfigured && user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signOut()}
-                className="hidden sm:inline-flex"
-              >
-                <LogOut className="size-4" />
-                Sign out
-              </Button>
-            )}
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={<Button variant="outline" size="icon" className="md:hidden" />}
@@ -130,14 +121,54 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     {item.label}
                   </DropdownMenuItem>
                 ))}
-                {isFirebaseConfigured && user && (
-                  <DropdownMenuItem onClick={() => signOut()}>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {isFirebaseConfigured && user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                      aria-label="Account menu"
+                    />
+                  }
+                >
+                  {user.photoURL ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.photoURL}
+                      alt=""
+                      className="size-8 rounded-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="flex size-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                      {(user.displayName ?? user.email ?? "?").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
+                    <span className="truncate text-sm font-medium text-foreground">
+                      {user.displayName ?? "Signed in"}
+                    </span>
+                    {user.email && (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </span>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} variant="destructive">
                     <LogOut className="size-4" />
                     Sign out
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </header>
