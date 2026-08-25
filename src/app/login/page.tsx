@@ -32,6 +32,9 @@ export default function LoginPage() {
   }
 
   const handleError = (err: unknown) => {
+    // Always log the raw error -- the generic fallback message below hides
+    // real causes (network errors, non-FirebaseError exceptions, etc.).
+    console.error("Sign-in error:", err);
     if (err instanceof FirebaseError) {
       setError(err.message.replace("Firebase: ", ""));
     } else {
