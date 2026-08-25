@@ -5,7 +5,6 @@ import {
   browserSessionPersistence,
   getAuth,
   inMemoryPersistence,
-  indexedDBLocalPersistence,
   initializeAuth,
   type Auth,
 } from "firebase/auth";
@@ -40,15 +39,15 @@ let db: Firestore | null = null;
 if (isFirebaseConfigured) {
   try {
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-    // Explicit fallback chain: if IndexedDB is unavailable or gets torn down
-    // mid-operation (the "Database is closing/hidden" error seen on Safari /
-    // private browsing / backgrounded tabs during redirect sign-in), Auth
-    // falls back to localStorage, then sessionStorage, then in-memory —
-    // instead of throwing and leaving the user stuck.
+    // browserLocalPersistence (localStorage) first, not indexedDBLocalPersistence:
+    // browsers close a tab's IndexedDB connection when it loses focus (e.g. the
+    // instant the Google sign-in popup opens), and Firebase Auth's IndexedDB
+    // persistence throws "Database is closing/hidden" if a write lands right
+    // after that. localStorage has no such failure mode. Keep the rest of the
+    // chain as a fallback for browsers/modes where even localStorage is blocked.
     try {
       auth = initializeAuth(app, {
         persistence: [
-          indexedDBLocalPersistence,
           browserLocalPersistence,
           browserSessionPersistence,
           inMemoryPersistence,
