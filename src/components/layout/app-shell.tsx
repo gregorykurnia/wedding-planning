@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -151,16 +152,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {user.displayName ?? "Signed in"}
-                    </span>
-                    {user.email && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {user.email}
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex flex-col gap-0.5 py-1.5">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {user.displayName ?? "Signed in"}
                       </span>
-                    )}
-                  </DropdownMenuLabel>
+                      {user.email && (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {user.email}
+                        </span>
+                      )}
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} variant="destructive">
                     <LogOut className="size-4" />
