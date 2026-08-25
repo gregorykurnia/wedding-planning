@@ -1,5 +1,9 @@
 {
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "public-firebase-stub",
+    "ignore": ["**/.*"]
   }
 }
