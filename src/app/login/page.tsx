@@ -43,11 +43,11 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      // Navigates the browser away to Google; on return, AuthProvider's
-      // getRedirectResult()/onAuthStateChanged pick up the signed-in user.
       await signInWithGoogle();
+      router.replace("/");
     } catch (err) {
       handleError(err);
+    } finally {
       setLoading(false);
     }
   };
