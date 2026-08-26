@@ -6,13 +6,12 @@ import { useEffect } from "react";
 import {
   BadgeCheck,
   CalendarHeart,
-  CheckSquare,
+  ChevronDown,
   Heart,
   LayoutDashboard,
   ListTodo,
   LogOut,
   Menu,
-  PiggyBank,
   StickyNote,
   Users,
   Warehouse,
@@ -31,14 +30,16 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+const PLANNING_ITEMS = [
   { href: "/venues", label: "Venues", icon: Warehouse },
   { href: "/vendors", label: "Vendors", icon: Heart },
   { href: "/confirmed", label: "Confirmed", icon: BadgeCheck },
+];
+
+const NAV_ITEMS = [
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  ...PLANNING_ITEMS,
   { href: "/guests", label: "Guests", icon: Users },
-  { href: "/budget", label: "Budget", icon: PiggyBank },
-  { href: "/checklist", label: "Checklist", icon: CheckSquare },
   { href: "/todo", label: "To Do", icon: ListTodo },
   { href: "/notes", label: "Notes", icon: StickyNote },
 ];
@@ -84,9 +85,53 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden flex-1 items-center gap-1 md:flex">
-            {NAV_ITEMS.map((item) => {
-              const active =
-                item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
+            <Link
+              href="/"
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                pathname === "/"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              <LayoutDashboard className="size-4" />
+              Dashboard
+            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                      PLANNING_ITEMS.some((item) => pathname?.startsWith(item.href))
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  />
+                }
+              >
+                Planning
+                <ChevronDown className="size-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {PLANNING_ITEMS.map((item) => (
+                  <DropdownMenuItem
+                    key={item.href}
+                    render={<Link href={item.href} className="flex items-center gap-2" />}
+                  >
+                    <item.icon className="size-4" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {NAV_ITEMS.filter(
+              (item) => item.href !== "/" && !PLANNING_ITEMS.some((p) => p.href === item.href),
+            ).map((item) => {
+              const active = pathname?.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
