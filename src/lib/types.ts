@@ -186,3 +186,15 @@ export interface Note {
   createdAt: number | null;
   updatedAt: number | null;
 }
+
+// Single shared settings doc (settings/wedding). partnerEmail is stored but
+// intentionally not wired to any access control yet — that needs proper
+// multi-tenant auth first, so for now it's just a saved contact field.
+export interface WeddingSettings {
+  yourName: string;
+  partnerName: string;
+  weddingDate: string | null; // ISO date string
+  partnerEmail: string;
+  venue: string;
+  updatedAt: number | null;
+}

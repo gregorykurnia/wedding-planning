@@ -12,6 +12,7 @@ import {
   ListTodo,
   LogOut,
   Menu,
+  Settings,
   StickyNote,
   Users,
   Warehouse,
@@ -209,6 +210,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       )}
                     </DropdownMenuLabel>
                   </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem render={<Link href="/settings" className="flex items-center gap-2" />}>
+                    <Settings className="size-4" />
+                    Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} variant="destructive">
                     <LogOut className="size-4" />

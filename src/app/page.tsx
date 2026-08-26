@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBudgetItems } from "@/lib/collections/budget-items";
 import { useChecklistItems } from "@/lib/collections/checklist-items";
+import { useWeddingSettings } from "@/lib/collections/settings";
 import { formatIDR } from "@/lib/format";
 
-// Set your wedding date here once you know it.
-const WEDDING_DATE = new Date("2027-06-12T09:00:00");
+// Fallback used until a wedding date is saved in Settings.
+const DEFAULT_WEDDING_DATE = new Date("2027-06-12T09:00:00");
 
 function useCountdown(target: Date) {
   const now = new Date();
@@ -22,6 +23,10 @@ function useCountdown(target: Date) {
 export default function DashboardPage() {
   const { data: budgetItems, loading: budgetLoading } = useBudgetItems();
   const { data: checklistItems, loading: checklistLoading } = useChecklistItems();
+  const { data: settings } = useWeddingSettings();
+  const WEDDING_DATE = settings?.weddingDate
+    ? new Date(`${settings.weddingDate}T09:00:00`)
+    : DEFAULT_WEDDING_DATE;
   const daysLeft = useCountdown(WEDDING_DATE);
 
   const totalEstimated = budgetItems.reduce((sum, b) => sum + b.estimatedAmount, 0);

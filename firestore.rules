@@ -37,5 +37,8 @@ service cloud.firestore {
     match /notes/{docId} {
       allow read, write: if isAllowed();
     }
+    match /settings/{docId} {
+      allow read, write: if isAllowed();
+    }
   }
 }
