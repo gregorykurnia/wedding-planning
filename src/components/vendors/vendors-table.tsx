@@ -76,7 +76,7 @@ export function VendorsTable() {
     () => new Set(budgetItems.map((b) => b.linkedVendorId).filter(Boolean)),
     [budgetItems],
   );
-  const [sorting, setSorting] = useState<SortingState>([{ id: "category", desc: false }]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<VendorCategory | "All">("All");
