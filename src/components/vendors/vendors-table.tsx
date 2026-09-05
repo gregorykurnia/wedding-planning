@@ -10,7 +10,16 @@ import {
   type ColumnSizingState,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MessageCircle, PiggyBank, Plus, Search, Star, Trash2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  Download,
+  MessageCircle,
+  PiggyBank,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -67,6 +76,45 @@ async function importWeddingOrganizerList() {
       bridestoryReviewCount: entry.reviews,
     });
   }
+}
+
+const CSV_COLUMNS: { header: string; get: (vendor: Vendor) => string }[] = [
+  { header: "Vendor", get: (v) => v.name },
+  { header: "Type", get: (v) => v.category },
+  { header: "Status", get: (v) => v.contractStatus },
+  { header: "Contact Name", get: (v) => v.contactName },
+  { header: "Contact Phone", get: (v) => v.contactPhone },
+  { header: "Contact Email", get: (v) => v.contactEmail },
+  {
+    header: "Bridestory Rating",
+    get: (v) => (v.bridestoryRating != null ? String(v.bridestoryRating) : ""),
+  },
+  {
+    header: "Number of Reviewers",
+    get: (v) => (v.bridestoryReviewCount != null ? String(v.bridestoryReviewCount) : ""),
+  },
+  { header: "Notes", get: (v) => v.notes },
+];
+
+function toCsvField(value: string) {
+  if (/[",\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function exportVendorsToCsv(vendors: Vendor[]) {
+  const rows = [
+    CSV_COLUMNS.map((c) => toCsvField(c.header)).join(","),
+    ...vendors.map((v) => CSV_COLUMNS.map((c) => toCsvField(c.get(v))).join(",")),
+  ];
+  const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vendors-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export function VendorsTable() {
@@ -411,13 +459,22 @@ export function VendorsTable() {
             Food, photos and videos, decor and everyone else making the day happen.
           </p>
         </div>
-        <div className="flex gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap gap-2 self-start sm:self-auto">
           <Button
             type="button"
             variant="outline"
             onClick={() => importWeddingOrganizerList()}
           >
             Import Wedding Organizer list (one-time)
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => exportVendorsToCsv(filtered)}
+          >
+            <Download className="size-4" />
+            Export CSV
           </Button>
           <Button
             onClick={() =>
