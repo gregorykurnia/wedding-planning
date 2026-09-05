@@ -42,6 +42,33 @@ import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/bu
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
 
+// One-time seed list for the Wedding Organizer "List" status — remove this
+// block (and the button that calls it) once imported.
+const WEDDING_ORGANIZER_LIST_IMPORT: { name: string; rating: number; reviews: number }[] = [
+  { name: "Costela", rating: 5.0, reviews: 57 },
+  { name: "Double happiness", rating: 5.0, reviews: 101 },
+  { name: "Finest", rating: 5.0, reviews: 246 },
+  { name: "Hilda by bridestory", rating: 5.0, reviews: 51 },
+  { name: "JDV wedding", rating: 5.0, reviews: 217 },
+  { name: "Jevahre", rating: 5.0, reviews: 45 },
+  { name: "Kreativ Things", rating: 4.9, reviews: 120 },
+  { name: "One Sweet Day Planner", rating: 5.0, reviews: 45 },
+  { name: "Orange", rating: 5.0, reviews: 271 },
+  { name: "Premiere", rating: 5.0, reviews: 127 },
+  { name: "She La Vie", rating: 5.0, reviews: 51 },
+  { name: "Testimo", rating: 5.0, reviews: 41 },
+];
+
+async function importWeddingOrganizerList() {
+  for (const entry of WEDDING_ORGANIZER_LIST_IMPORT) {
+    await createVendor("Wedding Organizer", "List", {
+      name: entry.name,
+      bridestoryRating: entry.rating,
+      bridestoryReviewCount: entry.reviews,
+    });
+  }
+}
+
 export function VendorsTable() {
   const { data: vendors, loading } = useVendors();
   const { data: budgetItems } = useBudgetItems();
@@ -384,15 +411,24 @@ export function VendorsTable() {
             Food, photos and videos, decor and everyone else making the day happen.
           </p>
         </div>
-        <Button
-          onClick={() =>
-            createVendor(activeCategory === "All" ? undefined : activeCategory)
-          }
-          className="gap-1.5 self-start sm:self-auto"
-        >
-          <Plus className="size-4" />
-          Add vendor
-        </Button>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => importWeddingOrganizerList()}
+          >
+            Import Wedding Organizer list (one-time)
+          </Button>
+          <Button
+            onClick={() =>
+              createVendor(activeCategory === "All" ? undefined : activeCategory)
+            }
+            className="gap-1.5"
+          >
+            <Plus className="size-4" />
+            Add vendor
+          </Button>
+        </div>
       </div>
 
       <VendorCategoryTabs active={activeCategory} onChange={setActiveCategory} counts={counts} />

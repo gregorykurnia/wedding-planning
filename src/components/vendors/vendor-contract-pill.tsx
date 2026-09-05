@@ -11,6 +11,7 @@ import type { ContractStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const CONTRACT_STATUSES: ContractStatus[] = [
+  "List",
   "Inquiring",
   "Consideration",
   "Chosen",
@@ -19,6 +20,7 @@ export const CONTRACT_STATUSES: ContractStatus[] = [
 ];
 
 export const CONTRACT_STYLES: Record<ContractStatus, string> = {
+  List: "bg-slate-100 text-slate-700 border-slate-200",
   Inquiring: "bg-muted text-muted-foreground border-border",
   Consideration: "bg-amber-100 text-amber-800 border-amber-200",
   Chosen: "bg-sky-100 text-sky-800 border-sky-200",

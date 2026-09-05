@@ -40,7 +40,7 @@ export type VendorCategory =
 // Vendors page's own category tabs) or VenueStatus.
 export type ConfirmedType = VendorCategory | "Venue";
 
-export type ContractStatus = "Inquiring" | "Consideration" | "Chosen" | "Done" | "Rejected";
+export type ContractStatus = "List" | "Inquiring" | "Consideration" | "Chosen" | "Done" | "Rejected";
 
 export interface VendorFile {
   name: string;

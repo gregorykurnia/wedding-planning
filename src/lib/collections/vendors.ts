@@ -76,7 +76,11 @@ export function useVendors() {
   return useCollection<Vendor>(COLLECTION, fromDoc, [orderBy("createdAt", "desc")]);
 }
 
-export function createVendor(category?: VendorCategory, contractStatus?: ContractStatus) {
+export function createVendor(
+  category?: VendorCategory,
+  contractStatus?: ContractStatus,
+  overrides?: Partial<Pick<Vendor, "name" | "bridestoryRating" | "bridestoryReviewCount">>,
+) {
   return addDocument(COLLECTION, {
     name: "New Vendor",
     category: category ?? ("Other" as VendorCategory),
@@ -93,6 +97,7 @@ export function createVendor(category?: VendorCategory, contractStatus?: Contrac
     files: [],
     bridestoryRating: null,
     bridestoryReviewCount: null,
+    ...overrides,
     confirmedType: category ?? ("Other" as VendorCategory),
     totalPrice: 0,
     budgetSpent: 0,
