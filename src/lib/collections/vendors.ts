@@ -56,6 +56,9 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     starred: data.starred === true,
     images: Array.isArray(data.images) ? data.images : [],
     files: Array.isArray(data.files) ? data.files : [],
+    bridestoryRating: typeof data.bridestoryRating === "number" ? data.bridestoryRating : null,
+    bridestoryReviewCount:
+      typeof data.bridestoryReviewCount === "number" ? data.bridestoryReviewCount : null,
     confirmedType: (data.confirmedType as ConfirmedType) ?? (data.category as VendorCategory) ?? "Other",
     totalPrice: typeof data.totalPrice === "number" ? data.totalPrice : 0,
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
@@ -88,6 +91,8 @@ export function createVendor(category?: VendorCategory, contractStatus?: Contrac
     starred: false,
     images: [],
     files: [],
+    bridestoryRating: null,
+    bridestoryReviewCount: null,
     confirmedType: category ?? ("Other" as VendorCategory),
     totalPrice: 0,
     budgetSpent: 0,

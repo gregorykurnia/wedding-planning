@@ -250,6 +250,69 @@ export function VendorsTable() {
         cell: ({ row }) => <VendorFilesCell vendor={row.original} />,
       },
       {
+        id: "bridestoryRating",
+        header: ({ column }) => (
+          <button
+            className="flex items-center gap-1"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Bridestory Rating <ArrowUpDown className="size-3.5" />
+          </button>
+        ),
+        size: 130,
+        minSize: 110,
+        accessorFn: (vendor) => vendor.bridestoryRating ?? -1,
+        cell: ({ row }) => {
+          const vendor = row.original;
+          return (
+            <EditableText
+              value={vendor.bridestoryRating != null ? String(vendor.bridestoryRating) : ""}
+              onSave={(value) => {
+                const parsed = value.trim() === "" ? null : Number(value);
+                updateVendor(vendor.id, {
+                  bridestoryRating: parsed === null || Number.isNaN(parsed) ? null : parsed,
+                });
+              }}
+              placeholder="Add rating"
+              className="px-0 text-sm"
+            />
+          );
+        },
+      },
+      {
+        id: "bridestoryReviewCount",
+        header: ({ column }) => (
+          <button
+            className="flex items-center gap-1"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Number of Reviewers <ArrowUpDown className="size-3.5" />
+          </button>
+        ),
+        size: 150,
+        minSize: 120,
+        accessorFn: (vendor) => vendor.bridestoryReviewCount ?? -1,
+        cell: ({ row }) => {
+          const vendor = row.original;
+          return (
+            <EditableText
+              value={
+                vendor.bridestoryReviewCount != null ? String(vendor.bridestoryReviewCount) : ""
+              }
+              onSave={(value) => {
+                const parsed = value.trim() === "" ? null : Number(value);
+                updateVendor(vendor.id, {
+                  bridestoryReviewCount:
+                    parsed === null || Number.isNaN(parsed) ? null : Math.round(parsed),
+                });
+              }}
+              placeholder="Add count"
+              className="px-0 text-sm"
+            />
+          );
+        },
+      },
+      {
         id: "actions",
         header: "",
         enableSorting: false,

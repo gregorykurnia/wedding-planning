@@ -81,6 +81,8 @@ export interface Vendor {
   starred: boolean;
   images: string[];
   files: VendorFile[];
+  bridestoryRating: number | null;
+  bridestoryReviewCount: number | null;
   // Confirmed-list tracking fields, independent of priceOptions (which is
   // for comparing options pre-booking) — set once a vendor is locked in.
   confirmedType: ConfirmedType;
