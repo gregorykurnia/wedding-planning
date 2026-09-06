@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Copy, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -80,7 +80,7 @@ function SubEntryRow({
         <EditableText
           value={sub.name}
           onSave={(name) => save({ name })}
-          placeholder="Option name"
+          placeholder="Package name"
           className="text-sm"
         />
       </TableCell>
@@ -88,7 +88,7 @@ function SubEntryRow({
         <VendorCategoryPill value={sub.type} onChange={(type) => save({ type })} />
       </TableCell>
       <TableCell className="align-top text-xs text-muted-foreground italic">
-        Comparison option
+        Package
       </TableCell>
       <TableCell className="align-top">
         <ShortlistPriceCell
@@ -152,7 +152,7 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
               type="button"
               onClick={() => setExpanded((e) => !e)}
               className="mt-1.5 shrink-0 text-muted-foreground hover:text-foreground"
-              title={expanded ? "Hide comparison options" : "Show comparison options"}
+              title={expanded ? "Hide packages" : "Show packages"}
             >
               {expanded ? (
                 <ChevronDown className="size-4" />
@@ -166,6 +166,19 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
               placeholder="Vendor / venue name"
               className="font-medium text-foreground"
             />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              title="Add package"
+              className="mt-0.5 size-6 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setExpanded(true);
+                addShortlistSubEntry(item);
+              }}
+            >
+              <Plus className="size-3.5" />
+            </Button>
           </div>
         </TableCell>
         <TableCell className="align-top">
@@ -225,27 +238,8 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
           </Button>
         </TableCell>
       </TableRow>
-      {expanded && (
-        <>
-          {item.subEntries.map((sub) => (
-            <SubEntryRow key={sub.id} parent={item} sub={sub} />
-          ))}
-          <TableRow className="bg-muted/60 hover:bg-muted/70">
-            <TableCell colSpan={HEADERS.length} className="pl-8 py-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 gap-1 text-xs"
-                onClick={() => addShortlistSubEntry(item)}
-              >
-                <Copy className="size-3" />
-                Add comparison option
-              </Button>
-            </TableCell>
-          </TableRow>
-        </>
-      )}
+      {expanded &&
+        item.subEntries.map((sub) => <SubEntryRow key={sub.id} parent={item} sub={sub} />)}
     </>
   );
 }
@@ -259,8 +253,8 @@ export function ShortlistTable() {
         <div>
           <h1 className="font-heading text-3xl font-semibold text-foreground">Shortlist</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Options you&apos;re still weighing — use the copy icon to add comparison options
-            under an entry (e.g. different packages from the same vendor).
+            Options you&apos;re still weighing — use the + next to a name to add its packages
+            (e.g. Gold / Silver / Bronze from the same vendor).
           </p>
         </div>
         <Button onClick={() => createShortlistItem()} className="gap-1.5 self-start sm:self-auto">
