@@ -16,6 +16,8 @@ import {
 interface VenueNotesCellProps {
   value: string;
   onSave: (value: string) => void;
+  placeholder?: string;
+  dialogTitle?: string;
 }
 
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -48,7 +50,7 @@ function Linkified({ text }: { text: string }) {
 // talent/option list) and get a dedicated dialog instead of inline editing.
 const DOC_THRESHOLD = 200;
 
-function NotesDialogCell({ value, onSave }: VenueNotesCellProps) {
+function NotesDialogCell({ value, onSave, dialogTitle = "Notes" }: VenueNotesCellProps) {
   const [draft, setDraft] = useState(value);
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -72,11 +74,11 @@ function NotesDialogCell({ value, onSave }: VenueNotesCellProps) {
           />
         }
       >
-        {value.slice(0, 60)}… <span className="text-primary">View full note</span>
+        {value.slice(0, 60)}… <span className="text-primary">View full text</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Notes</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         {editing ? (
           <Textarea
@@ -116,12 +118,17 @@ function NotesDialogCell({ value, onSave }: VenueNotesCellProps) {
   );
 }
 
-export function VenueNotesCell({ value, onSave }: VenueNotesCellProps) {
+export function VenueNotesCell({
+  value,
+  onSave,
+  placeholder,
+  dialogTitle,
+}: VenueNotesCellProps) {
   const [expanded, setExpanded] = useState(false);
   const isLong = value.length > 60;
 
   if (value.length > DOC_THRESHOLD) {
-    return <NotesDialogCell value={value} onSave={onSave} />;
+    return <NotesDialogCell value={value} onSave={onSave} dialogTitle={dialogTitle} />;
   }
 
   return (
@@ -130,6 +137,7 @@ export function VenueNotesCell({ value, onSave }: VenueNotesCellProps) {
         value={value}
         onSave={onSave}
         multiline
+        placeholder={placeholder}
         className={expanded ? "min-h-16" : undefined}
         displayFormatter={(v) => (isLong && !expanded ? `${v.slice(0, 60)}…` : v)}
       />

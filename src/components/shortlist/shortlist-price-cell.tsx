@@ -1,7 +1,7 @@
 "use client";
 
 import { EditableNumber } from "@/components/shared/editable-number";
-import { EditableText } from "@/components/shared/editable-text";
+import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { formatIDR } from "@/lib/format";
 
 interface ShortlistPriceCellProps {
@@ -18,14 +18,13 @@ export function ShortlistPriceCell({
   onSaveDescription,
 }: ShortlistPriceCellProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex max-w-[220px] flex-col gap-1">
       <EditableNumber value={price} onSave={onSavePrice} formatDisplay={formatIDR} className="font-medium" />
-      <EditableText
+      <VenueNotesCell
         value={description}
         onSave={onSaveDescription}
-        multiline
         placeholder="What's included at this price…"
-        className="px-1 text-xs text-muted-foreground"
+        dialogTitle="What's included at this price"
       />
     </div>
   );

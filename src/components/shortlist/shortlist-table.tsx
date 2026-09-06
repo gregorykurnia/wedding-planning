@@ -35,7 +35,7 @@ const HEADERS = [
   { label: "Name", className: "min-w-[200px]" },
   { label: "Type", className: "min-w-[150px]" },
   { label: "Contact", className: "min-w-[170px]" },
-  { label: "Price", className: "min-w-[200px]" },
+  { label: "Price", className: "min-w-[200px] max-w-[220px]" },
   { label: "Bridestory Reviewers", className: "min-w-[110px]" },
   { label: "IG Followers", className: "min-w-[110px]" },
   { label: "Next Actions", className: "min-w-[160px]" },
