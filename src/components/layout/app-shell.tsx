@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   CalendarHeart,
   ChevronDown,
+  ClipboardList,
   Heart,
   LayoutDashboard,
   ListTodo,
@@ -34,6 +35,7 @@ import { cn } from "@/lib/utils";
 const PLANNING_ITEMS = [
   { href: "/venues", label: "Venues", icon: Warehouse },
   { href: "/vendors", label: "Vendors", icon: Heart },
+  { href: "/shortlist", label: "Shortlist", icon: ClipboardList },
   { href: "/confirmed", label: "Confirmed", icon: BadgeCheck },
 ];
 

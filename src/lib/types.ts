@@ -182,6 +182,46 @@ export interface HypotheticalItem {
   updatedAt: number | null;
 }
 
+// A price package/option under a Shortlist entry — same shape as
+// VendorPriceOption but kept separate since Shortlist isn't a Vendor.
+export interface ShortlistOption {
+  id: string;
+  description: string;
+  price: number;
+  selected: boolean;
+}
+
+// A comparison sub-entry nested under a Shortlist item (e.g. a different
+// package or tier from the same vendor being compared side by side).
+export interface ShortlistSubEntry {
+  id: string;
+  name: string;
+  type: VendorCategory;
+  price: number;
+  priceDescription: string;
+  bridestoryReviewers: number | null;
+  igFollowers: number | null;
+  nextAction: string;
+  notes: string;
+}
+
+export interface ShortlistItem {
+  id: string;
+  name: string;
+  type: VendorCategory;
+  contactName: string;
+  contactPhone: string;
+  price: number;
+  priceDescription: string;
+  bridestoryReviewers: number | null;
+  igFollowers: number | null;
+  nextAction: string;
+  notes: string;
+  subEntries: ShortlistSubEntry[];
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
 export interface Note {
   id: string;
   text: string;
