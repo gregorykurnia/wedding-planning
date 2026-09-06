@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import {
   Table,
@@ -17,6 +17,7 @@ import { EditableText } from "@/components/shared/editable-text";
 import { ContactCell } from "@/components/shared/contact-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
+import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
 import { ShortlistPriceCell } from "@/components/shortlist/shortlist-price-cell";
 import {
   addShortlistSubEntry,
@@ -28,7 +29,7 @@ import {
   useShortlistItems,
 } from "@/lib/collections/shortlist";
 import { cn } from "@/lib/utils";
-import type { ShortlistItem, ShortlistSubEntry } from "@/lib/types";
+import type { ShortlistItem, ShortlistSubEntry, VendorCategory } from "@/lib/types";
 
 const HEADERS = [
   { label: "Name", className: "min-w-[200px]" },
@@ -246,6 +247,20 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
 
 export function ShortlistTable() {
   const { data: items, loading } = useShortlistItems();
+  const [activeType, setActiveType] = useState<VendorCategory | "All">("All");
+
+  const counts = useMemo(() => {
+    const result: Record<string, number> = { All: items.length };
+    for (const item of items) {
+      result[item.type] = (result[item.type] ?? 0) + 1;
+    }
+    return result;
+  }, [items]);
+
+  const filtered = useMemo(
+    () => (activeType === "All" ? items : items.filter((item) => item.type === activeType)),
+    [items, activeType],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -257,11 +272,16 @@ export function ShortlistTable() {
             (e.g. Gold / Silver / Bronze from the same vendor).
           </p>
         </div>
-        <Button onClick={() => createShortlistItem()} className="gap-1.5 self-start sm:self-auto">
+        <Button
+          onClick={() => createShortlistItem(activeType === "All" ? undefined : activeType)}
+          className="gap-1.5 self-start sm:self-auto"
+        >
           <Plus className="size-4" />
           Add to shortlist
         </Button>
       </div>
+
+      <VendorCategoryTabs active={activeType} onChange={setActiveType} counts={counts} />
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
         <div className="overflow-x-auto">
@@ -292,21 +312,25 @@ export function ShortlistTable() {
                     ))}
                   </TableRow>
                 ))
-              ) : items.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={HEADERS.length} className="py-10 text-center text-muted-foreground">
-                    No shortlist entries yet.
+                    No shortlist entries match this filter.
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map((item) => <ShortlistRow key={item.id} item={item} />)
+                filtered.map((item) => <ShortlistRow key={item.id} item={item} />)
               )}
             </TableBody>
           </Table>
         </div>
       </Card>
 
-      <Button variant="outline" onClick={() => createShortlistItem()} className="gap-1.5 self-start">
+      <Button
+        variant="outline"
+        onClick={() => createShortlistItem(activeType === "All" ? undefined : activeType)}
+        className="gap-1.5 self-start"
+      >
         <Plus className="size-4" />
         Add to shortlist
       </Button>

@@ -56,10 +56,10 @@ export function useShortlistItems() {
   return useCollection<ShortlistItem>(COLLECTION, fromDoc, [orderBy("createdAt", "desc")]);
 }
 
-export function createShortlistItem() {
+export function createShortlistItem(type?: VendorCategory) {
   return addDocument(COLLECTION, {
     name: "New shortlist entry",
-    type: "Other" as VendorCategory,
+    type: type ?? ("Other" as VendorCategory),
     contactName: "",
     contactPhone: "",
     price: 0,
