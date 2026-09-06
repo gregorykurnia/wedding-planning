@@ -13,6 +13,7 @@ import {
 import {
   ArrowUpDown,
   Download,
+  ListPlus,
   MessageCircle,
   PiggyBank,
   Plus,
@@ -48,6 +49,7 @@ import {
   useVendors,
 } from "@/lib/collections/vendors";
 import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/budget-items";
+import { createShortlistItemFromVendor } from "@/lib/collections/shortlist";
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
 
@@ -392,7 +394,7 @@ export function VendorsTable() {
         header: "",
         enableSorting: false,
         enableResizing: false,
-        size: 120,
+        size: 150,
         cell: ({ row }) => {
           const vendor = row.original;
           const alreadyLinked = linkedVendorIds.has(vendor.id);
@@ -421,6 +423,22 @@ export function VendorsTable() {
                   </TooltipContent>
                 </Tooltip>
               )}
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                      onClick={() => createShortlistItemFromVendor(vendor)}
+                    />
+                  }
+                >
+                  <ListPlus className="size-4" />
+                </TooltipTrigger>
+                <TooltipContent>Copy to shortlist</TooltipContent>
+              </Tooltip>
               <Button
                 type="button"
                 variant="ghost"

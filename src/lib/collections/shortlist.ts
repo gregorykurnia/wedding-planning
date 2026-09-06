@@ -9,7 +9,7 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
-import type { ShortlistItem, ShortlistSubEntry, VendorCategory } from "@/lib/types";
+import type { ShortlistItem, ShortlistSubEntry, Vendor, VendorCategory } from "@/lib/types";
 
 const COLLECTION = "shortlist";
 
@@ -68,6 +68,28 @@ export function createShortlistItem(type?: VendorCategory) {
     igFollowers: null,
     nextAction: "",
     notes: "",
+    subEntries: [],
+  });
+}
+
+// Copies the overlapping fields from a Vendor into a brand-new, independent
+// Shortlist entry — the vendor itself is left untouched. Price options don't
+// map 1:1 with the Shortlist's single price/description pair, so we use the
+// selected option (or the first one) as the best guess.
+export function createShortlistItemFromVendor(vendor: Vendor) {
+  const priceOption =
+    vendor.priceOptions.find((p) => p.selected) ?? vendor.priceOptions[0] ?? null;
+  return addDocument(COLLECTION, {
+    name: vendor.name,
+    type: vendor.category,
+    contactName: vendor.contactName,
+    contactPhone: vendor.contactPhone,
+    price: priceOption?.price ?? 0,
+    priceDescription: priceOption?.description ?? "",
+    bridestoryReviewers: vendor.bridestoryReviewCount,
+    igFollowers: null,
+    nextAction: vendor.nextAction,
+    notes: vendor.notes,
     subEntries: [],
   });
 }
