@@ -74,22 +74,39 @@ export function createShortlistItem(type?: VendorCategory) {
 
 // Copies the overlapping fields from a Vendor into a brand-new, independent
 // Shortlist entry — the vendor itself is left untouched. Price options don't
-// map 1:1 with the Shortlist's single price/description pair, so we use the
-// selected option (or the first one) as the best guess.
+// map 1:1 with the Shortlist's single price/description pair, so the selected
+// option (or the first one) becomes the main price, and any other price
+// options are carried over as sub-entries so they aren't lost.
 export function createShortlistItemFromVendor(vendor: Vendor) {
   const priceOption =
     vendor.priceOptions.find((p) => p.selected) ?? vendor.priceOptions[0] ?? null;
-  const subEntries: ShortlistSubEntry[] = vendor.subEntries.map((s) => ({
-    id: crypto.randomUUID(),
-    name: s.name,
-    type: vendor.category,
-    price: s.totalPrice,
-    priceDescription: "",
-    bridestoryReviewers: null,
-    igFollowers: null,
-    nextAction: s.nextAction,
-    notes: "",
-  }));
+  const otherPriceOptions: ShortlistSubEntry[] = vendor.priceOptions
+    .filter((p) => p.id !== priceOption?.id)
+    .map((p) => ({
+      id: crypto.randomUUID(),
+      name: p.description || "Option",
+      type: vendor.category,
+      price: p.price,
+      priceDescription: p.description,
+      bridestoryReviewers: null,
+      igFollowers: null,
+      nextAction: "",
+      notes: "",
+    }));
+  const subEntries: ShortlistSubEntry[] = [
+    ...otherPriceOptions,
+    ...vendor.subEntries.map((s) => ({
+      id: crypto.randomUUID(),
+      name: s.name,
+      type: vendor.category,
+      price: s.totalPrice,
+      priceDescription: "",
+      bridestoryReviewers: null,
+      igFollowers: null,
+      nextAction: s.nextAction,
+      notes: "",
+    })),
+  ];
   return addDocument(COLLECTION, {
     name: vendor.name,
     type: vendor.category,
