@@ -19,6 +19,9 @@ service cloud.firestore {
     match /vendors/{docId} {
       allow read, write: if isAllowed();
     }
+    match /shortlist/{docId} {
+      allow read, write: if isAllowed();
+    }
     match /venues/{docId} {
       allow read, write: if isAllowed();
     }
