@@ -77,7 +77,7 @@ function SubEntryRow({
 
   return (
     <TableRow className="bg-muted/60 hover:bg-muted/70">
-      <TableCell className="relative align-top pl-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-px before:bg-border">
+      <TableCell className="relative align-top pl-8 break-words whitespace-normal overflow-hidden before:absolute before:top-0 before:bottom-0 before:left-4 before:w-px before:bg-border">
         <EditableText
           value={sub.name}
           onSave={(name) => save({ name })}
@@ -85,13 +85,13 @@ function SubEntryRow({
           className="text-sm"
         />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <VendorCategoryPill value={sub.type} onChange={(type) => save({ type })} />
       </TableCell>
-      <TableCell className="align-top text-xs text-muted-foreground italic">
+      <TableCell className="align-top text-xs text-muted-foreground italic break-words whitespace-normal overflow-hidden">
         Package
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <ShortlistPriceCell
           price={sub.price}
           description={sub.priceDescription}
@@ -99,21 +99,21 @@ function SubEntryRow({
           onSaveDescription={(priceDescription) => save({ priceDescription })}
         />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <NumberCell
           value={sub.bridestoryReviewers}
           onSave={(bridestoryReviewers) => save({ bridestoryReviewers })}
           placeholder="Add count"
         />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <NumberCell
           value={sub.igFollowers}
           onSave={(igFollowers) => save({ igFollowers })}
           placeholder="Add count"
         />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <EditableText
           value={sub.nextAction}
           onSave={(nextAction) => save({ nextAction })}
@@ -122,10 +122,10 @@ function SubEntryRow({
           className="text-sm"
         />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <VenueNotesCell value={sub.notes} onSave={(notes) => save({ notes })} />
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <Button
           type="button"
           variant="ghost"
@@ -147,7 +147,7 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
   return (
     <>
       <TableRow className="hover:bg-accent/30">
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <div className="flex items-start gap-1">
             <button
               type="button"
@@ -161,12 +161,14 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
                 <ChevronRight className="size-4" />
               )}
             </button>
-            <EditableText
-              value={item.name}
-              onSave={(name) => save({ name })}
-              placeholder="Vendor / venue name"
-              className="font-medium text-foreground"
-            />
+            <div className="min-w-0 flex-1">
+              <EditableText
+                value={item.name}
+                onSave={(name) => save({ name })}
+                placeholder="Vendor / venue name"
+                className="font-medium text-foreground"
+              />
+            </div>
             <Button
               type="button"
               variant="ghost"
@@ -182,10 +184,10 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
             </Button>
           </div>
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <VendorCategoryPill value={item.type} onChange={(type) => save({ type })} />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <ContactCell
             name={item.contactName}
             phone={item.contactPhone}
@@ -193,7 +195,7 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
             onSavePhone={(contactPhone) => save({ contactPhone })}
           />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <ShortlistPriceCell
             price={item.price}
             description={item.priceDescription}
@@ -201,21 +203,21 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
             onSaveDescription={(priceDescription) => save({ priceDescription })}
           />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <NumberCell
             value={item.bridestoryReviewers}
             onSave={(bridestoryReviewers) => save({ bridestoryReviewers })}
             placeholder="Add count"
           />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <NumberCell
             value={item.igFollowers}
             onSave={(igFollowers) => save({ igFollowers })}
             placeholder="Add count"
           />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <EditableText
             value={item.nextAction}
             onSave={(nextAction) => save({ nextAction })}
@@ -224,10 +226,10 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
             className="text-sm"
           />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <VenueNotesCell value={item.notes} onSave={(notes) => save({ notes })} />
         </TableCell>
-        <TableCell className="align-top">
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <Button
             type="button"
             variant="ghost"

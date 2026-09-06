@@ -18,7 +18,7 @@ export function ShortlistPriceCell({
   onSaveDescription,
 }: ShortlistPriceCellProps) {
   return (
-    <div className="flex max-w-[220px] flex-col gap-1">
+    <div className="flex min-w-0 max-w-[220px] flex-col gap-1">
       <EditableNumber value={price} onSave={onSavePrice} formatDisplay={formatIDR} className="font-medium" />
       <VenueNotesCell
         value={description}
