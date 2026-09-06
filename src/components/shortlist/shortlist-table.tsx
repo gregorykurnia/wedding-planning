@@ -75,8 +75,8 @@ function SubEntryRow({
     updateShortlistSubEntry(parent, sub.id, data);
 
   return (
-    <TableRow className="bg-muted/20 hover:bg-muted/30">
-      <TableCell className="align-top pl-8">
+    <TableRow className="bg-muted/60 hover:bg-muted/70">
+      <TableCell className="relative align-top pl-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:w-px before:bg-border">
         <EditableText
           value={sub.name}
           onSave={(name) => save({ name })}
@@ -230,7 +230,7 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
           {item.subEntries.map((sub) => (
             <SubEntryRow key={sub.id} parent={item} sub={sub} />
           ))}
-          <TableRow className="bg-muted/20 hover:bg-muted/30">
+          <TableRow className="bg-muted/60 hover:bg-muted/70">
             <TableCell colSpan={HEADERS.length} className="pl-8 py-1.5">
               <Button
                 type="button"
