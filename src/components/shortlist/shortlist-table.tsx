@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -248,6 +248,7 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
 export function ShortlistTable() {
   const { data: items, loading } = useShortlistItems();
   const [activeType, setActiveType] = useState<VendorCategory | "All">("All");
+  const [typeSort, setTypeSort] = useState<"asc" | "desc" | null>(null);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { All: items.length };
@@ -257,10 +258,12 @@ export function ShortlistTable() {
     return result;
   }, [items]);
 
-  const filtered = useMemo(
-    () => (activeType === "All" ? items : items.filter((item) => item.type === activeType)),
-    [items, activeType],
-  );
+  const filtered = useMemo(() => {
+    const base = activeType === "All" ? items : items.filter((item) => item.type === activeType);
+    if (!typeSort) return base;
+    const sorted = [...base].sort((a, b) => a.type.localeCompare(b.type));
+    return typeSort === "asc" ? sorted : sorted.reverse();
+  }, [items, activeType, typeSort]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -296,7 +299,21 @@ export function ShortlistTable() {
                       h.className,
                     )}
                   >
-                    {h.label}
+                    {h.label === "Type" ? (
+                      <button
+                        type="button"
+                        className="flex items-center gap-1"
+                        onClick={() =>
+                          setTypeSort((prev) =>
+                            prev === "asc" ? "desc" : prev === "desc" ? null : "asc",
+                          )
+                        }
+                      >
+                        Type <ArrowUpDown className="size-3.5" />
+                      </button>
+                    ) : (
+                      h.label
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
