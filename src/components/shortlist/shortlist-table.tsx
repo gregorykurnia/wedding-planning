@@ -140,7 +140,7 @@ function SubEntryRow({
 }
 
 function ShortlistRow({ item }: { item: ShortlistItem }) {
-  const [expanded, setExpanded] = useState(item.subEntries.length > 0);
+  const [expanded, setExpanded] = useState(true);
   const save = (data: Partial<ShortlistItem>) => updateShortlistItem(item.id, data);
 
   return (
@@ -214,34 +214,38 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
           <VenueNotesCell value={item.notes} onSave={(notes) => save({ notes })} />
         </TableCell>
         <TableCell className="align-top">
-          <div className="flex items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              title="Add comparison option"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                setExpanded(true);
-                addShortlistSubEntry(item);
-              }}
-            >
-              <Copy className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => deleteShortlistItem(item.id)}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive"
+            onClick={() => deleteShortlistItem(item.id)}
+          >
+            <Trash2 className="size-4" />
+          </Button>
         </TableCell>
       </TableRow>
-      {expanded &&
-        item.subEntries.map((sub) => <SubEntryRow key={sub.id} parent={item} sub={sub} />)}
+      {expanded && (
+        <>
+          {item.subEntries.map((sub) => (
+            <SubEntryRow key={sub.id} parent={item} sub={sub} />
+          ))}
+          <TableRow className="bg-muted/20 hover:bg-muted/30">
+            <TableCell colSpan={HEADERS.length} className="pl-8 py-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                onClick={() => addShortlistSubEntry(item)}
+              >
+                <Copy className="size-3" />
+                Add comparison option
+              </Button>
+            </TableCell>
+          </TableRow>
+        </>
+      )}
     </>
   );
 }
