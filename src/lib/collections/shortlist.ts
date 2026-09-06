@@ -79,6 +79,17 @@ export function createShortlistItem(type?: VendorCategory) {
 export function createShortlistItemFromVendor(vendor: Vendor) {
   const priceOption =
     vendor.priceOptions.find((p) => p.selected) ?? vendor.priceOptions[0] ?? null;
+  const subEntries: ShortlistSubEntry[] = vendor.subEntries.map((s) => ({
+    id: crypto.randomUUID(),
+    name: s.name,
+    type: vendor.category,
+    price: s.totalPrice,
+    priceDescription: "",
+    bridestoryReviewers: null,
+    igFollowers: null,
+    nextAction: s.nextAction,
+    notes: "",
+  }));
   return addDocument(COLLECTION, {
     name: vendor.name,
     type: vendor.category,
@@ -90,7 +101,7 @@ export function createShortlistItemFromVendor(vendor: Vendor) {
     igFollowers: null,
     nextAction: vendor.nextAction,
     notes: vendor.notes,
-    subEntries: [],
+    subEntries,
   });
 }
 
