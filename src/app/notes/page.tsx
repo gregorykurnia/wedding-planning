@@ -188,7 +188,7 @@ export default function NotesPage() {
           {selectedNote && (
             <div className="flex min-w-0 flex-col gap-3">
               <div className="flex items-center justify-between gap-3 px-1">
-                <p className="text-xs text-muted-foreground">Autosaves as you type</p>
+                <p className="text-xs text-muted-foreground">Document editor</p>
                 <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-destructive" onClick={() => void handleDelete()}>
                   <Trash2 className="size-3.5" />
                   Delete

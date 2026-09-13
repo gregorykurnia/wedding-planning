@@ -251,19 +251,9 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
           <Minus />
         </ToolbarButton>
 
-        <span className="ml-auto px-1 text-xs text-muted-foreground" aria-live="polite">
-          {saveState === "saving" && "Saving…"}
-          {saveState === "unsaved" && "Unsaved changes"}
-          {saveState === "saved" && "Saved"}
-          {saveState === "error" && (
-            <button type="button" className="text-destructive underline underline-offset-2" onClick={() => void saveDraft()}>
-              {errorMessage ?? "Retry save"}
-            </button>
-          )}
-        </span>
       </div>
 
-      <div className="border-b border-border/70 px-5 py-4 sm:px-8">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-8">
         <Input
           value={title}
           onChange={(event) => {
@@ -273,8 +263,18 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
           }}
           placeholder="Document title"
           aria-label="Document title"
-          className="h-auto border-none bg-transparent px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 sm:text-3xl"
+          className="h-auto min-w-0 flex-1 border-none bg-transparent px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 sm:text-3xl"
         />
+        <span className="shrink-0 text-xs text-muted-foreground" aria-live="polite">
+          {saveState === "saving" && "Saving…"}
+          {saveState === "unsaved" && "Unsaved changes"}
+          {saveState === "saved" && "Saved"}
+          {saveState === "error" && (
+            <button type="button" className="text-destructive underline underline-offset-2" onClick={() => void saveDraft()}>
+              {errorMessage ?? "Retry save"}
+            </button>
+          )}
+        </span>
       </div>
 
       <EditorContent editor={editor} className="flex-1 px-5 py-5 sm:px-8 sm:py-7" />
