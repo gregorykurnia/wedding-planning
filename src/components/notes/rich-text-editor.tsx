@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyleKit } from "@tiptap/extension-text-style";
+import { TableKit } from "@tiptap/extension-table";
 import type { JSONContent } from "@tiptap/core";
 import {
   Bold,
@@ -79,6 +80,7 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   const [content, setContent] = useState<JSONContent>(note.content);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isInTable, setIsInTable] = useState(false);
   const latestDraft = useRef({ title: note.title, content: note.content });
   const dirty = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,7 +122,16 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   );
 
   const editor = useEditor({
-    extensions: [StarterKit, TextStyleKit],
+    extensions: [
+      StarterKit,
+      TextStyleKit,
+      TableKit.configure({
+        table: {
+          resizable: true,
+          renderWrapper: true,
+        },
+      }),
+    ],
     content: note.content,
     immediatelyRender: false,
     onUpdate: ({ editor: nextEditor }) => {
@@ -128,6 +139,8 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
       setContent(nextContent);
       markDraftChanged({ title: latestDraft.current.title, content: nextContent });
     },
+    onSelectionUpdate: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
+    onTransaction: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
   });
 
   useEffect(() => {
@@ -217,6 +230,52 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
         <ToolbarButton label="Numbered list" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
           <ListOrdered />
         </ToolbarButton>
+
+        <div className="mx-1 h-5 w-px bg-border" />
+
+        <select
+          aria-label="Insert table"
+          defaultValue=""
+          className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          onChange={(event) => {
+            const [rows, cols] = event.target.value.split("x").map(Number);
+            if (rows && cols) editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+            event.target.value = "";
+          }}
+        >
+          <option value="">Insert table</option>
+          <option value="2x2">2 × 2 table</option>
+          <option value="3x3">3 × 3 table</option>
+          <option value="4x3">4 × 3 table</option>
+          <option value="5x4">5 × 4 table</option>
+          <option value="6x5">6 × 5 table</option>
+        </select>
+
+        <select
+          aria-label="Table actions"
+          defaultValue=""
+          disabled={!isInTable}
+          className="h-7 max-w-40 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50"
+          onChange={(event) => {
+            const action = event.target.value;
+            const chain = editor.chain().focus();
+            if (action === "add-row") chain.addRowAfter().run();
+            if (action === "add-column") chain.addColumnAfter().run();
+            if (action === "delete-row") chain.deleteRow().run();
+            if (action === "delete-column") chain.deleteColumn().run();
+            if (action === "header-row") chain.toggleHeaderRow().run();
+            if (action === "delete-table") chain.deleteTable().run();
+            event.target.value = "";
+          }}
+        >
+          <option value="">Table actions</option>
+          <option value="add-row">Add row below</option>
+          <option value="add-column">Add column right</option>
+          <option value="delete-row">Delete current row</option>
+          <option value="delete-column">Delete current column</option>
+          <option value="header-row">Toggle header row</option>
+          <option value="delete-table">Delete table</option>
+        </select>
 
         <label className="relative flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Text color">
           <Palette className="size-4" />

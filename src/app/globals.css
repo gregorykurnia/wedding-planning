@@ -200,3 +200,51 @@
   color: var(--muted-foreground);
   padding-left: 1rem;
 }
+
+.ProseMirror .tableWrapper {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  position: relative;
+  min-width: 6rem;
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.ProseMirror th {
+  background: color-mix(in oklab, var(--muted) 70%, var(--card));
+  font-weight: 600;
+}
+
+.ProseMirror .selectedCell {
+  background: color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.ProseMirror .column-resize-handle:hover,
+.ProseMirror.resize-cursor .column-resize-handle {
+  opacity: 1;
+}
