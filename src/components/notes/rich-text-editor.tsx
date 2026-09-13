@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyleKit } from "@tiptap/extension-text-style";
@@ -130,14 +130,27 @@ function ToolbarButton({
 
 export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState<JSONContent>(note.content);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isInTable, setIsInTable] = useState(false);
   const latestDraft = useRef({ title: note.title, content: note.content });
+  const [initialContent] = useState<JSONContent>(() => note.content);
   const dirty = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sortDirections = useRef(new Map<string, SortDirection>());
+  const extensions = useMemo(
+    () => [
+      StarterKit,
+      TextStyleKit,
+      TableKit.configure({
+        table: {
+          resizable: true,
+          renderWrapper: true,
+        },
+      }),
+    ],
+    [],
+  );
 
   const saveDraft = useCallback(async () => {
     if (!dirty.current) return;
@@ -176,22 +189,12 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   );
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      TextStyleKit,
-      TableKit.configure({
-        table: {
-          resizable: true,
-          renderWrapper: true,
-        },
-      }),
-    ],
-    content: note.content,
+    extensions,
+    content: initialContent.current,
     immediatelyRender: false,
     onUpdate: ({ editor: nextEditor }) => {
       const nextContent = nextEditor.getJSON();
       updateFormulaDisplays(nextEditor);
-      setContent(nextContent);
       markDraftChanged({ title: latestDraft.current.title, content: nextContent });
     },
     onSelectionUpdate: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
@@ -241,10 +244,6 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
     editor.view.dom.addEventListener("click", handleHeaderClick);
     return () => editor.view.dom.removeEventListener("click", handleHeaderClick);
   }, [editor]);
-
-  useEffect(() => {
-    latestDraft.current = { title, content };
-  }, [content, title]);
 
   useEffect(() => {
     return () => {
