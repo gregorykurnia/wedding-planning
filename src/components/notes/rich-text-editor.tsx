@@ -163,7 +163,7 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
 
   return (
     <section className="flex min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
-      <div className="flex flex-wrap items-center gap-1 border-b border-border/70 bg-muted/25 p-2">
+      <div className="sticky top-[3.75rem] z-30 flex flex-wrap items-center gap-1 border-b border-border/70 bg-card/95 p-2 backdrop-blur">
         <select
           aria-label="Text style"
           className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"

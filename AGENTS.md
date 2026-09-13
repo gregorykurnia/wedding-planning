@@ -13,3 +13,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - 2026-09-13: Added Tiptap table support to Notes, including table insertion, row/column actions, draggable column resizing, responsive styling, and the required `@tiptap/extension-table` dependency.
 - 2026-09-13: Added an “Add multiple rows…” table action that inserts 1–50 rows in one operation.
+- 2026-09-13: Made the Notes editor toolbar sticky below the app header while scrolling long documents.
