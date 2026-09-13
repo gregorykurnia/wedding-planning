@@ -263,6 +263,34 @@
   background: color-mix(in oklab, var(--accent) 28%, transparent);
 }
 
+.ProseMirror td[data-formula],
+.ProseMirror th[data-formula] {
+  overflow: hidden;
+}
+
+.ProseMirror td[data-formula]::after,
+.ProseMirror th[data-formula]::after {
+  position: absolute;
+  inset: 0.55rem 0.7rem;
+  overflow: hidden;
+  background: var(--card);
+  color: var(--foreground);
+  content: attr(data-formula-value);
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ProseMirror td[data-formula][data-formula-error="true"]::after,
+.ProseMirror th[data-formula][data-formula-error="true"]::after {
+  color: var(--destructive);
+}
+
+.ProseMirror td[data-formula]:focus-within::after,
+.ProseMirror th[data-formula]:focus-within::after {
+  display: none;
+}
+
 .ProseMirror .column-resize-handle {
   position: absolute;
   top: 0;

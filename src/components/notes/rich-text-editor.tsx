@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { evaluateTableFormulas, updateFormulaDisplays } from "@/components/notes/formulas";
 import type { Note } from "@/lib/types";
 
 type SaveState = "saved" | "unsaved" | "saving" | "error";
@@ -59,16 +60,6 @@ function findTableAt(doc: PMNode, position: number) {
   return null;
 }
 
-function numericValue(value: string) {
-  const normalized = value
-    .trim()
-    .replace(/[,$€£¥₹%\s]/g, "")
-    .replace(/^Rp/i, "");
-  if (!/^-?\d+(?:\.\d+)?$/.test(normalized)) return null;
-  const number = Number(normalized);
-  return Number.isFinite(number) ? number : null;
-}
-
 function sortTableColumn(editor: NonNullable<ReturnType<typeof useEditor>>, position: number, columnIndex: number, direction: SortDirection) {
   const tableContext = findTableAt(editor.state.doc, position);
   if (!tableContext) return;
@@ -77,21 +68,27 @@ function sortTableColumn(editor: NonNullable<ReturnType<typeof useEditor>>, posi
   const hasHeader = rows[0]?.childCount > 0 && rows[0].child(0).type.name === "tableHeader";
   const headerOffset = hasHeader ? 1 : 0;
   const sortableRows = rows.slice(headerOffset);
-  const values = sortableRows.map((row) => row.child(columnIndex)?.textContent.trim() ?? "");
-  const nonEmptyValues = values.filter(Boolean);
-  const numericValues = nonEmptyValues.map(numericValue);
-  const isNumericColumn = nonEmptyValues.length > 0 && numericValues.every((value) => value !== null);
+  const evaluation = evaluateTableFormulas(tableContext.node);
+  const values = sortableRows.map((row, index) => {
+    const result = evaluation.getCell(index + headerOffset, columnIndex);
+    return {
+      text: row.child(columnIndex)?.textContent.trim() ?? "",
+      numeric: result.error ? null : result.value,
+    };
+  });
+  const nonEmptyValues = values.filter(({ text }) => text);
+  const isNumericColumn = nonEmptyValues.length > 0 && nonEmptyValues.every(({ numeric }) => numeric !== null);
 
   const sortedRows = sortableRows
-    .map((row, index) => ({ row, value: values[index], numeric: numericValues[index] }))
+    .map((row, index) => ({ row, ...values[index] }))
     .sort((a, b) => {
-      if (!a.value && !b.value) return 0;
-      if (!a.value) return 1;
-      if (!b.value) return -1;
+      if (!a.text && !b.text) return 0;
+      if (!a.text) return 1;
+      if (!b.text) return -1;
 
       const comparison = isNumericColumn
         ? (a.numeric ?? 0) - (b.numeric ?? 0)
-        : a.value.localeCompare(b.value, undefined, { numeric: true, sensitivity: "base" });
+        : a.text.localeCompare(b.text, undefined, { numeric: true, sensitivity: "base" });
       return direction === "asc" ? comparison : -comparison;
     })
     .map(({ row }) => row);
@@ -193,12 +190,18 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
     immediatelyRender: false,
     onUpdate: ({ editor: nextEditor }) => {
       const nextContent = nextEditor.getJSON();
+      updateFormulaDisplays(nextEditor);
       setContent(nextContent);
       markDraftChanged({ title: latestDraft.current.title, content: nextContent });
     },
     onSelectionUpdate: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
     onTransaction: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    updateFormulaDisplays(editor);
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -406,6 +409,8 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
           <option value="header-row">Toggle header row</option>
           <option value="delete-table">Delete table</option>
         </select>
+
+        {isInTable && <span className="ml-1 hidden text-[11px] text-muted-foreground lg:inline">Formula example: =SUM(B2:B)</span>}
 
         <label className="relative flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Text color">
           <Palette className="size-4" />
