@@ -260,6 +260,15 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
             const action = event.target.value;
             const chain = editor.chain().focus();
             if (action === "add-row") chain.addRowAfter().run();
+            if (action === "add-rows") {
+              const requested = window.prompt("How many rows would you like to add?", "5");
+              const count = requested ? Number.parseInt(requested, 10) : 0;
+              if (Number.isInteger(count) && count > 0 && count <= 50) {
+                const bulkChain = editor.chain().focus();
+                for (let index = 0; index < count; index += 1) bulkChain.addRowAfter();
+                bulkChain.run();
+              }
+            }
             if (action === "add-column") chain.addColumnAfter().run();
             if (action === "delete-row") chain.deleteRow().run();
             if (action === "delete-column") chain.deleteColumn().run();
@@ -270,6 +279,7 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
         >
           <option value="">Table actions</option>
           <option value="add-row">Add row below</option>
+          <option value="add-rows">Add multiple rows…</option>
           <option value="add-column">Add column right</option>
           <option value="delete-row">Delete current row</option>
           <option value="delete-column">Delete current column</option>
