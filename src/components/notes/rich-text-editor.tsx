@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyleKit } from "@tiptap/extension-text-style";
@@ -128,7 +128,7 @@ function ToolbarButton({
   );
 }
 
-export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
+function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -450,3 +450,8 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
     </section>
   );
 }
+
+export const RichTextEditor = memo(
+  RichTextEditorComponent,
+  (previous, next) => previous.note.id === next.note.id && previous.onSave === next.onSave,
+);
