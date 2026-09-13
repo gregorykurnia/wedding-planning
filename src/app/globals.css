@@ -225,12 +225,38 @@
 
 .ProseMirror th {
   background: color-mix(in oklab, var(--muted) 70%, var(--card));
-  cursor: pointer;
   font-weight: 600;
+  padding-right: 2rem;
 }
 
 .ProseMirror th:hover {
   background: color-mix(in oklab, var(--accent) 35%, var(--card));
+}
+
+.ProseMirror th::after {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  color: var(--muted-foreground);
+  content: "↕";
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0.65;
+  transform: translateY(-50%);
+}
+
+.ProseMirror th:hover::after,
+.ProseMirror th[data-sort-direction]::after {
+  color: var(--foreground);
+  opacity: 1;
+}
+
+.ProseMirror th[data-sort-direction="asc"]::after {
+  content: "↑";
+}
+
+.ProseMirror th[data-sort-direction="desc"]::after {
+  content: "↓";
 }
 
 .ProseMirror .selectedCell {

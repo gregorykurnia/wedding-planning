@@ -208,6 +208,9 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
       const header = event.target.closest("th");
       if (!header || !editor.view.dom.contains(header)) return;
 
+      const headerBounds = header.getBoundingClientRect();
+      if (event.clientX < headerBounds.right - 28) return;
+
       const row = header.parentElement;
       if (!row) return;
       const columnIndex = Array.from(row.children).indexOf(header);
@@ -221,6 +224,12 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
         const direction = sortDirections.current.get(key) === "asc" ? "desc" : "asc";
         sortDirections.current.set(key, direction);
         sortTableColumn(editor, position, columnIndex, direction);
+
+        const nextHeaders = header.closest("table")?.querySelectorAll("th");
+        nextHeaders?.forEach((nextHeader, index) => {
+          if (index === columnIndex) nextHeader.setAttribute("data-sort-direction", direction);
+          else nextHeader.removeAttribute("data-sort-direction");
+        });
       } catch {
         // Ignore clicks on a header that has just been removed or remounted.
       }
