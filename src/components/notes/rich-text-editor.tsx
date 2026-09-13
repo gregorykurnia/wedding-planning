@@ -162,7 +162,31 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   const activeBackground = editor.getAttributes("textStyle").backgroundColor || "#fff1b8";
 
   return (
-    <section className="flex min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+    <section className="flex min-h-[32rem] flex-col rounded-2xl border border-border/70 bg-card shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-8">
+        <Input
+          value={title}
+          onChange={(event) => {
+            const nextTitle = event.target.value;
+            setTitle(nextTitle);
+            markDraftChanged({ title: nextTitle, content: latestDraft.current.content });
+          }}
+          placeholder="Document title"
+          aria-label="Document title"
+          className="h-auto min-w-0 flex-1 border-none bg-transparent px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 sm:text-3xl"
+        />
+        <span className="shrink-0 text-xs text-muted-foreground" aria-live="polite">
+          {saveState === "saving" && "Saving…"}
+          {saveState === "unsaved" && "Unsaved changes"}
+          {saveState === "saved" && "Saved"}
+          {saveState === "error" && (
+            <button type="button" className="text-destructive underline underline-offset-2" onClick={() => void saveDraft()}>
+              {errorMessage ?? "Retry save"}
+            </button>
+          )}
+        </span>
+      </div>
+
       <div className="sticky top-[3.75rem] z-30 flex flex-wrap items-center gap-1 border-b border-border/70 bg-card/95 p-2 backdrop-blur">
         <select
           aria-label="Text style"
@@ -320,30 +344,6 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
           <Minus />
         </ToolbarButton>
 
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-8">
-        <Input
-          value={title}
-          onChange={(event) => {
-            const nextTitle = event.target.value;
-            setTitle(nextTitle);
-            markDraftChanged({ title: nextTitle, content: latestDraft.current.content });
-          }}
-          placeholder="Document title"
-          aria-label="Document title"
-          className="h-auto min-w-0 flex-1 border-none bg-transparent px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 sm:text-3xl"
-        />
-        <span className="shrink-0 text-xs text-muted-foreground" aria-live="polite">
-          {saveState === "saving" && "Saving…"}
-          {saveState === "unsaved" && "Unsaved changes"}
-          {saveState === "saved" && "Saved"}
-          {saveState === "error" && (
-            <button type="button" className="text-destructive underline underline-offset-2" onClick={() => void saveDraft()}>
-              {errorMessage ?? "Retry save"}
-            </button>
-          )}
-        </span>
       </div>
 
       <EditorContent editor={editor} className="flex-1 px-5 py-5 sm:px-8 sm:py-7" />
