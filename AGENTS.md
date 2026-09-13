@@ -15,3 +15,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 2026-09-13: Added an “Add multiple rows…” table action that inserts 1–50 rows in one operation.
 - 2026-09-13: Made the Notes editor toolbar sticky below the app header while scrolling long documents.
 - 2026-09-13: Fixed sticky Notes toolbar layout so the document title remains above it and editable.
+- 2026-09-13: Added click-to-sort behavior for Notes table header columns with automatic text or numeric comparison.

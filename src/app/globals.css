@@ -225,7 +225,12 @@
 
 .ProseMirror th {
   background: color-mix(in oklab, var(--muted) 70%, var(--card));
+  cursor: pointer;
   font-weight: 600;
+}
+
+.ProseMirror th:hover {
+  background: color-mix(in oklab, var(--accent) 35%, var(--card));
 }
 
 .ProseMirror .selectedCell {

@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { TextStyleKit } from "@tiptap/extension-text-style";
 import { TableKit } from "@tiptap/extension-table";
 import type { JSONContent } from "@tiptap/core";
+import type { Node as PMNode } from "@tiptap/pm/model";
 import {
   Bold,
   Highlighter,
@@ -44,6 +45,61 @@ const FONT_SIZES = [
   { label: "Large", value: "20px" },
   { label: "Extra large", value: "28px" },
 ];
+
+type SortDirection = "asc" | "desc";
+
+function findTableAt(doc: PMNode, position: number) {
+  const resolved = doc.resolve(position);
+  for (let depth = resolved.depth; depth >= 0; depth -= 1) {
+    const node = resolved.node(depth);
+    if (node.type.name === "table") {
+      return { node, position: depth === 0 ? 0 : resolved.before(depth) };
+    }
+  }
+  return null;
+}
+
+function numericValue(value: string) {
+  const normalized = value
+    .trim()
+    .replace(/[,$€£¥₹%\s]/g, "")
+    .replace(/^Rp/i, "");
+  if (!/^-?\d+(?:\.\d+)?$/.test(normalized)) return null;
+  const number = Number(normalized);
+  return Number.isFinite(number) ? number : null;
+}
+
+function sortTableColumn(editor: NonNullable<ReturnType<typeof useEditor>>, position: number, columnIndex: number, direction: SortDirection) {
+  const tableContext = findTableAt(editor.state.doc, position);
+  if (!tableContext) return;
+
+  const rows = Array.from({ length: tableContext.node.childCount }, (_, index) => tableContext.node.child(index));
+  const hasHeader = rows[0]?.childCount > 0 && rows[0].child(0).type.name === "tableHeader";
+  const headerOffset = hasHeader ? 1 : 0;
+  const sortableRows = rows.slice(headerOffset);
+  const values = sortableRows.map((row) => row.child(columnIndex)?.textContent.trim() ?? "");
+  const nonEmptyValues = values.filter(Boolean);
+  const numericValues = nonEmptyValues.map(numericValue);
+  const isNumericColumn = nonEmptyValues.length > 0 && numericValues.every((value) => value !== null);
+
+  const sortedRows = sortableRows
+    .map((row, index) => ({ row, value: values[index], numeric: numericValues[index] }))
+    .sort((a, b) => {
+      if (!a.value && !b.value) return 0;
+      if (!a.value) return 1;
+      if (!b.value) return -1;
+
+      const comparison = isNumericColumn
+        ? (a.numeric ?? 0) - (b.numeric ?? 0)
+        : a.value.localeCompare(b.value, undefined, { numeric: true, sensitivity: "base" });
+      return direction === "asc" ? comparison : -comparison;
+    })
+    .map(({ row }) => row);
+
+  const nextRows = hasHeader ? [rows[0], ...sortedRows] : sortedRows;
+  const nextTable = tableContext.node.type.create(tableContext.node.attrs, nextRows, tableContext.node.marks);
+  editor.view.dispatch(editor.state.tr.replaceWith(tableContext.position, tableContext.position + tableContext.node.nodeSize, nextTable));
+}
 
 function ToolbarButton({
   label,
@@ -84,6 +140,7 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
   const latestDraft = useRef({ title: note.title, content: note.content });
   const dirty = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sortDirections = useRef(new Map<string, SortDirection>());
 
   const saveDraft = useCallback(async () => {
     if (!dirty.current) return;
@@ -142,6 +199,36 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
     onSelectionUpdate: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
     onTransaction: ({ editor: nextEditor }) => setIsInTable(nextEditor.isActive("table")),
   });
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleHeaderClick = (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLElement)) return;
+      const header = event.target.closest("th");
+      if (!header || !editor.view.dom.contains(header)) return;
+
+      const row = header.parentElement;
+      if (!row) return;
+      const columnIndex = Array.from(row.children).indexOf(header);
+      if (columnIndex < 0) return;
+
+      try {
+        const position = editor.view.posAtDOM(header, 0);
+        const tableContext = findTableAt(editor.state.doc, position);
+        if (!tableContext) return;
+        const key = `${tableContext.position}:${columnIndex}`;
+        const direction = sortDirections.current.get(key) === "asc" ? "desc" : "asc";
+        sortDirections.current.set(key, direction);
+        sortTableColumn(editor, position, columnIndex, direction);
+      } catch {
+        // Ignore clicks on a header that has just been removed or remounted.
+      }
+    };
+
+    editor.view.dom.addEventListener("click", handleHeaderClick);
+    return () => editor.view.dom.removeEventListener("click", handleHeaderClick);
+  }, [editor]);
 
   useEffect(() => {
     latestDraft.current = { title, content };
