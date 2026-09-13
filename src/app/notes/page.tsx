@@ -112,6 +112,11 @@ export default function NotesPage() {
   const saveSelectedNote = useCallback(
     (data: { title: string; content: Note["content"] }) => {
       if (!selectedNoteId) return Promise.resolve();
+      // The initially displayed note is derived from the sorted list while
+      // selectedId is still null. Lock its identity before Firestore applies
+      // the pending server timestamp; otherwise the temporary timestamp can
+      // reorder the list, mount a different editor, and reset page scroll.
+      setSelectedId(selectedNoteId);
       return updateNote(selectedNoteId, data);
     },
     [selectedNoteId],
