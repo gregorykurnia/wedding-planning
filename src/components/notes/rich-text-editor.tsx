@@ -190,7 +190,7 @@ export function RichTextEditor({ note, onSave }: RichTextEditorProps) {
 
   const editor = useEditor({
     extensions,
-    content: initialContent.current,
+    content: initialContent,
     immediatelyRender: false,
     onUpdate: ({ editor: nextEditor }) => {
       const nextContent = nextEditor.getJSON();

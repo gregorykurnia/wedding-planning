@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-13: Fixed Notes documents rendering blank after the scroll-preservation change by passing the stable initial content value correctly to Tiptap.
 - 2026-09-13: Fixed Notes editor scrolling to the top while editing cells deep in a document by stabilizing Tiptap extensions and avoiding redundant content re-renders.
 - 2026-09-13: Added Notes table formulas with safe `SUM` evaluation, computed cell display, open-ended ranges that include newly inserted rows, formula errors, and numeric sorting.
 - 2026-09-13: Added Tiptap table support to Notes, including table insertion, row/column actions, draggable column resizing, responsive styling, and the required `@tiptap/extension-table` dependency.
