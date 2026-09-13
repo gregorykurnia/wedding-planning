@@ -143,3 +143,60 @@
     @apply font-sans;
   }
 }
+
+.ProseMirror {
+  min-height: 24rem;
+  outline: none;
+  color: var(--foreground);
+  line-height: 1.75;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75rem;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: "Start writing…";
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.ProseMirror h1 {
+  font-size: 1.875rem;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid var(--accent);
+  color: var(--muted-foreground);
+  padding-left: 1rem;
+}

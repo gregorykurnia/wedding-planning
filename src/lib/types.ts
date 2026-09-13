@@ -1,3 +1,5 @@
+import type { JSONContent } from "@tiptap/core";
+
 export type VenueStatus = "Shortlist" | "Contacted" | "Toured" | "Booked" | "Rejected";
 
 export interface Venue {
@@ -224,7 +226,8 @@ export interface ShortlistItem {
 
 export interface Note {
   id: string;
-  text: string;
+  title: string;
+  content: JSONContent;
   createdAt: number | null;
   updatedAt: number | null;
 }
