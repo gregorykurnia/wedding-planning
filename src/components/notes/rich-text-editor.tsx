@@ -260,7 +260,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
   const activeBackground = editor.getAttributes("textStyle").backgroundColor || "#fff1b8";
 
   return (
-    <section className="flex min-h-[32rem] min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+    <section className="flex min-h-[32rem] min-w-0 flex-col rounded-2xl border border-border/70 bg-card shadow-sm">
       <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-4 py-4 sm:px-8">
         <Input
           value={title}
