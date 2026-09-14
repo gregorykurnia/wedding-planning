@@ -260,8 +260,8 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
   const activeBackground = editor.getAttributes("textStyle").backgroundColor || "#fff1b8";
 
   return (
-    <section className="flex min-h-[32rem] flex-col rounded-2xl border border-border/70 bg-card shadow-sm">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-8">
+    <section className="flex min-h-[32rem] min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-4 py-4 sm:px-8">
         <Input
           value={title}
           onChange={(event) => {
@@ -285,10 +285,10 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
         </span>
       </div>
 
-      <div className="sticky top-[3.75rem] z-30 flex flex-wrap items-center gap-1 border-b border-border/70 bg-card/95 p-2 backdrop-blur">
+      <div className="notes-toolbar sticky top-[3.75rem] z-30 flex touch-pan-x flex-nowrap items-center gap-1 overflow-x-auto border-b border-border/70 bg-card/95 p-2 backdrop-blur sm:flex-wrap sm:overflow-visible">
         <select
           aria-label="Text style"
-          className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-7 shrink-0 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
           value={editor.isActive("heading", { level: 1 }) ? "h1" : editor.isActive("heading", { level: 2 }) ? "h2" : editor.isActive("heading", { level: 3 }) ? "h3" : "paragraph"}
           onChange={(event) => {
             const value = event.target.value;
@@ -304,7 +304,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
 
         <select
           aria-label="Font family"
-          className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-7 shrink-0 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
           value={editor.getAttributes("textStyle").fontFamily || ""}
           onChange={(event) => {
             const value = event.target.value;
@@ -321,7 +321,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
 
         <select
           aria-label="Font size"
-          className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-7 shrink-0 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
           value={editor.getAttributes("textStyle").fontSize || "16px"}
           onChange={(event) => editor.chain().focus().setFontSize(event.target.value).run()}
         >
@@ -358,7 +358,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
         <select
           aria-label="Insert table"
           defaultValue=""
-          className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-7 shrink-0 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
           onChange={(event) => {
             const [rows, cols] = event.target.value.split("x").map(Number);
             if (rows && cols) editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
@@ -377,7 +377,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
           aria-label="Table actions"
           defaultValue=""
           disabled={!isInTable}
-          className="h-7 max-w-40 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50"
+          className="h-7 max-w-40 shrink-0 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50"
           onChange={(event) => {
             const action = event.target.value;
             const chain = editor.chain().focus();
@@ -446,7 +446,7 @@ function RichTextEditorComponent({ note, onSave }: RichTextEditorProps) {
 
       </div>
 
-      <EditorContent editor={editor} className="flex-1 px-5 py-5 sm:px-8 sm:py-7" />
+      <EditorContent editor={editor} className="min-w-0 flex-1 px-3 py-4 sm:px-8 sm:py-7" />
     </section>
   );
 }

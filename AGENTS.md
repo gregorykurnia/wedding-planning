@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-14: Optimized the Notes editor for mobile with a compact horizontally scrollable toolbar and tables that retain readable column widths inside touch-scroll containers.
 - 2026-09-13: Fixed persistent Notes autosave scroll jumps by locking the active note ID before Firestore's pending timestamp can reorder the document list and remount the editor.
 - 2026-09-13: Prevented Notes editor scroll jumps after autosave by memoizing the editor against same-document realtime snapshot updates.
 - 2026-09-13: Fixed Notes documents rendering blank after the scroll-preservation change by passing the stable initial content value correctly to Tiptap.
