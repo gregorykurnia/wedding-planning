@@ -8,7 +8,7 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
-import type { ConfirmedType, Venue, VenueStatus, VendorFile } from "@/lib/types";
+import type { ConfirmedType, Funder, Venue, VenueStatus, VendorFile } from "@/lib/types";
 import {
   addSubEntry,
   addSubEntryFile,
@@ -33,6 +33,7 @@ function fromDoc(id: string, data: DocumentData): Venue {
     coverImage: data.coverImage ?? null,
     files: Array.isArray(data.files) ? data.files : [],
     confirmedType: (data.confirmedType as ConfirmedType) ?? "Venue",
+    funder: (data.funder as Funder) ?? null,
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
     nextAction: data.nextAction ?? "",
@@ -60,6 +61,7 @@ export function createVenue() {
     coverImage: null,
     files: [],
     confirmedType: "Venue" as ConfirmedType,
+    funder: null,
     budgetSpent: 0,
     nextTargetDate: null,
     nextAction: "",

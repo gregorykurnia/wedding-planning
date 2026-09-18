@@ -12,6 +12,7 @@ import {
 import type {
   ConfirmedType,
   ContractStatus,
+  Funder,
   Vendor,
   VendorCategory,
   VendorFile,
@@ -60,6 +61,7 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     bridestoryReviewCount:
       typeof data.bridestoryReviewCount === "number" ? data.bridestoryReviewCount : null,
     confirmedType: (data.confirmedType as ConfirmedType) ?? (data.category as VendorCategory) ?? "Other",
+    funder: (data.funder as Funder) ?? null,
     totalPrice: typeof data.totalPrice === "number" ? data.totalPrice : 0,
     budgetSpent: typeof data.budgetSpent === "number" ? data.budgetSpent : 0,
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
@@ -99,6 +101,7 @@ export function createVendor(
     bridestoryReviewCount: null,
     ...overrides,
     confirmedType: category ?? ("Other" as VendorCategory),
+    funder: null,
     totalPrice: 0,
     budgetSpent: 0,
     nextTargetDate: null,

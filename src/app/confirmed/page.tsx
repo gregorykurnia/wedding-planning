@@ -30,6 +30,7 @@ import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { ConfirmedTypePill } from "@/components/shared/confirmed-type-pill";
+import { FunderSelect, FUNDER_OPTIONS } from "@/components/shared/funder-select";
 import {
   useVenues,
   updateVenue,
@@ -71,6 +72,7 @@ import { cn } from "@/lib/utils";
 import type {
   ConfirmedSubEntry,
   ConfirmedType,
+  Funder,
   HypotheticalItem,
   Vendor,
   VendorFile,
@@ -78,13 +80,13 @@ import type {
 } from "@/lib/types";
 
 type ConfirmedRow =
-  | { kind: "venue"; id: string; name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
-  | { kind: "vendor"; id: string; name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Vendor };
+  | { kind: "venue"; id: string; name: string; type: ConfirmedType; funder: Funder | null; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
+  | { kind: "vendor"; id: string; name: string; type: ConfirmedType; funder: Funder | null; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Vendor };
 
-type SortKey = "name" | "type" | "totalPrice" | "budgetSpent" | "remaining" | "nextTargetDate" | "nextAction";
+type SortKey = "name" | "type" | "funder" | "totalPrice" | "budgetSpent" | "remaining" | "nextTargetDate" | "nextAction";
 type SortDir = "asc" | "desc";
 
-const SORT_COLUMNS: { key: SortKey; label: string }[] = [
+const COMMON_SORT_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "type", label: "Type" },
   { key: "totalPrice", label: "Total price" },
@@ -94,8 +96,14 @@ const SORT_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "nextAction", label: "Next actions" },
 ];
 
+const CONFIRMED_SORT_COLUMNS: { key: SortKey; label: string }[] = [
+  ...COMMON_SORT_COLUMNS.slice(0, 2),
+  { key: "funder", label: "Funder" },
+  ...COMMON_SORT_COLUMNS.slice(2),
+];
+
 function sortValue(
-  row: { name: string; type: ConfirmedType; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string },
+  row: { name: string; type: ConfirmedType; funder?: Funder | null; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string },
   key: SortKey,
 ): string | number {
   switch (key) {
@@ -103,6 +111,8 @@ function sortValue(
       return row.name.toLowerCase();
     case "type":
       return row.type.toLowerCase();
+    case "funder":
+      return row.funder?.toLowerCase() ?? "";
     case "totalPrice":
       return row.totalPrice;
     case "budgetSpent":
@@ -146,6 +156,7 @@ export default function ConfirmedPage() {
             id: bookedVenue.id,
             name: bookedVenue.name,
             type: bookedVenue.confirmedType,
+            funder: bookedVenue.funder,
             totalPrice:
               bookedVenue.subEntries.length > 0
                 ? bookedVenue.subEntries.reduce((s, e) => s + e.totalPrice, 0)
@@ -167,6 +178,7 @@ export default function ConfirmedPage() {
       id: vendor.id,
       name: vendor.name,
       type: vendor.confirmedType,
+      funder: vendor.funder,
       totalPrice:
         vendor.subEntries.length > 0
           ? vendor.subEntries.reduce((s, e) => s + e.totalPrice, 0)
@@ -284,6 +296,15 @@ function ConfirmedTab({
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const totalRemaining = totalPrice - totalSpent;
+  const funderTotals = FUNDER_OPTIONS.map((funder) => ({
+    funder,
+    spent: rows
+      .filter((row) => row.funder === funder)
+      .reduce((sum, row) => sum + row.budgetSpent, 0),
+  }));
+  const unassignedSpent = rows
+    .filter((row) => row.funder === null)
+    .reduce((sum, row) => sum + row.budgetSpent, 0);
 
   const sortedRows = sortKey
     ? [...rows].sort((a, b) => {
@@ -344,6 +365,36 @@ function ConfirmedTab({
         </Card>
       </div>
 
+      <Card className="border-border/70 shadow-sm">
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h2 className="font-heading text-xl font-semibold text-foreground">
+                Real budget by funder
+              </h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Total spent across confirmed bookings and their sub-entries.
+              </p>
+            </div>
+            {unassignedSpent > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Unassigned: {formatIDR(unassignedSpent)}
+              </p>
+            )}
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {funderTotals.map(({ funder, spent }) => (
+              <div key={funder} className="rounded-lg bg-muted/40 px-3 py-3">
+                <p className="text-sm text-muted-foreground">{funder}</p>
+                <p className="mt-1 font-heading text-xl font-semibold tabular-nums text-foreground">
+                  {formatIDR(spent)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-heading text-xl font-semibold text-foreground">
@@ -384,7 +435,7 @@ function ConfirmedTab({
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    {SORT_COLUMNS.map((col) => (
+                    {CONFIRMED_SORT_COLUMNS.map((col) => (
                       <TableHead key={col.key} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         <button
                           type="button"
@@ -442,6 +493,16 @@ function ConfirmedTab({
                               row.kind === "venue"
                                 ? updateVenue(row.id, { confirmedType })
                                 : updateVendor(row.id, { confirmedType })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <FunderSelect
+                            value={row.funder}
+                            onChange={(funder) =>
+                              row.kind === "venue"
+                                ? updateVenue(row.id, { funder })
+                                : updateVendor(row.id, { funder })
                             }
                           />
                         </TableCell>
@@ -556,8 +617,9 @@ function ConfirmedTab({
                             <Badge
                               variant="secondary"
                               className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+                              title="Inherited from the parent confirmed item"
                             >
-                              Sub-entry
+                              {row.funder ?? "Unassigned"}
                             </Badge>
                           </TableCell>
                           <TableCell className="align-top">
@@ -770,7 +832,7 @@ function HypotheticalTab({
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    {SORT_COLUMNS.map((col) => (
+                    {COMMON_SORT_COLUMNS.map((col) => (
                       <TableHead key={col.key} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         <button
                           type="button"
