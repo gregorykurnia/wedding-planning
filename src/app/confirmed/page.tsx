@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  CalendarClock,
   CornerDownRight,
   FlaskConical,
   PiggyBank,
@@ -127,6 +128,87 @@ function sortValue(
 }
 
 type Tab = "confirmed" | "hypothetical";
+
+type PaymentReminderStatus = "overdue" | "today" | "soon" | "upcoming";
+
+interface PaymentReminder {
+  id: string;
+  name: string;
+  detail: string;
+  date: string;
+  funder: Funder | null;
+  amount: number;
+  status: PaymentReminderStatus;
+}
+
+const REMINDER_STATUS_LABELS: Record<PaymentReminderStatus, string> = {
+  overdue: "Overdue",
+  today: "Due today",
+  soon: "Due within 7 days",
+  upcoming: "Upcoming",
+};
+
+const REMINDER_STATUS_STYLES: Record<PaymentReminderStatus, string> = {
+  overdue: "border-destructive/30 bg-destructive/10 text-destructive",
+  today: "border-amber-200 bg-amber-100 text-amber-800",
+  soon: "border-primary/20 bg-primary/10 text-primary",
+  upcoming: "border-border bg-muted text-muted-foreground",
+};
+
+function parseLocalDate(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function formatReminderDate(date: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(parseLocalDate(date));
+}
+
+function buildPaymentReminders(rows: ConfirmedRow[]): PaymentReminder[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return rows
+    .flatMap((row) => {
+      if (row.subEntries.length > 0) {
+        return row.subEntries.map((entry) => ({
+          id: `${row.kind}-${row.id}-${entry.id}`,
+          name: entry.name,
+          detail: row.name,
+          date: entry.nextTargetDate,
+          funder: entry.funder,
+          amount: Math.max(entry.totalPrice - entry.budgetSpent, 0),
+        }));
+      }
+
+      return [{
+        id: `${row.kind}-${row.id}`,
+        name: row.name,
+        detail: row.type,
+        date: row.nextTargetDate,
+        funder: row.funder,
+        amount: Math.max(row.totalPrice - row.budgetSpent, 0),
+      }];
+    })
+    .flatMap((reminder) => {
+      const date = reminder.date;
+      if (!date || reminder.amount <= 0) return [];
+
+      const dueDate = parseLocalDate(date);
+      if (Number.isNaN(dueDate.getTime())) return [];
+
+      const daysUntil = Math.round((dueDate.getTime() - today.getTime()) / 86_400_000);
+      const status: PaymentReminderStatus =
+        daysUntil < 0 ? "overdue" : daysUntil === 0 ? "today" : daysUntil <= 7 ? "soon" : "upcoming";
+
+      return [{ ...reminder, date, status }];
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
 
 function spentForFunder(rows: ConfirmedRow[], funder: Funder | null) {
   return rows.reduce((sum, row) => {
@@ -323,6 +405,7 @@ function ConfirmedTab({
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const totalRemaining = totalPrice - totalSpent;
+  const paymentReminders = buildPaymentReminders(rows);
   const funderTotals = FUNDER_OPTIONS.map((funder) => ({
     funder,
     spent: spentForFunder(rows, funder),
@@ -388,6 +471,60 @@ function ConfirmedTab({
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/70 shadow-sm">
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h2 className="flex items-center gap-2 font-heading text-xl font-semibold text-foreground">
+                <CalendarClock className="size-5 text-primary" />
+                Payment reminders
+              </h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Based on each booking or installment&apos;s Next target date and remaining budget.
+              </p>
+            </div>
+            {paymentReminders.length > 0 && (
+              <Badge variant="outline" className="font-normal">
+                {paymentReminders.length} to track
+              </Badge>
+            )}
+          </div>
+
+          {paymentReminders.length === 0 ? (
+            <p className="mt-5 rounded-lg border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
+              No unpaid payments have a target date yet.
+            </p>
+          ) : (
+            <div className="mt-4 divide-y divide-border/70">
+              {paymentReminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("font-medium", REMINDER_STATUS_STYLES[reminder.status])}
+                      >
+                        {REMINDER_STATUS_LABELS[reminder.status]}
+                      </Badge>
+                      <p className="truncate font-medium text-foreground">{reminder.name}</p>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {reminder.detail} · {reminder.funder ?? "Unassigned"} · Due {formatReminderDate(reminder.date)}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-heading text-lg font-semibold tabular-nums text-foreground">
+                    {formatIDR(reminder.amount)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="border-border/70 shadow-sm">
         <CardContent className="pt-6">
