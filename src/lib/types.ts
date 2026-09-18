@@ -84,6 +84,7 @@ export interface WeddingFile {
 export interface ConfirmedSubEntry {
   id: string;
   name: string;
+  funder: Funder | null;
   totalPrice: number;
   budgetSpent: number;
   nextTargetDate: string | null; // ISO date string

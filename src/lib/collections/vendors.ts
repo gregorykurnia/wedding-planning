@@ -67,7 +67,9 @@ function fromDoc(id: string, data: DocumentData): Vendor {
     nextTargetDate: typeof data.nextTargetDate === "string" ? data.nextTargetDate : null,
     nextAction: data.nextAction ?? "",
     subEntries: Array.isArray(data.subEntries)
-      ? data.subEntries.map(fromDocSubEntry).filter((s): s is NonNullable<typeof s> => s !== null)
+      ? data.subEntries
+          .map((entry) => fromDocSubEntry(entry, (data.funder as Funder) ?? null))
+          .filter((s): s is NonNullable<typeof s> => s !== null)
       : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),

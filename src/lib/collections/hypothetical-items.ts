@@ -31,7 +31,9 @@ function fromDoc(id: string, data: DocumentData): HypotheticalItem {
     nextAction: data.nextAction ?? "",
     files: Array.isArray(data.files) ? data.files : [],
     subEntries: Array.isArray(data.subEntries)
-      ? data.subEntries.map(fromDocSubEntry).filter((s): s is NonNullable<typeof s> => s !== null)
+      ? data.subEntries
+          .map((entry) => fromDocSubEntry(entry))
+          .filter((s): s is NonNullable<typeof s> => s !== null)
       : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),

@@ -30,7 +30,7 @@ export function FunderSelect({ value, onChange }: FunderSelectProps) {
         size="sm"
         className="h-7 w-[7.5rem] rounded-full border-border/70 px-3 text-xs font-medium shadow-none"
       >
-        <SelectValue />
+        <SelectValue>{value ?? "Unassigned"}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={UNASSIGNED_VALUE}>Unassigned</SelectItem>

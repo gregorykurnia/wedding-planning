@@ -128,6 +128,18 @@ function sortValue(
 
 type Tab = "confirmed" | "hypothetical";
 
+function spentForFunder(rows: ConfirmedRow[], funder: Funder | null) {
+  return rows.reduce((sum, row) => {
+    if (row.subEntries.length > 0) {
+      return sum + row.subEntries
+        .filter((entry) => entry.funder === funder)
+        .reduce((entrySum, entry) => entrySum + entry.budgetSpent, 0);
+    }
+
+    return sum + (row.funder === funder ? row.budgetSpent : 0);
+  }, 0);
+}
+
 /**
  * A read/write rollup of everything that's actually locked in — the
  * booked venue, contracted/paid vendors — as a single editable list with
@@ -298,13 +310,9 @@ function ConfirmedTab({
   const totalRemaining = totalPrice - totalSpent;
   const funderTotals = FUNDER_OPTIONS.map((funder) => ({
     funder,
-    spent: rows
-      .filter((row) => row.funder === funder)
-      .reduce((sum, row) => sum + row.budgetSpent, 0),
+    spent: spentForFunder(rows, funder),
   }));
-  const unassignedSpent = rows
-    .filter((row) => row.funder === null)
-    .reduce((sum, row) => sum + row.budgetSpent, 0);
+  const unassignedSpent = spentForFunder(rows, null);
 
   const sortedRows = sortKey
     ? [...rows].sort((a, b) => {
@@ -617,10 +625,19 @@ function ConfirmedTab({
                             <Badge
                               variant="secondary"
                               className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
-                              title="Inherited from the parent confirmed item"
                             >
-                              {row.funder ?? "Unassigned"}
+                              Sub-entry
                             </Badge>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <FunderSelect
+                              value={entry.funder}
+                              onChange={(funder) =>
+                                row.kind === "venue"
+                                  ? updateVenueSubEntry(row.data, entry.id, { funder })
+                                  : updateVendorSubEntry(row.data, entry.id, { funder })
+                              }
+                            />
                           </TableCell>
                           <TableCell className="align-top">
                             <EditableNumber

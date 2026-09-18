@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-18: Added independent funder dropdowns for Confirmed sub-entries and updated the recap to attribute installment spending to each sub-entry funder.
 - 2026-09-18: Added funder assignment to confirmed venues and vendors with CK, Gregory, and Bella options plus a real-budget-spent recap by funder.
 - 2026-09-18: Added the Wedding Files MVP with nested Firestore folders, Cloudinary uploads with progress, file descriptions, move/edit/delete actions, breadcrumbs, mobile-friendly layouts, and access rules.
 - 2026-09-18: Added `wedding-files-implementation-prompt.md` with a focused, cost-conscious MVP prompt for implementing nested wedding file storage with Cloudinary.
