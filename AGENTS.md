@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-18: Added a muted Pending spending amount to each funder recap card based on committed total price minus real budget spent.
 - 2026-09-18: Vertically centered Confirmed and Hypothetical table cell contents so controls and remaining-budget values align within taller rows.
 - 2026-09-18: Added independent funder dropdowns for Confirmed sub-entries and updated the recap to attribute installment spending to each sub-entry funder.
 - 2026-09-18: Added funder assignment to confirmed venues and vendors with CK, Gregory, and Bella options plus a real-budget-spent recap by funder.

@@ -140,6 +140,21 @@ function spentForFunder(rows: ConfirmedRow[], funder: Funder | null) {
   }, 0);
 }
 
+function pendingForFunder(rows: ConfirmedRow[], funder: Funder | null) {
+  return rows.reduce((sum, row) => {
+    if (row.subEntries.length > 0) {
+      return sum + row.subEntries
+        .filter((entry) => entry.funder === funder)
+        .reduce(
+          (entrySum, entry) => entrySum + Math.max(entry.totalPrice - entry.budgetSpent, 0),
+          0,
+        );
+    }
+
+    return sum + (row.funder === funder ? Math.max(row.totalPrice - row.budgetSpent, 0) : 0);
+  }, 0);
+}
+
 /**
  * A read/write rollup of everything that's actually locked in — the
  * booked venue, contracted/paid vendors — as a single editable list with
@@ -311,6 +326,7 @@ function ConfirmedTab({
   const funderTotals = FUNDER_OPTIONS.map((funder) => ({
     funder,
     spent: spentForFunder(rows, funder),
+    pending: pendingForFunder(rows, funder),
   }));
   const unassignedSpent = spentForFunder(rows, null);
 
@@ -381,7 +397,8 @@ function ConfirmedTab({
                 Real budget by funder
               </h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                Total spent across confirmed bookings and their sub-entries.
+                Total spent across confirmed bookings and their sub-entries. The smaller amount is
+                committed but not yet spent.
               </p>
             </div>
             {unassignedSpent > 0 && (
@@ -391,11 +408,14 @@ function ConfirmedTab({
             )}
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {funderTotals.map(({ funder, spent }) => (
+            {funderTotals.map(({ funder, spent, pending }) => (
               <div key={funder} className="rounded-lg bg-muted/40 px-3 py-3">
                 <p className="text-sm text-muted-foreground">{funder}</p>
                 <p className="mt-1 font-heading text-xl font-semibold tabular-nums text-foreground">
                   {formatIDR(spent)}
+                </p>
+                <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                  Pending spending: {formatIDR(pending)}
                 </p>
               </div>
             ))}
