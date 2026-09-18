@@ -49,6 +49,31 @@ export interface VendorFile {
   url: string;
 }
 
+export interface WeddingFolder {
+  id: string;
+  name: string;
+  parentId: string | null;
+  createdBy: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
+export interface WeddingFile {
+  id: string;
+  name: string;
+  description: string;
+  folderId: string | null;
+  url: string;
+  publicId: string;
+  resourceType: string;
+  originalFilename: string;
+  fileType: string;
+  fileSize: number;
+  uploadedBy: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
 // A line item nested under a Confirmed-list entry (venue or vendor) — e.g.
 // a DP vs. final payment split, or an add-on booked separately. Mirrors the
 // parent's own tracking fields so it can be edited the same way, but rolls

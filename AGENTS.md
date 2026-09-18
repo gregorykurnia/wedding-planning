@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-18: Added the Wedding Files MVP with nested Firestore folders, Cloudinary uploads with progress, file descriptions, move/edit/delete actions, breadcrumbs, mobile-friendly layouts, and access rules.
 - 2026-09-18: Added `wedding-files-implementation-prompt.md` with a focused, cost-conscious MVP prompt for implementing nested wedding file storage with Cloudinary.
 - 2026-09-14: Restored the Notes toolbar's page-level sticky behavior by removing the editor card overflow constraint while keeping table overflow scoped to its touch-scroll wrapper.
 - 2026-09-14: Optimized the Notes editor for mobile with a compact horizontally scrollable toolbar and tables that retain readable column widths inside touch-scroll containers.

@@ -40,6 +40,12 @@ service cloud.firestore {
     match /notes/{docId} {
       allow read, write: if isAllowed();
     }
+    match /fileFolders/{docId} {
+      allow read, write: if isAllowed();
+    }
+    match /weddingFiles/{docId} {
+      allow read, write: if isAllowed();
+    }
     match /settings/{docId} {
       allow read, write: if isAllowed();
     }
