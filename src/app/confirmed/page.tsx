@@ -472,7 +472,7 @@ function ConfirmedTab({
                     const remaining = row.totalPrice - row.budgetSpent;
                     const mainRow = (
                       <TableRow key={`${row.kind}-${row.id}`} className="transition-colors hover:bg-accent/30">
-                        <TableCell className="align-top font-medium text-foreground min-w-[160px]">
+                        <TableCell className="align-middle font-medium text-foreground min-w-[160px]">
                           <EditableText
                             value={row.name}
                             onSave={(name) =>
@@ -494,7 +494,7 @@ function ConfirmedTab({
                             Add sub-entry
                           </button>
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <ConfirmedTypePill
                             value={row.type}
                             onChange={(confirmedType) =>
@@ -504,7 +504,7 @@ function ConfirmedTab({
                             }
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <FunderSelect
                             value={row.funder}
                             onChange={(funder) =>
@@ -514,7 +514,7 @@ function ConfirmedTab({
                             }
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           {row.subEntries.length > 0 ? (
                             <p
                               title="Sum of sub-entries — edit them individually"
@@ -534,7 +534,7 @@ function ConfirmedTab({
                             />
                           )}
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           {row.subEntries.length > 0 ? (
                             <p
                               title="Sum of sub-entries — edit them individually"
@@ -556,13 +556,13 @@ function ConfirmedTab({
                         </TableCell>
                         <TableCell
                           className={cn(
-                            "align-top py-1.5 px-2 text-sm tabular-nums",
+                            "align-middle py-1.5 px-2 text-sm tabular-nums",
                             remaining < 0 && "text-destructive",
                           )}
                         >
                           {formatIDR(remaining)}
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <EditableDate
                             value={row.nextTargetDate}
                             onSave={(nextTargetDate) =>
@@ -572,7 +572,7 @@ function ConfirmedTab({
                             }
                           />
                         </TableCell>
-                        <TableCell className="align-top min-w-[220px]">
+                        <TableCell className="align-middle min-w-[220px]">
                           <VenueNotesCell
                             value={row.nextAction}
                             onSave={(nextAction) =>
@@ -582,7 +582,7 @@ function ConfirmedTab({
                             }
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <FilesCell
                             files={row.files}
                             onAdd={(file) =>
@@ -597,7 +597,7 @@ function ConfirmedTab({
                             }
                           />
                         </TableCell>
-                        <TableCell className="align-top" />
+                        <TableCell className="align-middle" />
                       </TableRow>
                     );
 
@@ -608,7 +608,7 @@ function ConfirmedTab({
                           key={`${row.kind}-${row.id}-sub-${entry.id}`}
                           className="bg-muted/20 transition-colors hover:bg-accent/20"
                         >
-                          <TableCell className="align-top min-w-[160px] pl-8">
+                          <TableCell className="align-middle min-w-[160px] pl-8">
                             <div className="flex items-start gap-1.5">
                               <CornerDownRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground" />
                               <EditableText
@@ -621,7 +621,7 @@ function ConfirmedTab({
                               />
                             </div>
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <Badge
                               variant="secondary"
                               className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
@@ -629,7 +629,7 @@ function ConfirmedTab({
                               Sub-entry
                             </Badge>
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <FunderSelect
                               value={entry.funder}
                               onChange={(funder) =>
@@ -639,7 +639,7 @@ function ConfirmedTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableNumber
                               value={entry.totalPrice}
                               onSave={(totalPrice) =>
@@ -650,7 +650,7 @@ function ConfirmedTab({
                               formatDisplay={formatIDR}
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableNumber
                               value={entry.budgetSpent}
                               onSave={(budgetSpent) =>
@@ -663,13 +663,13 @@ function ConfirmedTab({
                           </TableCell>
                           <TableCell
                             className={cn(
-                              "align-top py-1.5 px-2 text-sm tabular-nums",
+                              "align-middle py-1.5 px-2 text-sm tabular-nums",
                               subRemaining < 0 && "text-destructive",
                             )}
                           >
                             {formatIDR(subRemaining)}
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableDate
                               value={entry.nextTargetDate}
                               onSave={(nextTargetDate) =>
@@ -679,7 +679,7 @@ function ConfirmedTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top min-w-[220px]">
+                          <TableCell className="align-middle min-w-[220px]">
                             <VenueNotesCell
                               value={entry.nextAction}
                               onSave={(nextAction) =>
@@ -689,7 +689,7 @@ function ConfirmedTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <FilesCell
                               files={entry.files}
                               onAdd={(file) =>
@@ -704,7 +704,7 @@ function ConfirmedTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -878,7 +878,7 @@ function HypotheticalTab({
                     const remaining = item.totalPrice - item.budgetSpent;
                     const mainRow = (
                       <TableRow key={item.id} className="transition-colors hover:bg-accent/30">
-                        <TableCell className="align-top font-medium text-foreground min-w-[160px]">
+                        <TableCell className="align-middle font-medium text-foreground min-w-[160px]">
                           <EditableText
                             value={item.name}
                             onSave={(name) => updateHypotheticalItem(item.id, { name })}
@@ -892,13 +892,13 @@ function HypotheticalTab({
                             Add sub-entry
                           </button>
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <ConfirmedTypePill
                             value={item.type}
                             onChange={(type) => updateHypotheticalItem(item.id, { type })}
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           {item.subEntries.length > 0 ? (
                             <p
                               title="Sum of sub-entries — edit them individually"
@@ -914,7 +914,7 @@ function HypotheticalTab({
                             />
                           )}
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           {item.subEntries.length > 0 ? (
                             <p
                               title="Sum of sub-entries — edit them individually"
@@ -932,32 +932,32 @@ function HypotheticalTab({
                         </TableCell>
                         <TableCell
                           className={cn(
-                            "align-top py-1.5 px-2 text-sm tabular-nums",
+                            "align-middle py-1.5 px-2 text-sm tabular-nums",
                             remaining < 0 && "text-destructive",
                           )}
                         >
                           {formatIDR(remaining)}
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <EditableDate
                             value={item.nextTargetDate}
                             onSave={(nextTargetDate) => updateHypotheticalItem(item.id, { nextTargetDate })}
                           />
                         </TableCell>
-                        <TableCell className="align-top min-w-[220px]">
+                        <TableCell className="align-middle min-w-[220px]">
                           <VenueNotesCell
                             value={item.nextAction}
                             onSave={(nextAction) => updateHypotheticalItem(item.id, { nextAction })}
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <FilesCell
                             files={item.files}
                             onAdd={(file) => addHypotheticalItemFile(item, file)}
                             onRemove={(url) => removeHypotheticalItemFile(item, url)}
                           />
                         </TableCell>
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -977,7 +977,7 @@ function HypotheticalTab({
                           key={`${item.id}-sub-${entry.id}`}
                           className="bg-muted/20 transition-colors hover:bg-accent/20"
                         >
-                          <TableCell className="align-top min-w-[160px] pl-8">
+                          <TableCell className="align-middle min-w-[160px] pl-8">
                             <div className="flex items-start gap-1.5">
                               <CornerDownRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground" />
                               <EditableText
@@ -988,7 +988,7 @@ function HypotheticalTab({
                               />
                             </div>
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <Badge
                               variant="secondary"
                               className="rounded-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
@@ -996,7 +996,7 @@ function HypotheticalTab({
                               Sub-entry
                             </Badge>
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableNumber
                               value={entry.totalPrice}
                               onSave={(totalPrice) =>
@@ -1005,7 +1005,7 @@ function HypotheticalTab({
                               formatDisplay={formatIDR}
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableNumber
                               value={entry.budgetSpent}
                               onSave={(budgetSpent) =>
@@ -1016,13 +1016,13 @@ function HypotheticalTab({
                           </TableCell>
                           <TableCell
                             className={cn(
-                              "align-top py-1.5 px-2 text-sm tabular-nums",
+                              "align-middle py-1.5 px-2 text-sm tabular-nums",
                               subRemaining < 0 && "text-destructive",
                             )}
                           >
                             {formatIDR(subRemaining)}
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <EditableDate
                               value={entry.nextTargetDate}
                               onSave={(nextTargetDate) =>
@@ -1030,7 +1030,7 @@ function HypotheticalTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top min-w-[220px]">
+                          <TableCell className="align-middle min-w-[220px]">
                             <VenueNotesCell
                               value={entry.nextAction}
                               onSave={(nextAction) =>
@@ -1038,14 +1038,14 @@ function HypotheticalTab({
                               }
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <FilesCell
                               files={entry.files}
                               onAdd={(file) => addHypotheticalItemSubEntryFile(item, entry.id, file)}
                               onRemove={(url) => removeHypotheticalItemSubEntryFile(item, entry.id, url)}
                             />
                           </TableCell>
-                          <TableCell className="align-top">
+                          <TableCell className="align-middle">
                             <Button
                               variant="ghost"
                               size="icon"
