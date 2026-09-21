@@ -95,6 +95,37 @@ export function parseScheduleDate(value: string) {
   return new Date(value);
 }
 
+/** Parse values produced by date/date-time inputs without allowing JS to normalise invalid dates. */
+export function parseScheduleInput(value: string, allDay = false) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const dateTimeMatch = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  const match = allDay ? dateMatch : dateTimeMatch;
+  if (!match) return new Date(Number.NaN);
+
+  const [, year, month, day, hour = "0", minute = "0"] = match;
+  const date = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+  );
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day) ||
+    date.getHours() !== Number(hour) ||
+    date.getMinutes() !== Number(minute)
+  ) {
+    return new Date(Number.NaN);
+  }
+  return date;
+}
+
+export function isValidScheduleInput(value: string, allDay = false) {
+  return !Number.isNaN(parseScheduleInput(value, allDay).getTime());
+}
+
 export function localDateKey(date = new Date()) {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;

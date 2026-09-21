@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-21: Improved Schedule with agenda day navigation, a responsive month view, search and source filters, linked booking navigation, archived-item visibility, stronger loading/error/empty states, accessible controls, and strict local date/time validation.
 - 2026-09-21: Added `schedule-improvement-prompt.md` with a focused prompt for improving the Schedule experience while preserving existing data ownership and integrations.
 - 2026-09-21: Added a Schedule agenda with manual events, linked vendors and venues, derived payment reminders, due To Do items, dashboard Next up summaries, and the implementation plan in `schedule-implementation-plan.md`.
 - 2026-09-21: Added optional per-file categories to Wedding Files, with suggested wedding categories, custom values, Firestore persistence, and category badges in the file list.
