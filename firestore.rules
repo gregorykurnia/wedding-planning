@@ -37,6 +37,9 @@ service cloud.firestore {
     match /todos/{docId} {
       allow read, write: if isAllowed();
     }
+    match /scheduleEvents/{docId} {
+      allow read, write: if isAllowed();
+    }
     match /notes/{docId} {
       allow read, write: if isAllowed();
     }

@@ -182,6 +182,34 @@ export interface TodoItem {
   updatedAt: number | null;
 }
 
+export type ScheduleEventType =
+  | "vendor_call"
+  | "appointment"
+  | "payment"
+  | "deadline"
+  | "other";
+
+export type ScheduleEventStatus = "scheduled" | "completed" | "cancelled";
+
+// A manually scheduled event. Payment reminders and date-only To Do items are
+// derived into the Schedule page instead of being copied into this collection.
+export interface ScheduleEvent {
+  id: string;
+  title: string;
+  type: ScheduleEventType;
+  startAt: string; // local YYYY-MM-DD or YYYY-MM-DDTHH:mm value
+  endAt: string | null; // local YYYY-MM-DDTHH:mm value for timed events
+  allDay: boolean;
+  notes: string;
+  location: string;
+  status: ScheduleEventStatus;
+  relatedVendorId: string | null;
+  relatedVenueId: string | null;
+  reminderMinutes: number[];
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
 export type ChecklistPhase =
   | "12 Months Out"
   | "6 Months Out"

@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import {
   BadgeCheck,
   CalendarHeart,
+  CalendarDays,
   ChevronDown,
   ClipboardList,
   FolderOpen,
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   ...PLANNING_ITEMS,
   { href: "/guests", label: "Guests", icon: Users },
+  { href: "/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/todo", label: "To Do", icon: ListTodo },
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/files", label: "Files", icon: FolderOpen },

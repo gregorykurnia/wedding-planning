@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CalendarHeart,
+  CalendarDays,
   Heart,
   ListTodo,
   StickyNote,
@@ -18,9 +19,11 @@ import { Button } from "@/components/ui/button";
 import { useVenues } from "@/lib/collections/venues";
 import { useVendors } from "@/lib/collections/vendors";
 import { useTodos } from "@/lib/collections/todos";
+import { useScheduleEvents } from "@/lib/collections/schedule-events";
 import { useGuests } from "@/lib/collections/guests";
 import { useWeddingSettings } from "@/lib/collections/settings";
 import { formatIDR } from "@/lib/format";
+import { buildConfirmedPaymentReminders, formatScheduleDate } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
 
 // Fallback used until a wedding date is saved in Settings.
@@ -46,6 +49,7 @@ export default function DashboardPage() {
   const { data: venues, loading: venuesLoading } = useVenues();
   const { data: vendors, loading: vendorsLoading } = useVendors();
   const { data: todos, loading: todosLoading } = useTodos();
+  const { data: scheduleEvents, loading: scheduleLoading } = useScheduleEvents();
   const { data: guests, loading: guestsLoading } = useGuests();
   const { data: settings } = useWeddingSettings();
 
@@ -91,6 +95,36 @@ export default function DashboardPage() {
   const todoProgress = todos.length > 0 ? Math.round((doneTodos / todos.length) * 100) : 0;
   const upcomingTodos = [...openTodos]
     .sort((a, b) => (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"))
+    .slice(0, 5);
+
+  const nextUp = [
+    ...scheduleEvents
+      .filter((event) => event.status === "scheduled" && event.startAt)
+      .map((event) => ({
+        id: `event-${event.id}`,
+        title: event.title,
+        date: event.startAt,
+        allDay: event.allDay,
+        label: event.type === "vendor_call" ? "Call" : event.type === "appointment" ? "Appointment" : "Schedule",
+      })),
+    ...buildConfirmedPaymentReminders(venues, vendors).map((reminder) => ({
+      id: `payment-${reminder.id}`,
+      title: reminder.title,
+      date: reminder.date,
+      allDay: true,
+      label: "Payment",
+    })),
+    ...openTodos
+      .filter((todo) => todo.dueDate)
+      .map((todo) => ({
+        id: `todo-${todo.id}`,
+        title: todo.title,
+        date: todo.dueDate!,
+        allDay: true,
+        label: "To Do",
+      })),
+  ]
+    .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 5);
 
   const confirmedGuests = guests.filter((g) => g.rsvpStatus === "yes");
@@ -144,7 +178,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-border/70 shadow-sm">
           <CardHeader className="flex-row items-center gap-3 space-y-0">
             <div className="flex size-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
@@ -236,6 +270,43 @@ export default function DashboardPage() {
               className="mt-2 h-auto px-0"
             >
               View to do <ArrowRight className="size-3.5" />
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70 shadow-sm">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <CalendarDays className="size-5" />
+            </div>
+            <CardTitle className="font-heading text-base font-semibold">Next up</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {scheduleLoading || venuesLoading || vendorsLoading || todosLoading ? (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : nextUp.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No upcoming dates yet.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {nextUp.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="min-w-0 truncate text-foreground">{item.title}</span>
+                    <Badge variant="outline" className="shrink-0 text-xs">
+                      {item.label} · {formatScheduleDate(item.date, item.allDay)}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Button
+              variant="link"
+              render={<Link href="/schedule" />}
+              className="mt-2 h-auto px-0"
+            >
+              View schedule <ArrowRight className="size-3.5" />
             </Button>
           </CardContent>
         </Card>
