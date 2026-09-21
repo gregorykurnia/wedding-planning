@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -57,6 +58,24 @@ import type { WeddingFile, WeddingFolder } from "@/lib/types";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.txt,image/*";
+const FILE_CATEGORY_OPTIONS = [
+  "Venue",
+  "Makeup",
+  "Wedding Organizer",
+  "Bride Dress",
+  "Decoration",
+  "Food & Catering",
+  "Groom Suit",
+  "Invitations",
+  "Music/DJ",
+  "Photography & Video",
+  "Transportation",
+  "Wedding Cake",
+  "Guest Documents",
+  "Contracts",
+  "Inspiration",
+  "Other",
+];
 
 function formatFileSize(bytes: number) {
   if (!bytes) return "Size unavailable";
@@ -180,6 +199,7 @@ export default function FilesPage() {
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [editingFile, setEditingFile] = useState<WeddingFile | null>(null);
   const [fileName, setFileName] = useState("");
+  const [fileCategory, setFileCategory] = useState("");
   const [fileDescription, setFileDescription] = useState("");
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [movingFile, setMovingFile] = useState<WeddingFile | null>(null);
@@ -273,6 +293,7 @@ export default function FilesPage() {
   const openEditFile = useCallback((file: WeddingFile) => {
     setEditingFile(file);
     setFileName(file.name);
+    setFileCategory(file.category);
     setFileDescription(file.description);
     setFileDialogOpen(true);
   }, []);
@@ -287,6 +308,7 @@ export default function FilesPage() {
       const name = filename || result?.originalFilename || "Uploaded file";
       const created = await createWeddingFile({
         name,
+        category: "",
         folderId: currentFolderId,
         url,
         publicId: result?.publicId,
@@ -299,6 +321,7 @@ export default function FilesPage() {
       setEditingFile({
         id: created.id,
         name,
+        category: "",
         description: "",
         folderId: currentFolderId,
         url,
@@ -312,6 +335,7 @@ export default function FilesPage() {
         updatedAt: null,
       });
       setFileName(name);
+      setFileCategory("");
       setFileDescription("");
       setFileDialogOpen(true);
     } catch (error) {
@@ -328,14 +352,18 @@ export default function FilesPage() {
 
     setActionError(null);
     try {
-      await updateWeddingFile(editingFile.id, { name, description: fileDescription });
+      await updateWeddingFile(editingFile.id, {
+        name,
+        category: fileCategory,
+        description: fileDescription,
+      });
       setFileDialogOpen(false);
       setEditingFile(null);
     } catch (error) {
       console.error(error);
       setActionError(error instanceof Error ? error.message : "Could not save file details.");
     }
-  }, [editingFile, fileDescription, fileName]);
+  }, [editingFile, fileCategory, fileDescription, fileName]);
 
   const handleDeleteFile = useCallback(async (file: WeddingFile) => {
     if (!window.confirm(`Delete “${file.name}” from the file list?`)) return;
@@ -507,7 +535,7 @@ export default function FilesPage() {
                 <div className="flex flex-col items-center gap-2 py-10 text-center">
                   <FileText className="size-8 text-primary/70" />
                   <p className="text-sm font-medium">No files here yet</p>
-                  <p className="text-xs text-muted-foreground">Upload a file and add a description when prompted.</p>
+                  <p className="text-xs text-muted-foreground">Upload a file and add its name, category, and description when prompted.</p>
                   <CloudinaryUploadButton
                     label="Upload a file"
                     size="sm"
@@ -529,6 +557,11 @@ export default function FilesPage() {
                         <a href={file.url} target="_blank" rel="noreferrer" className="block truncate text-sm font-medium text-foreground hover:underline" title={file.name}>
                           {file.name}
                         </a>
+                        {file.category && (
+                          <Badge variant="secondary" className="mt-1 max-w-full truncate">
+                            {file.category}
+                          </Badge>
+                        )}
                         <p className="mt-0.5 truncate text-xs text-muted-foreground">
                           {file.description || "No description yet"}
                         </p>
@@ -586,13 +619,28 @@ export default function FilesPage() {
           <DialogHeader>
             <DialogTitle>File details</DialogTitle>
             <DialogDescription>
-              Add a clear name and a short note so you know what this file is later.
+              Add a clear name, category, and short note so you know what this file is later.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(event) => void saveFileDetails(event)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="file-name" className="text-xs font-medium">Name</label>
               <Input id="file-name" value={fileName} onChange={(event) => setFileName(event.target.value)} maxLength={160} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="file-category" className="text-xs font-medium">Category <span className="font-normal text-muted-foreground">(optional)</span></label>
+              <Input
+                id="file-category"
+                list="file-category-options"
+                value={fileCategory}
+                onChange={(event) => setFileCategory(event.target.value)}
+                placeholder="e.g. Makeup or Wedding Organizer"
+                maxLength={80}
+              />
+              <datalist id="file-category-options">
+                {FILE_CATEGORY_OPTIONS.map((category) => <option key={category} value={category} />)}
+              </datalist>
+              <p className="text-[11px] text-muted-foreground">Choose a suggestion or type your own category.</p>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="file-description" className="text-xs font-medium">Description</label>

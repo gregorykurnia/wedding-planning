@@ -36,6 +36,7 @@ function fromFileDoc(id: string, data: DocumentData): WeddingFile {
   return {
     id,
     name: typeof data.name === "string" && data.name.trim() ? data.name : "Uploaded file",
+    category: typeof data.category === "string" ? data.category : "",
     description: typeof data.description === "string" ? data.description : "",
     folderId: typeof data.folderId === "string" ? data.folderId : null,
     url: typeof data.url === "string" ? data.url : "",
@@ -175,6 +176,7 @@ export async function deleteWeddingFolder(id: string) {
 
 export async function createWeddingFile(data: {
   name: string;
+  category?: string;
   description?: string;
   folderId: string | null;
   url: string;
@@ -189,6 +191,7 @@ export async function createWeddingFile(data: {
   return addDoc(collection(database, FILES_COLLECTION), {
     ...data,
     name: data.name.trim(),
+    category: data.category?.trim() ?? "",
     description: data.description?.trim() ?? "",
     publicId: data.publicId ?? "",
     resourceType: data.resourceType ?? "auto",
@@ -202,12 +205,13 @@ export async function createWeddingFile(data: {
 
 export async function updateWeddingFile(
   id: string,
-  data: Partial<Pick<WeddingFile, "name" | "description" | "folderId">>,
+  data: Partial<Pick<WeddingFile, "name" | "category" | "description" | "folderId">>,
 ) {
   const database = requireDb();
   return updateDoc(doc(database, FILES_COLLECTION, id), {
     ...data,
     ...(data.name !== undefined ? { name: data.name.trim() } : {}),
+    ...(data.category !== undefined ? { category: data.category.trim() } : {}),
     ...(data.description !== undefined ? { description: data.description.trim() } : {}),
     updatedAt: serverTimestamp(),
   });

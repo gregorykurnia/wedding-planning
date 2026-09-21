@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-21: Added optional per-file categories to Wedding Files, with suggested wedding categories, custom values, Firestore persistence, and category badges in the file list.
 - 2026-09-18: Added Confirmed payment reminders grouped by overdue, due today, due within 7 days, and upcoming, using Next target date and remaining budget for bookings and installments.
 - 2026-09-18: Added a muted Pending spending amount to each funder recap card based on committed total price minus real budget spent.
 - 2026-09-18: Vertically centered Confirmed and Hypothetical table cell contents so controls and remaining-budget values align within taller rows.

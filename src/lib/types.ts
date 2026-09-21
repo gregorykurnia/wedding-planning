@@ -64,6 +64,7 @@ export interface WeddingFolder {
 export interface WeddingFile {
   id: string;
   name: string;
+  category: string;
   description: string;
   folderId: string | null;
   url: string;
