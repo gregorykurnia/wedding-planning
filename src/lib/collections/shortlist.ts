@@ -1,7 +1,7 @@
 "use client";
 
 import type { DocumentData } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
+import { arrayRemove, arrayUnion, orderBy } from "firebase/firestore";
 import {
   addDocument,
   deleteDocument,
@@ -9,9 +9,26 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
-import type { ShortlistItem, ShortlistSubEntry, Vendor, VendorCategory } from "@/lib/types";
+import type {
+  ShortlistItem,
+  ShortlistSubEntry,
+  Vendor,
+  VendorCategory,
+  VendorFile,
+} from "@/lib/types";
 
 const COLLECTION = "shortlist";
+
+function fromDocFiles(raw: unknown): VendorFile[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (file): file is VendorFile =>
+      typeof file === "object" &&
+      file !== null &&
+      typeof (file as { name?: unknown }).name === "string" &&
+      typeof (file as { url?: unknown }).url === "string",
+  );
+}
 
 function fromDocSubEntry(raw: unknown): ShortlistSubEntry | null {
   if (typeof raw !== "object" || raw === null) return null;
@@ -27,6 +44,7 @@ function fromDocSubEntry(raw: unknown): ShortlistSubEntry | null {
     igFollowers: typeof data.igFollowers === "number" ? data.igFollowers : null,
     nextAction: data.nextAction ?? "",
     notes: data.notes ?? "",
+    files: fromDocFiles(data.files),
   };
 }
 
@@ -44,6 +62,7 @@ function fromDoc(id: string, data: DocumentData): ShortlistItem {
     igFollowers: typeof data.igFollowers === "number" ? data.igFollowers : null,
     nextAction: data.nextAction ?? "",
     notes: data.notes ?? "",
+    files: fromDocFiles(data.files),
     subEntries: Array.isArray(data.subEntries)
       ? data.subEntries.map(fromDocSubEntry).filter((s): s is ShortlistSubEntry => s !== null)
       : [],
@@ -68,6 +87,7 @@ export function createShortlistItem(type?: VendorCategory) {
     igFollowers: null,
     nextAction: "",
     notes: "",
+    files: [],
     subEntries: [],
   });
 }
@@ -92,6 +112,7 @@ export function createShortlistItemFromVendor(vendor: Vendor) {
       igFollowers: null,
       nextAction: "",
       notes: "",
+      files: [],
     }));
   const subEntries: ShortlistSubEntry[] = [
     ...otherPriceOptions,
@@ -105,6 +126,7 @@ export function createShortlistItemFromVendor(vendor: Vendor) {
       igFollowers: null,
       nextAction: s.nextAction,
       notes: "",
+      files: s.files ?? [],
     })),
   ];
   return addDocument(COLLECTION, {
@@ -118,6 +140,7 @@ export function createShortlistItemFromVendor(vendor: Vendor) {
     igFollowers: null,
     nextAction: vendor.nextAction,
     notes: vendor.notes,
+    files: vendor.files,
     subEntries,
   });
 }
@@ -132,6 +155,56 @@ export function deleteShortlistItem(id: string) {
   return deleteDocument(COLLECTION, id);
 }
 
+export function addShortlistFile(item: ShortlistItem, file: VendorFile) {
+  return updateDocument(COLLECTION, item.id, {
+    files: arrayUnion(file),
+  });
+}
+
+export function removeShortlistFile(item: ShortlistItem, url: string) {
+  const file = item.files.find((f) => f.url === url);
+  if (!file) return Promise.resolve();
+  return updateDocument(COLLECTION, item.id, {
+    files: arrayRemove(file),
+  });
+}
+
+function normalizeName(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+}
+
+/**
+ * Backfills and keeps vendor attachments visible on matching shortlist rows.
+ * Files are merged by URL so attachments added directly to the shortlist are
+ * preserved, and Firestore's arrayUnion keeps concurrent edits safe.
+ */
+export function syncShortlistFilesFromVendors(items: ShortlistItem[], vendors: Vendor[]) {
+  const vendorsByName = new Map<string, Vendor[]>();
+  for (const vendor of vendors) {
+    const key = normalizeName(vendor.name);
+    if (!key) continue;
+    vendorsByName.set(key, [...(vendorsByName.get(key) ?? []), vendor]);
+  }
+
+  return Promise.all(
+    items.map((item) => {
+      const matchingVendors = vendorsByName.get(normalizeName(item.name)) ?? [];
+      const existingUrls = new Set(item.files.map((file) => file.url));
+      const missingFiles = matchingVendors
+        .flatMap((vendor) => vendor.files)
+        .filter((file, index, files) => {
+          if (existingUrls.has(file.url)) return false;
+          return files.findIndex((candidate) => candidate.url === file.url) === index;
+        });
+
+      if (missingFiles.length === 0) return Promise.resolve();
+      return updateDocument(COLLECTION, item.id, {
+        files: arrayUnion(...missingFiles),
+      });
+    }),
+  );
+}
+
 export function addShortlistSubEntry(item: ShortlistItem) {
   const entry: ShortlistSubEntry = {
     id: crypto.randomUUID(),
@@ -143,6 +216,7 @@ export function addShortlistSubEntry(item: ShortlistItem) {
     igFollowers: null,
     nextAction: "",
     notes: "",
+    files: [],
   };
   return updateDocument(COLLECTION, item.id, {
     subEntries: [...item.subEntries, entry],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import {
   Table,
@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditableText } from "@/components/shared/editable-text";
 import { ContactCell } from "@/components/shared/contact-cell";
+import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
@@ -24,10 +25,14 @@ import {
   createShortlistItem,
   deleteShortlistItem,
   removeShortlistSubEntry,
+  addShortlistFile,
+  removeShortlistFile,
+  syncShortlistFilesFromVendors,
   updateShortlistItem,
   updateShortlistSubEntry,
   useShortlistItems,
 } from "@/lib/collections/shortlist";
+import { useVendors } from "@/lib/collections/vendors";
 import { cn } from "@/lib/utils";
 import type { ShortlistItem, ShortlistSubEntry, VendorCategory } from "@/lib/types";
 
@@ -40,6 +45,7 @@ const HEADERS = [
   { label: "IG Followers", className: "min-w-[110px]" },
   { label: "Next Actions", className: "min-w-[160px]" },
   { label: "Notes", className: "min-w-[200px]" },
+  { label: "Files", className: "min-w-[180px]" },
   { label: "", className: "w-[90px]" },
 ];
 
@@ -124,6 +130,13 @@ function SubEntryRow({
       </TableCell>
       <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <VenueNotesCell value={sub.notes} onSave={(notes) => save({ notes })} />
+      </TableCell>
+      <TableCell className="align-top break-words whitespace-normal overflow-hidden">
+        <FilesCell
+          files={sub.files}
+          onAdd={(file) => save({ files: [...sub.files, file] })}
+          onRemove={(url) => save({ files: sub.files.filter((file) => file.url !== url) })}
+        />
       </TableCell>
       <TableCell className="align-top break-words whitespace-normal overflow-hidden">
         <Button
@@ -230,6 +243,13 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
           <VenueNotesCell value={item.notes} onSave={(notes) => save({ notes })} />
         </TableCell>
         <TableCell className="align-top break-words whitespace-normal overflow-hidden">
+          <FilesCell
+            files={item.files}
+            onAdd={(file) => addShortlistFile(item, file)}
+            onRemove={(url) => removeShortlistFile(item, url)}
+          />
+        </TableCell>
+        <TableCell className="align-top break-words whitespace-normal overflow-hidden">
           <Button
             type="button"
             variant="ghost"
@@ -249,8 +269,16 @@ function ShortlistRow({ item }: { item: ShortlistItem }) {
 
 export function ShortlistTable() {
   const { data: items, loading } = useShortlistItems();
+  const { data: vendors, loading: vendorsLoading } = useVendors();
   const [activeType, setActiveType] = useState<VendorCategory | "All">("All");
   const [typeSort, setTypeSort] = useState<"asc" | "desc" | null>(null);
+
+  useEffect(() => {
+    if (loading || vendorsLoading || items.length === 0 || vendors.length === 0) return;
+    void syncShortlistFilesFromVendors(items, vendors).catch((error) => {
+      console.error("Error syncing vendor attachments to shortlist:", error);
+    });
+  }, [items, loading, vendors, vendorsLoading]);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { All: items.length };

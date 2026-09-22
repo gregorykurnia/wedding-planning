@@ -264,6 +264,7 @@ export interface ShortlistSubEntry {
   igFollowers: number | null;
   nextAction: string;
   notes: string;
+  files: VendorFile[];
 }
 
 export interface ShortlistItem {
@@ -278,6 +279,7 @@ export interface ShortlistItem {
   igFollowers: number | null;
   nextAction: string;
   notes: string;
+  files: VendorFile[];
   subEntries: ShortlistSubEntry[];
   createdAt: number | null;
   updatedAt: number | null;
