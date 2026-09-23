@@ -65,6 +65,67 @@ const EVENT_STYLES: Record<EventType, string> = {
 const RSVP_FILTER_OPTIONS = ["all", ...RSVP_OPTIONS] as const;
 const EVENT_FILTER_OPTIONS = ["all", ...EVENT_OPTIONS] as const;
 
+const BUSINESS_CONNECTION_TERMS = [
+  "friend",
+  "friends",
+  "work",
+  "business",
+  "colleague",
+  "colleagues",
+  "coworker",
+  "coworkers",
+  "co-worker",
+  "co-workers",
+  "client",
+  "clients",
+  "customer",
+  "customers",
+  "boss",
+  "manager",
+  "office",
+  "professional",
+  "professionals",
+  "network",
+  "networking",
+  "contact",
+  "contacts",
+  "partner",
+  "partners",
+  "classmate",
+  "classmates",
+] as const;
+
+function normalizedConnection(connection: string) {
+  return connection.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function hasBusinessConnectionTag(connection: string) {
+  const normalized = normalizedConnection(connection);
+  return BUSINESS_CONNECTION_TERMS.some((term) =>
+    new RegExp(`\\b${term.replace("-", "\\-")}\\b`).test(normalized),
+  );
+}
+
+function hasPersonTag(connection: string, person: "groom" | "bride") {
+  return new RegExp(`\\b${person}\\b`).test(normalizedConnection(connection));
+}
+
+function guestHeadcount(guest: Guest) {
+  return 1 + guest.plusOnes;
+}
+
+function isGroomBusinessConnection(guest: Guest) {
+  return hasPersonTag(guest.connection, "groom") && hasBusinessConnectionTag(guest.connection);
+}
+
+function isGroomBigFamily(guest: Guest) {
+  return hasPersonTag(guest.connection, "groom") && !isGroomBusinessConnection(guest);
+}
+
+function isBrideBigFamily(guest: Guest) {
+  return hasPersonTag(guest.connection, "bride") && !hasBusinessConnectionTag(guest.connection);
+}
+
 function SortableHeader({ label, column }: { label: string; column: { toggleSorting: (desc: boolean) => void; getIsSorted: () => false | "asc" | "desc" } }) {
   return (
     <button
@@ -83,16 +144,16 @@ export default function GuestsPage() {
   const [eventFilter, setEventFilter] = useState<(typeof EVENT_FILTER_OPTIONS)[number]>("all");
   const [search, setSearch] = useState("");
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
-  const totalListed = guests.reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+  const totalListed = guests.reduce((sum, g) => sum + guestHeadcount(g), 0);
   const totalHeadcount = guests
     .filter((g) => g.rsvpStatus === "yes")
-    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+    .reduce((sum, g) => sum + guestHeadcount(g), 0);
   const bothCount = guests
     .filter((g) => g.eventType === "Both")
-    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+    .reduce((sum, g) => sum + guestHeadcount(g), 0);
   const receptionCount = guests
     .filter((g) => g.eventType === "Reception" || g.eventType === "Both")
-    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+    .reduce((sum, g) => sum + guestHeadcount(g), 0);
   const matrimonyCount = guests
     .filter(
       (g) =>
@@ -100,7 +161,7 @@ export default function GuestsPage() {
         g.eventType === "Both" ||
         g.eventType === "Reception Shortlist"
     )
-    .reduce((sum, g) => sum + 1 + g.plusOnes, 0);
+    .reduce((sum, g) => sum + guestHeadcount(g), 0);
 
   const orderIndex = useMemo(() => {
     const map = new Map<string, number>();
@@ -120,6 +181,22 @@ export default function GuestsPage() {
       return true;
     });
   }, [guests, rsvpFilter, eventFilter, search]);
+
+  const bothGroupCounts = useMemo(() => {
+    if (eventFilter !== "Both") return null;
+
+    return {
+      groomBigFamily: filteredGuests
+        .filter(isGroomBigFamily)
+        .reduce((sum, guest) => sum + guestHeadcount(guest), 0),
+      brideBigFamily: filteredGuests
+        .filter(isBrideBigFamily)
+        .reduce((sum, guest) => sum + guestHeadcount(guest), 0),
+      groomBusinessConnections: filteredGuests
+        .filter(isGroomBusinessConnection)
+        .reduce((sum, guest) => sum + guestHeadcount(guest), 0),
+    };
+  }, [eventFilter, filteredGuests]);
 
   const columns = useMemo<ColumnDef<Guest>[]>(
     () => [
@@ -328,6 +405,11 @@ export default function GuestsPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {bothCount} both · {receptionCount} reception · {matrimonyCount} matrimony
           </p>
+          {bothGroupCounts && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Groom Big Family: {bothGroupCounts.groomBigFamily} incl. plus-ones · Bride Big Family: {bothGroupCounts.brideBigFamily} incl. plus-ones · Groom Business Connections: {bothGroupCounts.groomBusinessConnections} incl. plus-ones
+            </p>
+          )}
         </div>
         <Button onClick={() => createGuest()} className="gap-1.5 self-start sm:self-auto">
           <Plus className="size-4" />

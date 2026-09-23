@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-09-23: Added comprehensive Groom Big Family, Bride Big Family, and Groom Business Connections headcounts to the Guests panel when filtering Event to Both, including each matching guest's plus-ones.
 - 2026-09-22: Added Cloudinary file attachments to Planning shortlist entries and packages, copied vendor attachments into newly created shortlist rows, and merged existing matching vendor attachments into shortlist rows without removing shortlist-only files.
 - 2026-09-21: Improved Schedule with agenda day navigation, a responsive month view, search and source filters, linked booking navigation, archived-item visibility, stronger loading/error/empty states, accessible controls, and strict local date/time validation.
 - 2026-09-21: Added `schedule-improvement-prompt.md` with a focused prompt for improving the Schedule experience while preserving existing data ownership and integrations.
