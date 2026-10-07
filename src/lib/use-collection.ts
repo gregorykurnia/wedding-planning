@@ -10,6 +10,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   type DocumentData,
   type QueryConstraint,
@@ -87,6 +88,25 @@ export async function deleteDocument(collectionName: string, id: string) {
     throw new Error("Firebase is not configured.");
   }
   return deleteDoc(doc(db, collectionName, id));
+}
+
+/**
+ * Writes a document using a caller-provided ID. This is useful for restoring
+ * a recently deleted document without creating a new record with a different
+ * identity.
+ */
+export async function setDocument(
+  collectionName: string,
+  id: string,
+  data: Record<string, unknown>,
+) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error("Firebase is not configured.");
+  }
+  return setDoc(doc(db, collectionName, id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export function timestampToMillis(ts: unknown): number | null {

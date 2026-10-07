@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -9,9 +9,23 @@ import {
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Plus, Search, Trash2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +49,7 @@ import { EditableNumber } from "@/components/shared/editable-number";
 import {
   createGuest,
   deleteGuest,
+  restoreGuest,
   updateGuest,
   useGuests,
 } from "@/lib/collections/guests";
@@ -137,12 +152,229 @@ function SortableHeader({ label, column }: { label: string; column: { toggleSort
   );
 }
 
+function GuestActions({ guest, onDelete }: { guest: Guest; onDelete: (guest: Guest) => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Actions for ${guest.name || "guest"}`}
+            className="shrink-0 text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
+        <MoreHorizontal className="size-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-36">
+        <DropdownMenuItem onClick={() => onDelete(guest)} variant="destructive">
+          <Trash2 className="size-4" />
+          Delete guest
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function GuestMobileCard({
+  guest,
+  orderNumber,
+  onDelete,
+}: {
+  guest: Guest;
+  orderNumber: number | undefined;
+  onDelete: (guest: Guest) => void;
+}) {
+  return (
+    <Card className="gap-3 p-4">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            {orderNumber !== undefined && (
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                #{orderNumber}
+              </span>
+            )}
+            <EditableText
+              value={guest.name}
+              onSave={(name) => updateGuest(guest.id, { name })}
+              placeholder="Guest name"
+              className="font-semibold text-foreground"
+            />
+          </div>
+          <EditableText
+            value={guest.connection}
+            onSave={(connection) => updateGuest(guest.id, { connection })}
+            placeholder="Add connection"
+            className="text-xs text-muted-foreground"
+          />
+        </div>
+        <GuestActions guest={guest} onDelete={onDelete} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={guest.rsvpStatus}
+          onValueChange={(value) => updateGuest(guest.id, { rsvpStatus: value as RsvpStatus })}
+        >
+          <SelectTrigger
+            size="sm"
+            className={cn(
+              "h-7 w-auto gap-1 rounded-full border px-3 text-xs font-medium shadow-none",
+              RSVP_STYLES[guest.rsvpStatus],
+            )}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {RSVP_OPTIONS.map((status) => (
+              <SelectItem key={status} value={status}>
+                {RSVP_LABELS[status]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={guest.eventType}
+          onValueChange={(value) => updateGuest(guest.id, { eventType: value as EventType })}
+        >
+          <SelectTrigger
+            size="sm"
+            className={cn(
+              "h-7 w-auto max-w-full gap-1 rounded-full border px-3 text-xs font-medium shadow-none",
+              EVENT_STYLES[guest.eventType],
+            )}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EVENT_OPTIONS.map((event) => (
+              <SelectItem key={event} value={event}>
+                {event}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-3 gap-y-3 border-t border-border/70 pt-3">
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Country
+          </p>
+          <EditableText
+            value={guest.country}
+            onSave={(country) => updateGuest(guest.id, { country })}
+            placeholder="—"
+            className="-mx-2 w-[calc(100%+1rem)]"
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Plus ones
+          </p>
+          <EditableNumber
+            value={guest.plusOnes}
+            onSave={(plusOnes) => updateGuest(guest.id, { plusOnes })}
+            formatDisplay={(value) => `${value} · ${guestHeadcount(guest)} total`}
+            className="-mx-2 w-[calc(100%+1rem)]"
+          />
+        </div>
+        <label className="col-span-2 flex min-h-8 items-center gap-2 text-sm text-muted-foreground">
+          <Checkbox
+            checked={guest.inviteSent}
+            onCheckedChange={(checked) => updateGuest(guest.id, { inviteSent: checked === true })}
+          />
+          Invite sent
+        </label>
+        <div className="col-span-2 min-w-0">
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Food notes
+          </p>
+          <EditableText
+            value={guest.allergies}
+            onSave={(allergies) => updateGuest(guest.id, { allergies })}
+            placeholder="—"
+            className="-mx-2 w-[calc(100%+1rem)]"
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function GuestsPage() {
   const { data: guests, loading } = useGuests();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rsvpFilter, setRsvpFilter] = useState<(typeof RSVP_FILTER_OPTIONS)[number]>("all");
   const [eventFilter, setEventFilter] = useState<(typeof EVENT_FILTER_OPTIONS)[number]>("all");
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Guest | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [undoGuest, setUndoGuest] = useState<Guest | null>(null);
+  const [undoError, setUndoError] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current !== null) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
+
+  const requestDelete = (guest: Guest) => {
+    setDeleteError(null);
+    setDeleteTarget(guest);
+  };
+
+  const scheduleUndo = (guest: Guest) => {
+    if (undoTimerRef.current !== null) clearTimeout(undoTimerRef.current);
+    setUndoError(null);
+    setUndoGuest(guest);
+    undoTimerRef.current = setTimeout(() => {
+      setUndoGuest((current) => (current?.id === guest.id ? null : current));
+      setUndoError(null);
+      undoTimerRef.current = null;
+    }, 10000);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || isDeleting) return;
+    const target = deleteTarget;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteGuest(target.id);
+      setDeleteTarget(null);
+      scheduleUndo(target);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Unable to delete this guest.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const undoDelete = async () => {
+    if (!undoGuest || isRestoring) return;
+    const target = undoGuest;
+    if (undoTimerRef.current !== null) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+    setIsRestoring(true);
+    setUndoError(null);
+    try {
+      await restoreGuest(target);
+      setUndoGuest(null);
+    } catch (error) {
+      setUndoError(error instanceof Error ? error.message : "Unable to restore this guest.");
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
   const attending = guests.filter((g) => g.rsvpStatus === "yes").length;
   const totalListed = guests.reduce((sum, g) => sum + guestHeadcount(g), 0);
   const totalHeadcount = guests
@@ -369,7 +601,8 @@ export default function GuestsPage() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-destructive"
-              onClick={() => deleteGuest(guest.id)}
+              onClick={() => requestDelete(guest)}
+              aria-label={`Delete ${guest.name || "guest"}`}
             >
               <Trash2 className="size-4" />
             </Button>
@@ -393,6 +626,7 @@ export default function GuestsPage() {
     // land at that index mid-edit, dropping focus/caret.
     getRowId: (row) => row.id,
   });
+  const displayedGuests = table.getRowModel().rows.map((row) => row.original);
 
   return (
     <div className="flex flex-col gap-6">
@@ -461,7 +695,32 @@ export default function GuestsPage() {
         </div>
       </div>
 
-      <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
+      <div className="grid gap-3 md:hidden">
+        {loading ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index} className="gap-3 p-4">
+              <Skeleton className="h-7 w-2/3" />
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-16 w-full" />
+            </Card>
+          ))
+        ) : displayedGuests.length === 0 ? (
+          <Card className="p-8 text-center text-muted-foreground">
+            {guests.length === 0 ? "No guests added yet." : "No guests match the current filters."}
+          </Card>
+        ) : (
+          displayedGuests.map((guest) => (
+            <GuestMobileCard
+              key={guest.id}
+              guest={guest}
+              orderNumber={orderIndex.get(guest.id)}
+              onDelete={requestDelete}
+            />
+          ))
+        )}
+      </div>
+
+      <Card className="hidden overflow-hidden border-border/70 p-0 shadow-sm md:block">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -509,6 +768,71 @@ export default function GuestsPage() {
           </Table>
         </div>
       </Card>
+
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) {
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete guest?</DialogTitle>
+            <DialogDescription>
+              {deleteTarget
+                ? `This will remove “${deleteTarget.name || "this guest"}” and ${guestHeadcount(deleteTarget) === 1 ? "their entry" : `their entry and ${deleteTarget.plusOnes} plus-ones`} from the guest list. You can undo this for 10 seconds after deletion.`
+                : "This guest will be removed from the guest list."}
+            </DialogDescription>
+          </DialogHeader>
+          {deleteError && (
+            <p className="text-sm text-destructive" role="alert">
+              {deleteError}
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteError(null);
+              }}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting…" : "Delete guest"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {undoGuest && (
+        <div
+          className="fixed inset-x-4 bottom-20 z-50 flex items-center gap-3 rounded-xl bg-popover px-4 py-3 text-popover-foreground shadow-lg ring-1 ring-foreground/10 sm:inset-x-auto sm:right-4 sm:max-w-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <Undo2 className="size-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">
+              Deleted “{undoGuest.name || "guest"}”.
+            </p>
+            {undoError && (
+              <p className="mt-0.5 text-xs text-destructive" role="alert">
+                {undoError}
+              </p>
+            )}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={undoDelete} disabled={isRestoring}>
+            {isRestoring ? "Restoring…" : undoError ? "Retry" : "Undo"}
+          </Button>
+        </div>
+      )}
 
       <Button
         onClick={() => createGuest()}
