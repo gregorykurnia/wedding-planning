@@ -4,7 +4,9 @@ import type { DocumentData } from "firebase/firestore";
 import {
   collection,
   doc,
+  getDocs,
   orderBy,
+  query,
   runTransaction,
   serverTimestamp,
   Timestamp,
@@ -178,11 +180,12 @@ function newRowIds(count: number) {
 }
 
 /**
- * Appends one or more blank rows while reserving their sort positions in the
- * same transaction as the row writes. Firestore retries the transaction if a
- * second client updates the counter at the same time.
+ * Adds one or more blank rows while reserving their sort positions in the same
+ * transaction as the row writes. When afterId is supplied, the new rows are
+ * placed in the sort-order gap immediately after that row. Firestore retries
+ * the transaction if a second client changes the list at the same time.
  */
-export async function addMasterListItems(count = 1) {
+export async function addMasterListItems(count = 1, afterId?: string) {
   if (!Number.isInteger(count) || count < 1 || count > 50) {
     throw new Error("Add between 1 and 50 rows.");
   }
@@ -194,6 +197,34 @@ export async function addMasterListItems(count = 1) {
   await ensureMasterListInitialized();
   const ids = newRowIds(count);
   const metaRef = doc(database, META_COLLECTION, META_ID);
+  let insertionAnchorSortOrder: number | undefined;
+  let insertionBoundarySortOrder: number | undefined;
+
+  if (afterId) {
+    const rowsSnapshot = await getDocs(
+      query(collection(database, COLLECTION), orderBy("sortOrder", "asc")),
+    );
+    const rows: Array<{ id: string; sortOrder: number }> = [];
+    for (const snapshot of rowsSnapshot.docs) {
+      const sortOrder = snapshot.data().sortOrder;
+      if (typeof sortOrder === "number" && Number.isFinite(sortOrder)) {
+        rows.push({ id: snapshot.id, sortOrder });
+      }
+    }
+
+    const anchor = rows.find((row) => row.id === afterId);
+    if (!anchor) {
+      throw new Error("The selected row no longer exists. Refresh the list and try again.");
+    }
+
+    const nextRow = rows.find((row) => row.sortOrder > anchor.sortOrder);
+    const maxSortOrder = rows.reduce(
+      (maximum, row) => Math.max(maximum, row.sortOrder),
+      anchor.sortOrder,
+    );
+    insertionAnchorSortOrder = anchor.sortOrder;
+    insertionBoundarySortOrder = nextRow?.sortOrder ?? Math.max(maxSortOrder + 1, anchor.sortOrder + 1);
+  }
 
   await runTransaction(database, async (transaction) => {
     const marker = await transaction.get(metaRef);
@@ -202,10 +233,54 @@ export async function addMasterListItems(count = 1) {
     }
 
     const markerData = marker.data();
-    const startOrder =
+    const markerNextSortOrder =
       typeof markerData.nextSortOrder === "number"
         ? markerData.nextSortOrder
         : INITIAL_ROW_COUNT;
+
+    if (afterId) {
+      const anchorSnapshot = await transaction.get(doc(database, COLLECTION, afterId));
+      if (!anchorSnapshot.exists()) {
+        throw new Error("The selected row no longer exists. Refresh the list and try again.");
+      }
+
+      const anchorSortOrder = anchorSnapshot.data().sortOrder;
+      if (
+        typeof anchorSortOrder !== "number" ||
+        !Number.isFinite(anchorSortOrder) ||
+        anchorSortOrder !== insertionAnchorSortOrder
+      ) {
+        throw new Error("The selected row has an invalid position. Refresh the list and try again.");
+      }
+
+      const boundarySortOrder = Math.max(
+        insertionBoundarySortOrder ?? anchorSortOrder + 1,
+        anchorSortOrder + 1,
+      );
+      const spacing = (boundarySortOrder - anchorSortOrder) / (count + 1);
+
+      if (!Number.isFinite(spacing) || spacing <= 0) {
+        throw new Error("There is no available position below this row. Move another row first and try again.");
+      }
+
+      ids.forEach((id, index) => {
+        transaction.set(doc(database, COLLECTION, id), {
+          id,
+          item: "",
+          vendor: "",
+          confirmed: false,
+          types: [],
+          persons: [],
+          next: false,
+          sortOrder: anchorSortOrder + spacing * (index + 1),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      });
+
+      transaction.set(metaRef, { updatedAt: serverTimestamp() }, { merge: true });
+      return;
+    }
 
     ids.forEach((id, index) => {
       transaction.set(doc(database, COLLECTION, id), {
@@ -216,7 +291,7 @@ export async function addMasterListItems(count = 1) {
         types: [],
         persons: [],
         next: false,
-        sortOrder: startOrder + index,
+        sortOrder: markerNextSortOrder + index,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -224,7 +299,7 @@ export async function addMasterListItems(count = 1) {
 
     transaction.set(
       metaRef,
-      { nextSortOrder: startOrder + count, updatedAt: serverTimestamp() },
+      { nextSortOrder: markerNextSortOrder + count, updatedAt: serverTimestamp() },
       { merge: true },
     );
   });

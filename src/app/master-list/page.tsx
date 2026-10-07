@@ -6,6 +6,7 @@ import {
   ArrowUp,
   Check,
   Filter,
+  ListPlus,
   Plus,
   Search,
   Star,
@@ -77,10 +78,14 @@ interface MasterListRowProps {
   onSave: (id: string, data: MasterListItemUpdate) => Promise<void>;
   onMove: (id: string, direction: MasterListMoveDirection) => Promise<void>;
   onDelete: (item: MasterListItem) => void;
+  onAddBelow: (id: string) => Promise<void>;
+  onOpenBulkAddBelow: (id: string) => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
   canReorder: boolean;
   isReordering: boolean;
+  canAdd: boolean;
+  isAdding: boolean;
 }
 
 function MasterListRow({
@@ -90,10 +95,14 @@ function MasterListRow({
   onSave,
   onMove,
   onDelete,
+  onAddBelow,
+  onOpenBulkAddBelow,
   canMoveUp,
   canMoveDown,
   canReorder,
   isReordering,
+  canAdd,
+  isAdding,
 }: MasterListRowProps) {
   const save = (data: MasterListItemUpdate) => onSave(item.id, data);
 
@@ -191,8 +200,41 @@ function MasterListRow({
           <Star className={cn("size-4", item.next && "fill-current")} />
         </Button>
       </TableCell>
-      <TableCell className="w-[104px] min-w-[104px] align-top text-right">
-        <div className="flex items-center justify-end gap-1">
+      <TableCell
+        className={cn(
+          "sticky right-0 z-10 w-[188px] min-w-[188px] align-top text-right shadow-[-6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
+          item.next ? "bg-accent/25" : "bg-card",
+        )}
+      >
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          <div className="inline-flex items-center gap-0.5 rounded-lg border border-border/60 bg-background/70 p-0.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`Add a row below ${item.item || "this row"}`}
+              title="Add row below"
+              className="rounded-md text-muted-foreground hover:text-foreground"
+              disabled={!canAdd || isAdding}
+              onClick={() => {
+                void onAddBelow(item.id).catch(() => undefined);
+              }}
+            >
+              <Plus className="size-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`Add multiple rows below ${item.item || "this row"}`}
+              title="Add multiple rows below"
+              className="rounded-md text-muted-foreground hover:text-foreground"
+              disabled={!canAdd || isAdding}
+              onClick={() => onOpenBulkAddBelow(item.id)}
+            >
+              <ListPlus className="size-3.5" />
+            </Button>
+          </div>
           <div className="inline-flex items-center gap-0.5 rounded-lg border border-border/60 bg-background/70 p-0.5">
             <Button
               type="button"
@@ -288,6 +330,7 @@ export default function MasterListPage() {
   const [isReordering, setIsReordering] = useState(false);
   const [focusRowId, setFocusRowId] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [insertAfterId, setInsertAfterId] = useState<string | null>(null);
   const [bulkCount, setBulkCount] = useState("5");
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -399,16 +442,26 @@ export default function MasterListPage() {
     }
   };
 
-  const addRows = async (count: number) => {
+  const addRows = async (count: number, afterId?: string) => {
     setSaveError(null);
     try {
-      const ids = await addMasterListItems(count);
+      const ids = await addMasterListItems(count, afterId);
+      if (afterId && activeFilterCount > 0) {
+        clearFilters();
+      }
       setFocusRowId(ids[0] ?? null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to add rows.";
       setSaveError(message);
       throw error;
     }
+  };
+
+  const openAddDialog = (afterId?: string) => {
+    setInsertAfterId(afterId ?? null);
+    setBulkCount("5");
+    setBulkError(null);
+    setIsAddDialogOpen(true);
   };
 
   const requestDelete = (item: MasterListItem) => {
@@ -473,8 +526,9 @@ export default function MasterListPage() {
     setBulkError(null);
     setIsAdding(true);
     try {
-      await addRows(count);
+      await addRows(count, insertAfterId ?? undefined);
       setIsAddDialogOpen(false);
+      setInsertAfterId(null);
     } catch (error) {
       setBulkError(error instanceof Error ? error.message : "Unable to add rows.");
     } finally {
@@ -486,6 +540,8 @@ export default function MasterListPage() {
   const isPreparing = loading || initializing;
   const confirmedCount = items.filter((item) => item.confirmed).length;
   const nextCount = items.filter((item) => item.next).length;
+  const insertionAnchor = insertAfterId ? items.find((item) => item.id === insertAfterId) : null;
+  const canAddRows = isFirebaseConfigured && !isAdding && !initializing;
 
   return (
     <div className="flex flex-col gap-5">
@@ -510,33 +566,6 @@ export default function MasterListPage() {
               {nextCount} next
             </span>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2 sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            className="gap-1.5"
-            disabled={!isFirebaseConfigured || isAdding || initializing}
-            onClick={() => {
-              void addRows(1).catch(() => undefined);
-            }}
-          >
-            <Plus className="size-4" />
-            Add row
-          </Button>
-          <Button
-            type="button"
-            className="gap-1.5"
-            disabled={!isFirebaseConfigured || isAdding || initializing}
-            onClick={() => {
-              setBulkCount("5");
-              setBulkError(null);
-              setIsAddDialogOpen(true);
-            }}
-          >
-            <Plus className="size-4" />
-            Add multiple rows
-          </Button>
         </div>
       </div>
 
@@ -623,6 +652,40 @@ export default function MasterListPage() {
         </div>
       </Card>
 
+      <div className="sticky top-[3.75rem] z-30 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/70 bg-background/95 px-3 py-2 shadow-sm backdrop-blur">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">Add rows where you need them</p>
+          <p className="hidden text-xs text-muted-foreground sm:block">
+            Use the row actions to insert directly below any visible row.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={!canAddRows}
+            onClick={() => {
+              void addRows(1).catch(() => undefined);
+            }}
+          >
+            <Plus className="size-3.5" />
+            Add row
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            className="gap-1.5"
+            disabled={!canAddRows}
+            onClick={() => openAddDialog()}
+          >
+            <Plus className="size-3.5" />
+            Add multiple rows
+          </Button>
+        </div>
+      </div>
+
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
         <div className="overflow-x-auto">
           <Table className="min-w-[1220px] table-fixed">
@@ -646,7 +709,10 @@ export default function MasterListPage() {
                 <TableHead className="w-[76px] min-w-[76px] text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Next?
                 </TableHead>
-                <TableHead className="w-[104px] min-w-[104px] text-right" aria-label="Row order and actions" />
+                <TableHead
+                  className="sticky right-0 z-20 w-[188px] min-w-[188px] bg-muted/50 text-right shadow-[-6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]"
+                  aria-label="Row add, order, and actions"
+                />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -674,6 +740,10 @@ export default function MasterListPage() {
                     onSave={saveRow}
                     onMove={moveRow}
                     onDelete={requestDelete}
+                    onAddBelow={(id) => addRows(1, id)}
+                    onOpenBulkAddBelow={openAddDialog}
+                    canAdd={canAddRows}
+                    isAdding={isAdding}
                   />
                 ))
               )}
@@ -683,7 +753,7 @@ export default function MasterListPage() {
         <div className="flex items-center gap-2 border-t border-border/70 bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
           <Star className="size-3.5 shrink-0 text-primary" />
           <span>
-            Use the arrows to change row order. Starred rows keep their highlight wherever they are.
+            Use + to add one row below a row, the list-plus button to add multiple rows below it, and the arrows to change row order. Starred rows keep their highlight wherever they are.
             {activeFilterCount > 0 && " Clear search and filters to reorder the full list."}
           </span>
         </div>
@@ -694,6 +764,7 @@ export default function MasterListPage() {
         onOpenChange={(open) => {
           if (!open && !isAdding) {
             setIsAddDialogOpen(false);
+            setInsertAfterId(null);
             setBulkError(null);
           }
         }}
@@ -702,7 +773,9 @@ export default function MasterListPage() {
           <DialogHeader>
             <DialogTitle>Add multiple rows</DialogTitle>
             <DialogDescription>
-              Add between 1 and 50 blank rows to the end of the Master List. The first new Item cell will be focused after saving.
+              {insertionAnchor
+                ? `Add between 1 and 50 blank rows directly below “${insertionAnchor.item || "this row"}”.`
+                : "Add between 1 and 50 blank rows to the end of the Master List."} The first new Item cell will be focused after saving.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submitBulkAdd} className="flex flex-col gap-2">

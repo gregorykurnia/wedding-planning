@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-08: Added a sticky Master List add toolbar and per-row actions to insert one or multiple blank rows directly below any row.
 - 2026-10-08: Added compact up/down controls to the Master List so rows can be reordered with transactional, persistent position swaps; reorder controls are disabled while searching or filtering.
 - 2026-10-07: Added the independent Master List at `/master-list` with guarded 44-row initialization, explicit row ordering, editable Item and Vendor cells, Yes/No and multi-select controls, starred row highlights, search and filters, bulk additions, delete confirmation, and 10-second undo restoration.
 - 2026-10-07: Added `master-list-implementation-plan.md` with the exact 44-row initial dataset, Planning navigation, editable cells, multi-select columns, starred row highlights, row actions, and persistence requirements.
