@@ -52,5 +52,11 @@ service cloud.firestore {
     match /settings/{docId} {
       allow read, write: if isAllowed();
     }
+    match /masterListItems/{docId} {
+      allow read, write: if isAllowed();
+    }
+    match /masterListMeta/{docId} {
+      allow read, write: if isAllowed();
+    }
   }
 }

@@ -12,6 +12,7 @@ import {
   FolderOpen,
   Heart,
   LayoutDashboard,
+  ListChecks,
   ListTodo,
   LogOut,
   Menu,
@@ -39,6 +40,7 @@ const PLANNING_ITEMS = [
   { href: "/vendors", label: "Vendors", icon: Heart },
   { href: "/shortlist", label: "Shortlist", icon: ClipboardList },
   { href: "/confirmed", label: "Confirmed", icon: BadgeCheck },
+  { href: "/master-list", label: "Master List", icon: ListChecks },
 ];
 
 const NAV_ITEMS = [

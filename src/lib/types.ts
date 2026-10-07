@@ -146,6 +146,37 @@ export interface Guest {
   updatedAt: number | null;
 }
 
+export type MasterListType = "Reception" | "Matrimony" | "Sangjit" | "Pre-Wedding";
+
+export type MasterListPerson =
+  | "General"
+  | "Groom"
+  | "Bride"
+  | "Groom Dad"
+  | "Groom Mom"
+  | "Groom Brother"
+  | "Groom Sister"
+  | "Bride Dad"
+  | "Bride Mom"
+  | "Bride Brothers";
+
+export interface MasterListItem {
+  id: string;
+  item: string;
+  vendor: string;
+  confirmed: boolean;
+  types: MasterListType[];
+  persons: MasterListPerson[];
+  next: boolean;
+  sortOrder: number;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
+export type MasterListItemUpdate = Partial<
+  Pick<MasterListItem, "item" | "vendor" | "confirmed" | "types" | "persons" | "next">
+>;
+
 export type PaymentStatus = "unpaid" | "deposit" | "paid";
 
 export interface BudgetItem {
