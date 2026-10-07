@@ -104,6 +104,8 @@ export const MASTER_LIST_INITIAL_ROWS: readonly MasterListSeedRow[] = [
 
 const INITIAL_ROW_COUNT = MASTER_LIST_INITIAL_ROWS.length;
 
+export type MasterListMoveDirection = "up" | "down";
+
 function fromDocArray<T extends string>(value: unknown, options: readonly T[]): T[] {
   if (!Array.isArray(value)) return [];
   return value.filter(
@@ -232,6 +234,59 @@ export async function addMasterListItems(count = 1) {
 
 export function updateMasterListItem(id: string, data: MasterListItemUpdate) {
   return updateDocument(COLLECTION, id, data as Record<string, unknown>);
+}
+
+/**
+ * Swaps a row's position with its adjacent row in a transaction, verifying
+ * that both positions still match the live list before writing either row.
+ */
+export async function moveMasterListItem(
+  id: string,
+  neighborId: string,
+  direction: MasterListMoveDirection,
+  expectedSortOrder: number,
+  expectedNeighborSortOrder: number,
+) {
+  const database = db;
+  if (!isFirebaseConfigured || !database) {
+    throw new Error("Firebase is not configured.");
+  }
+
+  const itemRef = doc(database, COLLECTION, id);
+  const neighborRef = doc(database, COLLECTION, neighborId);
+  await runTransaction(database, async (transaction) => {
+    const [itemSnapshot, neighborSnapshot] = await Promise.all([
+      transaction.get(itemRef),
+      transaction.get(neighborRef),
+    ]);
+    if (!itemSnapshot.exists() || !neighborSnapshot.exists()) return;
+
+    const currentSortOrder = itemSnapshot.data().sortOrder;
+    const neighborSortOrder = neighborSnapshot.data().sortOrder;
+    if (
+      typeof currentSortOrder !== "number" ||
+      typeof neighborSortOrder !== "number" ||
+      currentSortOrder !== expectedSortOrder ||
+      neighborSortOrder !== expectedNeighborSortOrder
+    ) {
+      throw new Error("The list changed before this row could move. Try again.");
+    }
+    if (
+      (direction === "up" && neighborSortOrder >= currentSortOrder) ||
+      (direction === "down" && neighborSortOrder <= currentSortOrder)
+    ) {
+      throw new Error("The adjacent row is no longer in that direction. Try again.");
+    }
+
+    transaction.update(itemRef, {
+      sortOrder: neighborSortOrder,
+      updatedAt: serverTimestamp(),
+    });
+    transaction.update(neighborSnapshot.ref, {
+      sortOrder: currentSortOrder,
+      updatedAt: serverTimestamp(),
+    });
+  });
 }
 
 export function deleteMasterListItem(id: string) {

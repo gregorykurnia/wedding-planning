@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   Filter,
   Plus,
@@ -45,6 +47,8 @@ import {
   ensureMasterListInitialized,
   MASTER_LIST_PERSON_OPTIONS,
   MASTER_LIST_TYPE_OPTIONS,
+  type MasterListMoveDirection,
+  moveMasterListItem,
   restoreMasterListItem,
   updateMasterListItem,
   useMasterListItems,
@@ -71,7 +75,12 @@ interface MasterListRowProps {
   autoFocusItem: boolean;
   onAutoFocusHandled: () => void;
   onSave: (id: string, data: MasterListItemUpdate) => Promise<void>;
+  onMove: (id: string, direction: MasterListMoveDirection) => Promise<void>;
   onDelete: (item: MasterListItem) => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  canReorder: boolean;
+  isReordering: boolean;
 }
 
 function MasterListRow({
@@ -79,7 +88,12 @@ function MasterListRow({
   autoFocusItem,
   onAutoFocusHandled,
   onSave,
+  onMove,
   onDelete,
+  canMoveUp,
+  canMoveDown,
+  canReorder,
+  isReordering,
 }: MasterListRowProps) {
   const save = (data: MasterListItemUpdate) => onSave(item.id, data);
 
@@ -177,18 +191,50 @@ function MasterListRow({
           <Star className={cn("size-4", item.next && "fill-current")} />
         </Button>
       </TableCell>
-      <TableCell className="w-[58px] min-w-[58px] align-top text-right">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`Delete ${item.item || "item"}`}
-          title="Delete item"
-          className="text-muted-foreground hover:text-destructive"
-          onClick={() => onDelete(item)}
-        >
-          <Trash2 className="size-4" />
-        </Button>
+      <TableCell className="w-[104px] min-w-[104px] align-top text-right">
+        <div className="flex items-center justify-end gap-1">
+          <div className="inline-flex items-center gap-0.5 rounded-lg border border-border/60 bg-background/70 p-0.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`Move ${item.item || "item"} up`}
+              title={canReorder ? (canMoveUp ? "Move up" : "Already at the top") : "Clear search and filters to reorder"}
+              className="rounded-md text-muted-foreground hover:text-foreground"
+              disabled={!canReorder || !canMoveUp || isReordering}
+              onClick={() => {
+                void onMove(item.id, "up");
+              }}
+            >
+              <ArrowUp className="size-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`Move ${item.item || "item"} down`}
+              title={canReorder ? (canMoveDown ? "Move down" : "Already at the bottom") : "Clear search and filters to reorder"}
+              className="rounded-md text-muted-foreground hover:text-foreground"
+              disabled={!canReorder || !canMoveDown || isReordering}
+              onClick={() => {
+                void onMove(item.id, "down");
+              }}
+            >
+              <ArrowDown className="size-3.5" />
+            </Button>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Delete ${item.item || "item"}`}
+            title="Delete item"
+            className="text-muted-foreground hover:text-destructive"
+            onClick={() => onDelete(item)}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -218,7 +264,10 @@ function LoadingRows() {
             <Skeleton className="mx-auto size-7 rounded-full" />
           </TableCell>
           <TableCell>
-            <Skeleton className="ml-auto size-7 rounded-full" />
+            <div className="flex justify-end gap-1">
+              <Skeleton className="h-7 w-14 rounded-lg" />
+              <Skeleton className="size-7 rounded-full" />
+            </div>
           </TableCell>
         </TableRow>
       ))}
@@ -236,6 +285,7 @@ export default function MasterListPage() {
   const [personFilter, setPersonFilter] = useState<MasterListPerson[]>([]);
   const [nextFilter, setNextFilter] = useState<NextFilter>("all");
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
   const [focusRowId, setFocusRowId] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [bulkCount, setBulkCount] = useState("5");
@@ -300,6 +350,11 @@ export default function MasterListPage() {
     (personFilter.length > 0 ? 1 : 0) +
     (nextFilter !== "all" ? 1 : 0);
 
+  const itemPositionById = useMemo(
+    () => new Map(items.map((item, index) => [item.id, index] as const)),
+    [items],
+  );
+
   const clearFilters = () => {
     setSearch("");
     setConfirmedFilter("all");
@@ -316,6 +371,31 @@ export default function MasterListPage() {
       const message = error instanceof Error ? error.message : "Unable to save this change.";
       setSaveError(message);
       throw error;
+    }
+  };
+
+  const moveRow = async (id: string, direction: MasterListMoveDirection) => {
+    if (isReordering) return;
+    const position = itemPositionById.get(id);
+    if (position === undefined) return;
+    const currentItem = items[position];
+    const adjacentItem = items[position + (direction === "up" ? -1 : 1)];
+    if (!currentItem || !adjacentItem) return;
+
+    setSaveError(null);
+    setIsReordering(true);
+    try {
+      await moveMasterListItem(
+        id,
+        adjacentItem.id,
+        direction,
+        currentItem.sortOrder,
+        adjacentItem.sortOrder,
+      );
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Unable to reorder this row.");
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -545,7 +625,7 @@ export default function MasterListPage() {
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
         <div className="overflow-x-auto">
-          <Table className="min-w-[1174px] table-fixed">
+          <Table className="min-w-[1220px] table-fixed">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead className="sticky left-0 z-20 w-[250px] min-w-[250px] bg-muted/50 text-xs font-semibold uppercase tracking-wide text-muted-foreground shadow-[6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]">
@@ -566,7 +646,7 @@ export default function MasterListPage() {
                 <TableHead className="w-[76px] min-w-[76px] text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Next?
                 </TableHead>
-                <TableHead className="w-[58px] min-w-[58px] text-right" aria-label="Actions" />
+                <TableHead className="w-[104px] min-w-[104px] text-right" aria-label="Row order and actions" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -585,9 +665,14 @@ export default function MasterListPage() {
                   <MasterListRow
                     key={item.id}
                     item={item}
+                    canMoveUp={(itemPositionById.get(item.id) ?? 0) > 0}
+                    canMoveDown={(itemPositionById.get(item.id) ?? -1) < items.length - 1}
+                    canReorder={activeFilterCount === 0 && !isPreparing && isFirebaseConfigured}
+                    isReordering={isReordering}
                     autoFocusItem={focusRowId === item.id}
                     onAutoFocusHandled={() => setFocusRowId(null)}
                     onSave={saveRow}
+                    onMove={moveRow}
                     onDelete={requestDelete}
                   />
                 ))
@@ -597,7 +682,10 @@ export default function MasterListPage() {
         </div>
         <div className="flex items-center gap-2 border-t border-border/70 bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
           <Star className="size-3.5 shrink-0 text-primary" />
-          <span>Starred rows stay in their original order and receive a soft highlight.</span>
+          <span>
+            Use the arrows to change row order. Starred rows keep their highlight wherever they are.
+            {activeFilterCount > 0 && " Clear search and filters to reorder the full list."}
+          </span>
         </div>
       </Card>
 
