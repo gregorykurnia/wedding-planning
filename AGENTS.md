@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-07: Added `master-list-implementation-plan.md` with the exact 44-row initial dataset, Planning navigation, editable cells, multi-select columns, starred row highlights, row actions, and persistence requirements.
 - 2026-10-07: Added mobile-friendly guest cards, a confirmation dialog, and 10-second undo restoration for guest deletions.
 - 2026-09-23: Added comprehensive Groom Big Family, Bride Big Family, and Groom Business Connections headcounts to the Guests panel when filtering Event to Both, including each matching guest's plus-ones.
 - 2026-09-22: Added Cloudinary file attachments to Planning shortlist entries and packages, copied vendor attachments into newly created shortlist rows, and merged existing matching vendor attachments into shortlist rows without removing shortlist-only files.
