@@ -1,31 +1,20 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import { useVendorCategories } from "@/components/vendors/vendor-categories-provider";
 import type { VendorCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-export const VENDOR_CATEGORIES: VendorCategory[] = [
-  "Decoration",
-  "Food",
-  "Groom Suit",
-  "Bride Dress",
-  "Invites",
-  "Makeup Artist",
-  "Music/DJ",
-  "Photos and Videos",
-  "Transportation",
-  "Wedding Cake",
-  "Wedding Organizer",
-  "Other",
-];
 
 interface VendorCategoryTabsProps {
   active: VendorCategory | "All";
   onChange: (category: VendorCategory | "All") => void;
   counts: Record<string, number>;
+  onAddCategory?: () => void;
 }
 
-export function VendorCategoryTabs({ active, onChange, counts }: VendorCategoryTabsProps) {
-  const tabs: (VendorCategory | "All")[] = ["All", ...VENDOR_CATEGORIES];
+export function VendorCategoryTabs({ active, onChange, counts, onAddCategory }: VendorCategoryTabsProps) {
+  const { categories } = useVendorCategories();
+  const tabs: (VendorCategory | "All")[] = ["All", ...categories];
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-2">
@@ -56,6 +45,16 @@ export function VendorCategoryTabs({ active, onChange, counts }: VendorCategoryT
           </button>
         );
       })}
+      {onAddCategory && (
+        <button
+          type="button"
+          onClick={onAddCategory}
+          className="flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+        >
+          <Plus className="size-3.5" />
+          Add category
+        </button>
+      )}
     </div>
   );
 }

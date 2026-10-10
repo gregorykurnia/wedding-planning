@@ -36,6 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { EditableText } from "@/components/shared/editable-text";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
+import { AddVendorCategoryDialog } from "@/components/vendors/add-vendor-category-dialog";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorContractPill } from "@/components/vendors/vendor-contract-pill";
 import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
@@ -131,6 +132,7 @@ export function VendorsTable() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<VendorCategory | "All">("All");
   const [starredOnly, setStarredOnly] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { All: vendors.length };
@@ -506,7 +508,12 @@ export function VendorsTable() {
         </div>
       </div>
 
-      <VendorCategoryTabs active={activeCategory} onChange={setActiveCategory} counts={counts} />
+      <VendorCategoryTabs
+        active={activeCategory}
+        onChange={setActiveCategory}
+        counts={counts}
+        onAddCategory={() => setCategoryDialogOpen(true)}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
@@ -616,6 +623,8 @@ export function VendorsTable() {
         <Plus className="size-4" />
         Add vendor
       </Button>
+
+      <AddVendorCategoryDialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen} />
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { EditableText } from "@/components/shared/editable-text";
 import { ContactCell } from "@/components/shared/contact-cell";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
+import { AddVendorCategoryDialog } from "@/components/vendors/add-vendor-category-dialog";
 import { VendorCategoryPill } from "@/components/vendors/vendor-category-pill";
 import { VendorCategoryTabs } from "@/components/vendors/vendor-category-tabs";
 import { ShortlistPriceCell } from "@/components/shortlist/shortlist-price-cell";
@@ -272,6 +273,7 @@ export function ShortlistTable() {
   const { data: vendors, loading: vendorsLoading } = useVendors();
   const [activeType, setActiveType] = useState<VendorCategory | "All">("All");
   const [typeSort, setTypeSort] = useState<"asc" | "desc" | null>(null);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
   useEffect(() => {
     if (loading || vendorsLoading || items.length === 0 || vendors.length === 0) return;
@@ -314,7 +316,12 @@ export function ShortlistTable() {
         </Button>
       </div>
 
-      <VendorCategoryTabs active={activeType} onChange={setActiveType} counts={counts} />
+      <VendorCategoryTabs
+        active={activeType}
+        onChange={setActiveType}
+        counts={counts}
+        onAddCategory={() => setCategoryDialogOpen(true)}
+      />
 
       <Card className="overflow-hidden border-border/70 p-0 shadow-sm">
         <div className="overflow-x-auto">
@@ -381,6 +388,8 @@ export function ShortlistTable() {
         <Plus className="size-4" />
         Add to shortlist
       </Button>
+
+      <AddVendorCategoryDialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen} />
     </div>
   );
 }

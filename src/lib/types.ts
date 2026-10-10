@@ -24,19 +24,10 @@ export interface Venue {
   updatedAt: number | null;
 }
 
-export type VendorCategory =
-  | "Bride Dress"
-  | "Decoration"
-  | "Food"
-  | "Groom Suit"
-  | "Invites"
-  | "Makeup Artist"
-  | "Music/DJ"
-  | "Photos and Videos"
-  | "Transportation"
-  | "Wedding Cake"
-  | "Wedding Organizer"
-  | "Other";
+// Categories are user-extensible: the built-in list lives in
+// lib/collections/vendor-categories.ts and custom ones are stored in Firestore,
+// so a category is just its display name.
+export type VendorCategory = string;
 
 // The Confirmed list's "Type" column spans both entity kinds, so it needs
 // its own value space rather than reusing VendorCategory (which drives the

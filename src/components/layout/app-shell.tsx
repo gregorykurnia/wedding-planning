@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { VendorCategoriesProvider } from "@/components/vendors/vendor-categories-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -245,7 +246,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </AlertDescription>
           </Alert>
         )}
-        {children}
+        <VendorCategoriesProvider>{children}</VendorCategoriesProvider>
       </main>
     </div>
   );

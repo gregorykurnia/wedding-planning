@@ -11,6 +11,7 @@ import {
   FlaskConical,
   PiggyBank,
   Plus,
+  Tags,
   Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +31,7 @@ import { EditableNumber } from "@/components/shared/editable-number";
 import { EditableText } from "@/components/shared/editable-text";
 import { FilesCell } from "@/components/shared/files-cell";
 import { VenueNotesCell } from "@/components/venues/venue-notes-cell";
+import { AddVendorCategoryDialog } from "@/components/vendors/add-vendor-category-dialog";
 import { ConfirmedTypePill } from "@/components/shared/confirmed-type-pill";
 import { FunderSelect, FUNDER_OPTIONS } from "@/components/shared/funder-select";
 import {
@@ -404,6 +406,7 @@ function ConfirmedTab({
 }) {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const totalRemaining = totalPrice - totalSpent;
   const paymentReminders = buildPaymentReminders(rows);
   const funderTotals = FUNDER_OPTIONS.map((funder) => ({
@@ -570,7 +573,16 @@ function ConfirmedTab({
               </span>
             )}
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-end gap-4">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setCategoryDialogOpen(true)}
+            >
+              <Tags className="size-4" />
+              Add category
+            </Button>
             <Button
               size="sm"
               className="gap-1.5"
@@ -887,6 +899,8 @@ function ConfirmedTab({
           </Card>
         )}
       </div>
+
+      <AddVendorCategoryDialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen} />
     </div>
   );
 }
