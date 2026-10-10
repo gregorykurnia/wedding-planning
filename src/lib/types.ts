@@ -43,7 +43,7 @@ export type VendorCategory =
 // Vendors page's own category tabs) or VenueStatus.
 export type ConfirmedType = VendorCategory | "Venue";
 
-export type Funder = "CK" | "Gregory" | "Bella";
+export type Funder = "CK" | "Gregory" | "Bella" | "Bella Fam";
 
 export type ContractStatus = "List" | "Inquiring" | "Consideration" | "Chosen" | "Done" | "Rejected";
 

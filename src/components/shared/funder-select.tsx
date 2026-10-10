@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import type { Funder } from "@/lib/types";
 
-export const FUNDER_OPTIONS: Funder[] = ["CK", "Gregory", "Bella"];
+export const FUNDER_OPTIONS: Funder[] = ["CK", "Gregory", "Bella", "Bella Fam"];
 
 const UNASSIGNED_VALUE = "__unassigned__";
 

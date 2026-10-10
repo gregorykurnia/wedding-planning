@@ -544,7 +544,7 @@ function ConfirmedTab({
               </p>
             )}
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {funderTotals.map(({ funder, spent, pending }) => (
               <div key={funder} className="rounded-lg bg-muted/40 px-3 py-3">
                 <p className="text-sm text-muted-foreground">{funder}</p>
