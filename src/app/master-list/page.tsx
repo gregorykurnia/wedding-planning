@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  ArrowUpDown,
   Check,
   Filter,
   ListPlus,
@@ -65,6 +66,55 @@ import { cn } from "@/lib/utils";
 
 type ConfirmedFilter = "all" | "yes" | "no";
 type NextFilter = "all" | "next" | "not-next";
+type SortKey = "item" | "vendor" | "confirmed" | "types" | "persons" | "next";
+type SortDirection = "asc" | "desc";
+
+const SORT_COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "item", label: "Item" },
+  { key: "vendor", label: "Vendor" },
+  { key: "confirmed", label: "Confirmed/Not" },
+  { key: "types", label: "Type" },
+  { key: "persons", label: "Person" },
+  { key: "next", label: "Next?" },
+];
+
+// Text for the columns that sort by name. Multi-select columns use their
+// selected values sorted and joined, so the order is stable and readable.
+function sortText(item: MasterListItem, key: SortKey): string {
+  switch (key) {
+    case "item":
+      return item.item;
+    case "vendor":
+      return item.vendor;
+    case "types":
+      return [...item.types].sort().join(", ");
+    case "persons":
+      return [...item.persons].sort().join(", ");
+    default:
+      return "";
+  }
+}
+
+function compareItems(a: MasterListItem, b: MasterListItem, key: SortKey, direction: SortDirection) {
+  if (key === "confirmed" || key === "next") {
+    const diff = Number(a[key]) - Number(b[key]);
+    return direction === "asc" ? diff : -diff;
+  }
+
+  const aText = sortText(a, key);
+  const bText = sortText(b, key);
+  // Blank cells always go last, so empty new rows don't land at the top.
+  if (aText === "" || bText === "") {
+    return aText === bText ? 0 : aText === "" ? 1 : -1;
+  }
+  const cmp = aText.localeCompare(bText, undefined, { numeric: true, sensitivity: "base" });
+  return direction === "asc" ? cmp : -cmp;
+}
+
+function ariaSort(active: boolean, direction: SortDirection): "none" | "ascending" | "descending" {
+  if (!active) return "none";
+  return direction === "asc" ? "ascending" : "descending";
+}
 
 const CONFIRMED_STYLES = {
   yes: "border-emerald-200 bg-emerald-100 text-emerald-800",
@@ -247,7 +297,7 @@ function MasterListRow({
               variant="ghost"
               size="icon-xs"
               aria-label={`Move ${item.item || "item"} up`}
-              title={canReorder ? (canMoveUp ? "Move up" : "Already at the top") : "Clear search and filters to reorder"}
+              title={canReorder ? (canMoveUp ? "Move up" : "Already at the top") : "Clear search, filters, and sorting to reorder"}
               className="rounded-md text-muted-foreground hover:text-foreground"
               disabled={!canReorder || !canMoveUp || isReordering}
               onClick={() => {
@@ -261,7 +311,7 @@ function MasterListRow({
               variant="ghost"
               size="icon-xs"
               aria-label={`Move ${item.item || "item"} down`}
-              title={canReorder ? (canMoveDown ? "Move down" : "Already at the bottom") : "Clear search and filters to reorder"}
+              title={canReorder ? (canMoveDown ? "Move down" : "Already at the bottom") : "Clear search, filters, and sorting to reorder"}
               className="rounded-md text-muted-foreground hover:text-foreground"
               disabled={!canReorder || !canMoveDown || isReordering}
               onClick={() => {
@@ -332,6 +382,8 @@ export default function MasterListPage() {
   const [typeFilter, setTypeFilter] = useState<MasterListType[]>([]);
   const [personFilter, setPersonFilter] = useState<MasterListPerson[]>([]);
   const [nextFilter, setNextFilter] = useState<NextFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [focusRowId, setFocusRowId] = useState<string | null>(null);
@@ -399,6 +451,16 @@ export default function MasterListPage() {
     (personFilter.length > 0 ? 1 : 0) +
     (nextFilter !== "all" ? 1 : 0);
 
+  // Without a sort, rows keep the Master List order (sortOrder), which is the
+  // order the reorder arrows and insert-below actions work against.
+  const sortedItems = useMemo(() => {
+    if (sortKey === null) return filteredItems;
+    return [...filteredItems].sort(
+      (a, b) =>
+        compareItems(a, b, sortKey, sortDirection) || a.sortOrder - b.sortOrder,
+    );
+  }, [filteredItems, sortDirection, sortKey]);
+
   const itemPositionById = useMemo(
     () => new Map(items.map((item, index) => [item.id, index] as const)),
     [items],
@@ -410,6 +472,18 @@ export default function MasterListPage() {
     setTypeFilter([]);
     setPersonFilter([]);
     setNextFilter("all");
+  };
+
+  // Each header cycles ascending, descending, then back to the list order.
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDirection("asc");
+    } else if (sortDirection === "asc") {
+      setSortDirection("desc");
+    } else {
+      setSortKey(null);
+    }
   };
 
   const saveRow = async (id: string, data: MasterListItemUpdate) => {
@@ -454,6 +528,10 @@ export default function MasterListPage() {
       const ids = await addMasterListItems(count, afterId);
       if (afterId && activeFilterCount > 0) {
         clearFilters();
+      }
+      // Insert-below means "directly under this row", which only holds in list order.
+      if (afterId) {
+        setSortKey(null);
       }
       setFocusRowId(ids[0] ?? null);
     } catch (error) {
@@ -540,6 +618,32 @@ export default function MasterListPage() {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const sortHeaderButton = (key: SortKey, centered = false) => {
+    const label = SORT_COLUMNS.find((column) => column.key === key)?.label ?? key;
+    const active = sortKey === key;
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSort(key)}
+        className={cn(
+          "flex items-center gap-1 hover:text-foreground",
+          centered && "mx-auto justify-center",
+        )}
+      >
+        {label}
+        {active ? (
+          sortDirection === "asc" ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          )
+        ) : (
+          <ArrowUpDown className="size-3 opacity-40" />
+        )}
+      </button>
+    );
   };
 
   const loadErrorMessage = loadError ?? initializationError;
@@ -655,6 +759,11 @@ export default function MasterListPage() {
               Clear filters
             </Button>
           )}
+          {sortKey !== null && (
+            <Button type="button" variant="ghost" size="xs" className="h-6 gap-1 px-2" onClick={() => setSortKey(null)}>
+              Clear sort
+            </Button>
+          )}
         </div>
       </Card>
 
@@ -702,23 +811,39 @@ export default function MasterListPage() {
                     "sticky left-0 z-20 w-[250px] min-w-[250px] text-xs font-semibold uppercase tracking-wide text-muted-foreground shadow-[6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
                     STICKY_HEADER_BG,
                   )}
+                  aria-sort={ariaSort(sortKey === "item", sortDirection)}
                 >
-                  Item
+                  {sortHeaderButton("item")}
                 </TableHead>
-                <TableHead className="w-[220px] min-w-[220px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Vendor
+                <TableHead
+                  aria-sort={ariaSort(sortKey === "vendor", sortDirection)}
+                  className="w-[220px] min-w-[220px] text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {sortHeaderButton("vendor")}
                 </TableHead>
-                <TableHead className="w-[130px] min-w-[130px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Confirmed/Not
+                <TableHead
+                  aria-sort={ariaSort(sortKey === "confirmed", sortDirection)}
+                  className="w-[130px] min-w-[130px] text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {sortHeaderButton("confirmed")}
                 </TableHead>
-                <TableHead className="w-[210px] min-w-[210px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Type
+                <TableHead
+                  aria-sort={ariaSort(sortKey === "types", sortDirection)}
+                  className="w-[210px] min-w-[210px] text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {sortHeaderButton("types")}
                 </TableHead>
-                <TableHead className="w-[230px] min-w-[230px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Person
+                <TableHead
+                  aria-sort={ariaSort(sortKey === "persons", sortDirection)}
+                  className="w-[230px] min-w-[230px] text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {sortHeaderButton("persons")}
                 </TableHead>
-                <TableHead className="w-[76px] min-w-[76px] text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Next?
+                <TableHead
+                  aria-sort={ariaSort(sortKey === "next", sortDirection)}
+                  className="w-[76px] min-w-[76px] text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {sortHeaderButton("next", true)}
                 </TableHead>
                 <TableHead
                   className={cn(
@@ -741,13 +866,15 @@ export default function MasterListPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredItems.map((item) => (
+                sortedItems.map((item) => (
                   <MasterListRow
                     key={item.id}
                     item={item}
                     canMoveUp={(itemPositionById.get(item.id) ?? 0) > 0}
                     canMoveDown={(itemPositionById.get(item.id) ?? -1) < items.length - 1}
-                    canReorder={activeFilterCount === 0 && !isPreparing && isFirebaseConfigured}
+                    canReorder={
+                      activeFilterCount === 0 && sortKey === null && !isPreparing && isFirebaseConfigured
+                    }
                     isReordering={isReordering}
                     autoFocusItem={focusRowId === item.id}
                     onAutoFocusHandled={() => setFocusRowId(null)}
@@ -768,7 +895,7 @@ export default function MasterListPage() {
           <Star className="size-3.5 shrink-0 text-primary" />
           <span>
             Use + to add one row below a row, the list-plus button to add multiple rows below it, and the arrows to change row order. Starred rows keep their highlight wherever they are.
-            {activeFilterCount > 0 && " Clear search and filters to reorder the full list."}
+            {(activeFilterCount > 0 || sortKey !== null) && " Clear search, filters, and sorting to reorder the full list."}
           </span>
         </div>
       </Card>
