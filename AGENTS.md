@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-11: Made Master List sticky Item, actions, and header cells opaque so scrolled columns no longer show through them, including on starred rows (`src/app/master-list/page.tsx`).
 - 2026-10-10: Added shared vendor categories stored in the new `vendorCategories` Firestore collection (rules updated in `firestore.rules`), with an Add category action on Vendors and Shortlist (beside the category tabs) and on Confirmed (beside Add vendor). Every category dropdown and tab, including Confirmed and Hypothetical types, reads one list that adds custom categories after the built-ins with "Other" last.
 - 2026-10-10: Added a Bella Fam funder option to Confirmed funder selects and the Real budget by funder recap, which now lays out four funder cards (two columns below 1024px, four from 1024px up).
 - 2026-10-08: Added a sticky Master List add toolbar and per-row actions to insert one or multiple blank rows directly below any row.

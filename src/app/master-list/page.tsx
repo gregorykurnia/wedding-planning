@@ -88,6 +88,12 @@ interface MasterListRowProps {
   isAdding: boolean;
 }
 
+// Sticky cells must be fully opaque: a translucent fill lets the columns
+// scrolling underneath show through. These match what the translucent
+// starred-row and header tints looked like once their row layers stacked.
+const STICKY_NEXT_BG = "bg-[color-mix(in_oklab,var(--accent)_44%,var(--card))]";
+const STICKY_HEADER_BG = "bg-[color-mix(in_oklab,var(--muted)_75%,var(--card))]";
+
 function MasterListRow({
   item,
   autoFocusItem,
@@ -117,7 +123,7 @@ function MasterListRow({
       <TableCell
         className={cn(
           "sticky left-0 z-10 w-[250px] min-w-[250px] max-w-[250px] align-top whitespace-normal shadow-[6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
-          item.next ? "bg-accent/25" : "bg-card",
+          item.next ? STICKY_NEXT_BG : "bg-card",
         )}
       >
         <MasterListEditableCell
@@ -203,7 +209,7 @@ function MasterListRow({
       <TableCell
         className={cn(
           "sticky right-0 z-10 w-[188px] min-w-[188px] align-top text-right shadow-[-6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
-          item.next ? "bg-accent/25" : "bg-card",
+          item.next ? STICKY_NEXT_BG : "bg-card",
         )}
       >
         <div className="flex flex-wrap items-center justify-end gap-1">
@@ -691,7 +697,12 @@ export default function MasterListPage() {
           <Table className="min-w-[1220px] table-fixed">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="sticky left-0 z-20 w-[250px] min-w-[250px] bg-muted/50 text-xs font-semibold uppercase tracking-wide text-muted-foreground shadow-[6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]">
+                <TableHead
+                  className={cn(
+                    "sticky left-0 z-20 w-[250px] min-w-[250px] text-xs font-semibold uppercase tracking-wide text-muted-foreground shadow-[6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
+                    STICKY_HEADER_BG,
+                  )}
+                >
                   Item
                 </TableHead>
                 <TableHead className="w-[220px] min-w-[220px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -710,7 +721,10 @@ export default function MasterListPage() {
                   Next?
                 </TableHead>
                 <TableHead
-                  className="sticky right-0 z-20 w-[188px] min-w-[188px] bg-muted/50 text-right shadow-[-6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]"
+                  className={cn(
+                    "sticky right-0 z-20 w-[188px] min-w-[188px] text-right shadow-[-6px_0_10px_-10px_color-mix(in_oklab,var(--foreground)_35%,transparent)]",
+                    STICKY_HEADER_BG,
+                  )}
                   aria-label="Row add, order, and actions"
                 />
               </TableRow>
