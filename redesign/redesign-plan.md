@@ -459,8 +459,8 @@ You approve the plan before Step 7.
 ## Checklist (tick in the project's copy)
 
 **Setup**
-- [ ] Step 0: plan copied and blanks filled; studio templates, `studio.sh`, codebase `CLAUDE.md` rules; `studio.sh init` run
-- [ ] Step 0b: firewall check: every channel *blocked*
+- [x] Step 0: plan copied and blanks filled; studio templates, `studio.sh`, codebase `CLAUDE.md` rules; `studio.sh init` run (2026-10-14)
+- [x] Step 0b: firewall check: every channel *blocked* (run by the owner on 2026-10-14: all pass)
 
 **Discovery (sees the old app)**
 - [ ] Step 1: `inventory.md` as job stories grouped by jobs; owner-only `inventory-notes.md`; starter `priorities.md`, `brief.md`, `needs.md`
