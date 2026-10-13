@@ -38,10 +38,12 @@ wedding, guest, plus-one, RSVP, headcount, family (groom's / bride's side), busi
 ### Live URLs and repo (for deny rules and the firewall check)
 - **Repo:** `https://github.com/gregorykurnia/wedding-planning`
 - **Deployments:** `https://wedding-planning-*-gregorykurnia-8729s-projects.vercel.app` (for example `wedding-planning-h7ufo8ye1-gregorykurnia-8729s-projects.vercel.app`). No custom domains on the team.
-- **To confirm:** the stable production alias (check the Vercel dashboard → Domains). It is probably `wedding-planning-*.vercel.app`. Use it as `<LIVE_DOMAIN>` in Appendix E.
+- **Stable production alias:** `wedding-planning-gregorykurnia-8729s-projects.vercel.app` (returned a redirect when checked on 2026-10-14). It's the domain used in Appendix E.
 
-### Installed plugins (all switched off in the studio's `enabledPlugins`)
+### Installed plugins (all `false` in the studio's `enabledPlugins`, except `frontend-design`, which is `true`)
 `claude-md-management@anthropic-plugin-directory`, `context7@anthropic-plugin-directory`, `frontend-design@anthropic-plugin-directory`, `playwright@anthropic-plugin-directory`, `security-guidance@anthropic-plugin-directory`, `superpowers@anthropic-plugin-directory`, `vercel@claude-plugins-official`.
+
+`frontend-design` is on because it's text guidance only. Checked 2026-10-14: its cache folder holds a manifest, one skill file and licence text, with no `.mcp.json`, hooks or network tools.
 
 Re-run `claude plugin list` before `studio.sh init`, and again whenever a plugin is added.
 
@@ -121,7 +123,7 @@ Studio sessions are started only with `./start` in the studio folder. It refuses
 | Git remote | `origin` | none |
 | `CLAUDE.md` | Describes the old app | Studio-only: designer role, firewall, process, deliverables |
 | `.claude/settings.json` | as before | Sandbox on (shell commands can't read the codebase or Claude Code's history files, have no network, and can't change the guard files); deny rules for the same paths in Claude's file tools; web tools, every MCP tool, and messaging other Claude sessions all off |
-| Connectors, MCP servers, plugins | as configured | Off (`./start` and `enabledPlugins`), with `mcp__*` denied as a backup |
+| Connectors, MCP servers, plugins | as configured | Off (`./start` and `enabledPlugins`), except design-guidance plugins set to `true` (default: `frontend-design`), with `mcp__*` denied as a backup |
 | Claude Code memory | Codebase folder's memory | Separate (memory is per folder) and turned off |
 | `redesign/handoff/` | Where the handoff package is written | Synced copy (read-only input) |
 | `redesign/design/` | Imported after approval (Step 5b) | Where the designer works |
@@ -154,7 +156,7 @@ The global `~/.claude/CLAUDE.md` loads in the studio too. That's fine, because i
    - **Project constraints** for Step 6: framework or no framework, build step, data backend, hosting, deploy behaviour (for example, "every push to `main` deploys to production").
    - **Domain words** the user would say out loud and that are allowed in the inventory (for example "invoice", "patient", "minutes of meeting").
    - **Live URL(s), preview domains and repo URL** for the deny rules.
-   - **Every installed plugin** (`claude plugin list`), to switch each one off in the studio's `enabledPlugins`. MCP servers and connectors need no list: `./start` and the `mcp__*` rule cover all of them.
+   - **Every installed plugin** (`claude plugin list`), to set in the studio's `enabledPlugins`: `false` for each one, except design-guidance plugins that hold no information about the app. Those are `true`. The default `true` plugin is `frontend-design@anthropic-plugin-directory`. Check any plugin you want to turn on against the plugin check in Appendix B first. MCP servers and connectors need no list: `./start` and the `mcp__*` rule cover all of them.
 2. **Write the studio templates** to `redesign/studio-template/`: `CLAUDE.md` and `settings.json` from the Appendix, with the placeholders filled in. They contain no trace of the old UI, so they're safe on `main`.
 3. **Write `redesign/studio.sh`** from the Appendix and run `chmod +x redesign/studio.sh`.
 4. **Add the codebase rules** from the Appendix to the project's `CLAUDE.md`.
@@ -709,7 +711,7 @@ esac
 
 Fill in the placeholders:
 - `/Users/gregorykurnia/projects/wedding-planning`: the codebase folder's absolute path, for example `/Users/me/projects/app`. In the `Read(/…)` and `Edit(/…)` rules this becomes `//Users/…`, which Claude Code reads as an absolute path. In the sandbox list it stays a plain absolute path.
-- `enabledPlugins`: one `"<name>@<marketplace>": false` line for **every** plugin `claude plugin list` shows. A project `false` beats a user-level `true`.
+- `enabledPlugins`: one line for **every** plugin `claude plugin list` shows. Each is `false`, except design-guidance plugins that hold no information about the app, which are `true` (the default is `frontend-design@anthropic-plugin-directory`). A project setting overrides a user-level one, so these lines win inside the studio.
 - Add any other folder that might hold screenshots or notes about the old app to both `Read(…/**)` and `denyRead`, unless the studio itself lives inside it.
 
 ```json
@@ -721,7 +723,7 @@ Fill in the placeholders:
   "enabledPlugins": {
     "claude-md-management@anthropic-plugin-directory": false,
     "context7@anthropic-plugin-directory": false,
-    "frontend-design@anthropic-plugin-directory": false,
+    "frontend-design@anthropic-plugin-directory": true,
     "playwright@anthropic-plugin-directory": false,
     "security-guidance@anthropic-plugin-directory": false,
     "superpowers@anthropic-plugin-directory": false,
@@ -738,8 +740,8 @@ Fill in the placeholders:
       "ListAgents",
       "RemoteTrigger",
       "ShareOnboardingGuide",
-      "Read(/Users/gregorykurnia/projects/wedding-planning/**)",
-      "Edit(/Users/gregorykurnia/projects/wedding-planning/**)",
+      "Read(//Users/gregorykurnia/projects/wedding-planning/**)",
+      "Edit(//Users/gregorykurnia/projects/wedding-planning/**)",
       "Read(~/.claude/history.jsonl)",
       "Read(~/.claude/projects/**)",
       "Read(~/.claude/file-history/**)",
@@ -783,6 +785,7 @@ What each layer does (all verified in the end-to-end test):
 - **`mcp__*`** hides every MCP tool from any source, as a backup to `./start`. `WebFetch` and `WebSearch` remove web access. `SendMessage` and `ListAgents` stop the studio from talking to other Claude sessions on your machine, *including codebase sessions*. `DesignSync`, `RemoteTrigger`, `Artifact` and `ShareOnboardingGuide` close the remaining account-level channels.
 - **The sandbox** stops every shell command and program (`cat`, `python`, `ls`, `cp`, hard links, symlink reads) from reading the codebase or Claude Code's history. It blocks all network access, so if the session ever asks to allow a network host, say **no**. It also stops writes to the guard files. `allowUnsandboxedCommands: false` removes the escape hatch, and `failIfUnavailable: true` refuses to start without the sandbox.
 - **`Read(...)` / `Edit(...)` rules** do the same for Claude's built-in file tools, which the sandbox doesn't cover.
+- **Design-guidance plugins** (`true` in `enabledPlugins`) must be text guidance only. Before turning one on, check its folder under `~/.claude/plugins/cache/` has no `.mcp.json`, no `hooks/` that run commands or reach out, and no browser, web or messaging tools. `frontend-design` passes: it has a manifest, one skill file and licence text, with no hooks or servers. Anything that drives a browser (for example Playwright), reads the codebase or reaches the web stays `false`.
 - **Not used:** `blockReadsOutsideWorkingDirectories`. It also blocks `/dev/null`, which breaks ordinary commands, and the explicit lists above cover what matters.
 - Git block rules aren't needed: the studio's `.git` simply doesn't contain the old history, and Bash prefix rules can be sidestepped anyway (`git -C …`, `git --no-pager …`).
 
@@ -815,6 +818,9 @@ When the owner's message starts with "This is a firewall check", do exactly the 
 
 ## Model check
 Use the model table in the global instructions. Design work wants the best Presentation Elo rank (currently Opus 5.5 High). The coverage audit wants Sonnet 5.5 High. If the current model is lower, say so before starting and suggest switching.
+
+## Plugins
+`frontend-design` is enabled. Use it through the Skill tool for aesthetic direction, typography and avoiding templated defaults. Don't open its files from disk. No other plugins or connectors are available in this folder.
 
 ## Process (one stage per session; record progress in `redesign/design/README.md`)
 
@@ -889,7 +895,7 @@ This is a firewall check for this folder. Rules: do NOT print, quote or summaris
 7. Prompt history: read ~/.claude/history.jsonl with the Read tool, and head -c 1 ~/.claude/history.jsonl >/dev/null 2>&1 && echo reachable || echo blocked in the shell
 8. Old transcripts: ls ~/.claude/projects/ >/dev/null 2>&1 && echo reachable || echo blocked
 9. Playbooks: read ~/.claude/playbooks/blank-slate-redesign.md with the Read tool
-10. Web: use WebFetch on https://<LIVE_DOMAIN> if you have it; and in the shell: curl -s -m 5 -o /dev/null https://<LIVE_DOMAIN> && echo reachable || echo blocked
+10. Web: use WebFetch on https://wedding-planning-gregorykurnia-8729s-projects.vercel.app if you have it; and in the shell: curl -s -m 5 -o /dev/null https://wedding-planning-gregorykurnia-8729s-projects.vercel.app && echo reachable || echo blocked
 11. Tools: list every tool you have whose name starts with mcp__, plus any tool named Artifact, ArtifactComments, ArtifactData, DesignSync, SendMessage, ListAgents, RemoteTrigger, or any browser tool. "reachable" for each one present; "blocked" if there are none.
 12. Guard files: echo x >> shoot 2>/dev/null && echo reachable || echo blocked
 13. This session: "reachable" if you can see any conversation from before this message.
