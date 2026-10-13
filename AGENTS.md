@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Copied the global blank-slate redesign playbook into `redesign/redesign-plan.md` with this project's details filled in: inventory source files, stack and deploy constraints, domain words, URLs, and the plugins to switch off in the studio. Added the redesign rules to `CLAUDE.md`. Studio templates, `studio.sh` and `studio.sh init` are not done yet.
 - 2026-10-11: Made every Master List column sortable from its header (ascending, descending, then list order), with a Clear sort control. Sorting disables the reorder arrows like filters do, and insert-below clears the sort so the new row lands directly under the row you chose (`src/app/master-list/page.tsx`).
 - 2026-10-11: Made Master List sticky Item, actions, and header cells opaque so scrolled columns no longer show through them, including on starred rows (`src/app/master-list/page.tsx`).
 - 2026-10-10: Added shared vendor categories stored in the new `vendorCategories` Firestore collection (rules updated in `firestore.rules`), with an Add category action on Vendors and Shortlist (beside the category tabs) and on Confirmed (beside Add vendor). Every category dropdown and tab, including Confirmed and Hypothetical types, reads one list that adds custom categories after the built-ins with "Other" last.
