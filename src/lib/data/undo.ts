@@ -1,5 +1,5 @@
-import { deleteField, doc, setDoc, type DocumentData } from "firebase/firestore";
-import { insertAt, removeElement, type Element } from "./array-ops";
+import { deleteField, doc, FieldValue, setDoc, type DocumentData } from "firebase/firestore";
+import { insertAt, removeElement, withElementIds, type Element } from "./array-ops";
 import { requireDb } from "./db";
 import { guarded, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
@@ -41,11 +41,52 @@ export async function removeWithUndo(
 }
 
 /**
+ * Whether two stored values are the same: maps compare by keys whatever their
+ * order (a key holding `undefined` counts as missing), arrays by position,
+ * Timestamps and other Firestore values by their own `isEqual`.
+ */
+export function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== "object" || typeof b !== "object") return false;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => sameValue(x, b[i]));
+  }
+  const equal = (a as { isEqual?: unknown }).isEqual;
+  if (typeof equal === "function") return Object.getPrototypeOf(a) === Object.getPrototypeOf(b) && Boolean(equal.call(a, b));
+  if (Object.getPrototypeOf(a) !== Object.prototype || Object.getPrototypeOf(b) !== Object.prototype) return false;
+  const keys = (o: object) => Object.keys(o).filter((k) => (o as Record<string, unknown>)[k] !== undefined);
+  const ka = keys(a);
+  return ka.length === keys(b).length && ka.every((k) => k in b && sameValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
+
+/**
+ * Throws `changed` unless every field still holds what `written` put there.
+ * A `deleteField()` must still be missing; other sentinels (server times)
+ * can't be compared and are let through.
+ */
+function stillAsWritten(data: DocumentData, written: Record<string, unknown>, what: string) {
+  for (const [key, value] of Object.entries(written)) {
+    if (value instanceof FieldValue) {
+      if (value.isEqual(deleteField()) && data[key] !== undefined) throw changedSince(what);
+      continue;
+    }
+    if (!sameValue(data[key], value)) throw changedSince(what);
+  }
+}
+
+const changedSince = (what: string) =>
+  new WriteError("changed", `${what} changed after this, so undo would erase that change`);
+
+/**
  * Works out a change from the record as it is now, writes it, and returns an
  * undo that puts the earlier values of those fields back (fields that didn't
  * exist are removed again). Only the fields in the change are touched by
- * either step, so the partner's other edits stay. `change` returning null
- * writes nothing, and its undo does nothing.
+ * either step, so the partner's other edits stay. Undo refuses with
+ * `changed`, writing nothing, when any of those fields no longer holds what
+ * this change wrote: putting the old value back would silently erase the
+ * later edit (a payment recorded on a part after a split, a file moved again
+ * by the partner). `change` returning null writes nothing, and its undo does
+ * nothing.
  */
 export async function patchWithUndo<R = undefined>(
   collectionName: string,
@@ -55,32 +96,63 @@ export async function patchWithUndo<R = undefined>(
 ): Promise<Undoable & { before: Record<string, unknown>; result: R | undefined; changed: boolean }> {
   const database = requireDb(opts.db);
   const ref = doc(database, collectionName, id);
-  const { before, result, changed } = await transact(async (tx) => {
+  const { before, written, result, changed } = await transact(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
     const data = snap.data();
     const out = change(data);
-    if (!out) return { before: {}, result: undefined, changed: false };
+    if (!out) return { before: {}, written: {}, result: undefined, changed: false };
     const previous: Record<string, unknown> = {};
     for (const key of Object.keys(out.patch)) {
       previous[key] = key in data ? data[key] : deleteField();
     }
     tx.update(ref, { ...out.patch, ...stamp(database) });
-    return { before: previous, result: out.result, changed: true };
+    return { before: previous, written: out.patch, result: out.result, changed: true };
   }, { db: database });
+  // A second tap on Undo after one that worked does nothing.
+  let undone = false;
   return {
     before,
     result,
     changed,
     undo: async () => {
-      if (!changed) return;
+      if (!changed || undone) return;
       await transact(async (tx) => {
         const snap = await tx.get(ref);
         if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
+        stillAsWritten(snap.data(), written, `${collectionName}/${id}`);
         tx.update(ref, { ...before, ...stamp(database) });
       }, { db: database });
+      undone = true;
     },
   };
+}
+
+/**
+ * The undo for adding one element to an embedded array: takes that element
+ * out again by id, so edits to the other elements in the meantime stay. If the
+ * element itself was changed since it was added (a price typed, a payment
+ * recorded on it), undo refuses with `changed` rather than drop that. Already
+ * gone: nothing to do.
+ */
+export function removeAddedElement(
+  collectionName: string,
+  docId: string,
+  field: string,
+  added: Element,
+  opts: WriteOptions = {},
+): Promise<void> {
+  return transact(async (tx, database) => {
+    const ref = doc(database, collectionName, docId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${docId} is gone`);
+    const items = withElementIds<Element>(snap.data()[field]);
+    const now = items.find((item) => item.id === added.id);
+    // Already gone: write nothing, so the record isn't stamped as edited.
+    if (!now) return;
+    if (!sameValue(now, added)) throw changedSince(`${field} ${added.id}`);
+    tx.update(ref, { [field]: items.filter((item) => item.id !== added.id), ...stamp(database) });
+  }, opts);
 }
 
 /** Changes top-level fields, with an undo that puts the earlier values back. */

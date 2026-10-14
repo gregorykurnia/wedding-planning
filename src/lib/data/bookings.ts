@@ -5,7 +5,7 @@ import { logActivity } from "./activity";
 import { bookingMark, vendorFromDoc, venueFromDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
 import { withElementIds, type Element } from "./array-ops";
-import { patchWithUndo, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
+import { patchWithUndo, removeAddedElement, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
 import { create, newId, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
@@ -169,7 +169,8 @@ export async function addDirectBooking(
 /**
  * Split into parts (guide §6.9): what's paid becomes "Deposit" (paid in full),
  * the rest "Balance" with the old due date and next step, or one "First
- * payment" when nothing is paid. Undo takes the parts away again.
+ * payment" when nothing is paid. Undo takes the parts away again, but refuses
+ * with `changed` once any part was edited or paid, since that would be lost.
  */
 export async function splitBooking(
   target: RecordTarget,
@@ -191,14 +192,16 @@ export async function splitBooking(
 
 /**
  * "Add a part": an empty "Add-on" carrying the funder of the last part (or the
- * booking's). Idempotent by `partId`, so a retry doesn't add two.
+ * booking's). Idempotent by `partId`, so a retry doesn't add two. Undo takes
+ * only that part out, so payments recorded on the other parts meanwhile stay.
  */
 export async function addPart(
   target: RecordTarget,
   opts: WriteOptions & { partId?: string } = {},
 ): Promise<Undoable & { partId: string }> {
   const partId = opts.partId ?? makeId();
-  const done = await patchWithUndo(
+  let added: Element | null = null;
+  await patchWithUndo(
     collectionOf(target.kind),
     target.id,
     (data) => {
@@ -207,11 +210,17 @@ export async function addPart(
       const last = parts.at(-1);
       const funder = last && "funder" in last ? (last.funder ?? null) : (data.funder ?? null);
       const part = { id: partId, name: "Add-on", funder, totalPrice: 0, budgetSpent: 0, nextTargetDate: null, nextAction: "", files: [] };
+      added = part;
       return { patch: { subEntries: [...parts, part] } };
     },
     opts,
   );
-  return { undo: done.undo, partId };
+  return {
+    partId,
+    undo: async () => {
+      if (added) await removeAddedElement(collectionOf(target.kind), target.id, "subEntries", added, opts);
+    },
+  };
 }
 
 /** Removes a booking's part; undo puts it back in its place. */
@@ -395,18 +404,26 @@ export async function addWhatIfPart(
   opts: WriteOptions & { partId?: string } = {},
 ): Promise<Undoable & { partId: string }> {
   const partId = opts.partId ?? makeId();
-  const done = await patchWithUndo(
+  let added: Element | null = null;
+  await patchWithUndo(
     WHAT_IF,
     id,
     (data) => {
       const parts = withElementIds<Element>(data.subEntries);
       if (parts.some((p) => p.id === partId)) return null;
       const funder = parts.at(-1)?.funder ?? data.funder;
-      return { patch: { subEntries: [...parts, whatIfPart(partId, `Part ${parts.length + 1}`, 0, funder)] } };
+      const part = whatIfPart(partId, `Part ${parts.length + 1}`, 0, funder);
+      added = part;
+      return { patch: { subEntries: [...parts, part] } };
     },
     opts,
   );
-  return { undo: done.undo, partId };
+  return {
+    partId,
+    undo: async () => {
+      if (added) await removeAddedElement(WHAT_IF, id, "subEntries", added, opts);
+    },
+  };
 }
 
 /**

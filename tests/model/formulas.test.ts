@@ -45,6 +45,22 @@ describe("parseNumber", () => {
     expect(v("1,234,567.5")).toBe(1_234_567.5);
   });
 
+  it("reads commas before groups of three as thousands, as the old engine did", () => {
+    expect(v("45,000,000")).toBe(45_000_000);
+    expect(v("Rp 1,500,000")).toBe(1_500_000);
+    expect(parseNumber("Rp 1,500,000").rp).toBe(true);
+    expect(v("45,000")).toBe(45_000);
+    expect(v("1,234")).toBe(1234);
+    expect(v("-110,000,000")).toBe(-110_000_000);
+    // Not groups of three: a decimal comma.
+    expect(v("2,25")).toBe(2.25);
+    expect(v("2,2500")).toBe(2.25);
+    // A group never starts with 0.
+    expect(v("0,500")).toBe(0.5);
+    expect(v("0.500")).toBe(0.5);
+    expect(parseNumber("1,23,456").text).toBe(true);
+  });
+
   it("reads negatives, with a hyphen or a true minus, before or after Rp", () => {
     expect(v("-3")).toBe(-3);
     expect(v("−3")).toBe(-3);
@@ -170,6 +186,21 @@ describe("evaluateTable: totals", () => {
     const numberTitle = grid(["100", "1", "2", "=SUM(A:A)"]);
     expect(shown(numberTitle)[3][0]).toBe("3");
     expect(shown(numberTitle, { titleRow: false })[3][0]).toBe("103");
+  });
+
+  it("accepts a column range with only an end row, from below the title row", () => {
+    const t = grid(["Item | Cost", "a | 10", "b | 20", "c | 40", "Total | =SUM(B:B3)"]);
+    expect(shown(t)[4][1]).toBe("30");
+    expect(shown(grid(["h | h | h", "a | 1 | 2", "b | 3 | 4", "T | =SUM(B:C2) | x"]))[3][1]).toBe("3");
+    expect(shown(grid(["100", "1", "2", "=SUM(A:A3)"]), { titleRow: false })[3][0]).toBe("103");
+    expect(evaluateTable(grid(["h", "1", "=SUM(A:A3)"]))[2][0].error?.name).toBe("Includes itself");
+    // Ending at the title row adds nothing, even when the title is a number.
+    expect(shown(grid(["2026", "5", "=SUM(A:A1)"]))[2][0]).toBe("0");
+  });
+
+  it("totals amounts already typed with comma thousands", () => {
+    const t = grid(["Vendor | Price", "Venue | 110,000,000", "Catering | Rp 45,000,000", "Total | =SUM(B2:B)"]);
+    expect(evaluateTable(t)[3][1]).toMatchObject({ value: 155_000_000, rp: true, display: "Rp 155.000.000" });
   });
 
   it("counts text and blanks as 0", () => {

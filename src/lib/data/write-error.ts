@@ -5,10 +5,12 @@
  * - `offline`: Firestore said the network is unavailable.
  * - `denied`: the rules refused it (signed out, or not an allowed account).
  * - `missing`: the record or the element was removed, usually by the partner.
+ * - `changed`: an undo found the record changed since (by you or the partner),
+ *   so putting the old values back would erase that change. Nothing is written.
  * - `demo`: no Firebase project is configured (demonstration mode).
  * - `failed`: anything else.
  */
-export type WriteFailure = "timeout" | "offline" | "denied" | "missing" | "demo" | "failed";
+export type WriteFailure = "timeout" | "offline" | "denied" | "missing" | "changed" | "demo" | "failed";
 
 export class WriteError extends Error {
   readonly code: WriteFailure;

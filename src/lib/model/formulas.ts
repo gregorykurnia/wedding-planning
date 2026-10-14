@@ -9,6 +9,8 @@
  *   =SUM(B2:B)     a growing range, down to the last row and stopping above the
  *                  total itself when the total sits in that column
  *   =SUM(B:B)      the same for a whole column, starting below the title row
+ *   =SUM(B:B6)     from below the title row down to row 6, as the old engine
+ *                  accepted it
  *
  * Case and spaces don't matter. Text and blanks count as 0. A range that runs
  * past the last row stops at it, as the old engine's did. This replaces
@@ -49,8 +51,11 @@ const SYMBOLS = /[$€£¥₹%]/g;
 /**
  * Reads "Rp 12.500.000", "12.500.000", "12500000", "2,5", "1.5" and "-3".
  * A dot before exactly three digits is thousands and a comma is a decimal,
- * so "12.500" is 12500 and "2,5" is 2.5. "1,234.56" (a comma, then a point) is
- * read the English way.
+ * so "12.500" is 12500 and "2,5" is 2.5. Commas before groups of exactly three
+ * digits are thousands too, as the old engine read them and as amounts already
+ * typed in documents use them: "45,000,000" and "45,000" are 45000000 and
+ * 45000. "1,234.56" (a comma, then a point) is read the English way. A group
+ * never starts with 0, so "0,500" and "0.500" are a half.
  */
 export function parseNumber(text: string): ParsedNumber {
   let t = String(text ?? "")
@@ -61,8 +66,8 @@ export function parseNumber(text: string): ParsedNumber {
   const rp = /^-?\s*rp(?![a-z])/i.test(t);
   t = t.replace(/^(-?)\s*rp(?![a-z])\.?\s*/i, "$1").replace(/\s/g, "");
   if (!t) return { value: 0, blank: true, text: false, rp };
-  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) return { value: parseFloat(t.replace(/\./g, "").replace(",", ".")), blank: false, text: false, rp };
-  if (/^-?\d{1,3}(,\d{3})+\.\d+$/.test(t)) return { value: parseFloat(t.replace(/,/g, "")), blank: false, text: false, rp };
+  if (/^-?[1-9]\d{0,2}(\.\d{3})+(,\d+)?$/.test(t)) return { value: parseFloat(t.replace(/\./g, "").replace(",", ".")), blank: false, text: false, rp };
+  if (/^-?[1-9]\d{0,2}(,\d{3})+(\.\d+)?$/.test(t)) return { value: parseFloat(t.replace(/,/g, "")), blank: false, text: false, rp };
   if (/^-?\d+(,\d+)?$/.test(t)) return { value: parseFloat(t.replace(",", ".")), blank: false, text: false, rp };
   if (/^-?\d+(\.\d+)?$/.test(t)) return { value: parseFloat(t), blank: false, text: false, rp };
   return { value: 0, blank: false, text: true, rp };
@@ -171,6 +176,12 @@ export function evaluateTable(cells: readonly (readonly string[])[], { titleRow 
         // Rows past the end are left off; a column that isn't there is an error.
         const [r1, r2] = [Number(m[2]), Number(m[4])].sort((a, z) => a - z).map((n) => n - 1);
         const [k1, k2] = [columnIndex(m[1]), columnIndex(m[3])].sort((a, z) => a - z);
+        for (let rr = r1; rr <= Math.min(r2, nrows - 1); rr++) for (let kk = k1; kk <= k2; kk++) add(valueAt(rr, kk, inside));
+      } else if ((m = /^([A-Z]+):([A-Z]+)(\d+)$/.exec(arg))) {
+        // No start row: from below the title row down to the row named
+        // (nothing at all when that row is the title row).
+        const [r1, r2] = [titleRow ? 1 : 0, Number(m[3]) - 1];
+        const [k1, k2] = [columnIndex(m[1]), columnIndex(m[2])].sort((a, z) => a - z);
         for (let rr = r1; rr <= Math.min(r2, nrows - 1); rr++) for (let kk = k1; kk <= k2; kk++) add(valueAt(rr, kk, inside));
       } else if ((m = /^([A-Z]+)(\d*):([A-Z]+)$/.exec(arg))) {
         const start = m[2] ? Number(m[2]) - 1 : titleRow ? 1 : 0;

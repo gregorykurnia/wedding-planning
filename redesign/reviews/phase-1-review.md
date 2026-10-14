@@ -1,7 +1,7 @@
 # Phase 1 review
 
 **Date:** 2026-10-14 · **Model:** Opus 5.5 High (the §7.0 pick) · **Diff:** `3fb86f3..43176da` on `redesign` (127 files, about 12,000 lines).
-**Result: not passed.** Three blockers (one in Task 1.10, two in Task 1.7) must be fixed first. Then a short re-review of the fixes, not the whole phase.
+**Result: passed after fixes.** The first pass found three blockers (one in Task 1.10, two in Task 1.7). They were fixed the same day and a fresh re-review of the fixes confirmed all three (see "Fixes" at the end). The should-fix items below are still open and are tracked here. Phase 1 is ticked in `redesign-plan.md` once the owner checks below are done.
 
 Seven parallel reviewers each read one area against `ui-implementation-plan.md`, the design guide and the prototype. The blockers were then checked again by hand in this session.
 
@@ -14,7 +14,7 @@ Seven parallel reviewers each read one area against `ui-implementation-plan.md`,
 | `npm run test:emulator` (data + rules) | 6 files, 155 tests pass |
 | `npm run build` | passes; `/new` and all 15 old routes build |
 | `npm run lint` | 8 errors, **all from before Phase 1**: 7 in the bundled `public/pdf.worker.min.mjs` (commit 534d71f) and 1 in `(legacy)/settings/page.tsx:27`, which only moved and is otherwise identical to `main`. Fix: add `public/pdf.worker.min.mjs` to the ESLint ignores and leave the settings page alone (it's old UI). |
-| `npm run test:e2e` | **not run.** Ports 3100 and 8080 were held by a stray `next start -p 3100` and an orphaned Firestore emulator, and the session wasn't allowed to stop them. Run again once they're stopped. |
+| `npm run test:e2e` | not run in the first pass (ports held by stray processes); after the fixes, **29 of 29 pass** (run with only the Auth emulator started beside the Firestore emulator already on 8080) |
 | Preview deploy | the latest `redesign` preview is Ready. The owner still has to compare the old UI on the preview with production screen by screen, signed in (Phase 1 Done-when). |
 
 ## Blockers
@@ -111,3 +111,12 @@ Suggested fix sessions:
 4. S16–S18, S20, S21 (model gaps) · Opus 5.5 Medium.
 
 Then a re-review of those diffs only (Opus 5.5 High). S3, S4 and S5 can go with session 1 or be accepted by the owner. S13 and S15 are tracked for Phase 7 and Task 6.3.
+
+## Fixes (2026-10-14, same session)
+
+- **B1 fixed.** `patchWithUndo` undo now refuses with the new `WriteError` code `changed`, writing nothing, unless every field it would put back still holds what the change wrote (`sameValue`, `stillAsWritten` in `src/lib/data/undo.ts`). This also fixes **S1** for every caller (file moves, funder renames, mark booked, remove booking). Add a part and the what-if add now use `removeAddedElement`: undo takes out only the added part by id, so payments on the other parts stay, and refuses if that part was itself changed. A second tap on Undo does nothing, and an undo with nothing left to remove writes nothing.
+- **B2 fixed.** `=SUM(B:B6)` sums from below the title row down to row 6 (nothing when it ends at the title row).
+- **B3 fixed.** Commas before groups of exactly three digits are thousands, as the old engine read them: "45,000,000" → 45000000, "45,000" → 45000, "Rp 1,500,000" → 1500000 with Rp kept. Other commas stay decimal ("2,5", "2,25"). A group never starts with 0, so "0,500" and "0.500" are 0.5. Owner question 3 is answered by this rule: "45,000" is 45000. Note that "2,500" is now 2500, not 2.5.
+- **New design gap.** The guide doesn't say what the toast says when undo is refused: G13 in §9.1 and N13 in `needs.md` (banned-word scan clean), before Tasks 2.6 and 3.8.
+- **Tests.** 7 new emulator tests: a split undo refused after a payment on a part; an add-part undo keeping a payment on another part; an add-part undo refused once that part was paid; a what-if split undo; a file move undo refused after the partner's move; an RSVP undo refused after the partner's change; and `sameValue`. The model tests gained the comma-thousands, `B:B6` and title-row cases. Results: model 346, emulator 162, e2e 29, all passing; typecheck clean.
+- **Re-review** (fresh session) of the fix diff: all three blockers fixed, no new blocker or should-fix. Its three minor points (double undo, a stray write, the title-row edge) were fixed before the commit.

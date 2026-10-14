@@ -17,7 +17,7 @@ import {
   updateElement,
   withElementIds,
 } from "@/lib/data/array-ops";
-import { removeElementWithUndo, removeWithUndo, updateWithUndo } from "@/lib/data/undo";
+import { removeElementWithUndo, removeWithUndo, sameValue, updateWithUndo } from "@/lib/data/undo";
 import { create, newId, remove, set, setWriteTimeout, update, WriteError } from "@/lib/data/write";
 import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
 
@@ -273,9 +273,31 @@ describe("undo", () => {
     const changed = await updateWithUndo("guests", "g1", { rsvpStatus: "yes", note: "new" }, { db: gregory.db });
     await update("guests", "g1", { name: "Maria Goretti" }, { db: bella.db });
     await changed.undo();
+    // A second tap does nothing.
+    await changed.undo();
     const data = await read(gregory, "guests", "g1");
     expect(data).toMatchObject({ name: "Maria Goretti", rsvpStatus: "pending" });
     expect(data).not.toHaveProperty("note");
+  });
+
+  it("won't undo a change after the partner changed the same field, and writes nothing", async () => {
+    await setDoc(doc(gregory.db, "guests", "g1"), { name: "Maria", rsvpStatus: "pending" });
+    const changed = await updateWithUndo("guests", "g1", { rsvpStatus: "yes", note: "new" }, { db: gregory.db });
+    await update("guests", "g1", { rsvpStatus: "no" }, { db: bella.db });
+    await expect(changed.undo()).rejects.toMatchObject({ code: "changed" });
+    const data = await read(gregory, "guests", "g1");
+    expect(data).toMatchObject({ rsvpStatus: "no", note: "new" });
+  });
+
+  it("compares stored values whatever the key order, with Timestamps by value", () => {
+    expect(sameValue({ a: 1, b: [1, { c: null }] }, { b: [1, { c: null }], a: 1 })).toBe(true);
+    expect(sameValue({ a: 1, b: undefined }, { a: 1 })).toBe(true);
+    expect(sameValue({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(sameValue([1, 2], [2, 1])).toBe(false);
+    expect(sameValue(Timestamp.fromMillis(5), Timestamp.fromMillis(5))).toBe(true);
+    expect(sameValue(Timestamp.fromMillis(5), Timestamp.fromMillis(6))).toBe(false);
+    expect(sameValue(null, {})).toBe(false);
+    expect(sameValue(0, null)).toBe(false);
   });
 
   it("keeps several undos open at once", async () => {

@@ -210,6 +210,39 @@ describe("split, parts, payments and removing a booking", () => {
     ).rejects.toMatchObject({ code: "failed" });
   });
 
+  it("won't undo a split once a part was paid, so the payment is never lost", async () => {
+    const split = await splitBooking({ kind: "vendor", id: "v1" }, g());
+    // Bella pays on the Balance while Gregory's undo toast is still open.
+    await recordPayment({ kind: "vendor", id: "v1", partId: split.partIds[1] }, { amount: 20_000_000, paidOn: "2026-10-14", paidBy: "CK" }, b());
+    await expect(split.undo()).rejects.toMatchObject({ code: "changed" });
+    const booking = await bookingOf("vendor", "v1");
+    expect(booking.parts.map((p) => [p.name, p.paid])).toEqual([["Deposit", 30_000_000], ["Balance", 20_000_000]]);
+    expect(totals(booking).paid).toBe(50_000_000);
+  });
+
+  it("undoes an added part without touching a payment recorded on another part meanwhile", async () => {
+    const { partIds } = await splitBooking({ kind: "vendor", id: "v1" }, g());
+    const added = await addPart({ kind: "vendor", id: "v1" }, { ...g(), partId: "addon" });
+    await recordPayment({ kind: "vendor", id: "v1", partId: partIds[0] }, { amount: 20_000_000, paidOn: null, paidBy: "CK" }, b());
+    await added.undo();
+    const booking = await bookingOf("vendor", "v1");
+    expect(booking.parts.map((p) => [p.name, p.paid])).toEqual([["Deposit", 50_000_000], ["Balance", 0]]);
+    expect((await read("vendors", "v1"))?.subEntries[0].payments).toHaveLength(1);
+  });
+
+  it("won't undo an added part that was paid since; already gone, undo does nothing", async () => {
+    await splitBooking({ kind: "vendor", id: "v1" }, g());
+    const added = await addPart({ kind: "vendor", id: "v1" }, { ...g(), partId: "addon" });
+    await recordPayment({ kind: "vendor", id: "v1", partId: "addon" }, { amount: 5_000_000, paidOn: null, paidBy: "CK" }, b());
+    await expect(added.undo()).rejects.toMatchObject({ code: "changed" });
+    expect((await bookingOf("vendor", "v1")).parts.map((p) => [p.name, p.paid])).toEqual([["Deposit", 30_000_000], ["Balance", 0], ["Add-on", 5_000_000]]);
+
+    const second = await addPart({ kind: "vendor", id: "v1" }, { ...g(), partId: "second" });
+    await removePart({ kind: "vendor", id: "v1" }, "second", b());
+    await second.undo();
+    expect((await bookingOf("vendor", "v1")).parts).toHaveLength(3);
+  });
+
   it("removes a split booking from the budget and undo restores it with its parts", async () => {
     await splitBooking({ kind: "vendor", id: "v1" }, g());
     const before = await bookingOf("vendor", "v1");
@@ -277,6 +310,19 @@ describe("what-if items", () => {
     data = await read("hypotheticalItems", "w1");
     expect(data).toMatchObject({ totalPrice: 40_000_000, funder: "Bella" });
     expect(data?.subEntries).toHaveLength(2);
+  });
+
+  it("undoes a what-if split back to one item, but not after a part was changed", async () => {
+    const split = await splitWhatIf("w1", g());
+    await split.undo();
+    expect(await read("hypotheticalItems", "w1")).toMatchObject({ subEntries: [], totalPrice: 40_000_000, funder: "Bella" });
+
+    const again = await splitWhatIf("w1", g());
+    const added = await addWhatIfPart("w1", { ...b(), partId: "p3" });
+    await expect(again.undo()).rejects.toMatchObject({ code: "changed" });
+    await added.undo();
+    await again.undo();
+    expect((await read("hypotheticalItems", "w1"))?.subEntries).toEqual([]);
   });
 
   it("removes a what-if item with undo", async () => {
@@ -522,5 +568,12 @@ describe("moving files and folders", () => {
     expect((await read("weddingFiles", "f1"))?.folderId).toBe("a");
     await moved.undo();
     expect((await read("weddingFiles", "f1"))?.folderId).toBe("c");
+  });
+
+  it("won't undo a file move after the partner moved it again", async () => {
+    const moved = await moveFile("f1", "a", g());
+    await moveFile("f1", "b", b());
+    await expect(moved.undo()).rejects.toMatchObject({ code: "changed" });
+    expect((await read("weddingFiles", "f1"))?.folderId).toBe("b");
   });
 });
