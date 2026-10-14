@@ -369,4 +369,55 @@ Result: no story rewrites needed. Step 1b is complete.
 
 ## §9 Decisions made in Step 2
 
-*(Filled in at Step 2.)*
+Recorded 2026-10-14. §4 is decided below and applied to `inventory.md` and `priorities.md`. §5 isn't decided yet, so the Step 2 checklist item in `redesign/redesign-plan.md` stays unticked.
+
+**What the drops mean.** They shape the rebuilt app. The current app is unchanged, apart from item 18. Dropped features keep their Firestore data: nothing is deleted from the database.
+
+**Inventory version 1.3.** Added O6, B10, B11, F22, F23, F24, R12, R13, R14 and S10. Marked F2 dropped. B7 no longer says "a fixed set of four" funders. F16 and F17 now say "next step" where they said "next action", as B3 already does. Added a Notifications state, and removed "photos" from the empty states.
+
+**`priorities.md`.** The owner's pass set it to FILLED, but the ten new rows are still blank (O6, F22–F24, B10, B11, S10, R12–R14), so they need tags. F2 is tagged `drop`, because you decided it. The F11, B3 and B7 short names now use the inventory wording, because the old ones reused current labels.
+
+### §4 decisions
+
+| # | Decision | Lands in |
+|---|---|---|
+| 1 | Drop the budget page and the "Add to budget" actions (you: "Drop it"). | Money stays with Confirmed (B5). No story changed. |
+| 2 | Drop the checklist page. To Do covers its tasks (you: "I think drop", read as drop). The planning-phase grouping isn't carried over. | No story changed. |
+| 3 | Use our names in the app (you). Drop partnerEmail and venue (my call: nothing reads them, and you didn't mention them). | O6 |
+| 4 | Real notifications are a need (you). Scope: things I've arranged (S1), not tasks or derived payments (my call). | S10; Notifications state |
+| 5 | Drop the Wedding Organizer import (you). | No story changed. |
+| 6 | Drop vendor email, including its CSV column (you). | No story changed. F6 never mentioned email. |
+| 7 | Drop venue photos (you). Keep venue files as the venue version of F13 (my call: you didn't mention files, and a venue's quote or contract has no other home before booking). | F2 dropped; F22 |
+| 8 | Drop vendor images (you). | No story changed. |
+| 9 | Drop subtask notes. A step is a title, a due date and a tick (my recommendation). | No story changed. S8 never had step notes. |
+| 10 | What-if items get a funder (you: "probably yes", so tentative). | B10 |
+| 11 | Custom vendor categories can be renamed and removed (you). Built-in categories stay fixed (my call). | F23 |
+| 12 | Folders can be moved (R12). Deleting a file really removes it (R13). Files can be searched by name or description (R14, my call, to match search elsewhere). No preview (my call: opening a file already shows it). | R12, R13, R14 |
+| 13 | SUM stays the only formula (my call). Other functions aren't a need until a table can't be totalled. | R4 unchanged |
+| 14 | A finalist can move into vendors or confirmed (you). | F24 |
+| 15 | Seating is not a need (you). The seating wording goes with the shortcut. | No story |
+| 16 | App name: Gregory & Bella's Wedding (you). It replaces the manifest name, the brand and the greeting wording. | Not in the handoff yet. Goes in `brief.md` under Branding at Step 3. |
+| 17 | Funders are editable (you). "Not yet assigned" stays a fixed fallback (my call). | B11; B7 |
+| 18 | Delete `public/music/README.md` (you). It points at `music-player.tsx`, which isn't in the code any more, and nothing refers to the folder. | Deleted in this commit. |
+
+### §5: your calls
+
+§5 is still open. 27 items are plain bugs. The proposed default is to fix them in the rebuild with no behaviour change, and #1 counts every booked venue, as its note suggests. Nine items need your call. My recommendation is in brackets.
+
+- **#3** A booking with sub-entries: its own funder and date still look editable but are ignored. [Make them read-only, since the parts carry them.]
+- **#4** Pending and Remaining disagree. [One definition, shown the same way everywhere, with Unassigned included.]
+- **#5** Keep the agreed price apart from the original estimate? [Yes.]
+- **#7** Guest events. [Reception Shortlist counts as reception. Unsure stays out of both totals and shows on its own.]
+- **#8** Family rules. [Take "friend" and "partner" out of the business words, add Bride Business Connections, and count a guest who names both sides once.]
+- **#9** "Attending" counts records, but the totals include plus-ones. [Count people, with plus-ones.]
+- **#18** To Do archive order. [Keep due-date order, since no completion date is stored.]
+- **#29** No undo for most deletes. [Undo for every delete, as guests and tracker items already have. Confirm is already a need.]
+- **#35** Offline reading. [Not a need for now. The Offline state in `inventory.md` ("show no data") describes today's build, so it changes with your answer.]
+
+### Security, outside the redesign
+
+§5 #33: the Firestore rules check the email but not `email_verified`, and email registration is open. Anyone could register an allowlisted address that has no account yet and get full access. The fix is small, but it could lock out an email-and-password account that never verified, so it needs your go-ahead.
+
+### How the new stories were checked
+
+They passed the banned-word scan, a scan for old labels, and the ID match against `priorities.md`. They haven't had a fresh leak review. A fresh review before the next `enter` would match the Step 1 bar.

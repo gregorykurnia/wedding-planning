@@ -2,7 +2,7 @@
 
 What this wedding planner lets a couple do, written as user needs. It says nothing about how anything looks or where anything sits.
 
-Version 1.2 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
+Version 1.3 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
 
 The order of the groups, and of the details listed inside a story, is arbitrary. It implies nothing about how things are arranged, reached or sequenced.
 
@@ -17,15 +17,17 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **O3** When I want a quick pulse check, I want to see together how much we've paid against what we've committed to, how many tasks are done out of how many, and how many guests are coming, so that I know where we stand without digging.
 - **O4** When I want to look closer at any one of those, I want to get from the overall picture to the detail in one step, so that the overall picture is a starting point, not a dead end.
 - **O5** When the wedding date is set or changes, I want to record it once, so that every countdown and date-based calculation uses it.
+- **O6** When I set things up, I want to enter our two names once and have the planner use them wherever it addresses us, so that it feels made for the two of us.
 
 ## F. Find and compare suppliers
 
 ### Weigh up venues
 - **F1** When I hear about a venue, I want to capture its name, location, estimated cost, maximum guest capacity and free-form notes, so that I can compare venues later.
-- **F2** When I visit or research a venue, I want to attach several photos to a venue and look through all of them at full size, so that I can recognise each venue by sight and remember what each place looks like.
+- **F2** *dropped*
 - **F3** When a venue moves forward or drops out, I want to record how far it has got, from first noted through contacted and visited to booked, or ruled out, so that I know where each one stands.
 - **F4** When comparing venues, I want to narrow them by name or notes, by stage, by a maximum cost and by a minimum guest capacity, and hide the ruled-out ones, so that I only weigh realistic options.
 - **F5** When comparing venues, I want to order them by cost or by capacity, so that the best fit is easy to spot.
+- **F22** When a venue sends a quote, contract or brochure, I want to attach files to that venue and open them later, so that everything about it is in one place.
 
 ### Weigh up vendors
 - **F6** When I hear about a vendor, I want to capture who they are (name, vendor category), how to reach them (contact person, phone number) and notes, so that I can follow up.
@@ -38,14 +40,16 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **F13** When a vendor sends a quote, contract or brochure, I want to attach files to that vendor and open them later, so that everything about them is in one place.
 - **F14** When our needs don't fit the standard vendor categories, I want to add our own categories that my partner sees too, so that every vendor has a sensible home. Categories have unique names (up to 40 characters), and "other" remains the catch-all.
 - **F15** When I want to work on vendor data elsewhere, I want to export the vendors I'm currently looking at to a spreadsheet file, so that I can share or analyse them.
+- **F23** When I've made my own vendor categories, I want to rename or remove them, so that they keep matching how we work.
 
 ### Narrow down to finalists
-- **F16** When I narrow a category down to finalists, I want to copy a vendor into a shortlist that brings across their chosen price, their other price options, contact, reviews, next action, notes and files, so that I can compare finalists in detail without changing the vendor's own record.
-- **F17** When a finalist offers several packages, I want to record each package with its own price, what's included, review counts, next action, notes and files, so that I can compare offers within and across finalists.
+- **F16** When I narrow a category down to finalists, I want to copy a vendor into a shortlist that brings across their chosen price, their other price options, contact, reviews, next step, notes and files, so that I can compare finalists in detail without changing the vendor's own record.
+- **F17** When a finalist offers several packages, I want to record each package with its own price, what's included, review counts, next step, notes and files, so that I can compare offers within and across finalists.
 - **F18** When comparing finalists, I want to record their review count and Instagram follower count, so that I can weigh popularity.
 - **F19** When comparing finalists, I want to focus on the finalists of one vendor category and order them by category, so that I compare like with like.
 - **F20** When a vendor gets new files, I want the matching finalist to pick them up automatically, so that I never chase documents in two places.
 - **F21** When I add a finalist from scratch, I want to do it without first creating a vendor, so that quick comparisons stay quick.
+- **F24** When one of our finalists is chosen, I want to move it into our vendors or straight into our confirmed bookings, with its details carried across, so that I don't enter everything twice.
 
 ## B. Book and pay
 
@@ -55,9 +59,11 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **B4** When a booking is paid in instalments or has add-ons, I want to split it into parts, each with its own name, price, amount paid, funder, due date, next step and files, with the booking's totals worked out from its parts, so that staged payments add up correctly.
 - **B5** When reviewing money, I want to see the total committed, the real amount paid and what remains to pay, with overspending clearly flagged, so that I know our true position.
 - **B6** When payments are coming due, I want to see every unpaid amount that has a due date, in date order, with anything overdue or due soon impossible to miss, and with how much remains and who pays, so that we never miss a payment.
-- **B7** When we split costs between funders (a fixed set of four people or families, plus "not yet assigned"), I want to see for each funder how much they've paid and how much they still have to pay, and how much paid spending has no funder yet, so that everyone knows their share.
+- **B7** When we split costs between funders (the people or families who share them, plus "not yet assigned"), I want to see for each funder how much they've paid and how much they still have to pay, and how much paid spending has no funder yet, so that everyone knows their share.
 - **B8** When weighing an option we haven't committed to, I want to record what-if items (also splittable into parts) with their own totals kept apart from real bookings, plus a projected total of real and what-if combined, so that I can see the effect before deciding.
 - **B9** When reviewing bookings or what-if items, I want to order them by any field, with a booking's parts always staying with their booking, so that I can scan by price, date or funder.
+- **B10** When weighing an option, I want to say who would pay for each what-if item or part, so that I can see who would carry the cost before deciding.
+- **B11** When the people or families who share our costs change, I want to add, rename or remove them, so that every payment is split the way it really is.
 
 ## G. Guests
 
@@ -96,6 +102,7 @@ One running record of every wedding item and who provides it, kept independently
 - **S7** When an agenda item comes from a booking or a task, I want to jump to where that booking or task lives, so that I can act on it.
 - **S8** When I need to do something, I want to record a task with a title, due date, notes and smaller steps (each with its own due date and done state), and see how many steps are done, so that big jobs become manageable.
 - **S9** When working through tasks, I want open tasks ordered by due date (undated last), finished tasks out of my way but recoverable, and to delete tasks, so that I focus on what remains.
+- **S10** When I've arranged something, I want to choose how far ahead to be reminded and get the reminder on my phone or computer, even when the planner isn't open, so that I don't miss it.
 
 ## R. Keep records
 
@@ -113,6 +120,9 @@ One running record of every wedding item and who provides it, kept independently
 - **R9** When I have documents, I want to upload one or several at once (PDF, Word, Excel, CSV, ZIP, text, images) up to 10 MB each, with oversized PDFs shrunk automatically and progress shown while uploading, so that the free storage limits don't block me.
 - **R10** When I upload a file, I want to give it a name, an optional category (with wedding suggestions or my own) and a description, so that I can tell files apart later.
 - **R11** When I need a file, I want to open or download it, see its size and date, move it to another folder, edit its details and delete it after confirming, so that the archive stays tidy.
+- **R12** When a folder ends up in the wrong place, I want to move it, along with everything inside it, into another folder, so that the paperwork stays arranged the way we need.
+- **R13** When I delete a file, I want it really removed rather than only taken out of sight, so that removed paperwork stops using up our free storage.
+- **R14** When I need one document, I want to find it by its name or description from anywhere, so that I don't have to hunt through folders.
 
 ## A. Access and work anywhere
 
@@ -127,7 +137,7 @@ One running record of every wedding item and who provides it, kept independently
 
 ## States the design must cover
 
-- **Nothing yet:** every kind of record can be empty (no venues, vendors, finalists, bookings, payments due, what-if items, guests, tracker items, events, tasks, documents, folders, files, photos or price options).
+- **Nothing yet:** every kind of record can be empty (no venues, vendors, finalists, bookings, payments due, what-if items, guests, tracker items, events, tasks, documents, folders, files or price options).
 - **No results:** a search or narrowing that matches nothing.
 - **Loading:** data arriving after sign-in or when moving to a different part of the planner.
 - **Failure:** data couldn't load, a change couldn't be saved (keep my input and offer a retry), an upload failed or was too large.
@@ -141,6 +151,7 @@ One running record of every wedding item and who provides it, kept independently
 - **Overdue / due soon:** payments, events and tasks past or near their date.
 - **Overspent:** paid more than the price, so remaining is negative.
 - **Busy:** an action in progress (adding, removing, restoring).
+- **Notifications:** not yet allowed, allowed, or turned off on the device.
 
 ## Roles and permissions
 
