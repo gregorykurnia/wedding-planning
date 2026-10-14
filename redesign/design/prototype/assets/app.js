@@ -109,7 +109,7 @@
     ["Wedding items", "Every piece and who provides it", "items.html"],
     ["Schedule", "Appointments, tasks and deadlines", "schedule.html"],
     ["Documents", "Notes, plans and files", "documents.html"],
-    ["Guests", "Who's coming to what", "#"],
+    ["Guests", "Who's coming to what", "guests.html"],
   ];
   let cfg = {};
   const $ = (s, el) => (el || document).querySelector(s);

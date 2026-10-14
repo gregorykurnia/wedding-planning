@@ -73,3 +73,9 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Work on next is a gold star; confirmed is a sage tick.** A marked row also gets a champagne wash and a gold edge, so it stands out in a long list (T3).
 - **Sorting is temporary** (T6). While a sort or filter is on, drag handles are hidden so nobody reorders a sorted view by mistake, and a gold note offers "Back to our order".
 - **Adding several items** takes one per line in a sheet. New items copy the events and person of the row they're added under, since related items sit together.
+
+### Session 7, guests group (2026-10-14)
+- **Headcounts leave out anyone not attending** and include plus-ones. "Reception" includes "reception if space allows", shown as a smaller line inside it. "Unsure, living abroad" is counted apart (G3).
+- **Both sides** read "groom" or "bride" in the connection text (G4). Friends count as family; colleagues, clients, business and partners count as business. Anyone whose connection names neither side (a neighbour, the parish priest) is counted apart, with a note, so every guest is counted on one side at most. The guest form hints to mention groom's or bride's.
+- **Guest numbers are shown in gold italic** and never reused after a removal (G6).
+- **RSVP is a three-way switch on every row**, big enough for a thumb, because RSVPs come in while you're out (G8).

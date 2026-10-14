@@ -51,4 +51,9 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - Narrowing: search items and vendors; confirmed or not; any of several events; any of several people (T5).
   - Order by any field, with a note and "Back to our order" (T6). Your own order: drag the handle, use Alt and the arrow keys, or "Move up/down" in the row menu. "Add an item below" and "Add several below" (one per line) put new items exactly where they belong (T7).
   - Remove with confirm and undo, back to the exact place (T8). A failed save keeps the typed text with "Try again" (T9). First use starts with 14 common items, with a note to change or remove them (T10).
-- Next groups: guests (G), then overview, sign-in and settings (O, A).
+- 2026-10-14, session 7 (same conversation): **guests group** (G1–G8) in `guests.html`.
+  - One figure: people attending so far, plus-ones included, and how many are still to reply.
+  - Two cards: headcounts (both events, reception with "if space allows" shown inside it, ceremony, and unsure guests apart) and both sides (groom's and bride's family and business, among guests invited to both events, worked out from the connection text). Guests whose connection names neither side are counted apart, with a note saying why.
+  - Rows show the stable guest number, name with plus-ones, connection, country and food notes, plus a three-way RSVP switch you can use in one tap on the phone (G8).
+  - Search, narrow by RSVP and by event, and order by any field. The guest sheet edits everything. Removing a guest reminds you of their plus-ones and how much the headcount drops, with undo.
+- Next: overview, sign-in and settings (O, A).
