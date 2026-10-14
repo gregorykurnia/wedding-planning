@@ -340,7 +340,22 @@ Second leak review, 2026-10-14 (Sonnet 5.5 High, fresh session that read only `h
 
 ## §8 Guess-the-layout test results
 
-*(Filled in at Step 1b.)*
+### Run 1 (2026-10-14, inventory v1.1)
+
+A fresh studio session read only `handoff/inventory.md` and guessed the current layout. The owner brought the guess back to a codebase session for comparison.
+
+**Wrong, so these didn't leak:** the guess had a left sidebar with Settings and Sign out at the bottom (the real app has a sticky top bar with grouped menus and a mobile menu button). It guessed a serif heading font (real: Inter throughout), a card grid for venues (real: a table, with a gallery dialog), and one combined Budget area (real: Confirmed and Budget are separate). It also invented its own section names (Tracker, Calendar, Tasks, Documents) and a side drawer for vendor price options.
+
+**Matched the real app closely.** The cause was inventory wording, so these stories were rewritten in v1.2:
+- **F17** "choose whether to see a finalist on its own or together with its packages" → guessed a "Show packages" toggle with package sub-rows, which is the real control and its label. Now just "record each package…, so that I can compare offers within and across finalists". Agent C: finalists expand to show package sub-rows (Show/Hide packages).
+- **F12, F19** "knowing how many vendors each has" → guessed category tabs with counts (real: `VendorCategoryTabs` with counts). The count was removed. This was already softened once in the second leak review (§7) and still leaked.
+- **B6, S3, S6** listed the exact urgency buckets (overdue / today / tomorrow / next 7 days / later, and "due within 7 days") → guessed the real agenda grouping almost exactly. Now "in time order with anything overdue or imminent standing out" and "grasp at once how much is overdue or imminent". Agent C: the current buckets are Overdue, Today, Tomorrow, Next 7 days, Upcoming (agenda), and overdue / due today / within 7 days / upcoming (payment reminders), with summary counts.
+- **T5** "see how many of the total match, and clear everything in one step" → guessed "Showing 23 of 140" plus "Clear filters", which is near-verbatim with the real "Showing X of Y items" and "Clear filters". Now "get back to everything easily". T4 still covers the overall counts.
+- **T7** "insert one or several new items directly after any item, or many (1 to 50) at the end" → guessed a per-item insert plus an "Add [N] rows" control, which matches the real per-row insert-below and "Add multiple rows". Now "add new items exactly where they belong, one or many at a time". Agent C: the current limit is 1 to 50 per bulk add.
+
+**Kept, because the feature implies them (judged not leaks):** a countdown with progress and the summary figures (O1–O3), the undo after removing a guest and phone-friendly guest entries (G7, G8), four funder summaries (B7: the four funders are data), parts kept with their booking (B9), title plus extract for documents and a two-part list-and-editor arrangement for notes (R6: the standard answer for any document app), a "where am I" trail for folders (R8), upload progress and PDF compression (R9), the demonstration-mode notice (states), and work-on-next items standing out (T3; the yellow highlight matches the real accent tint, but highlighting is the obvious answer).
+
+**Next:** run the test again on v1.2 in a new `./start` session.
 
 ## §9 Decisions made in Step 2
 

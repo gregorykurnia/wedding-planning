@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Ran the first guess-the-layout test (Step 1b). The guess missed the real navigation, fonts and venue layout, but matched five areas that the inventory wording gave away. Rewrote F12, F17, F19, B6, S3, S6, T5 and T7 in `redesign/handoff/inventory.md` (now version 1.2), updated the S3 and S6 short names in `priorities.md`, and logged the comparison in `redesign/inventory-notes.md` §8. The banned-word scan is clean.
 - 2026-10-14: Completed the Step 1 second leak review of the blank-slate redesign: rewrote the stories in `redesign/handoff/inventory.md` that implied the current layout, order or wording (now version 1.1), and logged every removed detail in `redesign/inventory-notes.md` §7. A whole-word banned-word check of `redesign/handoff/` is clean; the formal Step 1b scan is still to do.
 - 2026-10-14: Completed Step 1 of the blank-slate redesign: wrote `redesign/handoff/inventory.md` (81 layout-free job stories in 7 job groups, plus states, roles and constraints), the starter `priorities.md`, `brief.md` and `needs.md`, and the owner-only `redesign/inventory-notes.md` (code map, current behaviour, data model, 18 placeholders and 37 bugs to decide in Step 2). The banned-word scan of `redesign/handoff/` is clean.
 - 2026-10-14: Completed Step 0 and the Step 0b firewall check for the blank-slate redesign. The owner reported all checks passing, and the checklist in `redesign/redesign-plan.md` is ticked.
