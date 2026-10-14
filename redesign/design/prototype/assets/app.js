@@ -119,7 +119,7 @@
     const [a, b] = data.couple;
     return `<header class="top">
       <a class="couple" href="${href("overview.html")}">${esc(a)} <span>&amp;</span> ${esc(b)}</a>
-      <div class="where">${esc(cfg.where || "Budget")}</div>
+      ${cfg.label ? `<div class="where">${esc(cfg.label)}</div>` : ""}
       <button class="menu-btn" aria-expanded="false" aria-controls="index"><i></i>Menu</button>
     </header>`;
   }

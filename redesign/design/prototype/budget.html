@@ -17,7 +17,7 @@
 <script>
 const V = Veil;
 V.init({
-  where: "Budget", noun: "the budget",
+  where: "Budget", label: "Budget", noun: "the budget",
   states: [["empty", "Nothing booked yet"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
   render(main) {
     const d = V.data, B = V.budget(), dues = V.dues();

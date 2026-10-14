@@ -86,3 +86,6 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Sign-in shows nothing about the wedding** until you're in, because the brief requires signing in before anything is shown. It's called "Our wedding planner" for now, since the name is still open.
 - **Not connected**: the sign-in screen offers demonstration mode instead of a sign-in form, and every screen in demonstration mode carries the same gold banner.
 - **Installing** is a short how-to in settings, plus a one-time, dismissible suggestion on the overview on a phone. There's no pop-up asking straight away.
+
+### Owner feedback (2026-10-14)
+- **No repeated page name in the top bar.** The owner pointed out that the small page name at the top repeats the big title ("Documents" above "Documents"). The top bar now shows only your names and Menu. The small label stays on the budget screen alone, because that screen has no big title: its one figure is what's still to pay.
