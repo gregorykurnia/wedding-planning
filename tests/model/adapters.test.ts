@@ -248,20 +248,26 @@ describe("record folders and Cloudinary addresses", () => {
     expect(recordFolderPath({ kind: "finalist", id: "s1" }, "  ")).toEqual(["Shortlist", "Untitled"]);
   });
 
-  it("reads the resource type and public id from a delivery URL", async () => {
+  it("reads the cloud, resource type and public id from a delivery URL", async () => {
     const { cloudinaryAsset } = await import("@/lib/data/adapters/files");
     expect(cloudinaryAsset("https://res.cloudinary.com/demo/image/upload/v1712345678/wedding/quote_ab12.jpg")).toEqual({
+      cloudName: "demo",
       resourceType: "image",
       publicId: "wedding/quote_ab12",
     });
     expect(cloudinaryAsset("https://res.cloudinary.com/demo/raw/upload/v1/contract%20final.pdf")).toEqual({
+      cloudName: "demo",
       resourceType: "raw",
       publicId: "contract final.pdf",
     });
     expect(cloudinaryAsset("https://res.cloudinary.com/demo/image/upload/c_fill,w_200/v99/a/b.png")).toEqual({
+      cloudName: "demo",
       resourceType: "image",
       publicId: "a/b",
     });
     expect(cloudinaryAsset("https://example.com/x.pdf")).toBeNull();
+    // Only plain uploads: a private or authenticated asset is never guessed at.
+    expect(cloudinaryAsset("https://res.cloudinary.com/demo/image/authenticated/v1/a.png")).toBeNull();
+    expect(cloudinaryAsset("https://res.cloudinary.com/demo/image/upload/a.png")).toBeNull();
   });
 });
