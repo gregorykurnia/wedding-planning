@@ -914,7 +914,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 |---|---|---|---|---|---|---|
 | 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | 46a2f8f; real cost to log from `/cost` | [x] |
 | 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | see Task 1.2 heading; real cost to log from `/cost` | [x] |
-| 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | | [ ] |
+| 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | real cost to log from `/cost` | [x] |
 | 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | | [ ] |
 | 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | | [ ] |
 | 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | | [ ] |
@@ -1026,13 +1026,13 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** `npm test` and `npm run test:e2e` run green with one trivial test each. Needs Java for the emulator (§9.2 Q11).
 
 #### Task 1.2: Behaviour smoke tests for the old UI · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 3e44c6d · real cost to log from `/cost`; test writing was delegated to a Sonnet subagent)
 - **Read:** this task; `redesign/inventory-notes.md` §2.
 - **Do:** Playwright tests, by behaviour not markup, against the emulator: sign in; add a venue and mark it Booked; add a vendor, set Chosen and see it among confirmed bookings; split into sub-entries and change a payment; add a guest, delete it, undo; add a master-list row, reorder, delete, undo; add a schedule item; add a to-do with a subtask; write a note with a `=SUM` table and see the total; create a folder and upload a small file (Cloudinary calls stubbed with `page.route`). Plus one demo-mode test.
 - **Done when:** all pass on today's code. These tests are the "no visual change" guard for the rest of the phase.
 
 #### Task 1.3: Route groups and `legacyHref` · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · see git log · real cost to log from `/cost`)
 - **Read:** §2.2; `route-groups.md`, `layout.md` in the Next docs.
 - **Files:** move `src/app/layout.tsx`, `page.tsx`, `globals.css` and every page folder into `src/app/(legacy)/`; keep `manifest.ts` and `favicon.ico` at `src/app/`. Add `src/lib/legacy-href.ts` (`LEGACY_BASE = ''`) and route every `href`, `router.push/replace` and redirect in old code through it (sweep list in the reverse-coverage sweep: `app-shell.tsx`, `login/page.tsx`, dashboard cards, Confirmed links, `lib/schedule.ts:87`). Add `src/app/(veil)/new/layout.tsx` and `page.tsx` as a bare placeholder (no styles, "New UI placeholder" text) so the group builds.
 - **Done when:** every URL works as before, smoke tests pass, `/new` renders the placeholder.

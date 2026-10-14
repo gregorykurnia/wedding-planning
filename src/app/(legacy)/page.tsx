@@ -25,6 +25,7 @@ import { useWeddingSettings } from "@/lib/collections/settings";
 import { formatIDR } from "@/lib/format";
 import { buildConfirmedPaymentReminders, formatScheduleDate } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
+import { legacyHref } from "@/lib/legacy-href";
 
 // Fallback used until a wedding date is saved in Settings.
 const DEFAULT_WEDDING_DATE = new Date("2027-06-12T09:00:00");
@@ -206,7 +207,7 @@ export default function DashboardPage() {
             )}
             <Button
               variant="link"
-              render={<Link href="/confirmed" />}
+              render={<Link href={legacyHref("/confirmed")} />}
               className="mt-1 h-auto px-0"
             >
               View confirmed <ArrowRight className="size-3.5" />
@@ -266,7 +267,7 @@ export default function DashboardPage() {
             )}
             <Button
               variant="link"
-              render={<Link href="/todo" />}
+              render={<Link href={legacyHref("/todo")} />}
               className="mt-2 h-auto px-0"
             >
               View to do <ArrowRight className="size-3.5" />
@@ -303,7 +304,7 @@ export default function DashboardPage() {
             )}
             <Button
               variant="link"
-              render={<Link href="/schedule" />}
+              render={<Link href={legacyHref("/schedule")} />}
               className="mt-2 h-auto px-0"
             >
               View schedule <ArrowRight className="size-3.5" />
@@ -348,7 +349,7 @@ export default function DashboardPage() {
             )}
             <Button
               variant="link"
-              render={<Link href="/guests" />}
+              render={<Link href={legacyHref("/guests")} />}
               className="mt-2 h-auto px-0"
             >
               View guests <ArrowRight className="size-3.5" />
@@ -360,25 +361,25 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
-            href: "/venues",
+            href: legacyHref("/venues"),
             title: "Venues",
             desc: "Compare & book your venue",
             icon: Warehouse,
           },
           {
-            href: "/vendors",
+            href: legacyHref("/vendors"),
             title: "Vendors",
             desc: "Caterers, florists & more",
             icon: Heart,
           },
           {
-            href: "/guests",
+            href: legacyHref("/guests"),
             title: "Guests",
             desc: "Track RSVPs & seating",
             icon: Users,
           },
           {
-            href: "/notes",
+            href: legacyHref("/notes"),
             title: "Notes",
             desc: "Jot down ideas & reminders",
             icon: StickyNote,

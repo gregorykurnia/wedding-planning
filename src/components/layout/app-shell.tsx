@@ -35,23 +35,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { legacyHref } from "@/lib/legacy-href";
 
 const PLANNING_ITEMS = [
-  { href: "/venues", label: "Venues", icon: Warehouse },
-  { href: "/vendors", label: "Vendors", icon: Heart },
-  { href: "/shortlist", label: "Shortlist", icon: ClipboardList },
-  { href: "/confirmed", label: "Confirmed", icon: BadgeCheck },
-  { href: "/master-list", label: "Master List", icon: ListChecks },
+  { href: legacyHref("/venues"), label: "Venues", icon: Warehouse },
+  { href: legacyHref("/vendors"), label: "Vendors", icon: Heart },
+  { href: legacyHref("/shortlist"), label: "Shortlist", icon: ClipboardList },
+  { href: legacyHref("/confirmed"), label: "Confirmed", icon: BadgeCheck },
+  { href: legacyHref("/master-list"), label: "Master List", icon: ListChecks },
 ];
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: legacyHref("/"), label: "Dashboard", icon: LayoutDashboard },
   ...PLANNING_ITEMS,
-  { href: "/guests", label: "Guests", icon: Users },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
-  { href: "/todo", label: "To Do", icon: ListTodo },
-  { href: "/notes", label: "Notes", icon: StickyNote },
-  { href: "/files", label: "Files", icon: FolderOpen },
+  { href: legacyHref("/guests"), label: "Guests", icon: Users },
+  { href: legacyHref("/schedule"), label: "Schedule", icon: CalendarDays },
+  { href: legacyHref("/todo"), label: "To Do", icon: ListTodo },
+  { href: legacyHref("/notes"), label: "Notes", icon: StickyNote },
+  { href: legacyHref("/files"), label: "Files", icon: FolderOpen },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -59,12 +60,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, loading, isFirebaseConfigured, signOut } = useAuth();
 
-  const isLoginPage = pathname === "/login";
+  const isLoginPage = pathname === legacyHref("/login");
   const needsAuth = isFirebaseConfigured && !loading && !user && !isLoginPage;
 
   useEffect(() => {
     if (needsAuth) {
-      router.replace("/login");
+      router.replace(legacyHref("/login"));
     }
   }, [needsAuth, router]);
 
@@ -87,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-1 flex-col">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href={legacyHref("/")} className="flex items-center gap-2 shrink-0">
             <CalendarHeart className="size-6 text-primary" />
             <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
               Our Wedding
@@ -96,10 +97,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <nav className="hidden flex-1 items-center gap-1 md:flex">
             <Link
-              href="/"
+              href={legacyHref("/")}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                pathname === "/"
+                pathname === legacyHref("/")
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}
@@ -220,7 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </DropdownMenuLabel>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<Link href="/settings" className="flex items-center gap-2" />}>
+                  <DropdownMenuItem render={<Link href={legacyHref("/settings")} className="flex items-center gap-2" />}>
                     <Settings className="size-4" />
                     Settings
                   </DropdownMenuItem>

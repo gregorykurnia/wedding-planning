@@ -81,6 +81,7 @@ import type {
   VendorFile,
   Venue,
 } from "@/lib/types";
+import { legacyHref } from "@/lib/legacy-href";
 
 type ConfirmedRow =
   | { kind: "venue"; id: string; name: string; type: ConfirmedType; funder: Funder | null; totalPrice: number; budgetSpent: number; nextTargetDate: string | null; nextAction: string; files: VendorFile[]; subEntries: ConfirmedSubEntry[]; data: Venue }
@@ -591,7 +592,7 @@ function ConfirmedTab({
               <Plus className="size-4" />
               Add vendor
             </Button>
-            <Button variant="link" render={<Link href="/vendors" />} className="h-auto px-0">
+            <Button variant="link" render={<Link href={legacyHref("/vendors")} />} className="h-auto px-0">
               Compare more vendors
             </Button>
           </div>
@@ -601,7 +602,7 @@ function ConfirmedTab({
           <Card className="border-dashed border-border/70 shadow-none">
             <CardContent className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
               <p>Nothing booked or contracted yet.</p>
-              <Button variant="link" render={<Link href="/venues" />} className="h-auto px-0">
+              <Button variant="link" render={<Link href={legacyHref("/venues")} />} className="h-auto px-0">
                 Go compare venues
               </Button>
             </CardContent>

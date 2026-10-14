@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { legacyHref } from "@/lib/legacy-href";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   if (user) {
-    router.replace("/");
+    router.replace(legacyHref("/"));
   }
 
   const handleError = (err: unknown) => {
@@ -47,7 +48,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithGoogle();
-      router.replace("/");
+      router.replace(legacyHref("/"));
     } catch (err) {
       handleError(err);
     } finally {
@@ -64,7 +65,7 @@ export default function LoginPage() {
       } else {
         await registerWithEmail(email, password);
       }
-      router.replace("/");
+      router.replace(legacyHref("/"));
     } catch (err) {
       handleError(err);
     } finally {

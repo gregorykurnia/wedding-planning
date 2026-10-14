@@ -52,6 +52,7 @@ import {
 import type { ScheduleEvent, ScheduleEventStatus, ScheduleEventType } from "@/lib/types";
 import { formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { legacyHref } from "@/lib/legacy-href";
 
 const TYPE_LABELS: Record<ScheduleEventType | "task", string> = {
   vendor_call: "Vendor / WO call",
@@ -664,7 +665,11 @@ export default function SchedulePage() {
         : event.relatedVenueId
           ? `Venue · ${venueNames.get(event.relatedVenueId) ?? "Unknown venue"}`
           : null,
-      relatedHref: event.relatedVendorId ? "/vendors" : event.relatedVenueId ? "/venues" : null,
+      relatedHref: event.relatedVendorId
+        ? legacyHref("/vendors")
+        : event.relatedVenueId
+          ? legacyHref("/venues")
+          : null,
       amount: null,
       href: null,
       event,
@@ -702,9 +707,9 @@ export default function SchedulePage() {
         status: "scheduled",
         source: "todo",
         relatedLabel: "To Do",
-        relatedHref: "/todo",
+        relatedHref: legacyHref("/todo"),
         amount: null,
-        href: "/todo",
+        href: legacyHref("/todo"),
         event: null,
       }));
 

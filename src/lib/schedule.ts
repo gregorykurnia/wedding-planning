@@ -1,4 +1,5 @@
 import type { Vendor, Venue } from "@/lib/types";
+import { legacyHref } from "@/lib/legacy-href";
 
 export interface ConfirmedPaymentReminder {
   id: string;
@@ -84,7 +85,7 @@ export function buildConfirmedPaymentReminders(
         typeof reminder.date === "string" && reminder.date.length > 0 && reminder.amount > 0,
     )
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map((reminder) => ({ ...reminder, href: "/confirmed" }));
+    .map((reminder) => ({ ...reminder, href: legacyHref("/confirmed") }));
 }
 
 export function parseScheduleDate(value: string) {
