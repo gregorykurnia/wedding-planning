@@ -983,7 +983,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | | [ ] |
 | 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | was L ($3.64) before Q8 | [ ] |
-| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | Code in 2026-10-14; real-Cloudinary test still to run | [ ] |
+| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | 47806c1, 14ef42e; the real-Cloudinary test passed once the server key had the Master Admin role (a Media Library User key can't delete). R13's screen comes with 4.19 | [x] |
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
@@ -1404,7 +1404,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Done when:** on a preview with real keys, triggering the cron route by hand (`vercel crons` or a signed request) delivers a "1 day before" reminder once on a Mac and on an installed iPhone, and a second run sends nothing.
 
 #### Task 6.3: Delete for good · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost) — code and emulator tests in (2026-10-14); waits for one run of the real-Cloudinary test in `tests/data/delete-file.test.ts`, which needs `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in `.env.local`.
+- [x] **Done** (2026-10-15 · 47806c1, 14ef42e · real cost to log from `/cost`). Emulator tests against a fake Cloudinary, plus a real run in the account's `wedding-planning-tests` folder: asset and document removed, a second call answers `already-gone`. The server key needs the Master Admin role. Cloudinary's API takes about 280 ms to connect from Jakarta, so `cloudinary.ts` raises Node's 250 ms per-address limit. R13 in §5 stays open until Task 4.19 puts the Delete for good sheet on Files. Production also needs `FIREBASE_SERVICE_ACCOUNT`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in Vercel (§9.2 Q9).
 - **Risk:** permanent data loss; a wrong id destroys the wrong file forever.
 - **Read:** §2.9; guide §6.2 (permanent); `src/lib/collections/wedding-files.ts`.
 - **Do:** `DELETE /api/files/[fileId]`: verify token and allowlist, read the `weddingFiles` doc server-side (never trust a client-sent public id), destroy that asset (legacy files: public id parsed from the URL, refuse if it can't be parsed), then delete the doc and remove the URL from any legacy `files[]` arrays; idempotent when the asset is already gone.
