@@ -1032,7 +1032,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** all pass on today's code. These tests are the "no visual change" guard for the rest of the phase.
 
 #### Task 1.3: Route groups and `legacyHref` · Sonnet 5.5 High
-- [x] **Done** (2026-10-14 · see git log · real cost to log from `/cost`)
+- [x] **Done** (2026-10-14 · 32b2c74 · real cost to log from `/cost`)
 - **Read:** §2.2; `route-groups.md`, `layout.md` in the Next docs.
 - **Files:** move `src/app/layout.tsx`, `page.tsx`, `globals.css` and every page folder into `src/app/(legacy)/`; keep `manifest.ts` and `favicon.ico` at `src/app/`. Add `src/lib/legacy-href.ts` (`LEGACY_BASE = ''`) and route every `href`, `router.push/replace` and redirect in old code through it (sweep list in the reverse-coverage sweep: `app-shell.tsx`, `login/page.tsx`, dashboard cards, Confirmed links, `lib/schedule.ts:87`). Add `src/app/(veil)/new/layout.tsx` and `page.tsx` as a bare placeholder (no styles, "New UI placeholder" text) so the group builds.
 - **Done when:** every URL works as before, smoke tests pass, `/new` renders the placeholder.
