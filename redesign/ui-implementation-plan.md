@@ -925,7 +925,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | 4b33422; real cost to log from `/cost` | [x] |
 | 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | 24b1d15; ran on production 2026-10-14 after a backup and the owner's review of the dry run (492 writes, second run plans nothing, 615 existing records unchanged); report raised G12/N12; real cost to log from `/cost` | [x] |
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | 2026-10-14: first pass found 3 blockers (B1 in 1.10, B2 and B3 in 1.7) and 22 should-fix items. The blockers were fixed in the same session (Opus 5.5 High) and the re-review passed; see `redesign/reviews/phase-1-review.md`. The should-fix items are still open there. the owner compared the preview with production on 2026-10-14 (unchanged), so Phase 1 is done; Bella's sign-in check is still open; real cost to log from `/cost` | [x] |
-| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
+| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | 753f6c8; real cost to log from `/cost` | [x] |
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | | [ ] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
@@ -1115,7 +1115,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 **Done when:** `/new` shows the top bar, the menu and a placeholder hero on the preview, styled only by tokens, at both widths; signing in, demo mode and an account that isn't allowed all route correctly; the review passes.
 
 #### Task 2.1: Tokens, base styles, fonts and style check · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 753f6c8 · real cost to log from `/cost`)
 - **Read:** §2.5, §2.6; guide §2, §8 (focus, reduced motion); `redesign/design/tokens.css`; prototype `assets/veil.css` (only `:root`, `html`, `body`, `a`, `button`, `input`, `.num`, `.sr`, `[tabindex]`, focus and reduced-motion rules).
 - **Files:** `src/veil/styles/{tokens.css,base.css,fonts.ts}`, `scripts/check-veil-styles.mjs`, `src/app/(veil)/new/layout.tsx` imports.
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
