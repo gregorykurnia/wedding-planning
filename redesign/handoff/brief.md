@@ -1,22 +1,39 @@
-Status: DRAFT
+Status: FILLED
 
 ## Who uses it
-People, roles, devices and where they are when they use it.
+Two people: me and my partner Bella, the couple planning our own wedding. We have the same full access and nobody else uses it. We both use it on a Mac and on our phones, where it's installed as an app.
 
 ## Language
-Which language(s) the interface uses.
+English only.
 
 ## Personality
-Calm or editorial? Dense and tool-like? Playful? Warm or clinical?
+It should be:
+- Visually stunning
+- Bright
+- Modern
+- Calm
+- Spacious
+- Nice to use
+- Aesthetic
+
+It should not look:
+- Outdated
+- Old-fashioned
+- Conventional
+- Like a typical AI-designed site
+- Dark
 
 ## References
-Two or three apps you admire that are not this one, and what you like about each.
+None. The designer has a free hand within the personality above.
 
 ## Constraints
-Phone and desktop, installable, light and dark mode, signed in vs. visiting via a link, role-based visibility.
+- Phone and desktop, both first-class. Installable on phones.
+- Light mode. Dark mode isn't needed.
+- Signing in is required before anything is shown; there's no visiting through a shared link.
+- No role-based visibility: both of us see and can change everything.
 
 ## Branding
-Name, logo and colours are open by default. Write only what you deliberately keep.
+Name, logo and colours are all open. One wish: bright colours.
 
 ## Permission to challenge the model
-Whether the designer may propose merging, splitting or removing concepts. Proposals are flagged for your decision, never silently adopted.
+Yes. The designer may propose merging, splitting or removing concepts. Proposals are flagged for my decision, never silently adopted.
