@@ -24,10 +24,10 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | Terminal 1 | Terminal 2 | Terminal 3 |
 |---|---|---|
 | **Phase 2: shell** | | |
-| [ ] 2.3 Auth and providers · Opus 5.5 Medium | [ ] 2.1 Tokens · Haiku 5.5 Max | [ ] Studio window: design gaps N1–N13 · Opus 5.5 High, since N1 and N2 add new screens (the owner runs it) |
+| [ ] 2.3 Auth and providers · Opus 5.5 Medium | [ ] 2.1 Tokens · Haiku 5.5 Max | [ ] 6.3 Delete for good · Opus 5.5 High |
 | [ ] 2.6 Sheets and toasts · Sonnet 5.5 High | [ ] 2.2 Icons · Haiku 5.5 xHigh | [ ] 6.1 Service worker (after 2.3) · Opus 5.5 High |
-| [ ] 2.7 Partner changes · Sonnet 5.5 High | [ ] 2.4 Top bar · Haiku 5.5 Max | [ ] 6.3 Delete for good · Opus 5.5 High |
-| — | [ ] 2.5 Screen states · Haiku 5.5 Max | [ ] 6.7 Old-names check · Haiku 5.5 Max |
+| [ ] 2.7 Partner changes · Sonnet 5.5 High | [ ] 2.4 Top bar · Haiku 5.5 Max | [ ] 6.7 Old-names check · Haiku 5.5 Max |
+| — | [ ] 2.5 Screen states · Haiku 5.5 Max | — |
 | 🛑 [ ] Phase 2 review · Opus 5.5 Medium | wait | wait |
 | **Phase 3: components** | | |
 | [ ] 3.0 Gallery · Haiku 5.5 xHigh | wait for 3.0 | wait for 3.0 |
@@ -72,13 +72,26 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | [ ] 9.2 Remove the old UI · Sonnet 5.5 High | off | off |
 | 🛑 [ ] Phase 9 review · Opus 5.5 Medium | off | off |
 
-## Any free terminal, once the needs are designed
+## Design gaps N1–N13: later, but before Phase 4
 
-These wait for the studio's designs of needs N1, N2, N5 and N11. Whichever terminal is free first takes the next one, during Phase 4 or 5, before the Phase 6 review.
+The studio round for needs N1–N13 (see `redesign/handoff/needs.md`) is put off until later. It runs in the studio window, not in a terminal lane, so it doesn't hold up any column. Do it **before Phase 4 starts** at the latest: 4.23 waits for N12 entirely, and Phase 4 screens use N4 and N7–N11.
+
+Until it's done, tasks that touch a need build everything else and leave that part out (the §9.1 rule). Phases 2 and 3 have three such parts, which get a follow-up after the import:
+- 2.6 and 3.8 leave out what Undo says when it can't undo (N13);
+- 2.7 names the partner with the second name in settings (N3).
 
 | Task | Waits for | Model |
 |---|---|---|
-| [ ] Import the needs' design (main folder, "Import the approved design") | the studio freezing the designs | Haiku 5.5 High |
+| [ ] Studio window: design N1–N13 (the owner runs it: `BASE_BRANCH=redesign redesign/studio.sh enter` after the banned-word scan, then `./start` and "Design the open needs in needs.md", then "I approve the design guide. Freeze it.") | nothing; before Phase 4 | Opus 5.5 High, since N1 and N2 add new screens |
+| [ ] Import the needs' design (main folder, "Import the approved design", with `BASE_BRANCH=redesign`) | the studio freezing the designs | Haiku 5.5 High |
+| [ ] Follow-up: N13 in 2.6 and 3.8, N3 in 2.7 (skip if those were built after the import) | the import | Sonnet 5.5 High |
+
+## Any free terminal, once the needs are designed
+
+These wait for the import above. Whichever terminal is free first takes the next one, during Phase 4 or 5, before the Phase 6 review.
+
+| Task | Waits for | Model |
+|---|---|---|
 | [ ] 6.2 Push reminders | N11 | Opus 5.5 High |
 | [ ] 6.4 Manifest, icons, install | N1 | Haiku 5.5 Max |
 | [ ] 6.5 Not found and error screens | N2 | Haiku 5.5 Max |
