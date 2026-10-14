@@ -477,7 +477,7 @@ You approve the plan before Step 7.
 - [ ] Step 4b: all job stories and states prototyped, including stress data
 - [ ] Step 4c: design guide complete
 - [ ] Step 5: coverage audit passed
-- [ ] Step 5b: design guide approved, versioned and imported
+- [x] Step 5b: design guide approved, versioned and imported (design-guide v1.0, 2026-10-14)
 
 **Implementation plan (sees repo and approved design)**
 - [ ] Step 6: `ui-implementation-plan.md` with component map, screen map and coverage matrix

@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Imported the approved design from `design-studio` into `redesign/design/` with `redesign/studio.sh import` (commit `4f2e474`): `design-guide.md`, `tokens.css`, `prototype/`, `directions/`, `archive/round-1/`, `coverage.md` and `decisions.md`, frozen at design-guide v1.0 (2026-10-14). Ticked Step 5b in `redesign/redesign-plan.md`. No app code changed.
 - 2026-10-14: Filled in `redesign/handoff/brief.md` (status `FILLED`): the two of us on Mac and phone, English, a bright, modern, calm and spacious personality, no references, light mode only, sign-in required, branding open with a wish for bright colours, and permission to challenge the model. Ticked Step 3 in `redesign/redesign-plan.md`. The banned-word scan of `redesign/handoff/` is clean.
 - 2026-10-14: Tagged the 11 untagged rows in `redesign/handoff/priorities.md` from the owner's ranking (reasoning in `redesign/inventory-notes.md` §9), and ticked Step 2 in `redesign/redesign-plan.md`.
 - 2026-10-14: Recorded the §5 decisions (owner took every recommendation) in `redesign/inventory-notes.md` §9. The inventory is now version 1.4: B4, B7, G3 and G4 and the Confirming and Offline states follow the decisions, and B12 (agreed price kept apart from the estimate) is new, with a blank row in `priorities.md`. The banned-word scan of `redesign/handoff/` is clean.
