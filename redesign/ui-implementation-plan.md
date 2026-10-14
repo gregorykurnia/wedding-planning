@@ -20,7 +20,7 @@ Step 6 of `redesign/redesign-plan.md`, written by Agent C on 2026-10-14. This pl
 | Inventory | **v1.4 (2026-10-14)** | `redesign/handoff/inventory.md` |
 | Priorities | `FILLED` | `redesign/handoff/priorities.md` |
 | Owner-only notes | Step 2 decisions in §9 | `redesign/inventory-notes.md` |
-| Open needs | none before this plan; N1–N9 added by it | `redesign/handoff/needs.md` |
+| Open needs | none before this plan; N1–N11 added by it | `redesign/handoff/needs.md` |
 | Codebase | `main` at commit `cadd75c` (2026-10-14) | Next.js 16.2.12, React 19.2.4, firebase 12.17, Tiptap 3.31 |
 
 If the design guide's version changes during the rebuild, the task that needs the change waits for this plan's §3–§5 to be updated to the new version first.
@@ -45,15 +45,15 @@ The full table, one row per task with its reason, is §7.0. Picks use only rows 
 
 | Model · effort | Tasks | Reviews and other | Est. cost |
 |---|---|---|---|
-| Opus 5.5 High | 9 | 2 reviews (Phases 1 and 7) | $23.66 |
+| Opus 5.5 High | 9 | 2 reviews (Phases 1 and 7) | $21.84 |
 | Opus 5.5 Medium | 3 | 7 reviews (Phases 2–6, 8, 9) | $14.74 |
 | Sonnet 5.5 High | 37 | 1 design-gap round in the studio | $36.96 |
 | Haiku 5.5 Max | 28 | the calibration trial's second build | $7.14 |
 | Haiku 5.5 xHigh | 4 | | $0.48 |
 | Haiku 5.5 High | 0 | the design-gap scan and import | $0.16 |
-| **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $83** |
+| **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $81** |
 
-Allow about 20% on top (≈ $100) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; check `/cost` after each session and log real costs in §7.0.
+Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; check `/cost` after each session and log real costs in §7.0.
 
 ---
 
@@ -166,6 +166,7 @@ Three layers, and screens only touch the top one.
 - `vendors`, `venues`: `booking: { on: 'YYYY-MM-DD' | null, from: 'vendor' | 'venue' | 'finalist' | 'direct', removed: boolean }`, `estimate` (vendors; venues keep `budgetEstimate` as their estimate), `agreedPrice` (venues). A booking is a vendor or venue with `booking` set and not removed. Direct bookings (guide §5.7) are vendor documents with `booking.from = 'direct'`, left out of the Vendors list. Booking ids in URLs are `vendor-<id>` and `venue-<id>`.
 - `shortlist`: `sourceVendorId`, `preferredPackageId` (the top-level price is package `main`), `movedTo: { kind: 'booking' | 'vendor', id }`.
 - `hypotheticalItems`: `funder`.
+- Bookings and their parts (on `vendors`, `venues` and `subEntries[]`): `payments[]` (`id`, `amount`, `paidOn`, `funder`, `receiptFileId`), a history kept beside `budgetSpent`, which stays the total (§9.2 Q5).
 - `guests`: `number`, issued from `guestMeta/counter` in a transaction and never reused.
 - `todos`: `doneOn`.
 - `scheduleEvents`: `remindersSent[]`.
@@ -187,7 +188,7 @@ Three layers, and screens only touch the top one.
 ### 2.9 Server pieces (new)
 The app has no server code today. Three features need some, all as route handlers on Vercel's Node runtime:
 - **Delete for good (R13):** `DELETE /api/files/[fileId]` checks the Firebase ID token and the two-account allowlist, destroys the Cloudinary asset with the API secret, then deletes the `weddingFiles` document.
-- **Reminders (S10):** `POST /api/push/subscribe`, `POST /api/push/unsubscribe` and `POST /api/push/test` save or use a device's push subscription. `GET /api/cron/reminders` runs on a schedule, finds events whose reminder time has passed and isn't in `remindersSent`, sends web push with VAPID keys, and records what it sent. The schedule frequency depends on the Vercel plan (§9.2 Q8).
+- **Reminders (S10):** `POST /api/push/subscribe`, `POST /api/push/unsubscribe` and `POST /api/push/test` save or use a device's push subscription. `GET /api/cron/reminders` runs **once a day** (Vercel Hobby limits cron to daily, within the hour; §9.2 Q8): it sends every reminder whose day has come ("1 day before" and "1 week before") and isn't in `remindersSent`, with web push and VAPID keys, and records what it sent. The schedule is `0 0 * * *` UTC (07:00–08:00 in Jakarta, 08:00–09:00 in Bali); the reminder choices follow need N11.
 - **Shared server helpers** in `src/lib/server/`: `firebase-admin` (service account), `verifyRequest()` (ID token plus allowlist), Cloudinary signing, `web-push`.
 - **New environment variables** (the owner adds them in Vercel, §9.2 Q9): `FIREBASE_SERVICE_ACCOUNT`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET`.
 - **Firestore rules** (`firestore.rules`) gain the new collections under the same allowlist. Rules deploy separately with the Firebase CLI and apply to production at once, so rule changes are additive only and are deployed in Task 1.9, before any code that needs them.
@@ -252,14 +253,14 @@ Routes are final; during Phases 2–6 each sits under `/new`. Every screen is a 
 | Who pays · `funders.html` · §5.9 | `/budget/who-pays` | funder rows, `Thread small`, `InlineRename`, `ConfirmSheet` | `useFunderTotals` | Confirmed funder recap, hard-coded funder list | normal, nothing booked, demo, renaming, adding, overpaid funder, remove, loading, couldn't load, offline, Bella's change, stress | 4.9 |
 | What-if items · `whatif.html` · §5.10 | `/budget/what-if` | `Hero` (dashed thread), carry lines, `WhatIfEntry`, what-if sheet | `useWhatIf`, `useBudget`, `useFunders` | Confirmed "Hypothetical" table | normal, no items, loading, couldn't load, offline, demo, stress, change didn't save, Bella adds an idea, add, edit, split into parts | 4.10 |
 | Vendors · `vendors.html` · §5.11 | `/vendors` | `SubNav`, `FocusChips`, tools, `VendorRow`, category headings, add-vendor sheet, categories sheet | `useVendors`, `useCategories` | `components/vendors/*` | normal, no vendors, no results (search / category / keen), adding a vendor, editing categories, category name taken, loading, couldn't load, offline, demo, Bella adds a vendor, stress, export | 4.11 |
-| A vendor · `vendor.html` · §5.12 | `/vendors/[vendorId]` | `Hero`, `KeenHeart`, `StageChips`, `Fields`, `MenuCardList`, price-option sheet, `NotesView`, `FileTiles`, shortlist card | `useVendor(id)`, `useFinalistFor(vendorId)`, `useBookingFor` | vendor table rows, price options cell, notes cell | normal, no prices, ruled out, change didn't save, uploading, loading, couldn't load, offline, demo, stress, chosen, copying, price option add/edit | 4.12 |
+| A vendor · `vendor.html` · §5.12 | `/vendors/[vendorId]` | `Hero`, `KeenHeart`, `StageChips`, `Fields`, `MenuCardList`, price-option sheet, `NotesView`, `FileTiles`, shortlist card | `useVendor(id)`, `useFinalistFor(vendorId)`, `useBookingFor` | vendor table rows, price options cell, notes cell | normal, no prices, ruled out, change didn't save, uploading, loading, couldn't load, offline, demo, stress, chosen, copying, price option add/edit; remove (N10) | 4.12 |
 | Shortlist · `shortlist.html` · §5.13 | `/vendors/shortlist` | `SubNav`, `FocusChips`, `OrderBy`, finalist cards, add-finalist sheet | `useFinalists` | `components/shortlist/*` | normal, Bella adds a finalist, nothing on the shortlist, adding a finalist, loading, couldn't load, offline, demo, stress | 4.13 |
-| A finalist · `finalist.html` · §5.14 | `/vendors/shortlist/[finalistId]` | `Hero`, `MenuCardList`, package sheet, `Fields`, `FileTiles`, book-it and move sheets | `useFinalist(id)`, `useRecordFiles` | shortlist rows and packages | copied, from scratch, booking it, uploading, loading, couldn't load, offline, demo, stress, booked, change didn't save, package add/edit | 4.14 |
-| Venues · `venues.html` · §5.15 | `/vendors/venues` (venue sheet at `?venue=<id>`) | `SubNav`, tools, filters, venue rows, `StageThread`, venue sheet | `useVenues` | `components/venues/*` | normal, no venues, no results, change didn't save, Bella adds a venue, loading, couldn't load, offline, demo, stress, venue sheet (add, edit, booked) | 4.15 |
+| A finalist · `finalist.html` · §5.14 | `/vendors/shortlist/[finalistId]` | `Hero`, `MenuCardList`, package sheet, `Fields`, `FileTiles`, book-it and move sheets | `useFinalist(id)`, `useRecordFiles` | shortlist rows and packages | copied, from scratch, booking it, uploading, loading, couldn't load, offline, demo, stress, booked, change didn't save, package add/edit; remove (N10) | 4.14 |
+| Venues · `venues.html` · §5.15 | `/vendors/venues` (venue sheet at `?venue=<id>`) | `SubNav`, tools, filters, venue rows, `StageThread`, venue sheet | `useVenues` | `components/venues/*` | normal, no venues, no results, change didn't save, Bella adds a venue, loading, couldn't load, offline, demo, stress, venue sheet (add, edit, booked); remove (N10) | 4.15 |
 | Documents · `documents.html` · §5.16 | `/documents` | `SubNav`, starts, search, recent cards, `DocumentRow` | `useDocuments` (title, extract, edited) | `(legacy)/notes/page.tsx` list part | normal, nothing written, no results, loading, couldn't load, offline, demo, Bella starts a document, stress | 4.16 |
 | A document · `doc.html` · §5.17 | `/documents/[documentId]` (`/documents/new?start=meeting|blank` creates one and replaces the URL) | `Paper`, `EditorToolbar`, `TableBar`, pops, `LinkSheet`, `DocSaveState`, `Banner`, `ConfirmSheet` | `useDocument(id)`, `usePresence(id)` | `components/notes/rich-text-editor.tsx` | meeting notes, blank, saved, not saved yet, saving, couldn't save, offline while writing, cursor in a table, editing a total, total with a mistake, Bella is in it, deleted by Bella, delete, loading, couldn't load, offline, demo, stress | 4.17, 4.18 |
 | Files · `files.html` · §5.18 | `/documents/files` (`?folder=<id>`, `?file=<id>`) | `SubNav`, `PathTrail`, folder and file rows, `UploadSheet`, `FileDetailsSheet`, `MoveSheet`, folder sheet | `useFolder(id)`, `useFileSearch(q)` | `(legacy)/files/page.tsx`, `cloudinary-upload-button.tsx` | normal, no files, empty folder, no results, searching many, uploading, a file's details, moving a folder, three levels down, folder with things in it, delete a file, loading, couldn't load, offline, demo, Bella uploads, stress | 4.19 |
-| Schedule, agenda · `schedule.html` · §5.19 | `/schedule` (`?event=<id>`, `?new=1`) | `SubNav`, `Hero`, kind chips, search, agenda groups, event sheet, `NotificationState` | `useAgenda`, `useVendors`, `useVenues` | `(legacy)/schedule/page.tsx` agenda, `lib/schedule.ts` | normal, nothing scheduled, no results, completed and cancelled, an event's details, adding, notifications not yet allowed / off, loading, couldn't load, offline, demo, change didn't save, Bella adds, stress, payments filter | 4.20 |
+| Schedule, agenda · `schedule.html` · §5.19 | `/schedule` (`?event=<id>`, `?new=1`) | `SubNav`, `Hero`, kind chips, search, agenda groups, event sheet, `NotificationState` | `useAgenda`, `useVendors`, `useVenues` | `(legacy)/schedule/page.tsx` agenda, `lib/schedule.ts` | normal, nothing scheduled, no results, completed and cancelled, an event's details, adding, notifications not yet allowed / off, loading, couldn't load, offline, demo, change didn't save, Bella adds, stress, payments filter; reminder choices (N11) | 4.20 |
 | Schedule, month · `schedule.html?view=month` · §5.20 | `/schedule/month` (`?day=YYYY-MM-DD`) | `MonthCalendar`, agenda rows | `useAgenda(month)` | schedule month mode | normal, stress, a chosen day, empty day | 4.21 |
 | Tasks · `tasks.html` · §5.21 | `/schedule/tasks` (`?open=<id>`) | `SubNav`, `TaskRow`, `FinishedTasks`, add-task sheet | `useTasks` | `(legacy)/todo/page.tsx` | normal, a task opened, no tasks, step didn't save, Bella finishes a step, everything done, loading, couldn't load, offline, demo, stress; finished with no recorded day (N8) | 4.22 |
 | Wedding items · `items.html` · §5.22 | `/items` | `Hero`, `WorkOnNextCard`, tools, filters, `ItemRow`, row menu, add-items sheet | `useItems` | `(legacy)/master-list/page.tsx` | normal, first use, nothing tracked, no results, sorted for now, change didn't save, loading, couldn't load, offline, demo, Bella confirms, stress, row menu / remove / add several | 4.23 |
@@ -462,6 +463,7 @@ Theme is **light only** (guide §1, no dark tokens), so each state has one light
 | Chosen (creates a booking) | [ ] | [ ] |
 | Copying to the shortlist | [ ] | [ ] |
 | Price option add and edit | [ ] | [ ] |
+| Remove the vendor (N10, after design) | [ ] | [ ] |
 
 **Shortlist** · `shortlist.html`
 
@@ -493,6 +495,7 @@ Theme is **light only** (guide §1, no dark tokens), so each state has one light
 | Booked | [ ] | [ ] |
 | A change didn't save | [ ] | [ ] |
 | Package add and edit | [ ] | [ ] |
+| Remove the finalist (N10, after design) | [ ] | [ ] |
 
 **Venues** · `venues.html`
 
@@ -509,6 +512,7 @@ Theme is **light only** (guide §1, no dark tokens), so each state has one light
 | Demo | [ ] | [ ] |
 | Stress | [ ] | [ ] |
 | Venue sheet: add, edit, booked | [ ] | [ ] |
+| Remove a venue (N10, after design) | [ ] | [ ] |
 
 **Documents** · `documents.html`
 
@@ -589,6 +593,7 @@ Theme is **light only** (guide §1, no dark tokens), so each state has one light
 | Bella adds an appointment | [ ] | [ ] |
 | Stress | [ ] | [ ] |
 | Payments filter | [ ] | [ ] |
+| Remind us choices (N11, after design) | [ ] | [ ] |
 
 **Schedule, month** · `schedule.html?view=month`
 
@@ -669,7 +674,7 @@ Theme is **light only** (guide §1, no dark tokens), so each state has one light
 | Sheet as a bottom sheet (phone) and centred (desktop) | [ ] | [ ] |
 | Reduced motion | [ ] | [ ] |
 
-Total: 270 screen states, 540 checkboxes.
+Total: 274 screen states, 548 checkboxes.
 
 ### 5.2 Job stories → screen, component, code
 
@@ -790,7 +795,7 @@ Every place in the current code that produces something visible, from a full swe
 | no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [ ] |
 | **Auth** | | |
 | `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [ ] |
-| `login/page.tsx` Register button (`auth-context.tsx` `createUserWithEmailAndPassword`) | no counterpart; owner decision §9.2 Q2 (recommended drop) | [ ] |
+| `login/page.tsx` Register button (`auth-context.tsx` `createUserWithEmailAndPassword`) | dropped (§9.2 Q2: both sign in with Google) | n/a |
 | password reset | doesn't exist today; not in the inventory; nothing to build | n/a |
 | `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [ ] |
 | `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [ ] |
@@ -805,7 +810,7 @@ Every place in the current code that produces something visible, from a full swe
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [ ] |
 | `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [ ] |
 | **Deletes with no confirmation today** | | |
-| vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | no remove in the design (decisions.md, session 2); owner decision §9.2 Q1 | [ ] |
+| vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [ ] |
 | shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [ ] |
 | confirmed sub-entries `confirmed/page.tsx:883-884`, `:1136`, `:1224` | Remove this part / Remove booking / Remove what-if item, confirm and undo (§5.6, §5.10) | [ ] |
 | tasks and subtasks `todo/page.tsx:71`, `:121` | Delete task, remove step, confirm and undo (§4.27) | [ ] |
@@ -881,7 +886,7 @@ Every place in the current code that produces something visible, from a full swe
 | mixed date formats (§5 #37) | model `dates.ts` per guide §6.11 | [ ] |
 | a booking with no booking date, a finished task with no finish date (data from before this rebuild) | **gap N8** (§9.1 G8) | [ ] |
 | **Reminders** | | |
-| `reminderMinutes` stored, never sent | real reminders (Tasks 6.1, 6.2); device that can't receive them: **gap N6** (§9.1 G6) | [ ] |
+| `reminderMinutes` stored, never sent | real reminders, sent once a day (Tasks 6.1, 6.2); device that can't receive them: **gap N6** (§9.1 G6); reminder choices: **gap N11** (§9.1 G11) | [ ] |
 | **After the wedding** | | |
 | countdown floors at 0 (`page.tsx`) | the day itself and after: **gap N7** (§9.1 G7) | [ ] |
 
@@ -976,7 +981,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | |
 | 5 | Review | Opus 5.5 Medium | $1.34 | | |
 | 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | |
-| 6 | 6.2 Push reminders (L) | **Opus 5.5 High** | $3.64 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key | |
+| 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | was L ($3.64) before Q8 |
 | 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | |
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | |
@@ -1069,14 +1074,14 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Risk:** a rules mistake locks both of you out of production data, or opens it.
 - **Read:** §2.7 (new fields), §2.9; `firestore.rules`; `inventory-notes.md` §3.
 - **Files:** `firestore.rules`, `tests/rules/*.test.ts` (with `@firebase/rules-unit-testing`), `src/lib/collections/{funders,members,activity,presence,push-subscriptions,guest-meta}.ts`, adapters in `src/lib/data/adapters/*.ts`.
-- **Do:** add the new collections under the same `isAllowed()` allowlist; adapters that read legacy and new shapes (funders by id, `booking` field or legacy status, shortlist `main` package and `preferredPackageId`, guest `number` or creation order, file `recordRef` or legacy arrays). Whether to add `email_verified` is §9.2 Q3; don't change it without the owner's yes. Deploy with `firebase deploy --only firestore:rules` only after the rules tests pass, and tell the owner first, since it applies to production at once.
+- **Do:** add the new collections under the same `isAllowed()` allowlist; adapters that read legacy and new shapes (funders by id, `booking` field or legacy status, shortlist `main` package and `preferredPackageId`, guest `number` or creation order, file `recordRef` or legacy arrays). Also require `request.auth.token.email_verified == true` (§9.2 Q3). Deploy with `firebase deploy --only firestore:rules` only after the rules tests pass, and tell the owner first, since it applies to production at once.
 - **Done when:** rules tests prove both accounts can read and write every collection and a third account can't; the old UI still works on production after the deploy.
 
 #### Task 1.10: Booking and money write operations · Opus 5.5 High
 - **Risk:** data loss in prices and payments.
 - **Read:** §2.7; guide §6.9, §5.6, §5.10, §5.12, §5.14, §5.15; prototype `booking.html`, `vendor.html`, `finalist.html`, `venues.html` scripts (what each action does).
 - **Files:** `src/lib/data/bookings.ts`, `funders.ts`, `shortlist.ts`, `categories.ts`, and tests against the emulator.
-- **Do:** `markBooked(vendor|venue, on)` (sets `booking`, `estimate` from the preferred option or `budgetEstimate`, never twice), `addDirectBooking`, `splitBooking` (per guide §6.9, undoable), `addPart`, `removePart` (merge back when one is left, for what-if items), `recordPayment(target, amount, paidOn, paidBy)` (per §9.2 Q5), `removeBooking` (sets `booking.removed`; files stay, per §9.2 Q6; undo clears it), `bookFinalist(package)`, `moveFinalistToVendors`, `copyToShortlist` (sets `sourceVendorId`, packages from price options), `removeFunder` (records → `null`, undo restores each), `renameCategory` and `removeCategory` (move vendors and finalists to Other, undo).
+- **Do:** `markBooked(vendor|venue, on)` (sets `booking`, `estimate` from the preferred option or `budgetEstimate`, never twice), `addDirectBooking`, `splitBooking` (per guide §6.9, undoable), `addPart`, `removePart` (merge back when one is left, for what-if items), `recordPayment(target, amount, paidOn, paidBy, receiptFileId)` (adds to `budgetSpent` and appends to `payments[]`, §9.2 Q5), `removeBooking` (sets `booking.removed`; files stay in Files, §9.2 Q6; undo clears it), `removeVendor`, `removeFinalist`, `removeVenue` with undo (behaviour for a vendor or venue that is also a booking follows need N10), `bookFinalist(package)`, `moveFinalistToVendors`, `copyToShortlist` (sets `sourceVendorId`, packages from price options), `removeFunder` (records → `null`, undo restores each), `renameCategory` and `removeCategory` (move vendors and finalists to Other, undo).
 - **Done when:** emulator tests cover every operation and its undo, including a split booking that is then removed and restored.
 
 #### Task 1.11: One-time migrations · Opus 5.5 High
@@ -1090,7 +1095,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
   4. `sourceVendorId` on finalists by exact normalised name, with a report of anything ambiguous for the owner;
   5. legacy `files[]` on vendors, venues, finalists, packages and parts → `weddingFiles` documents with `recordRef` in folders named after the record (legacy arrays stay);
   6. `settings.startedOn` from the earliest `createdAt` in the database;
-  7. a report (no writes) of master-list items with more than one person, for §9.2 Q4.
+  7. a report (no writes) of master-list items with more than one person (§9.2 Q4); if there are any, add a gap to §9.1 and a need to `needs.md` before Task 4.23.
 - **Done when:** the dry runs are reviewed by the owner, the real runs are logged in `appMeta/migrations`, and the old UI on production still shows the same data.
 
 ### Phase 2: Tokens, base styles and the app shell
@@ -1133,7 +1138,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 #### Task 2.7: Partner changes and presence · Sonnet 5.5 High
 - **Read:** guide §6.3; §2.7 (`activity`, `presence`).
 - **Files:** `src/lib/data/partner.ts`, `src/veil/shell/partner-news.tsx`, `src/lib/data/presence.ts`.
-- **Do:** listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
+- **Do:** (documents follow §9.2 Q7.) Listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
 - **Done when:** e2e test with two browser contexts shows a partner toast and a flash.
 
 ### Phase 3: Components, all variants and states
@@ -1202,7 +1207,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 
 #### Task 4.1: Sign in · Sonnet 5.5 High
 - **Guide:** §5.1, §6.4, §6.5. **Prototype:** `signin.html`.
-- **Do:** Google sign-in (popup, as today), email and password; Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
+- **Do:** Google sign-in (popup, as today), email and password, and no registration (§9.2 Q2); Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
 
 #### Task 4.2: Overview · Sonnet 5.5 High
 - **Guide:** §5.2. **Prototype:** `overview.html`.
@@ -1239,17 +1244,17 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
 - **Guide:** §5.12. **Prototype:** `vendor.html` (`?id=kebun`, `ara`, `nusantara`, `sv-long`).
-- **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist).
+- **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist). Removing the vendor waits for N10.
 
 #### Task 4.13: Shortlist · Haiku 5.5 Max
 - **Guide:** §5.13. **Prototype:** `shortlist.html`. Cards grouped by category, up to 4 packages, booked cards faded with the flag, four orders with direction, add-finalist sheet.
 
 #### Task 4.14: A finalist · Sonnet 5.5 High
 - **Guide:** §5.14. **Prototype:** `finalist.html` (`?id=f-kebun`, `f-arka`, `sf-deep`).
-- **Do:** origin line, figure, packages menu card and package sheet (with its own files), contact and popularity, notes, files including the vendor's, Book it sheet with package choice, Move into Vendors (from scratch only), booked state.
+- **Do:** origin line, figure, packages menu card and package sheet (with its own files), contact and popularity, notes, files including the vendor's, Book it sheet with package choice, Move into Vendors (from scratch only), booked state. Removing the finalist waits for N10.
 
 #### Task 4.15: Venues · Sonnet 5.5 High
-- **Guide:** §5.15. **Prototype:** `venues.html`. Booked venue line, search, stage filter, cost and capacity limits, Hide ruled out on by default, three orders, rows with stage thread and notes cut at 140, venue sheet (add with undo, edit saves as you go, Booked → `markBooked`, files).
+- **Guide:** §5.15. **Prototype:** `venues.html`. Booked venue line, search, stage filter, cost and capacity limits, Hide ruled out on by default, three orders, rows with stage thread and notes cut at 140, venue sheet (add with undo, edit saves as you go, Booked → `markBooked`, files). Removing a venue waits for N10.
 
 #### Task 4.16: Documents · Haiku 5.5 Max
 - **Guide:** §5.16. **Prototype:** `documents.html`. Meeting notes and New document starts, three newest as cards, the rest as rows, search through titles and text (tables included) with highlights, 60 at a time.
@@ -1258,7 +1263,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Risk:** lost writing or corrupted stored documents.
 - **Guide:** §4.24, §5.17, §6.1 (documents), §6.13 (meeting notes). **Prototype:** `doc.html`, `assets/editor.css`. **Also read:** `src/components/notes/rich-text-editor.tsx` and `src/lib/collections/notes.ts` for the stored JSON shape and save calls only.
 - **Files:** `src/veil/editor/*`, `src/lib/data/documents.ts`.
-- **Do:** Tiptap with StarterKit, TextStyleKit and TableKit (same stored schema); toolbar groups, style, font, size, marks, colour and highlight pops (the document palette tokens), lists, link bubble, Cmd/Ctrl+K and the link sheet with Save; title with Enter into the body; autosave after 0.9 s with Not saved yet → Saving → Saved, failure keeps the text with Try again, offline note, flush on leave and on `pagehide` with the failure reported (§5 #25); meeting-notes start; delete for good; phone docking above the keyboard; legacy content normalised on load per §9.2 Q10; remote updates applied per §9.2 Q7; the editor never remounts on its own snapshot (the old scroll-jump bugs).
+- **Do:** Tiptap with StarterKit, TextStyleKit and TableKit (same stored schema); toolbar groups, style, font, size, marks, colour and highlight pops (the document palette tokens), lists, link bubble, Cmd/Ctrl+K and the link sheet with Save; title with Enter into the body; autosave after 0.9 s with Not saved yet → Saving → Saved, failure keeps the text with Try again, offline note, flush on leave and on `pagehide` with the failure reported (§5 #25); meeting-notes start; delete for good; phone docking above the keyboard; legacy content normalised on load (fonts and sizes mapped, colours kept as typed, §9.2 Q10); a partner's saved changes applied when you have no unsaved changes, later save wins otherwise (§9.2 Q7); the editor never remounts on its own snapshot (the old scroll-jump bugs).
 - **Done when:** existing production documents open on the preview and look complete (owner spot-check of five documents), a document typed offline is never lost, and e2e covers save, fail, retry and leave.
 
 #### Task 4.18: Document tables and formulas (L) · Opus 5.5 Medium
@@ -1271,7 +1276,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 
 #### Task 4.20: Schedule agenda and event sheet · Sonnet 5.5 High
 - **Guide:** §5.19, §6.12. **Prototype:** `schedule.html` (`?state=event`, `?state=new`).
-- **Do:** figure and context, kind chips, search, completed and cancelled toggle, groups, 80 at a time, Record payment on payment rows, links to bookings and tasks; event sheet (kind, title, date, all day or times, with, where or call link shown as Join the call, notes, Remind us, Mark completed, Cancel it, Back to scheduled, Delete) saving as you go. Event validation waits for N9.
+- **Do:** figure and context, kind chips, search, completed and cancelled toggle, groups, 80 at a time, Record payment on payment rows, links to bookings and tasks; event sheet (kind, title, date, all day or times, with, where or call link shown as Join the call, notes, Remind us, Mark completed, Cancel it, Back to scheduled, Delete) saving as you go. Event validation waits for N9, and the Remind us choices wait for N11.
 
 #### Task 4.21: Month · Haiku 5.5 Max
 - **Guide:** §5.20. **Prototype:** `schedule.html?view=month`. Earlier, Later, Back to today, the chosen day's list, Add something for an empty day.
@@ -1281,7 +1286,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 
 #### Task 4.23: Wedding items (L) · Sonnet 5.5 High
 - **Guide:** §5.22, §6.8. **Prototype:** `items.html`.
-- **Do:** figure, work-on-next card (jump, flash, focus), search, filters (confirmed, events any-of, people any-of, work on next), seven orders with the sorted note and Back to our order, own order by drag and Alt+arrows, row menu (add below, add several below, move up, move down, remove), add-items sheet (one per line, copying the events and person of the row above), first use and Start with common items (§9.2 Q12), 150 at a time.
+- **Do:** figure, work-on-next card (jump, flash, focus), search, filters (confirmed, events any-of, people any-of, work on next), seven orders with the sorted note and Back to our order, own order by drag and Alt+arrows, row menu (add below, add several below, move up, move down, remove), add-items sheet (one per line, copying the events and person of the row above), first use and Start with common items (the existing 44-item seed list, §9.2 Q12), 150 at a time. Waits for the Q4 report from Task 1.11: if any item lists several people, this task waits for that need.
 
 #### Task 4.24: Guests · Sonnet 5.5 High
 - **Guide:** §5.23. **Prototype:** `guests.html`. Figure, headcounts and both-sides cards, search, nine orders, RSVP and invited-to filters, guest rows with the RSVP switch (one tap, undo toast), guest sheet (Will be guest number N, Add and start another), remove with plus-ones named.
@@ -1325,12 +1330,12 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Do:** new `public/sw.js`: navigations network-only (offline shows the app's own offline state, never a cached page), cache only hashed `/_next/static/**` and the font files, delete `wedding-planner-v2` and older caches, `skipWaiting` with a versioned cache name, `push` (show the reminder) and `notificationclick` (focus or open the event's day). Same worker serves both UIs.
 - **Done when:** on a preview, an installed phone picks up a new deploy on the next open, and errors or redirects are never cached.
 
-#### Task 6.2: Push reminders (L) · Opus 5.5 High
+#### Task 6.2: Push reminders · Opus 5.5 High
 - **Risk:** production secrets and server routes; reminders missed, repeated or sent to the wrong device.
-- **Read:** §2.9; guide §6.12, §4.30, §5.3, §5.19; `progressive-web-apps.md` (web push); §9.2 Q8 and Q9 answers.
+- **Read:** §2.9; guide §6.12, §4.30, §5.3, §5.19; `progressive-web-apps.md` (web push); §9.2 Q8 and Q9; need N11's design.
 - **Files:** `src/app/api/push/{subscribe,unsubscribe,test}/route.ts`, `src/app/api/cron/reminders/route.ts`, `src/lib/server/*`, cron schedule in `vercel.ts` or `vercel.json`, `src/lib/data/push.ts`.
-- **Do:** permission states (granted, default, denied, unsupported per N6); subscribe on Allow notifications and store per device; Send a test reminder; the cron route checks `CRON_SECRET`, finds due reminders with `remindersDue()`, sends with `web-push`, records `remindersSent`, removes subscriptions that return 404 or 410; every route verifies the Firebase ID token and the allowlist.
-- **Done when:** on a preview with real keys, a reminder set 15 minutes ahead arrives once on a Mac and on an installed iPhone.
+- **Do:** permission states (granted, default, denied, unsupported per N6); subscribe on Allow notifications and store per device; Send a test reminder; a daily Vercel Cron (`0 0 * * *` UTC, the only frequency Hobby allows) calls the cron route, which checks `CRON_SECRET`, finds reminders whose day has come with `remindersDue()` (including any missed in the last 24 hours), sends with `web-push`, records `remindersSent`, and removes subscriptions that return 404 or 410; reminder choices per N11 (existing `[0]`, `[15]` and `[60]` values are read as the nearest deliverable choice that N11's design sets); every route verifies the Firebase ID token and the allowlist.
+- **Done when:** on a preview with real keys, triggering the cron route by hand (`vercel crons` or a signed request) delivers a "1 day before" reminder once on a Mac and on an installed iPhone, and a second run sends nothing.
 
 #### Task 6.3: Delete for good · Opus 5.5 High
 - **Risk:** permanent data loss; a wrong id destroys the wrong file forever.
@@ -1430,34 +1435,36 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | open |
 | G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | open |
 | G9 | **N9** | The event sheet saves as you go, but an event needs a title and a date, and an end can't come before its start (today's checks in `schedule/page.tsx:250-270`; `scheduleEvents` without `startAt` vanish from the query). The design words only two validation messages (a booking's name, a taken category). | 4.20 (validation only) | open |
+| G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | open |
+| G11 | **N11** | Owner decision §9.2 Q8. On Vercel Hobby the reminder job runs once a day, in the morning, within the hour. The event sheet offers "When it starts", "15 minutes", "1 hour", "1 day" and "1 week before" (guide §6.12); only the day-before and week-before ones can be delivered. Existing events may already store 60 minutes (the old default). | 4.20 (Remind us only), 6.2 | open |
 
-### 9.2 Questions for the owner
+### 9.2 Questions for the owner: decided
 
-Answer these before Step 7 starts; each answer is recorded here and, where it adds a need, sent through the design-gap loop.
+The owner took every recommendation on 2026-10-14. For Q8 the project turned out to be on Vercel's Hobby plan, where cron jobs run at most once a day (Vercel docs, updated 2026-07-15), so the owner chose daily reminders only. Each decision is applied in the tasks named.
 
-| # | Question | Why it matters | My recommendation |
+| # | Question | Decision (2026-10-14) | Applied in |
 |---|---|---|---|
-| Q1 | **Removing vendors, finalists and venues.** The design has no way to remove them (the designer: "no story asks for it. Ruling out does the job. Say if you want removal."). Today all three can be deleted. Is that loss fine? | A vendor added by mistake (a typo, a duplicate from "Add and start another") would stay for good, only ruled out. | Ask for removal as a need (with confirm and undo, like everything else). |
-| Q2 | **Creating an account.** The new sign-in has no "create account" (today there's a Register button). Both allowed addresses are Gmail. Do you both sign in with Google? | If yes, nobody needs to register, and dropping it closes most of the security hole in `inventory-notes.md` §5 #33. | Drop registration. |
-| Q3 | **The rules fix (§5 #33).** Task 1.9 edits `firestore.rules` anyway. May it also require `email_verified` (Google accounts are verified)? | Fixes the hole for good; could lock out an unverified email-and-password account, which wouldn't exist if Q2 is "Google only". | Yes, together with Q2. |
-| Q4 | **Wedding items for more than one person.** The design gives each item one "who it's for"; today an item can list several people. Task 1.11 will report how many items have more than one. | If some do, saving through the new UI would keep only one. | If the report finds any, send a need ("an item for several people"); otherwise go with one. |
-| Q5 | **Payment details.** Record a payment asks "Paid on" and "Paid by", but nothing shows them later, and paid totals per funder use the part's funder. Store each payment (date, amount, payer, receipt) as history, or keep only the running total as today? | Storing costs little and keeps the facts; showing them later would be a new need. | Store a payment history on the booking or part; "paid so far" stays the total. |
-| Q6 | **A removed booking's files.** "Remove booking" says it leaves the budget "with its … 2 files". Should those files stay in Files › Bookings › name, or be deleted for good once the undo window ends? | Deleting for good can't be undone. | Keep them in Files. |
-| Q7 | **Editing the same document together.** The design says "Their changes appear as they type." True live co-editing means a new way of storing documents (the old fallback couldn't read them) and about two more Opus 5.5 High tasks (≈ $4). The simpler way: the partner's saved changes appear about a second after they pause, and if you both type in the same document at once, the later save wins. | Data safety vs cost. | The simpler way, with the "Bella is also in this document" banner as the warning. Revisit if you often write in the same document at the same time. |
-| Q8 | **Reminder timing and the Vercel plan.** Reminders "15 minutes before" need a job that runs every few minutes. Which Vercel plan is the project on? Cron frequency limits differ by plan. | Decides between Vercel Cron and an outside scheduler. | Confirm the plan; on Pro, Vercel Cron every 5 minutes. Otherwise we choose an alternative together. |
-| Q9 | **Server keys.** Delete for good and reminders need a Firebase service account, the Cloudinary API key and secret, and VAPID keys added as Vercel environment variables (§2.9). OK to create them when Phase 6 starts? | Without them, files stay in storage and reminders can't be sent. | Yes; I'll give step-by-step instructions at Task 6.2. |
-| Q10 | **Old documents' fonts, sizes and colours.** Documents use fonts the new editor doesn't offer (Inter, Arial, Courier New), four old sizes and any colour. Map them to the new four fonts and four sizes on opening, and colours to the nearest of the six new ones? Or keep colours exactly as typed? | The colours are your writing, not the old design, but they won't be choosable again. | Map fonts and sizes; keep colours as typed. |
-| Q11 | **Test tools.** Phase 1 adds Vitest, Playwright and the Firebase emulator (needs Java installed on your Mac). OK? | Without them the "no visual change" check is manual. | Yes. |
-| Q12 | **Common items.** "Start with common items" only shows on an empty tracker. Use your own 44 starting items (the current seed list) or the prototype's 14? | Only matters if the tracker is ever emptied. | Your 44. |
-| Q13 | **Built-in vendor categories.** The stored built-ins (Decoration, Food, Groom Suit, Bride Dress, Invites, Makeup Artist, Music/DJ, Photos and Videos, Transportation, Wedding Cake, Wedding Organizer) stay as they are, since the design doesn't rename them and built-ins can't be renamed in the app. Want different names? | A rename later needs a migration. | Keep them. |
-| Q14 | **The app's name for need N1.** In Step 2 you chose "Gregory & Bella's Wedding", but the brief kept branding open, so the designer never saw it. Add it to the brief before N1 is designed? | N1 needs a name. | Yes, add it to `brief.md` under Branding (a brief change, so run the banned-word scan). |
-| Q15 | **Launch window.** The fallback stays two weeks after launch (the default). OK, or longer? | Sets the date for Task 9.2. | Two weeks. |
+| Q1 | **Removing vendors, finalists and venues.** The design has no way to remove them ("ruling out does the job"); today all three can be deleted. | **Removal is wanted**, with confirm and undo like everything else. Sent to the designer as need **N10**. | §9.1 G10; Tasks 1.10, 4.12, 4.14, 4.15 |
+| Q2 | **Creating an account.** The new sign-in has no "create account"; both allowed addresses are Gmail. | **Drop registration.** Both of you sign in with Google (email and password stays as a way in, as designed). | §6; Task 4.1 |
+| Q3 | **The rules fix (`inventory-notes.md` §5 #33).** | **Yes:** the rules also require `email_verified`. | Task 1.9 |
+| Q4 | **Wedding items for more than one person.** The design gives each item one "who it's for"; today an item can list several. | **Count first.** Migration 1.11 reports items with more than one person. If there are any, a need goes to the designer before Task 4.23; if none, one person per item stands. | Tasks 1.11, 4.23 |
+| Q5 | **Payment details.** Record a payment asks "Paid on" and "Paid by", but nothing shows them later. | **Store a payment history** (date, amount, payer, receipt file) on the booking or part. "Paid so far" stays the total, and funder totals keep using the part's funder. Nothing new is shown. | §2.7; Tasks 1.10, 4.4 |
+| Q6 | **A removed booking's files.** | **Files stay** in Files › Bookings › name. Only "Delete for good" removes a file. | Task 1.10 |
+| Q7 | **Editing the same document together.** | **The simpler way:** the partner's saved changes appear about a second after they pause; if you both type in the same document at once, the later save wins. The "Bella is also in this document" banner is the warning. Revisit if it bites. | Tasks 2.7, 4.17 |
+| Q8 | **Reminder timing.** The project is on Vercel **Hobby**: cron at most once a day, within the hour. | **Daily reminders only:** one Vercel Cron run each morning sends that day's reminders. Only "1 day before" and "1 week before" can be delivered, so the choices in "Remind us" go to the designer as need **N11**. | §2.9; §9.1 G11; Tasks 4.20, 6.2 |
+| Q9 | **Server keys** (Firebase service account, Cloudinary API key and secret, VAPID keys) in Vercel. | **Yes**, created when Phase 6 starts, with step-by-step instructions at Task 6.2. | Tasks 6.2, 6.3 |
+| Q10 | **Old documents' fonts, sizes and colours.** | **Map fonts and sizes** to the new four on opening (Inter, Arial and no font → Jost; Georgia → Georgia; Courier New → Mono; 14/16/20/28px → Small/Normal/Large/Huge). **Keep colours exactly as typed.** | Task 4.17 |
+| Q11 | **Test tools** (Vitest, Playwright, the Firebase emulator, which needs Java). | **Yes.** | Task 1.1 |
+| Q12 | **Common items** for an empty tracker. | **Your own 44** (the current seed list); the first-use note counts whatever the list holds. | Task 4.23 |
+| Q13 | **Built-in vendor categories.** | **Keep** the stored names. | Task 1.5 |
+| Q14 | **The app's name for need N1.** | **Added to the brief:** "Gregory & Bella's Wedding" under Branding in `redesign/handoff/brief.md` (banned-word scan clean). | §9.1 G1 |
+| Q15 | **Launch window.** | **Two weeks.** | §9.3; Task 9.2 |
 
 **Defaults I'll follow unless you object** (no answer needed):
 - Bookings stay on the vendor and venue records with an added `booking` field, rather than a new collection, so the frozen fallback keeps working on the same data and the rollback loses nothing (§2.7).
 - The four existing funders keep their stored values as ids; you rename them in Who pays after launch.
 - Every booked venue counts in totals and reminders, the decided bug fixes in `inventory-notes.md` §9 are built into the model, and the old UI keeps its old behaviour until it's removed.
-- Needs that affect only one state of a screen (N4, N6, N7, N8, N9) don't hold up the rest of that screen.
+- Needs that affect only one part of a screen (N4, N6, N7, N8, N9, N10, N11) don't hold up the rest of that screen.
 
 ### 9.3 Rollback
 
