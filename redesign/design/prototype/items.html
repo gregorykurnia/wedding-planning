@@ -22,15 +22,15 @@
   .dd > summary { list-style: none; cursor: pointer; text-decoration: underline; text-decoration-color: var(--champagne); text-underline-offset: 4px; }
   .dd > summary::-webkit-details-marker { display: none; }
   .dd .menu { position: absolute; z-index: 20; top: 28px; left: 0; background: #fff; border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 14px; box-shadow: 0 20px 50px -20px rgba(51,38,44,.4); min-width: 210px; display: grid; gap: 6px; }
-  .sorted-note { margin-top: 16px; font-size: 14px; color: var(--gold-ink); background: rgba(244,234,215,.6); border-radius: var(--r-pill); padding: 7px 16px; display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-  .ihead, .irow { display: grid; grid-template-columns: 26px minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.5fr) minmax(0,.95fr) 44px 44px 34px; gap: 10px; align-items: center; }
+  .sorted-note { margin-top: 16px; font-size: 14px; color: var(--gold-ink-tint); background: rgba(244,234,215,.6); border-radius: var(--r-pill); padding: 7px 16px; display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .ihead, .irow { display: grid; grid-template-columns: 26px minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.5fr) minmax(0,.95fr) 44px 72px 34px; gap: 10px; align-items: center; }
   .ihead { font-size: 13px; color: var(--ink-2); padding: 0 6px 8px; margin-top: 22px; border-bottom: 1px solid var(--line); }
   .ilist { list-style: none; }
   .irow { padding: 6px 6px; border-bottom: 1px solid var(--line); position: relative; background: #fff0; }
   .irow.next { background: #fffaf2; box-shadow: inset 3px 0 0 var(--champagne); }
   .irow.drag-over-top { box-shadow: inset 0 2px 0 var(--rose); } .irow.drag-over-bottom { box-shadow: inset 0 -2px 0 var(--rose); }
   .irow.dragging { opacity: .4; }
-  .handle { width: 26px; height: 34px; border: 0; background: none; cursor: grab; color: var(--ink-3); display: grid; place-items: center; border-radius: 8px; }
+  .handle { width: 26px; height: 34px; border: 0; background: none; cursor: grab; color: var(--control-outline); display: grid; place-items: center; border-radius: 8px; }
   .handle:hover, .handle:focus-visible { color: var(--ink); background: rgba(253,232,238,.6); }
   .handle svg { width: 12px; height: 18px; }
   .irow input.nm, .irow input.vd { width: 100%; border: 0; background: none; padding: 7px 8px; border-radius: 10px; outline: none; min-width: 0; }
@@ -42,11 +42,11 @@
   .irow.failed input.vd { box-shadow: inset 0 0 0 1px var(--rose); background: #fff; }
   .irow .err { grid-column: 2 / -1; font-size: 13.5px; color: var(--rose-ink); padding: 0 8px 6px; }
   .evs { display: flex; flex-wrap: wrap; gap: 4px; }
-  .ev { border: 1px solid var(--line-2); background: #fff; border-radius: var(--r-pill); padding: 2px 9px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
+  .ev { border: 1px solid var(--line-2); background: #fff; border-radius: var(--r-pill); padding: 4px 10px; min-height: 26px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
   .ev[aria-pressed="true"] { background: var(--blush); border-color: #f1b9c8; color: var(--ink); }
   .irow select { border: 0; background: none; font-size: 14px; padding: 6px 4px; border-radius: 8px; cursor: pointer; width: 100%; min-width: 0; color: var(--ink); }
   .irow select:hover { background: rgba(253,232,238,.4); }
-  .tog { width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; cursor: pointer; display: grid; place-items: center; justify-self: center; color: var(--ink-3); }
+  .tog { width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; cursor: pointer; display: grid; place-items: center; justify-self: center; color: var(--control-outline); }
   .tog svg { width: 20px; height: 20px; }
   .tog:hover { background: rgba(253,232,238,.6); }
   .tog.conf[aria-pressed="true"] { color: var(--sage-ink); }
@@ -120,14 +120,14 @@ function hero() {
   const n = d.items.length, c = d.items.filter((i) => i.confirmed).length, nx = d.items.filter((i) => i.next).length;
   const pct = n ? Math.round(c / n * 100) : 0;
   return `<section class="hero"><h1>Wedding items</h1><p class="sub">Every piece of the day, and who provides it</p>
-    ${n ? `<p class="kicker" style="margin-top:30px">Confirmed</p><p class="figure md num">${c.toLocaleString("en-GB")}<span class="rp" style="vertical-align:0;margin-left:.25em">of ${n.toLocaleString("en-GB")}</span></p>
-    <p class="context">${nx ? `<b>${nx.toLocaleString("en-GB")}</b> marked to work on next` : "Nothing marked to work on next"}</p>
-    <div class="thread" role="img" aria-label="${pct}% confirmed"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% confirmed</span><span>${(n - c).toLocaleString("en-GB")} to go</span></span></div>` : ""}</section>`;
+    ${n ? `<p class="kicker" style="margin-top:30px">Confirmed</p><p class="figure md num">${c.toLocaleString("id-ID")}<span class="rp" style="vertical-align:0;margin-left:.25em">of ${n.toLocaleString("id-ID")}</span></p>
+    <p class="context">${nx ? `<b>${nx.toLocaleString("id-ID")}</b> marked to work on next` : "Nothing marked to work on next"}</p>
+    <div class="thread" role="img" aria-label="${pct}% confirmed"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% confirmed</span><span>${(n - c).toLocaleString("id-ID")} to go</span></span></div>` : ""}</section>`;
 }
 
 function render(main) {
   if (!d.items.length) {
-    main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing tracked yet</h1><p>List every piece the wedding needs, from the venue to the bride's mother's makeup, and who provides it.</p><div class="acts"><button class="btn quiet" id="starter">Start with common items</button><button class="btn" id="add">Add items</button></div></div>`;
+    main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing tracked yet</h1><p>List every piece the wedding needs, from the venue to the bride's mother's makeup, and who provides it.</p><div class="acts"><button class="btn quiet" id="starter" ${V.DEMO ? "disabled" : ""}>Start with common items</button><button class="btn" id="add">Add items</button></div>${V.demoLine()}</div>`;
     V.$("#add").onclick = () => severalSheet(null);
     V.$("#starter").onclick = () => { d.items = JSON.parse(JSON.stringify(window.VEIL_DATA.NORMAL.starter)); V.rerender(); V.saved(`Added ${V.plural(d.items.length, "common item")}`, () => { d.items = []; V.rerender(); }); };
     return;
@@ -147,7 +147,7 @@ function render(main) {
         ${filtering() ? `<button class="link" id="reset">Show everything</button>` : ""}
       </div>
       ${ui.order !== "own" ? `<p class="sorted-note">Sorted by ${ORDERS.find((o) => o[0] === ui.order)[1].toLowerCase()} for now. Your own order is kept. <button class="link" id="own">Back to our order</button></p>` : ""}
-      <div class="ihead" aria-hidden="true"><span></span><span>Item</span><span>Vendor</span><span>Events</span><span>Who it's for</span><span style="text-align:center">Next</span><span style="text-align:center">Done</span><span></span></div>
+      <div class="ihead" aria-hidden="true"><span></span><span>Item</span><span>Vendor</span><span>Events</span><span>Who it's for</span><span style="text-align:center">Next</span><span style="text-align:center">Confirmed</span><span></span></div>
       <div id="list"></div>
       <button class="btn add-fab" id="add">Add items</button>`;
   list();
@@ -161,8 +161,8 @@ function list() {
     box.innerHTML = `<div class="message inline"><h1>${ui.q ? `Nothing matches “${V.esc(ui.q)}”` : "No items fit"}</h1><p>Search looks at item and vendor names. Narrowing by events or people shows items with any of the ones you pick.</p><div class="acts"><button class="btn quiet" id="reset2">Show everything</button></div></div>`;
     V.$("#reset2").onclick = reset; return;
   }
-  box.innerHTML = `${filtering() ? `<p class="count">${V.plural(rows.length, "item")} of ${d.items.length.toLocaleString("en-GB")}</p>` : ""}<ul class="ilist">${rows.slice(0, ui.shown).map(row).join("")}</ul>
-    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(150, rows.length - ui.shown)} more</button></p>` : ""}`;
+  box.innerHTML = `${filtering() ? `<p class="count">${V.plural(rows.length, "item")} of ${d.items.length.toLocaleString("id-ID")}</p>` : ""}<ul class="ilist">${rows.slice(0, ui.shown).map(row).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(150, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 150; list(); };
   wireRows(box);
 }
@@ -227,6 +227,7 @@ async function menuAction(m, i) {
 function severalSheet(after) {
   V.openSheet(`<h2>Add items</h2><p class="sub">${after ? `Below “${V.esc(after.name)}”` : "At the end of the list"}. One item per line.</p>
     <div class="fields"><div class="field" style="grid-template-columns:1fr"><label class="sr" for="lines">Items, one per line</label><textarea id="lines" autofocus style="min-height:160px" placeholder="Bride's mother's makeup&#10;Groom's father's suit&#10;Ring bearer's pillow"></textarea></div></div>
+    ${V.demoLine()}
     <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add</button></div>`, (el) => {
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$("[data-ok]", el).onclick = () => {

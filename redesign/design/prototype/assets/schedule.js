@@ -66,19 +66,25 @@
         <div class="field"><label for="en">Notes</label><textarea id="en" dir="auto">${V.esc(ev.notes)}</textarea></div>
         <div class="field"><label for="rm">Remind us</label><select id="rm">${d.REMIND.map(([k, l]) => `<option value="${k}" ${k === (ev.remind || "") ? "selected" : ""}>${l}</option>`).join("")}</select>${notifNote()}</div>
       </div>
+      ${isNew ? V.demoLine() : V.sheetSaveLine()}
       <div class="acts">${isNew ? `<button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add to the schedule</button>`
-        : `${ev.status === "scheduled" ? `<button class="btn quiet" data-st="completed">Mark completed</button><button class="btn quiet" data-st="cancelled">Cancel it</button>` : `<button class="btn quiet" data-st="scheduled">Back to scheduled</button>`}<button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Save</button>`}</div>
+        : `${ev.status === "scheduled" ? `<button class="btn quiet" data-st="completed">Mark completed</button><button class="btn quiet" data-st="cancelled">Cancel it</button>` : `<button class="btn quiet" data-st="scheduled">Back to scheduled</button>`}<button class="btn" data-done>Done</button>`}</div>
       ${isNew ? "" : `<p style="text-align:center;margin-top:16px"><button class="link rose" data-del>Delete</button></p>`}`, (el) => {
-      V.$$("[data-k]", el).forEach((c) => c.onclick = () => V.$$("[data-k]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }));
+      const save = isNew ? null : V.sheetSaver(el);
+      /* S2 in a sheet: an existing event saves as you go (owner, stage 3) */
+      const keep = () => { if (!save) return; const v = collect(); if (!v.title) { V.$("#et", el).value = e.title; v.title = e.title; } save(() => Object.assign(e, v)); };
+      V.$$("[data-k]", el).forEach((c) => c.onclick = () => { V.$$("[data-k]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
+      if (save) V.$$("input, select, textarea", el).forEach((x) => x.addEventListener("change", keep));
+      const dn = V.$("[data-done]", el); if (dn) dn.onclick = V.closeSheet;
       V.$("#ea", el).onchange = (x) => V.$("#times", el).style.display = x.target.checked ? "none" : "flex";
       const al = V.$("#allow", el); if (al) al.onclick = () => { d.notif = "granted"; al.closest(".hint").outerHTML = notifNote(); V.toast("Notifications allowed on this device"); };
       const x = V.$("[data-x]", el); if (x) x.onclick = V.closeSheet;
       const collect = () => ({ title: V.$("#et", el).value.trim(), kind: V.$("[data-k][aria-pressed=true]", el).dataset.k, date: V.$("#ed", el).value || TODAY, allDay: V.$("#ea", el).checked,
         start: V.$("#ea", el).checked ? null : V.$("#es", el).value || null, end: V.$("#ea", el).checked ? null : V.$("#ee", el).value || null, related: V.$("#er", el).value || null, where: V.$("#ew", el).value.trim(), notes: V.$("#en", el).value, remind: V.$("#rm", el).value });
-      V.$("[data-ok]", el).onclick = () => {
+      const ok = V.$("[data-ok]", el);
+      if (ok) ok.onclick = () => {
         const v = collect(); if (!v.title) { V.$("#et", el).focus(); return; }
-        if (isNew) { const n = Object.assign({ id: "e" + Date.now(), status: "scheduled" }, v); d.events.push(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(n.title)}`, () => { d.events.splice(d.events.indexOf(n), 1); V.rerender(); }); }
-        else { Object.assign(e, v); V.closeSheet(); V.rerender(); V.saved("Saved"); }
+        const n = Object.assign({ id: "e" + Date.now(), status: "scheduled" }, v); d.events.push(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(n.title)}`, () => { d.events.splice(d.events.indexOf(n), 1); V.rerender(); });
       };
       V.$$("[data-st]", el).forEach((b) => b.onclick = () => { const old = e.status; e.status = b.dataset.st; V.closeSheet(); V.rerender(); V.saved(b.dataset.st === "completed" ? "Marked completed" : b.dataset.st === "cancelled" ? "Cancelled" : "Back to scheduled", () => { e.status = old; V.rerender(); }); });
       const del = V.$("[data-del]", el);

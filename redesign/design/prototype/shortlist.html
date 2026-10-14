@@ -16,7 +16,7 @@
 <script src="assets/app.js"></script>
 <script>
 const V = Veil, S = V.STATE, d = V.data;
-const ui = { cat: null, order: "category", shown: 60 };
+const ui = { cat: null, order: "category", asc: true, shown: 60 };
 const ORDERS = [["category", "Category"], ["price", "Preferred price"], ["reviews", "Reviews"], ["followers", "Instagram followers"]];
 const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
 const pref = (f) => f.packages.find((p) => p.preferred) || f.packages[0] || null;
@@ -27,7 +27,7 @@ function card(f) {
     ${b ? `<span class="flag gold" style="align-self:center">Now a booking</span>` : ""}
     <a class="name" dir="auto" href="${V.href("finalist.html", { id: f.id })}">${V.esc(f.name)}</a>
     <span class="meta">${[f.reviews != null ? V.plural(f.reviews, "review") : "", f.followers != null ? `${V.compact(f.followers)} followers` : ""].filter(Boolean).join(", ") || "No reviews or followers yet"}</span>
-    ${f.packages.length ? `<ul class="pkgs">${shown.map((k) => `<li class="${k === p ? "preferred" : ""}"><span class="pn" dir="auto">${V.esc(k.name)}</span><span class="lead"></span><span class="pv num">${V.rp(k.price)}</span></li>`).join("")}${f.packages.length > 4 ? `<li style="color:var(--ink-2)">and ${V.plural(f.packages.length - 4, "more package")}</li>` : ""}</ul>` : `<p class="meta" style="margin:10px 0">No packages yet</p>`}
+    ${f.packages.length ? `<ul class="pkgs">${shown.map((k) => `<li class="${k === p ? "preferred" : ""}"><span class="pn" dir="auto">${V.esc(k.name)}${k === p ? `<span class="sr">, the one we're leaning towards</span>` : ""}</span><span class="lead"></span><span class="pv num">${V.rp(k.price)}</span></li>`).join("")}${f.packages.length > 4 ? `<li style="color:var(--ink-2)">and ${V.plural(f.packages.length - 4, "more package")}</li>` : ""}</ul>` : `<p class="meta" style="margin:10px 0">No packages yet</p>`}
     <p class="step">${f.step ? `<span>Next:</span> <span dir="auto" style="color:var(--ink)">${V.esc(f.step.length > 120 ? f.step.slice(0, 118) + "…" : f.step)}</span>` : `<span>No next step</span>`}</p>
   </li>`;
 }
@@ -40,6 +40,7 @@ function addSheet() {
       <div class="field"><label for="fk">First package</label><input id="fk" dir="auto" placeholder="For example, Signature"></div>
       <div class="field"><label for="fp">Its price</label><input id="fp" class="num" inputmode="numeric" placeholder="Rp 0"></div>
     </div>
+    ${V.demoLine()}
     <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add finalist</button></div>`, (el) => {
     V.$("#fp", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
     V.$("[data-x]", el).onclick = V.closeSheet;
@@ -66,21 +67,23 @@ V.init({
     }
     let list = d.finalists.filter((f) => !ui.cat || f.category === ui.cat);
     const key = { price: (f) => (pref(f) || {}).price ?? null, reviews: (f) => f.reviews, followers: (f) => f.followers }[ui.order];
-    if (key) list = list.slice().sort((a, z) => key(a) == null ? 1 : key(z) == null ? -1 : ui.order === "price" ? key(a) - key(z) : key(z) - key(a));
+    if (key) list = list.slice().sort((a, z) => key(a) == null ? 1 : key(z) == null ? -1 : (key(a) - key(z)) * (ui.asc ? 1 : -1));
     let body;
     if (ui.order === "category") {
       const groups = {};
       list.slice(0, ui.shown).forEach((f) => (groups[f.category] = groups[f.category] || []).push(f));
-      body = Object.entries(groups).sort((a, z) => a[0].localeCompare(z[0])).map(([c, fs]) => `<h2 class="cat-h" dir="auto">${V.esc(c)}<small>${V.plural(d.finalists.filter((f) => f.category === c).length, "finalist")}</small></h2><ul class="finalists">${fs.map(card).join("")}</ul>`).join("");
+      body = Object.entries(groups).sort((a, z) => a[0].localeCompare(z[0]) * (ui.asc ? 1 : -1)).map(([c, fs]) => `<h2 class="cat-h" dir="auto">${V.esc(c)}<small>${V.plural(d.finalists.filter((f) => f.category === c).length, "finalist")}</small></h2><ul class="finalists">${fs.map(card).join("")}</ul>`).join("");
     } else body = `<ul class="finalists" style="margin-top:28px">${list.slice(0, ui.shown).map(card).join("")}</ul>`;
     main.innerHTML = head + `
       <div class="focus" role="group" aria-label="Focus on a category"><button class="chip" data-cat="" aria-pressed="${!ui.cat}">All</button>${cats.sort().map((c) => `<button class="chip" data-cat="${V.esc(c)}" aria-pressed="${ui.cat === c}" dir="auto">${V.esc(c)}<small>${d.finalists.filter((f) => f.category === c).length}</small></button>`).join("")}</div>
-      <div class="tools" style="margin-top:12px;justify-content:flex-end"><span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select></span></div>
+      <div class="tools" style="margin-top:12px;justify-content:flex-end"><span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></span></div>
       ${body}
-      ${list.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show more</button></p>` : ""}
+      ${list.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(60, list.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}
       <button class="btn add-fab" id="add">Add a finalist</button>`;
     V.$$("[data-cat]").forEach((b) => b.onclick = () => { ui.cat = b.dataset.cat || null; V.rerender(); });
-    V.$("#ord").onchange = (e) => { ui.order = e.target.value; V.rerender(); };
+    /* price starts low to high; reviews and followers high to low */
+    V.$("#ord").onchange = (e) => { ui.order = e.target.value; ui.asc = !["reviews", "followers"].includes(ui.order); V.rerender(); };
+    V.$("#dir").onclick = () => { ui.asc = !ui.asc; V.rerender(); };
     V.$("#add").onclick = addSheet;
     const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; V.rerender(); };
   },

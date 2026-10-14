@@ -32,7 +32,7 @@ function row(v) {
   return `<li data-id="${v.id}" class="${v.stage === "out" ? "ruled" : ""}"><div class="vrow">
     <span class="first"><a class="name" dir="auto" href="#" data-open="${v.id}">${V.esc(v.name)}</a></span>
     ${v.cost != null ? `<span class="price num">${V.rp(v.cost)}</span>` : `<span class="price none">No estimate</span>`}
-    <span class="meta" dir="auto">${V.esc(v.location || "No location")}</span><span class="right">${v.capacity != null ? `Up to ${v.capacity.toLocaleString("en-GB")} guests` : "Capacity unknown"}</span>
+    <span class="meta" dir="auto">${V.esc(v.location || "No location")}</span><span class="right">${v.capacity != null ? `Up to ${v.capacity.toLocaleString("id-ID")} guests` : "Capacity unknown"}</span>
     <div class="foot">${V.stageThread(v.stage, d.VENUE_STAGES)}${v.files.length ? `<span class="meta">${V.plural(v.files.length, "file")}</span>` : ""}${v.notes ? `<span class="meta" dir="auto" style="flex-basis:100%">${V.linkify(v.notes.length > 140 ? v.notes.slice(0, 138) + "…" : v.notes)}</span>` : ""}</div>
   </div></li>`;
 }
@@ -49,22 +49,33 @@ function venueSheet(v) {
       <div class="field"><label for="g">Most guests</label><input id="g" inputmode="numeric" value="${v && v.capacity != null ? v.capacity : ""}" placeholder="Maximum capacity"></div>
       <div class="field"><label for="t">Notes</label><textarea id="t" dir="auto">${V.esc(v ? v.notes : "")}</textarea></div>
     </div>
-    ${v ? `<h3 class="section-h" style="font-size:22px;margin-top:26px">Files</h3>${V.filesGrid(v.files)}` : ""}
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${isNew ? "Add venue" : "Save"}</button></div>`, (el) => {
-    V.$$("[data-st]", el).forEach((c) => c.onclick = () => V.$$("[data-st]", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))));
+    ${v ? `<h3 class="section-h" style="font-size:22px;margin-top:26px">Files</h3>${V.filesGrid(v.files, false, `Files › Venues › ${v.name}`)}` : ""}
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add venue</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    const save = isNew ? null : V.sheetSaver(el);
+    V.$$("[data-st]", el).forEach((c) => c.onclick = () => { V.$$("[data-st]", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) setStage(c.dataset.st); });
     V.$("#c", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
     V.$("[data-x]", el).onclick = V.closeSheet;
+    /* B1: booking a venue makes it a booking, with the estimate kept apart (B12) */
+    const booked = (t) => {
+      if (d.bookings.find((b) => b.id === t.id)) return false;
+      d.bookings.push({ id: t.id, name: t.name, category: "Venue", origin: { from: "venue", on: "2026-10-14" }, estimate: t.cost, price: t.cost || 0, paid: 0, funder: null, due: null, step: "", files: t.files.slice() });
+      V.toast(`${V.esc(t.name)} is now a booking`, { action: "Open", onAction: () => location.href = V.href("booking.html", { id: t.id }) });
+      return true;
+    };
+    function setStage(k) { const was = v.stage; if (save(() => { v.stage = k; }) && k === "booked" && was !== "booked") booked(v); }
+    if (save) {
+      const set = (id, fn) => V.$(id, el).onchange = (e) => save(() => fn(e.target.value));
+      set("#n", (x) => { v.name = x.trim() || v.name; }); set("#l", (x) => { v.location = x.trim(); });
+      set("#c", (x) => { v.cost = x.trim() ? num(x) : null; }); set("#g", (x) => { v.capacity = x.trim() ? num(x) : null; }); set("#t", (x) => { v.notes = x; });
+      return;
+    }
     V.$("[data-ok]", el).onclick = () => {
       const n = V.$("#n", el).value.trim(); if (!n) { V.$("#n", el).focus(); return; }
       const t = v || { id: "ven" + Date.now(), files: [] }, was = v ? v.stage : null;
       Object.assign(t, { name: n, location: V.$("#l", el).value.trim(), cost: V.$("#c", el).value ? num(V.$("#c", el).value) : null, capacity: V.$("#g", el).value ? num(V.$("#g", el).value) : null, notes: V.$("#t", el).value, stage: V.$("[data-st][aria-pressed=true]", el).dataset.st });
-      if (isNew) d.venues.push(t);
+      d.venues.push(t);
       V.closeSheet(); V.rerender();
-      /* B1: booking a venue makes it a booking, with the estimate kept apart (B12) */
-      if (t.stage === "booked" && was !== "booked" && !d.bookings.find((b) => b.id === t.id)) {
-        d.bookings.push({ id: t.id, name: t.name, category: "Venue", origin: { from: "venue", on: "2026-10-14" }, estimate: t.cost, price: t.cost || 0, paid: 0, funder: null, due: null, step: "", files: t.files.slice() });
-        V.toast(`${V.esc(t.name)} is now a booking`, { action: "Open", onAction: () => location.href = V.href("booking.html", { id: t.id }) });
-      } else V.saved(isNew ? `Added ${V.esc(n)}` : "Saved");
+      if (!(t.stage === "booked" && booked(t))) V.saved(`Added ${V.esc(n)}`, () => { d.venues.splice(d.venues.indexOf(t), 1); V.rerender(); });
     };
   });
 }
@@ -114,7 +125,7 @@ function list() {
     return;
   }
   box.innerHTML = `<p class="count">${V.plural(rows.length, "venue")}${ui.hideOut && out ? `, ${out} ruled out hidden` : ""}</p><ul class="ledger" style="margin-top:12px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
-    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show more</button></p>` : ""}`;
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(60, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
   V.$$("[data-open]", box).forEach((a) => a.onclick = (e) => { e.preventDefault(); venueSheet(d.venues.find((v) => v.id === a.dataset.open)); });
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; list(); };
 }

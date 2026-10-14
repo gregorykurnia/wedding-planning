@@ -20,6 +20,7 @@ const V = Veil, S = V.STATE, d = V.data;
 const opened = new Set([new URLSearchParams(location.search).get("open") || (S === "open" ? "t1" : "")]);
 if (S === "alldone") d.tasks.forEach((t) => { t.done = true; t.doneOn = "2026-10-14"; });
 let showDone = S === "alldone";
+const ui = { open: 100, done: 100 };
 
 function dueText(t) {
   if (!t.due) return `<span class="td">No date</span>`;
@@ -43,7 +44,7 @@ const order = (list) => list.slice().sort((a, z) => !a.due && !z.due ? 0 : !a.du
 
 function addSheet() {
   V.openSheet(`<h2>Add a task</h2><div class="fields"><div class="field"><label for="nt">What needs doing</label><input id="nt" dir="auto" autofocus placeholder="For example, Choose the caterer"></div><div class="field"><label for="nd">Due date</label><input id="nd" type="date"></div></div>
-    <p class="sub" style="margin-top:12px">Break it into steps once it's added.</p><div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add task</button></div>`, (el) => {
+    <p class="sub" style="margin-top:12px">Break it into steps once it's added.</p>${V.demoLine()}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add task</button></div>`, (el) => {
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$("[data-ok]", el).onclick = () => {
       const tt = V.$("#nt", el).value.trim(); if (!tt) { V.$("#nt", el).focus(); return; }
@@ -54,25 +55,28 @@ function addSheet() {
 }
 
 V.init({
-  where: "Schedule", section: "schedule.html", noun: "your tasks",
+  where: "Schedule", section: "schedule.html", noun: "your tasks", wide: true,
   states: [["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render(main) {
     const open = order(d.tasks.filter((t) => !t.done)), done = d.tasks.filter((t) => t.done).sort((a, z) => (z.doneOn || "").localeCompare(a.doneOn || ""));
-    const head = `<section class="hero"><h1>Tasks</h1><p class="sub">${d.tasks.length ? `${open.length.toLocaleString("en-GB")} open${done.length ? `, ${done.length.toLocaleString("en-GB")} done` : ""}` : "Big jobs, broken into steps"}</p>${V.subnav("tasks.html", "schedule")}</section>`;
+    const head = `<section class="hero"><h1>Tasks</h1><p class="sub">${d.tasks.length ? `${open.length.toLocaleString("id-ID")} open${done.length ? `, ${done.length.toLocaleString("id-ID")} done` : ""}` : "Big jobs, broken into steps"}</p>${V.subnav("tasks.html", "schedule")}</section>`;
     if (!d.tasks.length) {
       main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No tasks yet</h1><p>Add the big jobs, like choosing the caterer, and break them into steps with their own dates. Tasks with a due date also show in the agenda.</p><div class="acts"><button class="btn" id="add">Add a task</button></div></div>`;
       V.$("#add").onclick = addSheet; return;
     }
-    main.innerHTML = head + (open.length ? `<h2 class="section-h">Open <small>by due date, undated last</small></h2><ul class="task-list">${open.slice(0, 200).map(task).join("")}</ul>`
+    main.innerHTML = head + (open.length ? `<h2 class="section-h">Open <small>by due date, undated last</small></h2><ul class="task-list">${open.slice(0, ui.open).map(task).join("")}</ul>${more(open.length, "open")}`
         : `<div class="message inline">${V.ICON.knot}<h1>Everything's done</h1><p>Finished tasks are kept below in case you need one back.</p></div>`)
-      + (done.length ? `<details class="done-wrap" ${showDone ? "open" : ""} style="margin-top:40px"><summary class="link" style="cursor:pointer;font-size:15px">${showDone ? "Hide" : "Show"} ${V.plural(done.length, "finished task")}</summary><ul class="task-list" style="margin-top:14px">${done.slice(0, 200).map(task).join("")}</ul></details>` : "")
+      + (done.length ? `<details class="done-wrap" ${showDone ? "open" : ""} style="margin-top:40px"><summary class="link" style="cursor:pointer;font-size:15px">${showDone ? "Hide" : "Show"} ${V.plural(done.length, "finished task")}</summary><ul class="task-list" style="margin-top:14px">${done.slice(0, ui.done).map(task).join("")}</ul>${more(done.length, "done")}</details>` : "")
       + `<button class="btn add-fab" id="add">Add a task</button>`;
     wire(main);
   },
 });
 
+/* long lists page like every other list (owner, stage 3) */
+function more(n, k) { return n > ui[k] ? `<p class="count" style="text-align:center">Showing ${ui[k].toLocaleString("id-ID")} of ${n.toLocaleString("id-ID")}</p><p style="text-align:center;margin-top:12px"><button class="btn quiet" data-more="${k}">Show ${Math.min(100, n - ui[k]).toLocaleString("id-ID")} more</button></p>` : ""; }
 function wire(main) {
   V.$("#add", main).onclick = addSheet;
+  V.$$("[data-more]", main).forEach((b) => b.onclick = () => { ui[b.dataset.more] += 100; V.rerender(); });
   const dw = V.$(".done-wrap", main); if (dw) dw.ontoggle = () => { showDone = dw.open; V.$("summary", dw).textContent = `${dw.open ? "Hide" : "Show"} ${V.plural(d.tasks.filter((t) => t.done).length, "finished task")}`; };
   V.$$("details.tk", main).forEach((dt) => dt.addEventListener("toggle", () => dt.open ? opened.add(dt.dataset.t) : opened.delete(dt.dataset.t)));
   V.$$("[data-tick]", main).forEach((b) => b.onclick = (e) => {

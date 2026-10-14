@@ -115,7 +115,7 @@ function list() {
     return;
   }
   const shown = rows.slice(0, ui.shown);
-  box.innerHTML = `${rows.length > ui.shown || ui.q ? `<p class="count">${ui.q ? `${V.plural(rows.length, "booking")} match` : `Showing ${shown.length.toLocaleString("en-GB")} of ${rows.length.toLocaleString("en-GB")}`}</p>` : ""}
+  box.innerHTML = `${rows.length > ui.shown || ui.q ? `<p class="count">${ui.q ? `${V.plural(rows.length, "booking")} match` : `Showing ${shown.length.toLocaleString("id-ID")} of ${rows.length.toLocaleString("id-ID")}`}</p>` : ""}
     <ul class="ledger">${shown.map(entry).join("")}</ul>
     ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown)} more</button></p>` : ""}`;
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };

@@ -41,15 +41,16 @@ V.init({
 
       <h2 class="section-h">The two of you</h2>
       <div class="fields">
-        <div class="field"><label for="n1">First name</label><input id="n1" data-i="0" dir="auto" value="${V.esc(d.couple[0])}"></div>
-        <div class="field ${S === "savefail" ? "failed" : ""}"><label for="n2">Second name</label><input id="n2" data-i="1" dir="auto" value="${S === "savefail" ? "Isabella" : V.esc(d.couple[1])}">${S === "savefail" ? `<p class="err">Couldn't save. What you typed is kept. <button class="link rose" id="retry">Try again</button></p>` : `<p class="hint">Used wherever the planner addresses you, like ${V.esc(d.couple[0])} &amp; ${V.esc(d.couple[1])} at the top.</p>`}</div>
+        <div class="field"><label for="n1">First name</label><input id="n1" data-i="0" dir="auto" value="${d.couple ? V.esc(d.couple[0]) : ""}"></div>
+        <div class="field ${S === "savefail" ? "failed" : ""}"><label for="n2">Second name</label><input id="n2" data-i="1" dir="auto" value="${S === "savefail" ? "Isabella" : d.couple ? V.esc(d.couple[1]) : ""}">${S === "savefail" ? `<p class="err">Couldn't save. What you typed is kept. <button class="link rose" id="retry">Try again</button></p>` : `<p class="hint">Used wherever the planner addresses you${d.couple ? `, like ${V.esc(d.couple[0])} &amp; ${V.esc(d.couple[1])} at the top` : ""}.</p>`}</div>
         <div class="field"><label for="wd">Wedding date</label><input id="wd" type="date" value="${d.wedding || ""}"><p class="hint">Every countdown and date works from this.</p></div>
       </div>
 
       <h2 class="section-h">Who can open the planner</h2>
-      <ul class="who"><li><b>${V.esc(d.me.name)}, you</b><span>${V.esc(d.me.email)}, signed in with Google</span></li><li><b>${V.esc(d.partner)}</b><span>${V.esc(d.partnerEmail || "")}</span></li></ul>
+      ${V.DEMO ? `<p class="note">Demonstration mode: nobody is signed in. Once the planner is connected, only your two accounts can open it.</p>`
+      : `<ul class="who"><li><b>${V.esc(d.me.name)}, you</b><span>${V.esc(d.me.email)}, signed in with Google</span></li><li><b>${V.esc(d.partner)}</b><span>${V.esc(d.partnerEmail || "")}</span></li></ul>
       <p class="note">Only these two accounts can see or change anything. Anyone else who signs in sees nothing.</p>
-      <p style="margin-top:14px"><a class="btn quiet small" href="signin.html?state=signedout">Sign out of this ${phone ? "phone" : "computer"}</a></p>
+      <p style="margin-top:14px"><a class="btn quiet small" href="signin.html?state=signedout">Sign out of this ${phone ? "phone" : "computer"}</a></p>`}
 
       <h2 class="section-h">Reminders on this ${phone ? "phone" : "computer"}</h2>${notif}
 
@@ -64,7 +65,7 @@ V.init({
         <li><a href="${V.href("vendors.html", { state: "categories" })}"><span class="t">Vendor categories</span><span class="v">Your own categories</span>${V.ICON.chev}</a></li>
       </ul>`;
     V.$$("[data-i]", main).forEach((el) => el.onchange = () => { if (V.DEMO) return setSave("Not saved: demonstration mode"); const v = el.value.trim(); if (!v) { el.value = d.couple[el.dataset.i]; return; } d.couple[el.dataset.i] = v; setSave("Saving"); setTimeout(() => { setSave("Saved"); V.$(".top .couple").innerHTML = `${V.esc(d.couple[0])} <span>&amp;</span> ${V.esc(d.couple[1])}`; }, 450); });
-    V.$("#wd", main).onchange = (e) => { if (!e.target.value) return; d.wedding = e.target.value; setSave("Saving"); setTimeout(() => setSave(`Saved. ${V.daysLeft()} days to go.`), 450); };
+    V.$("#wd", main).onchange = (e) => { if (!e.target.value) return; if (V.DEMO) return setSave("Not saved: demonstration mode"); d.wedding = e.target.value; setSave("Saving"); setTimeout(() => setSave(`Saved. ${V.daysLeft()} days to go.`), 450); };
     const r = V.$("#retry", main); if (r) r.onclick = () => { d.couple[1] = "Isabella"; V.$("#n2").closest(".field").classList.remove("failed"); r.closest(".err").remove(); setSave("Saving"); setTimeout(() => { setSave("Saved"); V.$(".top .couple").innerHTML = `${V.esc(d.couple[0])} <span>&amp;</span> ${V.esc(d.couple[1])}`; }, 450); };
     const al = V.$("#allow", main); if (al) al.onclick = () => { d.notif = "granted"; V.rerender(); V.toast("Notifications allowed on this device"); };
     const t = V.$("#test", main); if (t) t.onclick = () => V.toast("Test reminder sent. It should appear in a moment.");

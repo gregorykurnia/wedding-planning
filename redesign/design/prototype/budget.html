@@ -27,7 +27,7 @@ V.init({
       main.innerHTML = `<section class="hero"><h1>Budget</h1></section><div class="message inline">${V.ICON.knot}<h1>Nothing booked yet</h1>
         <p>When you choose a vendor or book a venue, it lands here as a booking with its price and payments. You can also add one yourself.</p>
         <div class="acts"><a class="btn" href="${V.href("booking-new.html")}">Add booking</a>${d.whatifs.length ? "" : `<a class="btn quiet" href="${V.href("whatif.html")}">Try a what-if item</a>`}</div></div>
-        <p class="days"><b>${V.daysLeft()}</b> days until ${V.dateLong(d.wedding)}</p>`;
+        ${d.wedding ? `<p class="days"><b>${V.daysLeft()}</b> days until ${V.dateLong(d.wedding)}</p>` : ""}`;
       return;
     }
 
@@ -56,10 +56,10 @@ V.init({
 
     main.innerHTML = `<section class="hero">
         <h1>Budget</h1>
-        <p class="kicker" style="margin-top:30px">${B.left < 0 ? "Paid beyond what's committed" : "Still to pay"}</p>
-        <p class="figure num ${B.left < 0 ? "late" : ""}" style="${String(B.left).length > 13 ? "font-size:clamp(40px,6vw,88px)" : ""}">${V.fig(B.left)}</p>
-        <p class="context">of <b class="num">${V.rp(B.price)}</b> committed, with <b class="num">${V.rp(B.paid)}</b> already paid</p>
-        <div class="thread" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% paid</span><span>${100 - pct}% to go</span></span></div>
+        <p class="kicker" style="margin-top:30px">${B.left < 0 ? "Overpaid by" : "Still to pay"}</p>
+        <p class="figure num ${B.left < 0 ? "late" : ""} ${V.longFig(B.left)}">${V.fig(Math.abs(B.left))}</p>
+        <p class="context">${B.left < 0 ? `<b class="num">${V.rp(B.paid)}</b> paid against <b class="num">${V.rp(B.price)}</b> committed. Check the overpaid bookings.` : `of <b class="num">${V.rp(B.price)}</b> committed, with <b class="num">${V.rp(B.paid)}</b> already paid`}</p>
+        <div class="thread ${B.left < 0 ? "over" : ""}" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% paid</span><span>${B.left < 0 ? "overpaid" : (100 - pct) + "% to go"}</span></span></div>
       </section>
       ${next}
       <ul class="doors">
@@ -68,7 +68,7 @@ V.init({
         <li><a href="${V.href("funders.html")}"><span class="t">Who pays</span><span class="v">${V.esc(funderNote)}${un.left > 0 ? `, ${V.rp(un.left)} not assigned` : ""}</span>${V.ICON.chev}</a></li>
         <li><a href="${V.href("whatif.html")}"><span class="t">What-if items</span><span class="v">${d.whatifs.length ? `Would bring the total to <span class="num">${V.rp(B.price + wi)}</span>` : "None yet"}</span>${V.ICON.chev}</a></li>
       </ul>
-      <p class="days"><b>${V.daysLeft()}</b> days until ${V.dateLong(d.wedding)}</p>
+      ${d.wedding ? `<p class="days"><b>${V.daysLeft()}</b> days until ${V.dateLong(d.wedding)}</p>` : ""}
       ${add}`;
 
     V.$$("[data-pay]", main).forEach((b) => b.onclick = () => V.recordPayment(b.dataset.pay, b.dataset.part || null));

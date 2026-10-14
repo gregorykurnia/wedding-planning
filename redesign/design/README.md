@@ -69,4 +69,13 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - `design-guide.md`: principles, how to use the tokens, the shell, 30 components with variants and states, every screen × state with its URL and phone/desktop differences, patterns (saving, undo, partner changes, demonstration mode, offline, loading, empty vs no results, ordering, money, formulas, dates), copy and tone, accessibility and stress data.
   - 19 open questions where screens disagree or fall short (also in decisions.md, stage 3). Nothing in the prototype was changed.
 - Light only. Not frozen or versioned; that's stage 5, after the owner's approval.
-- Next: the owner answers the open questions. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).
+- 2026-10-14: the owner answered all 19 questions; the answers are in decisions.md and now built into the prototype, the guide and the tokens. Prototype changes:
+  - editing sheets (event, guest, what-if, venue, price option, package) save as you go and end with Done
+  - one demonstration-mode rule: sheets open, only the final button is disabled, with a line saying so; no names, no countdown, no funders, nobody signed in
+  - "Show N more" everywhere; tasks and file search page too
+  - counts grouped with dots; overpaid budget says "Overpaid by"; long figures shrink everywhere; the minus comes first
+  - gold text on tints `#7d5f27`; "Not attending" in muted ink; idle outlines `#9a888f`; payment dots in gold ink; 24px targets; full month-cell labels
+  - shortlist: preferred package in gold italic, Ascending/Descending; items column "Confirmed"; Who pays sub line; Tasks wide
+  - "Add files" on records opens the shared upload sheet (now in `assets/app.js`); renames of categories and files get undo; the "Payments" filter includes your own Payment events
+- 3 new open questions (20–22: decimals, faint placeholders, the link sheet's Save).
+- Next: the owner answers 20–22 and reviews in the browser. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).

@@ -141,3 +141,9 @@ All 19 were answered in one message. Each one is carried into the prototype, `de
 17. **Undo on all renames** (vendor categories and file names gain it).
 18. The schedule's "Payments" filter **includes your own events of the kind Payment**.
 19. The shortlist's Order by gets the **Ascending / Descending** word.
+- **Applied (2026-10-14):** all 19 answers are now in the prototype, `design-guide.md` and `tokens.css`. The shared upload sheet moved into `assets/app.js` so Files and every record use the same one.
+
+### New open questions (stage 3, after the answers)
+20. **Decimals:** thousands now use dots, but decimals still use a point ("4.8" ratings, "33.1 MB", "98.8M followers"). Suggest commas for decimals ("4,8"), so a dot always means thousands. Document tables already accept "2,5".
+21. **Faint placeholders:** meaningful placeholders ("Vendor not known yet") are 3.70:1 and the document's "Untitled" is 2.77:1, below AA. Suggest full muted ink, keeping the italic.
+22. **The link sheet still has Save:** in a document, "Edit link" applies only on Save, unlike every other editing sheet now. Suggest keeping Save there, so a half-typed address doesn't break a working link; or make it save as you go.

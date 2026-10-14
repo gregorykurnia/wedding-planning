@@ -37,7 +37,7 @@
   .seg button { border: 0; background: none; border-radius: var(--r-pill); padding: 4px 11px; font-size: 13px; cursor: pointer; color: var(--ink-2); white-space: nowrap; }
   .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
   .seg button[aria-pressed="true"][data-r="yes"] { background: var(--sage-ink); }
-  .seg button[aria-pressed="true"][data-r="no"] { background: #8d7b83; }
+  .seg button[aria-pressed="true"][data-r="no"] { background: var(--ink-2); }
   .stepper { display: inline-flex; align-items: center; gap: 12px; }
   .stepper button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-2); background: #fff; cursor: pointer; font-size: 18px; }
   .stepper b { font-family: var(--serif); font-size: 24px; font-weight: 500; min-width: 24px; text-align: center; }
@@ -94,7 +94,7 @@ function row(g) {
 function render(main) {
   const c = counts();
   const head = `<section class="hero"><h1>Guests</h1><p class="sub">${d.guests.length ? `${V.plural(d.guests.length, "guest")} invited, ${V.plural(c.total, "person", "people")} with plus-ones` : "Who's coming to what"}</p>
-    ${d.guests.length ? `<p class="kicker" style="margin-top:30px">Attending so far</p><p class="figure md num">${c.yes.toLocaleString("en-GB")}</p><p class="context">people, plus-ones included. <b>${c.waiting.toLocaleString("en-GB")}</b> still to reply.</p>` : ""}</section>`;
+    ${d.guests.length ? `<p class="kicker" style="margin-top:30px">Attending so far</p><p class="figure md num">${c.yes.toLocaleString("id-ID")}</p><p class="context">people, plus-ones included. <b>${c.waiting.toLocaleString("id-ID")}</b> still to reply.</p>` : ""}</section>`;
   if (!d.guests.length) {
     main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No guests yet</h1><p>Add each guest with how they're connected to you, which events they're invited to and any plus-ones. Headcounts for each event work themselves out.</p><div class="acts"><button class="btn" id="add">Add a guest</button></div></div>`;
     V.$("#add").onclick = () => guestSheet(null); return;
@@ -132,8 +132,8 @@ function list() {
     box.innerHTML = `<div class="message inline"><h1>No guests match${ui.q ? ` “${V.esc(ui.q)}”` : ""}</h1><p>Search looks at names, connections, countries and food notes.</p><div class="acts"><button class="btn quiet" id="r2">Show everyone</button></div></div>`;
     V.$("#r2").onclick = () => { ui.q = ""; ui.rsvp = ""; ui.invite = ""; V.rerender(); }; return;
   }
-  box.innerHTML = `<p class="count">${ui.q || ui.rsvp || ui.invite ? `${V.plural(rows.length, "guest")} of ${d.guests.length.toLocaleString("en-GB")}` : V.plural(rows.length, "guest")}</p><ul class="ledger" style="margin-top:10px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
-    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown)} more</button></p>` : ""}`;
+  box.innerHTML = `<p class="count">${ui.q || ui.rsvp || ui.invite ? `${V.plural(rows.length, "guest")} of ${d.guests.length.toLocaleString("id-ID")}` : V.plural(rows.length, "guest")}</p><ul class="ledger" style="margin-top:10px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
   V.$$(".grow", box).forEach((li) => {
     const g = d.guests.find((x) => x.no === +li.dataset.no);
@@ -161,19 +161,24 @@ function guestSheet(g) {
       <div class="field"><span class="lab">Plus-ones</span><span class="stepper"><button type="button" data-p="-1" aria-label="One fewer">−</button><b id="gp" aria-live="polite">${v.plus}</b><button type="button" data-p="1" aria-label="One more">+</button></span></div>
       <div class="field"><label for="gf">Food notes</label><textarea id="gf" dir="auto" placeholder="Allergies, halal, vegetarian, children's meals">${V.esc(v.food)}</textarea></div>
     </div>
-    <div class="acts">${isNew ? `<button class="btn quiet" data-again ${V.DEMO ? "disabled" : ""}>Add and start another</button>` : `<button class="btn quiet" data-x>Close</button>`}<button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${isNew ? "Add guest" : "Save"}</button></div>
+    ${isNew ? V.demoLine() : V.sheetSaveLine()}
+    <div class="acts">${isNew ? `<button class="btn quiet" data-again ${V.DEMO ? "disabled" : ""}>Add and start another</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add guest</button>` : `<button class="btn" data-x>Done</button>`}</div>
     ${isNew ? "" : `<p style="text-align:center;margin-top:16px"><button class="link rose" data-del>Remove guest</button></p>`}`, (el) => {
     let plus = v.plus;
-    V.$$("[data-i]", el).forEach((c) => c.onclick = () => V.$$("[data-i]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }));
-    V.$$(".seg [data-r]", el).forEach((c) => c.onclick = () => V.$$(".seg [data-r]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }));
-    V.$$("[data-p]", el).forEach((b) => b.onclick = () => { plus = Math.max(0, Math.min(20, plus + +b.dataset.p)); V.$("#gp", el).textContent = plus; });
+    /* G1 in a sheet: an existing guest saves as you go (owner, stage 3) */
+    const sv = isNew ? null : V.sheetSaver(el);
+    const keep = () => { if (!sv) return; const x = collect(); if (!x.name) { V.$("#gn", el).value = g.name; x.name = g.name; } sv(() => Object.assign(g, x)); };
+    V.$$("[data-i]", el).forEach((c) => c.onclick = () => { V.$$("[data-i]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
+    V.$$(".seg [data-r]", el).forEach((c) => c.onclick = () => { V.$$(".seg [data-r]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
+    V.$$("[data-p]", el).forEach((b) => b.onclick = () => { plus = Math.max(0, Math.min(20, plus + +b.dataset.p)); V.$("#gp", el).textContent = plus; keep(); });
+    if (sv) V.$$("input, textarea", el).forEach((x) => x.addEventListener("change", keep));
     const collect = () => ({ name: V.$("#gn", el).value.trim(), conn: V.$("#gc", el).value.trim(), country: V.$("#gk", el).value.trim(), invite: V.$("[data-i][aria-pressed=true]", el).dataset.i, sent: V.$("#gs", el).checked, rsvp: V.$(".seg [aria-pressed=true]", el).dataset.r, plus, food: V.$("#gf", el).value.trim() });
     const save = (again) => {
       const x = collect(); if (!x.name) { V.$("#gn", el).focus(); return; }
       if (isNew) { const ng = Object.assign({ no: Math.max(0, ...d.guests.map((y) => y.no)) + 1 }, x); d.guests.push(ng); V.rerender(); V.saved(`Added ${V.esc(ng.name)} as guest ${ng.no}`); if (again) guestSheet(null); else V.closeSheet(); }
       else { Object.assign(g, x); V.closeSheet(); V.rerender(); V.saved("Saved"); }
     };
-    V.$("[data-ok]", el).onclick = () => save(false);
+    const ok = V.$("[data-ok]", el); if (ok) ok.onclick = () => save(false);
     const ag = V.$("[data-again]", el); if (ag) ag.onclick = () => save(true);
     const xx = V.$("[data-x]", el); if (xx) xx.onclick = V.closeSheet;
     const del = V.$("[data-del]", el);

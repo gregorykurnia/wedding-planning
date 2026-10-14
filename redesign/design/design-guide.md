@@ -1,6 +1,6 @@
 # Veil design guide
 
-**Draft, not frozen.** Stage 5 adds a version and date once the owner approves. Until then this guide describes the stage 2 prototype exactly as it is. Wherever two screens disagree, the guide doesn't pick one: the disagreement is listed under [Open questions](#10-open-questions) and in `decisions.md`.
+**Draft, not frozen.** Stage 5 adds a version and date once the owner approves. This guide describes the prototype as it is. The owner answered the first 19 open questions on 2026-10-14; those answers are now built into the prototype and written into this guide (see [Decided](#decided-2026-10-14)). Anything still undecided is under [Open questions](#10-open-questions) and in `decisions.md`.
 
 - Tokens: `tokens.css`, beside this file.
 - Prototype: `prototype/`. Every URL below is relative to that folder. Open `index.html` for the list of screens. The dashed "Prototype" tab on each screen switches states (`?state=…`) and swaps in the stress data (`?stress`). The tab itself is not part of the design.
@@ -36,7 +36,7 @@ What makes Veil Veil. Every new screen should pass all seven.
 4. **Rose only for what needs you.** Rose means late, overpaid, failed, offline-blocked or destructive, and nothing else. There are two deliberate exceptions: the *keen* heart on a vendor, and the focus ring. Progress is gold, settled is sage, everything else is ink.
 5. **Calm and spacious.** Lots of white, centred heroes, hairline rules instead of boxes, and rows that read as text until you touch them. Fields have no visible box until hover or focus. One primary (ink) button per moment; the rest are quiet outlines or underlined text links.
 6. **Light only, lit from the corners.** The page is white, lit by a blush glow at the top right and a champagne glow at the bottom left. Cards are frosted white over that glow. Shadows are tinted with plum-grey ink, never grey.
-7. **Saved as you go, and safe to slip.** There's no save step on screens (A6). Removing something offers a few seconds of undo. Only the two truly permanent actions, deleting a document and deleting a file, warn that they can't be undone. A failed save keeps what you typed.
+7. **Saved as you go, and safe to slip.** There's no save step anywhere you edit something that already exists: screens and sheets alike (A6). Sheets that edit end with **Done**. Removing something offers a few seconds of undo. Only the two truly permanent actions, deleting a document and deleting a file, warn that they can't be undone. A failed save keeps what you typed.
 
 ---
 
@@ -49,10 +49,11 @@ All values are in `tokens.css`, with the prototype's old names in brackets.
 |---|---|---|---|
 | Ink | `--color-text` | All main text, serif titles and amounts, the primary button, toasts, pressed chips and switches | Large fills behind content |
 | Muted ink | `--color-text-muted` | Meta lines, labels, hints, kickers, idle sub-navigation, the "Rp" before a figure | Anything you must act on |
-| Decor | `--color-decor` | Chevrons, dotted leaders, idle icons, path separators | Words (2.77:1) |
+| Decor | `--color-decor` | Chevrons, dotted leaders, path separators | Words (2.77:1), or the outline of a control you can press |
+| Control outline | `--color-control-outline` | Idle keen heart, drag handle, idle star and tick, the task tick-box ring (3.34:1) | Words |
 | Rules | `--color-rule`, `--color-edge` | Hairlines between rows (`rule`); edges of chips, quiet buttons, date cards and inputs (`edge`) | |
 | Rose | `--accent-attention`, `-text`, `-wash` | Late, overpaid, couldn't save, upload failed or too large, destructive links and buttons, the keen heart, the focus ring, drop indicators. Use `-text` for words, the base for marks and dots, and `-wash` behind rose text | Decoration, progress, "nice" highlights |
-| Gold | `--accent-thread`, `-track`, `--accent-gold-text` | The thread, stage steps, upload bars, worked-out totals in tables, guest numbers, "not saved yet", "due soon" flags, the couple's names on the overview, the current page in the menu | Warnings (that's rose) |
+| Gold | `--accent-thread`, `-track`, `--accent-gold-text`, `--accent-gold-text-on-tint` | The thread, stage steps, upload bars, worked-out totals in tables, guest numbers, "not saved yet", the couple's names on the overview, the current page in the menu, the package you're leaning towards, payment dots in the month. On champagne tints (gold flags, banners, the sorted note, calm sign-in notes) use `-on-tint` | Warnings (that's rose) |
 | Sage | `--accent-settled-text`, `-wash` | "Paid in full", task labels and ticks, "Saved", "Uploaded", WhatsApp links, the confirmed tick, RSVP "Attending" | Large areas; keep it sparing |
 | Glow | `--glow-blush`, `--glow-champagne` | The page and sheet glows; blush also for the wedding day and pressed event chips; champagne for envelope folders, "work on next" chips and search highlights | |
 | Surfaces | `--surface-*` | Cards (`card`, frosted with `--blur-card`), sheets, tinted areas (`petal`, `mist`, `warm`), banners, the scrim | |
@@ -108,8 +109,8 @@ From low to high: add button (5), editor table bar (9) and toolbar (10, its phon
 ## 3. Layout and the shell
 
 - **Columns.** Centred, single column:
-  - `--measure` (680px): the budget, detail screens, tasks, settings
-  - `--measure-wide` (920px): long lists (bookings, vendors, documents, files, schedule, guests, venues, shortlist)
+  - `--measure` (680px): the budget, detail screens, settings
+  - `--measure-wide` (920px): long lists (bookings, vendors, documents, files, schedule and tasks, guests, venues, shortlist)
   - `--measure-doc` (860px): the editor
   - `--measure-table` (1120px): wedding items
 - **Hero.** Every screen opens with a centred hero. In order: an optional back link above it, an optional category line (`.sub`), the page title, an optional sub line, an optional sub-navigation, then the kicker and the one figure, a context sentence, and the thread.
@@ -126,7 +127,7 @@ Each entry gives its purpose, its anatomy, its variants and states, and its rule
 ### 4.1 Top bar (`.top`)
 - **Anatomy:** the couple's names on the left ("Greg *&* Bella", serif 24px, the "&" in champagne italic), a link to the overview, and **Menu** on the right (two short lines and the word).
 - **Same on every screen.** No page name in the middle (owner feedback, 2026-10-14: the label repeated the big title). The `.where` style is left over and no longer used.
-- **States:** normal. In demonstration mode a gold banner follows directly beneath. On the menu itself, the right-hand button reads **Close**.
+- **States:** normal. In demonstration mode the names give way to "Our wedding planner" and a gold banner follows directly beneath. On the menu itself, the right-hand button reads **Close**.
 - **Phone:** 20px padding.
 - **Stress:** long names (Gregorius Alexander Wijayakusuma & Isabella Margaretha Setyaningsih) wrap onto several lines. Menu stays on the right.
 
@@ -141,7 +142,7 @@ Each entry gives its purpose, its anatomy, its variants and states, and its rule
   - Documents: "Notes, plans and files"
   - Guests: "Who's coming to what"
 - **Current section:** gold italic (`aria-current="page"`). Hover: italic.
-- **Account line** at the foot: "Signed in as greg@…", then the links "Wedding settings" and "Sign out".
+- **Account line** at the foot: "Signed in as greg@…", then the links "Wedding settings" and "Sign out". In demonstration mode: "Demonstration mode: nobody is signed in", with "Wedding settings" and "Back to sign-in". A long email wraps.
 - **Behaviour:** opening it focuses Close; Escape or Close returns focus to Menu.
 
 ### 4.3 Sub-navigation (`.subnav`)
@@ -156,9 +157,9 @@ Each entry gives its purpose, its anatomy, its variants and states, and its rule
 - **Kicker** (`.kicker`): 15px muted, letter-spaced. It names the figure: "Still to pay", "Late, across 1 payment", "If you went ahead with everything here", "Attending so far", "Confirmed", "Late or due today", "Leaning towards Package B" (the option's name), "Overpaid by", "Paid in full".
 - **Figure** (`.figure`, `.figure.md`, `.days-fig`): serif light, very large, never wraps. Money gets a small muted "Rp" before it (`.rp`). Items show "12 *of 25*", the "of" part at the unit size.
   - **Late:** `.figure.late`, in rose (payments due when something is late; the schedule when something is late).
-  - **Overpaid:** in rose (a booking shows the amount over; the budget shows a negative figure, see open question 9).
+  - **Overpaid:** the kicker says "Overpaid by" and the figure shows the amount over as a positive number, in rose, with a rose thread. The budget and a booking work the same way.
   - **Settled:** "Paid in full" shows the price in gold.
-  - **Long:** over 13 digits, the figure is allowed to wrap (`.fit`); the budget shrinks it instead (open question 10).
+  - **Long:** over 13 digits, the figure shrinks (`.figure.long`, down to 30px) so it stays on one line. Figures never wrap.
 - **Context** (`.context`): one sentence under the figure, with amounts in ink 450. Example: "of **Rp 882.800.000** committed, with **Rp 473.150.000** already paid".
 - **Thread** (`.thread`): up to 460px, a 1px champagne-soft track, a 3px champagne fill and a hollow dot at the end of the fill. Its two ends are labelled ("54% paid · 46% to go"; "Started 1 Mar · 59% of the time gone"; "Committed · What-if").
   - `.small` has no dot or labels and fills its row (funders, tasks).
@@ -245,7 +246,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Hint** (`.hint`) under the value, muted 13.5px: "What you noted while comparing. It never changes the agreed price."
 - **Failed** (`.field.failed`): a rose ring, plus "Couldn't save this change. What you typed is kept. **Try again**". Validation uses the same look: "Give the booking a name so you can find it later.", "There's already a category called Catering."
 - **Disabled** (`aria-disabled`): muted text, can't be clicked.
-- **Save-state line** (`.save-state`), centred under a detail screen's title. It reads "Every change saves as you go", then "Saving", then "Saved". When a change fails, it reads "1 change not saved" in rose. In demonstration mode: "Demonstration mode: changes aren't saved".
+- **Save-state line** (`.save-state`), centred under a detail screen's title. It reads "Every change saves as you go", then "Saving", then "Saved". When a change fails, it reads "1 change not saved" in rose. In demonstration mode: "Demonstration mode: changes aren't saved". Sheets that edit an existing record carry the same line above their **Done** button.
 - **Big input** (`.big-input`): serif 40px, centred, with an underline that turns rose on focus. Used for the amount in Record a payment.
 - **Inline rename** (funders): the name becomes an input with a rose underline. Enter saves; Escape cancels. "Save name · Cancel".
 - **Notes:** these show as reading text (`.notes-view`) with links that open. "Edit" turns them into a textarea, with a "Done" button below.
@@ -255,13 +256,13 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Variants:**
   - **focus chips** (`.focus .chip`): one sideways-scrolling row, the count small after the name ("Decoration 12"), truncated with an ellipsis at 280px
   - **dashed** (`.chip.dashed`) for a management action: "Edit categories"
-  - **event chips on an item row** (`.ev`): tiny, 12.5px; pressed = blush with an alert edge
+  - **event chips on an item row** (`.ev`): small, 12.5px text, at least 26px high; pressed = blush with an alert edge
   - **filter chips** (items: events), 13.5px
 - **Single choice** groups use `role="radiogroup"` with `role="radio"` chips; toggles use `aria-pressed`.
 
 ### 4.11 Buttons (`.btn`) and links (`.link`)
 - **Primary** (`.btn`): an ink pill with white Jost 450. Hover: `--color-text-strong-hover`. One per moment.
-- **Quiet** (`.btn.quiet`): transparent, with a hairline edge. Hover: a blush wash. Used for Cancel, secondary starts, "Show 100 more", "Earlier / Later".
+- **Quiet** (`.btn.quiet`): transparent, with a hairline edge. Hover: a blush wash. Used for Cancel, secondary starts, "Show 100 more" (always with the number), "Earlier / Later".
 - **Small** (`.btn.small`): tighter padding, 13.5px. Used in rows and cards.
 - **Danger** (`.btn.danger`): a rose-ink fill. Only as the confirming button inside a confirm dialog.
 - **Disabled:** 45% opacity, a not-allowed cursor. Used in demonstration mode and before a choice is made ("Move here").
@@ -275,11 +276,11 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Search:** an underline field with a magnifier. The underline turns rose on focus. The placeholder says what's searched: "Search names, contacts and notes", "Search titles and what's written inside", "Find a file in any folder, by name or description", "Search everything with a date".
 - **Order by:** "Order by" plus an underlined select plus Ascending/Descending. Numeric fields (price, paid, rating, reviewers, date added, capacity) start descending; text fields start ascending. Blanks always go last.
 - **Filters:** small underlined selects ("RSVP Any", "Invited to Any event", "Show Confirmed or not"), checks ("Only ones we're keen on", "Hide ruled out", "Work on next only", "Show completed and cancelled"), range inputs ("Costs at most [Any]", "Holds at least [Any] guests"), a people dropdown ("Anyone"), and **Show everything** / **Show everyone** whenever any filter is on.
-- **Count line** (`.count`), above results: "1,206 bookings, showing 100", "12 vendors here", "3 bookings match", "Showing 60 of 1,507". The vendors' count line carries "Export all to a spreadsheet" / "Export these to a spreadsheet".
+- **Count line** (`.count`), above results: "1.206 bookings, showing 100", "12 vendors here", "3 bookings match", "Showing 60 of 1.507". The vendors' count line carries "Export all to a spreadsheet" / "Export these to a spreadsheet".
 - **Sorted note** (`.sorted-note`, items only): a gold pill reading "Sorted by vendor for now. Your own order is kept. **Back to our order**".
 
 ### 4.13 Focus chips (category focus)
-- A row of chips under the title: **All 2,004 · Venue 3 · Catering 5 · … · Edit categories**. On a phone it scrolls sideways.
+- A row of chips under the title: **All 2.004 · Venue 3 · Catering 5 · … · Edit categories**. On a phone it scrolls sideways.
 - Used on Vendors, the Shortlist and the Schedule ("Everything · Payments · Tasks · Calls · Appointments · Deadlines · Our events · Other").
 - One is pressed at a time. Choosing one resets paging.
 
@@ -290,7 +291,8 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - a centred serif title
   - an optional sub line ("Just the name is enough for now.", "Kept apart from your bookings until you decide.")
   - fields or chips
-  - centred actions: quiet then primary
+  - for a sheet that edits something that already exists: the save line ("Every change saves as you go" → "Saving" → "Saved") and one **Done** button. Every field saves the moment it changes.
+  - for a sheet that creates something: centred actions, quiet then primary ("Cancel" · "Add vendor"). In demonstration mode the primary is disabled and the line "Demonstration mode: adding is turned off." sits above it.
   - an optional rose link below ("Delete", "Remove guest", "Delete for good")
 - **Behaviour:**
   - `role="dialog"` and `aria-modal`
@@ -316,7 +318,8 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - Add a task
   - Add items (one per line)
   - The guest sheet (add or edit)
-- **Note:** sheets that edit an existing record end with **Save**, while screens save as you go. See open question 2.
+- **Editing sheets** (save as you go, end with Done): an event, a guest, a what-if item, a venue, a price option, a package, a file's details. Status actions in the event sheet (Mark completed, Cancel it, Back to scheduled) still act at once and close the sheet with an undo toast.
+- **Still different:** the document's link sheet ("Edit link") keeps **Save** (open question 22).
 
 ### 4.15 Confirm (`Veil.confirm`)
 - A sheet with:
@@ -364,10 +367,10 @@ Loading reproduces the hero's shape:
 All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader line, "Loading the budget". `main` gets `aria-busy="true"`.
 
 ### 4.20 File grid and upload queue
-- **File grid on a record** (`.files`, booking, vendor, finalist, venue): tiles 150px or wider. Each tile has a 96px thumbnail (an image cropped to fill, or the file type in gold italic), the name, and the size ("2.4 MB, from the vendor"). The last tile is a dashed drop tile: "**Add files** Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you."
+- **File grid on a record** (`.files`, booking, vendor, finalist, venue): tiles 150px or wider. Each tile has a 96px thumbnail (an image cropped to fill, or the file type in gold italic), the name, and the size ("2.4 MB, from the vendor"). The last tile is a dashed drop tile: "**Add files** Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you." It opens the same **upload sheet** as Files, filing into a folder named after the record: "Into Files › Vendors › Kebun Bunga Atelier" (or Bookings, Venues, Shortlist).
   - **Uploading tiles:** a thin champagne bar, and "Uploading, 1.3 of 2.1 MB" or "Shrinking from 14.2 MB to fit under 10 MB".
-  - **Bad tiles** (`.file.bad`, rose): "Too large: 48 MB. Files can be up to 10 MB." or "Upload failed. **Try again**".
-- **Upload sheet** (Files):
+  - **Bad tiles** (`.file.bad`, rose): "Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk." or "Upload failed. **Try again**". The wording is the same here and in the upload sheet.
+- **Upload sheet** (Files and every record; shared in `assets/app.js`):
   - a dashed **drop zone** that turns rose-washed while dragging over it: "**Drop files here** or choose files"
   - a **queue** with one entry per file, holding the name, the size or status, a progress bar, and fields for Name, Category (with suggestions or your own) and Description
   - **Status per file:**
@@ -379,7 +382,7 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
     - "Not uploaded: demonstration mode"
 - **Envelope folder** (`.frow.folder`): the icon is an envelope with a V flap on champagne-soft. The meta reads "2 folders, 14 files" or "Empty".
 - **Path** (`.crumbs`): small muted links above the folder's title, "Files › Vendors › Catering". With more than four levels the middle folds into "…", which opens the full path.
-- **File details sheet:** a preview (contain-fit, 180px), Name, Category and Description (each saves as you go), then Open, Download, Move and **Done**, and a rose link "Delete for good".
+- **File details sheet:** a preview (contain-fit, 180px), Name, Category and Description (each saves as you go; a new name toasts "Renamed to … · Undo"), then Open, Download, Move and **Done**, and a rose link "Delete for good".
 - **Move sheet:** an indented tree of radio buttons, at most 12 indent levels. The current folder and the moved folder's own descendants are disabled, with notes: "(it's here now)", "(inside it)", "(this folder)". The **Move here** button is disabled until you choose.
 
 ### 4.21 Stage thread (`.stage`)
@@ -390,7 +393,7 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
 - **On a detail screen** the stage is set with a chip row: every stage plus "Ruled out". Choosing "Chosen" (vendors) or "Booked" (venues) creates a booking.
 
 ### 4.22 Keen heart (`.keen`)
-- An 18px line heart, in `--color-decor` when off. When pressed it's filled rose: the one rose element allowed in a vendor row.
+- An 18px line heart, in `--color-control-outline` when off. When pressed it's filled rose: the one rose element allowed in a vendor row.
 - `aria-pressed`, with the label "Keen on Kebun Bunga Atelier". It sits before the name in rows and after the name in the vendor's title.
 - Toggling it toasts "Marked Kebun Bunga Atelier as one you're keen on" / "Unmarked Kebun Bunga Atelier".
 
@@ -443,7 +446,7 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
 - **Grid:** seven columns, Monday first. Cells are white with a hairline, the day number in serif, and up to three dots.
 - **Dots:**
   - ink: our events
-  - champagne: payments
+  - gold ink: payments
   - sage: tasks
   - rose: late
   - "+2" after three (hidden on phones)
@@ -453,28 +456,30 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
   - **wedding day**: a blush fill, alert edge and a rose "♡" after the number (♡ hidden on phones)
   - **empty** lead-in cells: invisible
 - **Legend** under the grid: Our events · Payments · Tasks · Late.
+- **Each cell's label** says everything the marks show: "Friday 30 October, 1 payment, 1 event", "Wednesday 14 October, today, selected, 2 events", "Saturday 20 March 2027, the wedding day, nothing". The chosen day is also `aria-pressed`.
 - **Under it,** the chosen day's agenda, or "Nothing on this day. **Add something**".
 
 ### 4.27 Task rows
-- **Summary:** a 22px round tick box (sage when done, with `role="checkbox"`), the title, the due text and a chevron. Beneath: "2 of 5 steps done" with a small thread, or the start of the notes.
+- **Summary:** a 24px round tick box (ringed in `--color-control-outline`, sage when done, with `role="checkbox"`), the title, the due text and a chevron. Beneath: "2 of 5 steps done" with a small thread, or the start of the notes.
 - **Open:**
-  - **steps**, each with a check, a title input, a date and ×
+  - **steps**, each with a 24px check, a title input, a date and a 32px ×
   - "Add a step"
   - **Due date**
   - **Notes**
   - "Delete task" (rose)
 - **Finished tasks** sit below in a disclosure: "Show 4 finished tasks" / "Hide …".
+- **Paging:** open and finished tasks show 100 at a time, with "Showing 100 of 401" and "Show 100 more".
 
 ### 4.28 Item rows (wedding items)
-- **Desktop columns:** handle · Item (serif input) · Vendor (input, placeholder "*Vendor not known yet*") · Events (four small chips) · Who it's for (select) · Next (star) · Done (tick) · ⋯
+- **Desktop columns:** handle · Item (serif input) · Vendor (input, placeholder "*Vendor not known yet*") · Events (four small chips) · Who it's for (select) · Next (star) · Confirmed (tick) · ⋯
 - **Phone (under 860px):** stacked. The handle, name, star, tick and ⋯ are on top; the vendor, events and person below.
 - **Star** (work on next): gold outline; filled champagne when on. **Tick** (confirmed): a sage circle with a mint fill when on. Both are 34px round buttons with `aria-pressed`.
-- **Handle:** six dots, grab cursor. Drag and drop shows a rose line above or below the target; the dragged row fades to 40%. **Alt+↑/↓** moves the row. Handles hide while any sort or filter is on.
+- **Handle:** six dots in `--color-control-outline`, grab cursor. Drag and drop shows a rose line above or below the target; the dragged row fades to 40%. **Alt+↑/↓** moves the row. Handles hide while any sort or filter is on.
 - **Row menu (⋯):** Add an item below · Add several below · Move up · Move down (in your own order only) · Remove (rose).
 - **"To work on next" card:** champagne pill links to the marked items. Tapping one scrolls to the row, flashes it and focuses its name. Up to 12 are shown, then "and 4 more".
 
 ### 4.29 Guest rows and the RSVP switch (`.seg`)
-- **Three-way switch:** Waiting · Attending · Not attending. It's a pill track; the pressed segment is ink for Waiting, sage for Attending, and `--accent-declined` for Not attending.
+- **Three-way switch:** Waiting · Attending · Not attending. In the guest sheet it saves as you go too. It's a pill track; the pressed segment is ink for Waiting, sage for Attending, and muted ink (`--color-text-muted`) for Not attending.
 - One tap saves, with a toast ("王小明: attending · Undo").
 - **On a phone** the segments grow to 14px text with more padding, for thumbs (G8).
 - **Guest number** in gold italic before the name, never reused.
@@ -535,9 +540,9 @@ The home screen; the names in the top bar lead here.
 | Just started | `?state=empty` | "Nothing dated yet…" under Coming up; doors read "Nothing booked yet", "No tasks yet", "No guests yet", "Nothing tracked yet" |
 | Install suggestion | `?state=install` | Install card under the hero |
 | Loading / Couldn't load / Offline | `?state=loading` / `error` / `offline` | shared states |
-| Demonstration mode | `?state=demo` | Gold banner; empty data |
+| Demonstration mode | `?state=demo` | Gold banner; no names, no countdown: "When is the wedding?" with **Save the date** disabled and "Demonstration mode: saving is turned off."; empty doors |
 | Bella's change arrives | `?state=sync` | Partner toast after 1.6s |
-| Stress | `?stress` | Long names wrap; 1,000s in the doors |
+| Stress | `?stress` | Long names wrap; thousands in the doors, grouped with dots |
 
 **Phone:** the days figure scales down (clamped at 96px); door summaries move under their names.
 
@@ -559,7 +564,7 @@ The save line sits under the title.
 | Notifications turned off | `?state=notif-denied` | Rose note naming where to turn them on |
 | Installed on this phone | `?state=installed` | "Installed on this phone. Open it from your home screen like any app." |
 | Loading / Offline | `?state=loading` / `offline` | shared states |
-| Demonstration mode | `?state=demo` | Banner; save line "Demonstration mode: changes aren't saved" |
+| Demonstration mode | `?state=demo` | Banner; save line "Demonstration mode: changes aren't saved"; empty name fields; "Demonstration mode: nobody is signed in…" instead of the two accounts and Sign out |
 
 **Phone:** the copy switches between "computer" and "phone" by width; fields stack.
 
@@ -572,9 +577,10 @@ The save line sits under the title.
 | Normal | `budget.html` | as above |
 | Nothing booked yet | `?state=empty` | Title, then the knot, "Nothing booked yet", "When you choose a vendor or book a venue, it lands here…", **Add booking** + quiet **Try a what-if item**, days line |
 | Loading / Couldn't load / Offline | `loading` / `error` / `offline` | shared |
-| Demonstration mode | `?state=demo` | Banner + the empty layout |
+| Demonstration mode | `?state=demo` | Banner + the empty layout, without the days line |
 | Bella's change arrives | `?state=sync` | Figure and next card update; the card flashes; partner toast |
-| Stress | `?stress` | 1,206 bookings; the figure shrinks when it passes 13 digits; "14 funders" in the Who pays door |
+| Overpaid | (data: paid more than committed) | kicker "Overpaid by", the amount over in rose, context "Rp X paid against Rp Y committed. Check the overpaid bookings.", a rose thread ending "overpaid" |
+| Stress | `?stress` | 1.206 bookings; the figure shrinks when it passes 13 digits; "14 funders" in the Who pays door |
 | Record a payment | interaction (**Record payment**) | Sheet: big amount pre-filled with what's left, "Pays this in full" / "Rp X still to pay after this" / rose "This is Rp X more than what's left. It will show as overpaid.", Paid on, Paid by chips, Attach a receipt; **Record payment** busy "Recording"; undo toast |
 | Menu | interaction (**Menu**) | the full-page menu |
 
@@ -593,7 +599,7 @@ The save line sits under the title.
 | Loading / Couldn't load / Offline | shared | |
 | Demonstration mode | `?state=demo` | banner + empty |
 | Bella's change arrives | `?state=sync` | the row flashes |
-| Stress | `?stress` | 1,206 rows paged by 100; a 40-part booking collapses to 4 parts + "and 36 more parts"; CJK and Arabic names right-aligned per script |
+| Stress | `?stress` | 1.206 rows paged by 100; a 40-part booking collapses to 4 parts + "and 36 more parts"; CJK and Arabic names right-aligned per script |
 | Just added | interaction (after Add a booking) | toast "Added Harmoni String Quartet", the new row flashes |
 
 **Phone:** names 21px, prices 19px; status stays on the right.
@@ -646,12 +652,12 @@ The save line sits under the title.
 | Normal | `payments.html` | |
 | Nothing due | `?state=empty` | "Nothing to pay right now", with a sentence that depends on whether bookings exist; **See bookings** |
 | Loading / Couldn't load / Offline / Demonstration / Bella's change arrives | shared | |
-| Stress | `?stress` | 1,507 payments, 60 at a time, "Showing 60 of 1,507", **Show more** |
+| Stress | `?stress` | 1.507 payments, 60 at a time, "Showing 60 of 1.507", **Show 60 more** |
 
 **Phone:** the date card is 56px; amount and button move under the text.
 
 ### 5.9 Who pays: `funders.html` (B7, B11)
-- Back to Budget; "Who pays", with "What each family has paid, and what they still have to pay" (see open question 8).
+- Back to Budget; "Who pays", with "What each of you and your families have paid, and what's still to pay".
 - **One row per funder:** name, still to pay (serif, right), "Paid Rp X of Rp Y" / "still to pay", a small thread, and Rename · Remove.
 - **Not assigned** comes last, in italic, with "See what has no funder", which opens Bookings searched for "Not assigned".
 - **Add a funder**, then the note "Together that's … the same totals as the budget. Still to pay is always the price minus what's been paid."
@@ -660,11 +666,12 @@ The save line sits under the title.
 |---|---|---|
 | Normal | `funders.html` | Greg, Bella, Greg's family, Bella's family, Not assigned |
 | Nothing booked yet | `?state=empty` | note "Nothing is booked yet, so nobody owes anything…"; rows read "Nothing assigned yet" / "Every cost has a funder" |
+| Demonstration mode | `?state=demo` | no funders, only Not assigned; "Add a funder" opens its row, but **Add funder** is disabled, with "Demonstration mode: adding is turned off." |
 | Renaming | `?state=rename` | Greg's name is an input; Save name · Cancel |
 | Adding | `?state=adding` | a new row with an input, "For example, Tante Lily"; Add funder · Cancel |
 | Overpaid funder | (data) | "Rp X overpaid" in rose, rose thread |
 | Remove | interaction | "Remove Greg? N costs (Rp X) will move to Not assigned. Payments already recorded stay as they are. You can undo for a few seconds." |
-| Loading / Couldn't load / Offline / Demonstration / Bella's change arrives | shared | |
+| Loading / Couldn't load / Offline / Bella's change arrives | shared | |
 | Stress | `?stress` | 14 funders: very long, unbroken, Chinese, Arabic, Thai and Japanese names |
 
 ### 5.10 What-if items: `whatif.html` (B8–B10)
@@ -676,9 +683,10 @@ The save line sits under the title.
 |---|---|---|
 | Normal | `whatif.html` | |
 | No what-if items | `?state=empty` | "Try an idea before you commit", "…It stays apart from your real bookings.", **Add a what-if item** |
-| Loading / Couldn't load / Offline / Demonstration | shared | (demo disables Add) |
+| Loading / Couldn't load / Offline / Demonstration | shared | (in demonstration mode, Add opens the sheet; its **Add item** is disabled) |
 | Stress | `?stress` | 301 items in pages of 50; a 25-part item |
-| Add / Edit | interaction | sheet "Add a what-if item", "Kept apart from your bookings until you decide." |
+| Add | interaction | sheet "Add a what-if item", "Kept apart from your bookings until you decide.", Cancel · **Add item** |
+| Edit | interaction | the same sheet titled "Edit …"; every change saves as you go; **Done** |
 
 ### 5.11 Vendors: `vendors.html` (F6, F7, F9–F15, F23)
 - "Vendors", with "16 vendors, 7 you're keen on", and the sub-navigation.
@@ -692,11 +700,11 @@ The save line sits under the title.
 | No vendors yet | `?state=empty` | "No vendors yet", "Add a vendor the moment you hear about one: a name is enough…", **Add a vendor** |
 | No results | `?state=noresults` | "No vendors match “harpist”" + **Clear the search**; with a category or keen filter: "No vendors in this category yet" / "No vendors you're keen on here" + **Show every vendor** |
 | Adding a vendor | `?state=capture` | sheet: Name (pre-filled), Category, Contact person, Phone, Notes; **Add and start another** · **Add vendor** |
-| Editing categories | `?state=categories` | sheet: menu-card of categories, "Ours, 3 vendors" / "Catch-all, 2 vendors"; Rename · Remove on ours; New category with "40 characters left" |
+| Editing categories | `?state=categories` | sheet: menu-card of categories, "Ours, 3 vendors" / "Catch-all, 2 vendors"; Rename · Remove on ours (both with undo); New category with "40 characters left" |
 | Category name taken | `?state=taken` | "There's already a category called Catering." |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella adds a vendor | `?state=sync` | the new row flashes; "Bella added Bunga Melati Florist" |
-| Stress | `?stress` | 2,004 vendors, 37 categories (40-character, CJK), paged by 100 |
+| Stress | `?stress` | 2.004 vendors, 37 categories (40-character, CJK), paged by 100 |
 | Export | interaction | downloads `vendors-greg-bella.csv`; toast "Exported 16 vendors to vendors-greg-bella.csv" |
 
 **Phone:** focus chips scroll sideways; rows keep price and rating on the right.
@@ -722,12 +730,13 @@ The save line sits under the title.
 | Stress | `vendor.html?id=sv-long&stress` | 30 price options, a 600-character note with links, a long unbroken name |
 | Chosen | interaction (Chosen chip) | creates a booking; toast "Kebun Bunga Atelier is now a booking · Open" |
 | Copying | interaction | button busy "Copying", then the card flips to "On the shortlist", with undo |
+| Price option | interaction | Add: Cancel · **Add option**. Edit: saves as you go, **Done** |
 
 ### 5.13 Shortlist: `shortlist.html` (F17–F19, F21)
-- "Shortlist", with "6 finalists in 4 categories", and the sub-navigation. Focus chips by category; Order by Category, Preferred price, Reviews, Instagram followers.
+- "Shortlist", with "6 finalists in 4 categories", and the sub-navigation. Focus chips by category; Order by Category, Preferred price, Reviews, Instagram followers, with Ascending / Descending (price starts low to high, reviews and followers high to low).
 - **Finalist cards** in a grid, 280px or wider, grouped by category:
   - name, then "120 reviews, 12.3k followers"
-  - up to 4 packages with leaders, the preferred one marked with a rose ♡ (open question 1)
+  - up to 4 packages with leaders, the one you're leaning towards in gold italic serif, as on the detail screens
   - "Next: …" at the foot
   - booked cards fade to 70% and carry a gold flag, "Now a booking"
 
@@ -754,6 +763,7 @@ The save line sits under the title.
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `finalist.html?id=sf-deep&stress` | 30 packages, huge counts |
 | Booked | interaction | gold flag "Now a booking" + "Open the booking"; the card disappears |
+| Package | interaction | Add: Cancel · **Add package**. Edit: saves as you go, **Done** |
 
 ### 5.15 Venues: `venues.html` (F1, F3–F5, F22, B1)
 - "Venues", led by "Booked: Villa Samaya Ubud" (a link to its booking), and the sub-navigation.
@@ -766,8 +776,8 @@ The save line sits under the title.
 | No venues yet | `?state=empty` | "No venues yet" + **Add a venue** |
 | No results | `?state=noresults` | "No venues match", "Nothing fits “beach”, at most Rp 200.000.000.", **Show every venue** |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
-| Stress | `?stress` | 302 venues; a 125,000-guest, 13-digit venue with a long address |
-| Venue sheet | interaction | stage chips, Name, Location, Estimated cost, Most guests, Notes, Files; marking Booked creates a booking |
+| Stress | `?stress` | 302 venues; a 125.000-guest, 13-digit venue with a long address |
+| Venue sheet | interaction | stage chips, Name, Location, Estimated cost, Most guests, Notes, Files. Add: Cancel · **Add venue** (with undo). Edit: saves as you go, **Done**. Marking Booked creates a booking ("… is now a booking · Open") |
 
 ### 5.16 Documents: `documents.html` (R6)
 - "Documents", with "6 documents, newest first", and the sub-navigation. Then **Meeting notes** (primary) and **New document** (quiet).
@@ -782,7 +792,7 @@ The save line sits under the title.
 | No results | `?state=noresults` | "No documents match “photographer contract”", "Search looks through titles and everything written inside, tables included." |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella starts a document | `?state=sync` | "Bella started “First dance shortlist”" |
-| Stress | `?stress` | 1,504 documents; CJK, Arabic, Thai, untitled ("*Untitled*") and an 85-character unbroken title |
+| Stress | `?stress` | 1.504 documents; CJK, Arabic, Thai, untitled ("*Untitled*") and an 85-character unbroken title |
 
 **Under 900px:** the recent cards stack into one column.
 
@@ -821,6 +831,7 @@ The save line sits under the title.
 | No files yet | `?state=empty` | "No files yet", "Upload quotes, contracts and photos from vendors…" |
 | An empty folder | `?state=emptyfolder` | "This folder is empty", "Upload files into it, or make folders inside it." |
 | No results | `?state=noresults` | "No files match “passport”", "The search looks at every folder, by file name and description." |
+| Searching many | (stress, search "DSC") | "3.000 files in all folders, showing 200" and **Show 200 more** |
 | Uploading | `?state=uploading` | upload sheet with done, uploading, shrinking, too large, failed |
 | A file's details | `?state=file` | file sheet |
 | Moving a folder | `?state=moving` | move sheet, "With everything inside it: 4 files and 1 folder." |
@@ -829,7 +840,7 @@ The save line sits under the title.
 | Delete a file | interaction | "…freeing 2.4 MB. It can't be brought back." **Delete for good**; toast without undo |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella uploads a file | `?state=sync` | "Bella uploaded Bella's dress fitting.jpg" |
-| Stress | `files.html?folder=big&stress`; `files.html?stress&state=deep` | 3,000 photos and 40 folders in one folder; 30 levels deep with the middle folded; long and non-Latin names; 1 KB, 10 MB, very wide and very tall images |
+| Stress | `files.html?folder=big&stress`; `files.html?stress&state=deep` | 3.000 photos and 40 folders in one folder; 30 levels deep with the middle folded; long and non-Latin names; 1 KB, 10 MB, very wide and very tall images |
 
 **Phone:** a file's size and date move under its name; the upload fields stack.
 
@@ -844,12 +855,13 @@ The save line sits under the title.
 | Nothing scheduled | `?state=empty` | "Nothing scheduled yet", "…Payments due on bookings and tasks with dates appear here by themselves.", **Add to the schedule** |
 | No results | `?state=noresults` | "Nothing matches “florist”" + **Show everything** |
 | With completed and cancelled | `?state=done` | struck-through rows appear |
-| An event's details | `?state=event` | event sheet: kind chips, Title, Date, All day / Starts–Ends, With, Where or a call link, Notes, Remind us; Mark completed · Cancel it · **Save**; rose Delete |
+| An event's details | `?state=event` | event sheet: kind chips, Title, Date, All day / Starts–Ends, With, Where or a call link, Notes, Remind us; every change saves as you go; Mark completed · Cancel it · **Done**; rose Delete |
 | Adding an event | `?state=new` | "Add to the schedule", "For example, Tasting at Sendok Emas" |
 | Notifications not yet allowed / turned off | `?state=notif-default` / `notif-denied` | the note under Remind us |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella adds an appointment | `?state=sync` | "Bella added “Makeup trial with Kirana” tomorrow at 10:00" |
-| Stress | `?stress` | 1,204 events, 80 at a time |
+| Stress | `?stress` | 1.204 events, 80 at a time, **Show 80 more** |
+| Payments filter | interaction | shows payments due on bookings and your own events of the kind Payment |
 
 **Phone:** the time column is 58px; flags and buttons move under the text.
 
@@ -869,7 +881,9 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 | No tasks yet | `?state=empty` | "No tasks yet", "Add the big jobs, like choosing the caterer…" |
 | Everything done | `?state=alldone` | "Everything's done", "Finished tasks are kept below in case you need one back.", disclosure open |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
-| Stress | `?stress` | 401 tasks, one with 60 steps |
+| Stress | `?stress` | 401 tasks, one with 60 steps, 100 at a time with "Showing 100 of 400" and **Show 100 more** |
+
+Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't change the width.
 
 **Phone:** the due text moves under the title; the inner content loses its indent.
 
@@ -882,13 +896,13 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 |---|---|---|
 | Normal | `items.html` | |
 | First use, pre-filled | `?state=first` | banner, then 14 common items |
-| Nothing tracked yet | `?state=empty` | "Nothing tracked yet", quiet **Start with common items** + **Add items** |
+| Nothing tracked yet | `?state=empty` | "Nothing tracked yet", quiet **Start with common items** + **Add items**. In demonstration mode **Start with common items** is disabled, with the demo line; Add items opens its sheet, whose **Add** is disabled |
 | No results | `?state=noresults` | "Nothing matches “photo booth”", **Show everything** |
 | Sorted for now | `?state=sorted` | sorted note, handles hidden |
 | A change didn't save | `?state=savefail` | the vendor input ringed rose, "Couldn't save “Bespoke Tailor Bali”. What you typed is kept. Try again" |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella confirms an item | `?state=sync` | "Bella confirmed Wedding cake" |
-| Stress | `?stress` | 2,004 items, 150 at a time |
+| Stress | `?stress` | 2.004 items, 150 at a time |
 | Row menu, remove, add several | interaction | "Remove Wedding cake?", "You can undo for a few seconds, and it goes back exactly where it was." |
 
 **Under 860px:** stacked rows, no column heads.
@@ -905,12 +919,12 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 | No guests yet | `?state=empty` | "No guests yet", "…Headcounts for each event work themselves out.", **Add a guest** |
 | No results | `?state=noresults` | "No guests match “Surabaya”", **Show everyone** |
 | Who hasn't replied | `?state=waiting` | RSVP filter set to Waiting |
-| A guest's details | `?state=guest` | guest sheet: "Guest number 3", Name, How they're connected (hint "Mention groom's or bride's so the two sides add up."), Country, Invited to chips, Invitation Sent, RSVP switch, Plus-ones stepper, Food notes; Close · **Save**; Remove guest |
+| A guest's details | `?state=guest` | guest sheet: "Guest number 3", Name, How they're connected (hint "Mention groom's or bride's so the two sides add up."), Country, Invited to chips, Invitation Sent, RSVP switch, Plus-ones stepper, Food notes; every change saves as you go; **Done**; Remove guest |
 | Removing a guest with plus-ones | `?state=remove` | confirm naming the plus-ones and the headcount drop |
 | Adding | interaction | "Will be guest number 21", **Add and start another** · **Add guest**; toast "Added … as guest 21" |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella records an RSVP | `?state=sync` | "Bella marked 王小明 as attending" (the first guest still waiting) |
-| Stress | `?stress` | 1,500 guests, 100 at a time |
+| Stress | `?stress` | 1.500 guests, 100 at a time |
 
 **Phone:** the cards stack; the invitation and RSVP switch move under the name; the switch grows for thumbs.
 
@@ -923,7 +937,7 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 - **Failure keeps the input.** The field stays as typed, gets a rose ring and the line "Couldn't save this change. What you typed is kept. **Try again**", and the save line says "1 change not saved". Try again clears the ring and runs "Saving → Saved" (T9, and the stated rule for every screen).
 - **Documents** autosave after a 0.9-second pause in typing: Not saved yet (gold) → Saving → Saved just now (sage). On failure the text stays and the note offers Try again. Offline says to keep the page open (R5).
 - **Forms that create** (Add a booking) save on a button press, because there's nothing to save into until the record exists. On failure they keep every field and turn the button into **Try again**.
-- **Sheets that edit** an existing record currently save on **Save** (see open question 2).
+- **Sheets that edit** an existing record save as you go too, with the same save line, and close with **Done**. If a name is cleared, the old one comes back rather than saving an empty name.
 
 ### 6.2 Undo windows and permanent deletes
 - **Anything removed or changed in bulk** gets a toast with **Undo**, for as long as the toast shows (6 seconds), and undo puts it back in the same place:
@@ -933,7 +947,7 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
   - marking an event completed or cancelled
   - finishing a task
   - moving a file or folder
-  - renaming a funder or folder
+  - renaming anything: a funder, folder, file or vendor category
   - changing an RSVP
   - copying to the shortlist
   - adding a vendor, funder, what-if item, items, or the starter items
@@ -947,12 +961,11 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 - **If you're both in the same document:** a gold banner, "Bella is also in this document. Their changes appear as they type."
 
 ### 6.4 Demonstration mode (not connected)
-- Sign-in offers **Look around** instead of a form. Every screen then carries the gold banner, shows the empty data set, and disables saving:
-  - primary buttons in sheets and forms are disabled
+- Sign-in offers **Look around** instead of a form. Every screen then carries the gold banner, shows the empty data set, and disables saving. Nothing about the wedding shows: the top bar reads "Our wedding planner", there's no countdown, no funders, and the menu says "nobody is signed in".
+  - **one rule for actions:** anything that opens a sheet stays enabled and opens it; only the final button is disabled, with the line "Demonstration mode: adding is turned off." (or "copying", "booking", "moving", "renaming", "uploading", "saving"). A one-tap action with no sheet ("Start with common items", "Copy to the shortlist", "Save the date") is itself the final button.
   - inline changes say "Not saved: demonstration mode" (in the save line or a toast)
   - uploads say "Not uploaded: demonstration mode"
 - Detail screens say "No bookings in demonstration mode" (or vendors, documents, the shortlist).
-- See open questions 3 and 13 for what differs between screens.
 
 ### 6.5 Offline
 - **Before data has loaded:** the full offline message with the struck-through cloud. It never looks empty.
@@ -975,12 +988,12 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Filters combine:**
   - several chosen events or people match *any* of them (items, T5)
   - every active filter offers a way back to everything
-  - counts say how many match: "12 of 2,004"
-- **Long lists page:** "Show 100 more", or the count line "Showing 100 of 1,206".
+  - counts say how many match: "12 of 2.004"
+- **Long lists page,** and the button always says how many more: "Show 100 more", with the count line "Showing 100 of 1.206". Nothing stops silently.
 - **Searching keeps focus** in the search field while results update.
 
 ### 6.9 Money rules
-- **Rupiah, no decimals:** "Rp 12.500.000", grouped with dots. Negative uses a true minus: "−Rp 12.500.000" (see open question 9 for the figure).
+- **Rupiah, no decimals:** "Rp 12.500.000", grouped with dots. Negative uses a true minus, always first: "−Rp 12.500.000", in sentences and figures alike. An overpaid figure shows the amount over as a positive number under "Overpaid by".
 - **Big figures:** "Rp" set small and muted before the number.
 - **Still to pay = price − paid, everywhere** (budget, a booking, parts, funders, payments due, the agenda). Overpaid means paid > price: it's shown in rose as "Overpaid by Rp X", never hidden, and the thread turns rose.
 - **A booking in parts takes everything from its parts** (B4): its price is the sum of the part prices, its paid is the sum of the part paids, its funders are the set of part funders ("paid by 3 funders" past two), and its next due is the earliest unpaid part with a date.
@@ -1012,7 +1025,7 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Due text:** "3 days late" · "due today" · "due tomorrow" · "due in 4 days" (up to 14) · "due Friday 30 October". In past sentences: "was due Monday 12 October".
 - **Agenda days:** "Today, Wednesday 14 October" · "Tomorrow, Thursday 15 October" · then the long date. Times are 24-hour ("10:00"). All-day events say "All day".
 - **Edited times:** "just now" · "12 min ago" · "2 hours ago" · "yesterday" · then the short date, plus "by Bella" when it was the partner.
-- **Counts** use thousands commas ("1,206 bookings"), which differs from money (open question 12).
+- **Counts** group thousands with dots, like money: "1.206 bookings", "Showing 60 of 1.507". Decimals still use a point ("4.8" ratings, "33.1 MB", "98.8M followers"); see open question 20.
 - **The wedding date** drives every countdown (O5). "Time gone" runs from the day the planner was set up (decision, stage 2 session 8).
 
 ### 6.12 Notifications (S10)
@@ -1041,12 +1054,12 @@ A reminder is chosen per event (No reminder, When it starts, 15 minutes, 1 hour,
 | Pay | **Record payment** | Pay, Mark as paid |
 | Take out of a list (with undo) | **Remove** booking / part / funder / guest / item | Delete |
 | Erase what you wrote, scheduled or stored | **Delete** task / event / folder; **Delete for good** for documents and files | Remove |
-| Back out | **Cancel** in forms and sheets; **Keep it** in confirms; **Not now** for suggestions; **Close** on the guest sheet | No, Dismiss |
-| Finish a sheet with live edits | **Done** | OK (except the blocked-folder notice) |
+| Back out | **Cancel** in forms and sheets that create; **Keep it** in confirms; **Not now** for suggestions | No, Dismiss, Close |
+| Finish a sheet that edits (it saved as you went) | **Done** | Save, OK (except the blocked-folder notice) |
 | Retry | **Try again** | Retry |
 | Move on from comparing | **Book it**, **Copy to the shortlist**, **Move into Vendors**, **Lean towards this one** | Convert, Promote |
 | Reset filters | **Clear the search**, **Show everything**, **Show everyone**, **Show every venue** | Reset |
-| Page | **Show 100 more** / **Show more** | Load more |
+| Page | **Show 100 more**, always with the number | Show more, Load more |
 
 Busy labels are the gerund of the verb: Adding, Recording, Copying, Booking, Moving, Signing in, Saving.
 
@@ -1086,15 +1099,13 @@ Where a rule isn't obvious, a hint says it once, quietly:
 ## 8. Accessibility
 
 ### Contrast
-Every pair is listed with its ratio at the foot of `tokens.css`. Ink and muted ink pass AA everywhere, including the strongest point of the glow (4.76:1). Rose text uses `--accent-attention-text` (5.68:1 on white, 4.85:1 on its wash). Gold text uses `--accent-gold-text` (5.02:1 on white). **Below AA in the prototype:**
-- gold text on champagne tints: gold flags at 4.21:1, the demonstration banner at 4.40:1
-- white on the "Not attending" switch: 3.97:1
-- informative placeholders ("Vendor not known yet"): 3.70:1
-- the rose ♡ text glyph on preferred packages: 4.15:1
-- the "Untitled" document title placeholder in decor ink: 2.77:1
-- non-text: the idle keen heart, drag handle and tick-box ring (2.77:1); payment dots in the month (2.36:1)
+Every pair is listed with its ratio at the foot of `tokens.css`. Ink and muted ink pass AA everywhere, including the strongest point of the glow (4.76:1). Rose text uses `--accent-attention-text` (5.68:1 on white, 4.85:1 on its wash). Gold text uses `--accent-gold-text` on white (5.02:1) and `--accent-gold-text-on-tint` on champagne tints (4.97:1 or more). "Not attending" is white on muted ink (5.68:1). Idle controls use `--color-control-outline` (3.34:1) and payment dots gold ink (5.02:1).
 
-Proposed fixes are in `tokens.css` and under open questions 5, 6 and 14. Threads and stage steps are below 3:1 too, but they always repeat their meaning in words.
+**Still below AA** (open question 21):
+- informative placeholders ("Vendor not known yet", "No estimate"): 3.70:1
+- the "Untitled" document title placeholder in decor ink: 2.77:1
+
+Threads and stage steps are below 3:1 too, but they always repeat their meaning in words.
 
 ### Focus
 - Every focusable thing gets a 2px rose outline with a 3px offset (`:focus-visible`).
@@ -1119,7 +1130,7 @@ Proposed fixes are in `tokens.css` and under open questions 5, 6 and 14. Threads
 - Loading sets `aria-busy` with a hidden "Loading …" line; skeletons are hidden.
 - Search inputs have hidden labels; the date card in a due row is hidden because the meta line says the date in words.
 - Guest numbers read "Guest number 12".
-- Month cells read "Thursday 15 October, 2 things".
+- Month cells read everything their marks show: "Wednesday 14 October, today, selected, 2 events", "Saturday 20 March 2027, the wedding day, nothing".
 
 ### Reduced motion
 Under `prefers-reduced-motion: reduce`, every animation and transition runs in 0.001ms: spinners, shimmer, flash, chevrons and the upload bar.
@@ -1128,7 +1139,7 @@ Under `prefers-reduced-motion: reduce`, every animation and transition runs in 0
 - **Pills, toolbar buttons, stars, ticks and steppers:** 34px or more.
 - **The RSVP switch** grows on phones to about 34px.
 - **Fields:** a 56px minimum row height.
-- **Gaps** (under 24px or tight): the task tick box (22px), step checkboxes (18px), event chips on an item row (about 23px high), the step "×" and the keen heart (about 30px with its padding, in a dense row). See open question 14.
+- **Small targets, now at least 24px:** the task tick box (24px), step checkboxes (24px), the step × (32px), event chips on an item row (26px high). The keen heart is about 30px with its padding.
 
 ### Language and direction
 `lang="en"`. Every piece of user-entered text carries `dir="auto"`, so Arabic and Hebrew names run right-to-left in place while the layout stays left-to-right.
@@ -1143,13 +1154,13 @@ How the prototype handles extremes (`?stress` on any screen).
   - **Truncated with "…" where the full text is one tap away:** a finalist's next step (120 characters), venue notes in a row (140), guest food notes (90), document extracts (4 lines on a card, 1 line in a row), focus chips (280px), path segments (260px), file meta (1 line).
 - **Other scripts and right-to-left:** Chinese, Japanese, Thai and Arabic appear in names, categories, folders, files and documents. `dir="auto"` keeps each in its own direction. Cormorant and Jost fall back to the system's fonts for scripts they don't cover.
 - **Thousands of items:** lists page instead of rendering everything:
-  - 100: bookings, vendors, guests, files in a folder
+  - 100: bookings, vendors, guests, files in a folder, open tasks, finished tasks
   - 60: payments, finalists, venues, documents
   - 80: agenda
   - 150: items
   - 50: what-if
-  - the count line says "showing N of M"
-  - Tasks stop at 200 open and 200 finished, and a file search at 200 hits, without saying so (open question 15).
+  - 200: file search hits
+  - the count line says "showing N of M", and the button says how many more. Nothing stops silently.
 - **Deep nesting:**
   - **A 40-part booking:** listed in full on the booking; collapsed in the ledger to the first 4 still owing plus "and 36 more parts".
   - **Other collapses:** a 25-part what-if shows 5 + "and 20 more parts"; 30 packages show 4 on a card + "and 26 more packages"; the work-on-next card shows 12 + "and N more"; who would pay shows 8 + "and N more funders".
@@ -1164,34 +1175,41 @@ How the prototype handles extremes (`?stress` on any screen).
 - **Many people or roles:** 14 funders, among them a 90-character family name and four non-Latin ones, wrap in the funder list, the chips and the selects. "paid by 3 funders" replaces lists longer than two.
 - **Huge numbers:**
   - a 13-digit price
-  - "Rp 9.876.543.210.000.000" figures (the budget shrinks them; other screens let them wrap)
-  - 98,765,432 followers shown as "98.8M"; 12,345 as "12.3k"
-  - 125,000 guests capacity
+  - "Rp 9.876.543.210.000.000" figures, which shrink on every screen and never wrap
+  - 98.765.432 followers shown as "98.8M"; 12.345 as "12.3k"
+  - "Up to 125.000 guests"
 - **Tiny and huge images:** a 2 × 2 px image, a 6000 × 400 panorama and a 300 × 5000 portrait. Tiles crop to fill (`object-fit: cover`); the file preview fits whole (`contain`). File sizes from 1 KB to 10.0 MB.
-- **Long account email** in the menu and settings wraps (settings) or should wrap (menu, open question 15).
+- **Long account email** wraps in the menu and in settings.
 
 ---
 
 ## 10. Open questions
 
-Places where screens disagree, or where the prototype falls short of a rule above. Each one is also logged in `decisions.md` under stage 3. None has been changed. The owner decides.
+Still undecided. Each is also logged in `decisions.md` under stage 3.
 
-1. **How a preferred package is marked.** Vendor and finalist screens mark the preferred price option or package in gold italic: "*The one we're leaning towards*". Shortlist cards instead put a rose "♡" before it and set it a little bolder. Rose is meant only for what needs you (plus the keen heart). Suggestion: gold italic on the cards too.
-2. **Save button vs saving as you go.** Screens save every change at once (booking, vendor, finalist, settings, items, tasks, the file details sheet with "Done"). But sheets that edit an existing record need **Save**: the event, guest, what-if item, venue, price option and package sheets. Cancel or Close there throws the edits away. A6 asks for no separate save step. Options: (a) those sheets save as you go and end with "Done", like the file sheet; (b) keep Save in sheets and say so as the rule.
-3. **Demonstration mode, buttons.** Some screens disable the add action up front (what-if's "Add a what-if item", "Save the date", Add a booking). Others leave it active and disable the button inside the sheet (vendors' empty "Add a vendor", schedule, tasks, guests, shortlist, venues). Items' "Start with common items" even fills the list and then toasts "Not saved". Pick one rule. Suggestion: actions stay enabled and open their sheet, and only the final button is disabled, with the line "Demonstration mode: adding is turned off."
-4. **"Show 100 more" vs "Show more".** Bookings, vendors, documents, guests, items and what-if say how many more; payments, venues, files, the shortlist and the agenda just say "Show more". Suggestion: always say the number.
-5. **The "Not attending" colour.** The pressed segment uses `#8d7b83`, which isn't in the palette, and white text on it is 3.97:1, below AA. Suggestion: muted ink `--color-text-muted` (5.68:1).
-6. **Gold text on champagne tints.** Gold flags ("due in 4 days", "Now a booking") at 4.21:1 and the demonstration banner at 4.40:1 fall below AA. Suggestion: the proposed `--accent-gold-text-on-tint` `#7d5f27` on tinted backgrounds only.
-7. **Item column names.** The wedding items table heads its columns "Next" and "Done", while the controls are "Work on next" and "Confirmed" and the figure says "Confirmed". "Done" also means a vendor stage and finished tasks. Suggestion: head the column "Confirmed".
-8. **"What each family has paid".** The Who pays sub line says "family", but since P2 the funders include Greg and Bella themselves. Suggestion: "What each of you and your families have paid, and what's still to pay."
-9. **Overpaid at budget level vs on a booking.** A booking that's overpaid says "Overpaid by" and shows the amount as a positive rose figure. When the whole budget is overpaid, it says "Paid beyond what's committed" and shows a negative figure. The figure also puts the minus after "Rp" ("Rp −12.000.000"), while every other amount puts it first ("−Rp 12.000.000"). Suggestion: the budget follows the booking ("Overpaid by", positive), and the minus always comes first.
-10. **Very long figures.** The budget shrinks a figure longer than 13 digits; payments, a booking, a vendor, a finalist and what-if let it wrap onto two lines. Suggestion: shrink everywhere, since a wrapped number is hard to read.
-11. **Width when switching tabs.** Agenda and Month use the wide column, and Tasks the narrow one, so the page jumps in width when you switch between these three sibling tabs. (Vendors · Shortlist · Venues and Documents · Files all stay wide.) Suggestion: Tasks wide too, or all three narrow.
-12. **Number grouping.** Money uses Indonesian dots ("Rp 1.206.000"), while counts use English commas ("1,206 bookings"). Side by side, these can be misread. The separators are still a placeholder until the owner confirms them (decision, stage 1). Suggestion: dots for both, or keep commas for counts and confirm that's fine.
-13. **Demonstration mode shows your names and date.** Demonstration mode is meant to show no data, but the top bar still reads "Greg & Bella" and the overview counts the days to the real wedding date. Suggestion: neutral placeholders ("Our wedding planner", no countdown) in demonstration mode.
-14. **Small or faint controls.** The task tick box (22px), step checkboxes (18px) and item event chips (about 23px high) are under the 24px minimum. The idle keen heart, drag handle and tick-box ring are 2.77:1 against white, and the month's payment dots 2.36:1, under the 3:1 for meaningful marks. The month cells don't announce today, the selected day or the wedding day. Suggestion: 24px or more for those targets, the proposed `--color-control-outline` for idle outlines, gold-ink for payment dots, and fuller cell labels ("today", "wedding day", "2 payments, 1 task").
-15. **Lists that stop without saying so.** Tasks show at most 200 open and 200 finished, and a file search 200 hits, with no "Show more" and no count of what's hidden. The account email in the menu doesn't wrap, so a very long one runs off a phone screen. Suggestion: the same "Show N more" and count line as other lists; let the email wrap.
-16. **Files on a record vs in Files.** Adding files to a booking, vendor, finalist or venue uses a drop tile ("Add files") with no name, category or description. Uploading in Files asks for all three per file (R10). The two also word "too large" differently. Suggestion: the record's "Add files" opens the same upload sheet, and the files go into Files too, in a folder named after the record.
-17. **Category rename has no undo.** Renaming or adding a vendor category gives a plain toast, while renaming a funder or folder offers Undo. Suggestion: undo on all renames.
-18. **The "Payments" filter in the schedule.** It shows payments due from bookings only. An event you add yourself with the kind "Payment" appears under "Everything" and "Our events", not under "Payments". Suggestion: "Payments" includes both.
-19. **Shortlist ordering has no direction.** Unlike every other list, the shortlist's Order by has no Ascending/Descending word: price always goes low to high, and reviews and followers high to low. Suggestion: add the direction word, or say this is deliberate.
+20. **Decimals.** Thousands now use dots everywhere ("1.206 bookings"), but decimals still use a point: ratings ("4.8 from 96 reviews"), file sizes ("33.1 MB") and big counts ("98.8M followers"). With dots for thousands, the Indonesian habit is a comma for decimals ("4,8", "33,1 MB"), which document tables already accept ("2,5"). Suggestion: commas for decimals, so a dot always means thousands.
+21. **Faint placeholders.** Placeholders that carry meaning ("Vendor not known yet", "No estimate") are 3.70:1, and the document's "*Untitled*" placeholder 2.77:1, below AA. Suggestion: full muted ink for placeholders (5.68:1), keeping the italic.
+22. **The link sheet still has Save.** In a document, "Edit link" changes the link only when you press Save; every other sheet that edits now saves as you go. Suggestion: keep Save here, because a half-typed web address shouldn't replace a working link while you type. Or make it save as you go like the rest.
+
+### Decided (2026-10-14)
+The owner's answers to the first 19 questions. All are built into the prototype and described above.
+
+1. A preferred package is in **gold italic everywhere**; the rose ♡ on shortlist cards is gone.
+2. Sheets that edit an existing record **save as you go and end with Done**.
+3. Demonstration mode: **actions open their sheet; only the final button is disabled**, with "Demonstration mode: adding is turned off."
+4. Paging always gives the number: **"Show 60 more"**.
+5. "Not attending" uses **muted ink**.
+6. Gold text on champagne tints uses **`--accent-gold-text-on-tint`** (`#7d5f27`).
+7. The items column is headed **"Confirmed"**.
+8. Who pays: **"What each of you and your families have paid, and what's still to pay"**.
+9. An overpaid budget says **"Overpaid by"** with a positive figure; the minus always comes first.
+10. Very long figures **shrink** on every screen.
+11. **Tasks uses the wide column.**
+12. **Dots** group thousands in counts too.
+13. Demonstration mode shows **no names, no countdown, nobody signed in**.
+14. **Targets of at least 24px, `--color-control-outline` for idle outlines, gold-ink payment dots, full month-cell labels.**
+15. Tasks and file search **page with a count**; the menu's email **wraps**.
+16. "Add files" on a record **opens the shared upload sheet**, filing into a folder named after the record.
+17. **Undo on every rename.**
+18. The schedule's "Payments" filter **includes your own Payment events**.
+19. The shortlist's Order by has **Ascending / Descending**.

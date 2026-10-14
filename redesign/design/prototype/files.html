@@ -33,22 +33,7 @@
   .tree label { display: flex; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 15px; overflow-wrap: anywhere; }
   .tree input { accent-color: var(--rose); flex: none; }
   .tree .off { color: var(--ink-3); cursor: not-allowed; }
-  .queue { list-style: none; margin-top: 18px; border-top: 1px solid var(--line); }
-  .queue > li { padding: 14px 2px; border-bottom: 1px solid var(--line); }
-  .queue .qh { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
-  .queue .qn { font-weight: 450; overflow-wrap: anywhere; min-width: 0; }
-  .queue .qs { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
-  .queue .qs.bad { color: var(--rose-ink); white-space: normal; text-align: right; }
-  .queue .qs.ok { color: var(--sage-ink); }
-  .queue .bar { height: 3px; background: var(--champagne-soft); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-  .queue .bar span { display: block; height: 100%; background: var(--champagne); transition: width .3s; }
-  .queue .qf { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .queue .qf input { border: 1px solid var(--line-2); border-radius: 10px; padding: 7px 10px; font-size: 14px; background: #fff; min-width: 0; }
-  .queue .qf input.wide { grid-column: 1 / -1; }
-  .drop-zone { margin-top: 18px; border: 1.5px dashed var(--line-2); border-radius: 18px; padding: 26px; text-align: center; color: var(--ink-2); font-size: 14.5px; }
-  .drop-zone.over { border-color: var(--rose); background: var(--rose-soft); }
-  .drop-zone b { display: block; color: var(--ink); font-weight: 450; margin-bottom: 4px; }
-  @media (max-width: 760px) { .queue .qf { grid-template-columns: 1fr; } .frow .fside { grid-row: auto; grid-column: 2; text-align: left; } .frow .ico { grid-row: span 3; } }
+  @media (max-width: 760px) { .frow .fside { grid-row: auto; grid-column: 2; text-align: left; } .frow .ico { grid-row: span 3; } }
 </style>
 </head>
 <body>
@@ -61,7 +46,7 @@ const V = Veil, S = V.STATE, d = V.data;
 const qp = new URLSearchParams(location.search);
 let here = qp.get("folder") || (S === "emptyfolder" ? "newf" : V.STRESS && S === "deep" ? "deep29" : null);
 if (S === "emptyfolder" && !d.folders.find((x) => x.id === "newf")) d.folders.push({ id: "newf", name: "Rings", parent: null });
-const ui = { q: S === "noresults" ? "passport" : "" };
+const ui = { q: S === "noresults" ? "passport" : "", hits: 200 };
 const FOLDER = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="3" y="7" width="20" height="14" rx="2"/><path d="M3 9l10 7 10-7"/></svg>';
 const EXT = { pdf: "pdf", doc: "doc", sheet: "xls", zip: "zip" };
 const size = (mb) => mb >= 1024 ? `${(Math.round(mb / 102.4) / 10)} GB` : mb < 1 ? `${Math.max(1, Math.round(mb * 1024))} KB` : `${(Math.round(mb * 10) / 10).toString()} MB`;
@@ -109,7 +94,7 @@ function render(main) {
   const focused = document.activeElement && document.activeElement.id === "q";
   main.innerHTML = head + `<div class="tools" style="margin-top:34px"><label class="search">${V.ICON.search}<span class="sr">Find a file</span><input id="q" type="search" placeholder="Find a file in any folder, by name or description" value="${V.esc(ui.q)}"></label></div><div id="list"></div>`;
   wireHead(main); list();
-  const q = V.$("#q"); q.oninput = () => { ui.q = q.value; list(); };
+  const q = V.$("#q"); q.oninput = () => { ui.q = q.value; ui.hits = 200; list(); };
   if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
 }
 
@@ -118,14 +103,16 @@ function list() {
   if (ui.q) {
     const s = ui.q.toLocaleLowerCase();
     const hits = d.files.filter((x) => (x.name + " " + x.desc).toLocaleLowerCase().includes(s));
-    box.innerHTML = hits.length ? `<p class="count">${V.plural(hits.length, "file")} in all folders</p><ul class="ledger" style="margin-top:12px">${hits.slice(0, 200).map((x) => fileRow(x, true)).join("")}</ul>`
+    box.innerHTML = hits.length ? `<p class="count">${V.plural(hits.length, "file")} in all folders${hits.length > ui.hits ? `, showing ${ui.hits.toLocaleString("id-ID")}` : ""}</p><ul class="ledger" style="margin-top:12px">${hits.slice(0, ui.hits).map((x) => fileRow(x, true)).join("")}</ul>
+      ${hits.length > ui.hits ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more-hits">Show ${Math.min(200, hits.length - ui.hits).toLocaleString("id-ID")} more</button></p>` : ""}`
       : `<div class="message inline"><h1>No files match “${V.esc(ui.q)}”</h1><p>The search looks at every folder, by file name and description.</p><div class="acts"><button class="btn quiet" id="clear">Clear the search</button></div></div>`;
     const c = V.$("#clear"); if (c) c.onclick = () => { ui.q = ""; V.$("#q").value = ""; list(); };
+    const mh = V.$("#more-hits"); if (mh) mh.onclick = () => { ui.hits += 200; list(); };
   } else {
     const fs = kids(here), xs = filesIn(here).sort((a, z) => z.date.localeCompare(a.date));
     box.innerHTML = (!fs.length && !xs.length) ? `<div class="message inline"><h1>This folder is empty</h1><p>Upload files into it, or make folders inside it.</p></div>`
       : `${fs.length ? `<h2 class="section-h">Folders</h2><ul class="ledger">${fs.map(folderRow).join("")}</ul>` : ""}
-         ${xs.length ? `<h2 class="section-h">Files <small>newest first</small></h2><ul class="ledger">${xs.slice(0, ui.shown || 100).map((x) => fileRow(x)).join("")}</ul>${xs.length > (ui.shown || 100) ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show more</button></p>` : ""}` : ""}`;
+         ${xs.length ? `<h2 class="section-h">Files <small>newest first</small></h2><ul class="ledger">${xs.slice(0, ui.shown || 100).map((x) => fileRow(x)).join("")}</ul>${xs.length > (ui.shown || 100) ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, xs.length - (ui.shown || 100)).toLocaleString("id-ID")} more</button></p>` : ""}` : ""}`;
     const m = V.$("#more"); if (m) m.onclick = () => { ui.shown = (ui.shown || 100) + 100; list(); };
   }
   V.$$("[data-file]", box).forEach((b) => b.onclick = () => fileSheet(d.files.find((x) => x.id === b.dataset.file)));
@@ -153,7 +140,7 @@ function wireHead(main) {
 
 function folderNameSheet(f) {
   V.openSheet(`<h2>${f ? "Rename folder" : "New folder"}</h2><p class="sub">${f ? "" : `Inside ${V.esc(pathName(here))}`}</p><div class="fields"><div class="field"><label for="fn">Name</label><input id="fn" dir="auto" autofocus value="${V.esc(f ? f.name : "")}" placeholder="For example, Rings"></div></div>
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${f ? "Rename" : "Make folder"}</button></div>`, (el) => {
+    ${V.demoLine(f ? "renaming" : "adding")}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${f ? "Rename" : "Make folder"}</button></div>`, (el) => {
     V.$("[data-x]", el).onclick = V.closeSheet;
     const go = () => {
       const n = V.$("#fn", el).value.trim(); if (!n) { V.$("#fn", el).focus(); return; }
@@ -179,7 +166,7 @@ function moveSheet({ file, folder }) {
       <li><label class="${from === null ? "off" : ""}"><input type="radio" name="to" value="" ${from === null ? "disabled" : ""}>Files, the top level${from === null ? " (it's here now)" : ""}</label></li>
       ${opts.map(([f, depth]) => { const off = blocked.includes(f.id) || f.id === from; return `<li><label class="${off ? "off" : ""}" style="padding-left:${4 + Math.min(depth, 12) * 16}px"><input type="radio" name="to" value="${f.id}" ${off ? "disabled" : ""}><span dir="auto">${V.esc(f.name)}</span>${f.id === from ? " (it's here now)" : blocked.includes(f.id) && f.id !== folder.id ? " (inside it)" : f.id === (folder && folder.id) ? " (this folder)" : ""}</label></li>`; }).join("")}
     </ul>
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok disabled>Move here</button></div>`, (el) => {
+    ${V.demoLine("moving")}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok disabled>Move here</button></div>`, (el) => {
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$$("input[name=to]", el).forEach((r) => r.onchange = () => { if (!V.DEMO) V.$("[data-ok]", el).disabled = false; });
     V.$("[data-ok]", el).onclick = () => {
@@ -202,7 +189,13 @@ function fileSheet(x) {
     </div>
     <div class="acts"><a class="btn quiet" href="#" data-later="1">Open</a><a class="btn quiet" href="#" data-later="1">Download</a><button class="btn quiet" data-move>Move</button><button class="btn" data-x>Done</button></div>
     <p style="text-align:center;margin-top:18px"><button class="link rose" data-del>Delete for good</button></p>`, (el) => {
-    ["xn", "xc", "xd"].forEach((k) => V.$("#" + k, el).onchange = (e) => { const key = { xn: "name", xc: "category", xd: "desc" }[k]; const v = e.target.value.trim(); if (key === "name" && !v) { e.target.value = x.name; return; } x[key] = v; V.saved("Saved"); V.rerender(); });
+    ["xn", "xc", "xd"].forEach((k) => V.$("#" + k, el).onchange = (e) => {
+      const key = { xn: "name", xc: "category", xd: "desc" }[k]; const v = e.target.value.trim(), old = x[key];
+      if (key === "name" && !v) { e.target.value = x.name; return; }
+      x[key] = v; V.rerender();
+      /* every rename gets undo (owner, stage 3) */
+      if (key === "name") V.saved(`Renamed to ${V.esc(v)}`, () => { x.name = old; const i = V.$("#xn"); if (i) i.value = old; V.rerender(); }); else V.saved("Saved");
+    });
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$("[data-move]", el).onclick = () => moveSheet({ file: x });
     V.$("[data-del]", el).onclick = async () => {
@@ -212,50 +205,12 @@ function fileSheet(x) {
   });
 }
 
-/* R9: upload several at once, with progress; PDFs over 10 MB are shrunk, other big files are refused */
+/* R9, R10: the shared upload sheet (assets/app.js), filing into the folder you're in */
 function uploadSheet(demoQueue) {
-  V.openSheet(`<h2>Upload files</h2><p class="sub">Into ${V.esc(pathName(here))}. PDF, Word, Excel, CSV, ZIP, text and images, up to 10 MB each. Bigger PDFs are shrunk to fit.</p>
-    <div class="drop-zone" id="dz"><b>Drop files here</b>or <button class="link" id="pick">choose files</button><input type="file" id="fi" multiple hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.txt,image/*"></div>
-    <ul class="queue" id="queue"></ul>
-    <div class="acts"><button class="btn" data-x>Done</button></div>`, (el) => {
-    V.$("[data-x]", el).onclick = V.closeSheet;
-    V.$("#pick", el).onclick = () => V.$("#fi", el).click();
-    V.$("#fi", el).onchange = (e) => add([...e.target.files].map((f) => ({ name: f.name, mb: f.size / 1048576, image: f.type.startsWith("image/") })));
-    const dz = V.$("#dz", el);
-    dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); }; dz.ondragleave = () => dz.classList.remove("over");
-    dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); add([...e.dataTransfer.files].map((f) => ({ name: f.name, mb: f.size / 1048576, image: f.type.startsWith("image/") }))); };
-    if (demoQueue) add(demoQueue, true);
-  });
-  function add(items, frozen) {
-    const q = V.$("#queue");
-    items.forEach((it, n) => {
-      const li = document.createElement("li"), pdf = /\.pdf$/i.test(it.name), big = it.mb > 10;
-      const base = it.name.replace(/\.[^.]+$/, "");
-      li.innerHTML = `<div class="qh"><span class="qn" dir="auto">${V.esc(it.name)}</span><span class="qs">${size(it.mb)}</span></div><div class="bar"><span style="width:0"></span></div>
-        <div class="qf"><input aria-label="Name for ${V.esc(it.name)}" value="${V.esc(base)}" dir="auto"><input aria-label="Category" list="ucats" placeholder="Category, optional" value="${V.esc(it.cat || "")}"><input class="wide" aria-label="Description" placeholder="Description, optional" dir="auto"></div>`;
-      q.appendChild(li);
-      if (!V.$("#ucats")) document.body.insertAdjacentHTML("beforeend", `<datalist id="ucats">${d.FILE_CATEGORIES.map((c) => `<option value="${V.esc(c)}">`).join("")}</datalist>`);
-      const st = V.$(".qs", li), bar = V.$(".bar span", li);
-      const fail = (msg) => { st.className = "qs bad"; st.innerHTML = msg; V.$(".bar", li).remove(); V.$(".qf", li).remove(); };
-      if (it.state === "failed") return fail(`Upload failed. <button class="link rose">Try again</button>`);
-      if (big && !pdf) return fail(`Too large: ${size(it.mb)}. Files can be up to 10 MB; only PDFs are shrunk.`);
-      if (V.DEMO) return fail("Not uploaded: demonstration mode");
-      if (frozen && it.state) { st.textContent = it.state === "shrinking" ? `Shrinking from ${size(it.mb)} to fit under 10 MB` : it.state === "done" ? "Uploaded" : `Uploading, ${it.pct}%`; if (it.state === "done") st.className = "qs ok"; bar.style.width = (it.state === "done" ? 100 : it.pct || 35) + "%"; return; }
-      let pct = 0;
-      if (big) st.textContent = `Shrinking from ${size(it.mb)} to fit under 10 MB`;
-      setTimeout(() => {
-        const tick = setInterval(() => {
-          pct = Math.min(100, pct + 9 + n * 2); bar.style.width = pct + "%"; st.textContent = `Uploading, ${pct}%`;
-          if (pct >= 100) {
-            clearInterval(tick); st.className = "qs ok"; st.textContent = big ? `Uploaded, shrunk to ${size(Math.min(9.4, it.mb * .55))}` : "Uploaded";
-            const [nm, ct, ds] = V.$$(".qf input", li).map((i) => i.value.trim());
-            d.files.push({ id: "u" + Date.now() + n, name: (nm || base) + (it.name.match(/\.[^.]+$/) || [""])[0], folder: here, size: big ? Math.min(9.4, it.mb * .55) : it.mb, date: "2026-10-14", category: ct, desc: ds, type: it.image ? "image" : pdf ? "pdf" : "doc", src: it.image ? "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#fce6ec"/></svg>') : null });
-            const main = V.$("main"); list();
-          }
-        }, 220);
-      }, big ? 1400 : 200);
-    });
-  }
+  V.uploadSheet({ where: pathName(here), demoQueue, onDone: (x) => {
+    d.files.push({ id: "u" + Date.now() + Math.round(Math.random() * 1e4), name: x.name, folder: here, size: x.mb, date: "2026-10-14", category: x.category, desc: x.desc, type: x.type, src: x.src });
+    list();
+  } });
 }
 
 V.init({

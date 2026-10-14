@@ -43,10 +43,10 @@ V.init({
   render(main) {
     const rows = V.byFunder(), B = V.budget();
     main.innerHTML = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>
-      <section class="hero"><h1>Who pays</h1><p class="sub">What each family has paid, and what they still have to pay</p></section>
+      <section class="hero"><h1>Who pays</h1><p class="sub">What each of you and your families have paid, and what's still to pay</p></section>
       ${V.data.bookings.length ? "" : `<p class="note" style="text-align:center">Nothing is booked yet, so nobody owes anything. Funders you add here can be chosen on every booking.</p>`}
       <ul class="funders">${rows.map(row).join("")}
-        ${adding ? `<li class="funder"><span class="who"><label class="sr" for="nf">New funder's name</label><input id="nf" dir="auto" placeholder="For example, Tante Lily" maxlength="60"></span><span></span><div class="acts"><button class="link" data-add-save>Add funder</button><button class="link" data-add-cancel>Cancel</button></div></li>` : ""}
+        ${adding ? `<li class="funder"><span class="who"><label class="sr" for="nf">New funder's name</label><input id="nf" dir="auto" placeholder="For example, Tante Lily" maxlength="60"></span><span></span><div class="acts"><button class="link" data-add-save ${V.DEMO ? "disabled" : ""}>Add funder</button><button class="link" data-add-cancel>Cancel</button></div>${V.DEMO ? `<p class="sub demo-line" style="grid-column:1/-1;text-align:left">Demonstration mode: adding is turned off.</p>` : ""}</li>` : ""}
       </ul>
       ${adding ? "" : `<p style="margin-top:22px"><button class="btn quiet small" id="add">Add a funder</button></p>`}
       ${V.data.bookings.length ? `<p class="note">Together that's <b class="num">${V.rp(B.paid)}</b> paid and <b class="num">${V.rp(B.left)}</b> still to pay, the same totals as the budget. Still to pay is always the price minus what's been paid.</p>` : ""}`;
@@ -87,7 +87,7 @@ function wire(main) {
       if (ok && nv) { const f = { id: "f" + Date.now(), name: nv }; V.data.funders.push(f); V.rerender(); V.saved(`Added ${V.esc(nv)}`, () => { V.data.funders.splice(V.data.funders.indexOf(f), 1); V.rerender(); }); }
       else V.rerender();
     };
-    nf.onkeydown = (e) => { if (e.key === "Enter") done(true); if (e.key === "Escape") { e.stopPropagation(); done(false); } };
+    nf.onkeydown = (e) => { if (e.key === "Enter" && !V.DEMO) done(true); if (e.key === "Escape") { e.stopPropagation(); done(false); } };
     V.$("[data-add-save]", main).onclick = () => done(true);
     V.$("[data-add-cancel]", main).onclick = () => done(false);
   }

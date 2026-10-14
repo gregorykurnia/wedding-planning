@@ -38,9 +38,16 @@ function packageSheet(p) {
       <div class="field"><label for="po">Notes</label><textarea id="po" dir="auto">${V.esc(p ? p.notes : "")}</textarea></div>
       <div class="field"><span class="lab">Files</span><div><button class="link" data-later="1">Attach a file to this package</button></div></div>
     </div>
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${isNew ? "Add package" : "Save"}</button></div>`, (el) => {
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add package</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
     V.$("#pp", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
     V.$("[data-x]", el).onclick = V.closeSheet;
+    if (!isNew) {
+      const save = V.sheetSaver(el);
+      const set = (id, fn) => V.$(id, el).onchange = (e) => save(() => fn(e.target.value));
+      set("#pn", (x) => { p.name = x.trim() || p.name; }); set("#pp", (x) => { p.price = num(x); }); set("#pi", (x) => { p.includes = x; });
+      set("#pr", (x) => { p.reviews = x ? num(x) : null; }); set("#ps", (x) => { p.step = x; }); set("#po", (x) => { p.notes = x; });
+      return;
+    }
     V.$("[data-ok]", el).onclick = () => {
       const t = p || { id: "k" + Date.now(), files: [], preferred: !f.packages.length };
       Object.assign(t, { name: V.$("#pn", el).value.trim() || "Package", price: num(V.$("#pp", el).value), includes: V.$("#pi", el).value, reviews: V.$("#pr", el).value ? num(V.$("#pr", el).value) : null, step: V.$("#ps", el).value, notes: V.$("#po", el).value });
@@ -57,8 +64,10 @@ function moveSheet(to) {
     ? `<h2>Book ${V.esc(f.name)}</h2><p class="sub">It becomes a confirmed booking, with the package you choose as its price.</p>
        <div class="chips" role="radiogroup" aria-label="Package" style="justify-content:center;margin-top:20px">${f.packages.map((k) => `<button class="chip" role="radio" data-k="${k.id}" aria-pressed="${k === p}" aria-checked="${k === p}">${V.esc(k.name)}, ${V.rp(k.price)}</button>`).join("") || `<p class="sub">No packages yet, so the booking starts without a price.</p>`}</div>
        <p class="sub" style="margin-top:18px">Contact, notes and files come along. You'll set the funder and due dates on the booking.</p>
+       ${V.demoLine("booking")}
        <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Book it</button></div>`
     : `<h2>Move ${V.esc(f.name)} into Vendors?</h2><p class="sub">Its packages become price options, and contact, reviews, notes and files come along. It stays on the shortlist too.</p>
+       ${V.demoLine("moving")}
        <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Move into Vendors</button></div>`, (el) => {
     V.$$("[data-k]", el).forEach((c) => c.onclick = () => V.$$("[data-k]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }));
     V.$("[data-x]", el).onclick = V.closeSheet;
@@ -92,7 +101,7 @@ function render(main) {
       <p class="save-state" id="save" role="status">${V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
       <p class="origin">${vendor ? `Copied from <a class="link" href="${V.href("vendor.html", { id: vendor.id })}">${V.esc(vendor.name)}</a> in Vendors. Changes here don't touch it.` : "Added straight to the shortlist"}</p>
       ${booked ? `<p class="origin"><span class="flag gold">Now a booking</span> <a class="link" href="${V.href("booking.html", { id: f.vendor || f.id })}">Open the booking</a></p>` : ""}
-      <div style="margin-top:30px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${String(p.price).length > 13 ? "fit" : ""}">${V.fig(p.price)}</p>` : `<p class="kicker">No package chosen yet</p>`}</div>
+      <div style="margin-top:30px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${V.longFig(p.price)}">${V.fig(p.price)}</p>` : `<p class="kicker">No package chosen yet</p>`}</div>
     </section>
 
     <h2 class="section-h">Packages <small>${V.plural(f.packages.length, "package")}</small></h2>
@@ -119,7 +128,7 @@ function render(main) {
 
     <h2 class="section-h">Files <small>${f.files.length ? V.plural(f.files.length, "file") : "None yet"}</small></h2>
     ${vendor ? `<p class="note" style="margin:-4px 0 14px">Files added to ${V.esc(vendor.name)} in Vendors appear here by themselves.</p>` : ""}
-    ${V.filesGrid(f.files, S === "uploading")}
+    ${V.filesGrid(f.files, S === "uploading", vendor ? `Files › Vendors › ${vendor.name}` : `Files › Shortlist › ${f.name}`)}
 
     ${booked ? "" : `<section class="card" style="margin-top:56px;text-align:center"><h2 class="serif" style="font-size:26px;font-weight:500">Chosen this one?</h2>
       <p class="note" style="margin-top:6px">Book it to make it a confirmed booking${vendor ? "" : ", or move it into Vendors to keep it on file"}. Its details come along, so nothing is typed twice.</p>

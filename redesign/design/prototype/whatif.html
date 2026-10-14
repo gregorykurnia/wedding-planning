@@ -64,14 +64,20 @@ function sheet(w) {
            <div class="field"><span class="lab">Who would pay</span><div class="chips" role="group" aria-label="Who would pay">${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<button type="button" class="chip" data-f="${f.id}" aria-pressed="${(p ? (p.funder ?? "") : "") === f.id}">${V.esc(f.name)}</button>`).join("")}</div></div>`}
     </div>
     ${w && w.parts ? `<p class="sub" style="margin-top:14px">Each part has its own price and funder.</p>` : `<p class="sub" style="margin-top:14px">Splitting into parts comes after adding, as with bookings.</p>`}
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${isNew ? "Add item" : "Save"}</button></div>`, (el) => {
-    V.$$(".chip", el).forEach((c) => c.onclick = () => V.$$(".chip", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))));
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add item</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    const save = isNew ? null : V.sheetSaver(el);
+    const chipsNow = () => V.$(".chip[aria-pressed=true]", el);
+    V.$$(".chip", el).forEach((c) => c.onclick = () => { V.$$(".chip", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) save(() => { w.funder = c.dataset.f || null; }); });
     V.$("[data-x]", el).onclick = V.closeSheet;
+    if (save) {
+      V.$("#wn", el).onchange = (e) => { const v = e.target.value.trim(); if (!v) { e.target.value = w.name; return; } save(() => { w.name = v; }); };
+      const wp = V.$("#wp", el); if (wp) wp.onchange = (e) => { const v = num(e.target.value); e.target.value = V.rp(v); save(() => { w.price = v; }); };
+      return;
+    }
     V.$("[data-ok]", el).onclick = () => {
       const name = V.$("#wn", el).value.trim(); if (!name) { V.$("#wn", el).focus(); return; }
-      const chip = V.$(".chip[aria-pressed=true]", el);
-      if (isNew) { const n = { id: "w" + Date.now(), name, category: "", price: num(V.$("#wp", el).value), funder: chip && chip.dataset.f || null }; V.data.whatifs.unshift(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(name)}`, () => { V.data.whatifs.shift(); V.rerender(); }); }
-      else { w.name = name; if (!w.parts) { w.price = num(V.$("#wp", el).value); w.funder = chip && chip.dataset.f || null; } V.closeSheet(); V.rerender(); V.saved("Saved"); }
+      const chip = chipsNow();
+      const n = { id: "w" + Date.now(), name, category: "", price: num(V.$("#wp", el).value), funder: chip && chip.dataset.f || null }; V.data.whatifs.unshift(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(name)}`, () => { V.data.whatifs.shift(); V.rerender(); });
     };
   });
 }
@@ -83,7 +89,7 @@ V.init({
     const d = V.data, B = V.budget(), wi = V.whatif();
     const back = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>`;
     if (!d.whatifs.length) {
-      main.innerHTML = back + `<section class="hero"><h1>What-if items</h1></section><div class="message inline">${V.ICON.knot}<h1>Try an idea before you commit</h1><p>Add something you're weighing up, like fireworks or a second photographer, and see what the total would become. It stays apart from your real bookings.</p><div class="acts"><button class="btn" id="add" ${V.DEMO ? "disabled" : ""}>Add a what-if item</button></div></div>`;
+      main.innerHTML = back + `<section class="hero"><h1>What-if items</h1></section><div class="message inline">${V.ICON.knot}<h1>Try an idea before you commit</h1><p>Add something you're weighing up, like fireworks or a second photographer, and see what the total would become. It stays apart from your real bookings.</p><div class="acts"><button class="btn" id="add">Add a what-if item</button></div></div>`;
       V.$("#add", main).onclick = () => sheet(null);
       return;
     }
@@ -96,7 +102,7 @@ V.init({
 
     main.innerHTML = back + `<section class="hero">
         <p class="kicker">If you went ahead with everything here</p>
-        <p class="figure md num ${String(projected).length > 13 ? "fit" : ""}">${V.fig(projected)}</p>
+        <p class="figure md num ${V.longFig(projected)}">${V.fig(projected)}</p>
         <p class="context"><b class="num">${V.rp(B.price)}</b> already committed, plus <b class="num">${V.rp(wi)}</b> in what-if items</p>
         <div class="thread" role="img" aria-label="${share}% committed, the rest what-if"><span class="done" style="width:${share}%"></span><span class="maybe" style="left:${share}%;right:0"></span><span class="ends"><span>Committed</span><span>What-if</span></span></div>
       </section>
@@ -105,8 +111,8 @@ V.init({
       <h2 class="section-h">Items <small>${V.plural(d.whatifs.length, "item")}</small></h2>
       <div class="tools" style="margin-top:4px;justify-content:flex-end"><div class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></div></div>
       <ul class="ledger">${sortedItems().slice(0, ui.shown).map(item).join("")}</ul>
-      ${d.whatifs.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(50, d.whatifs.length - ui.shown)} more</button></p>` : ""}
-      <button class="btn add-fab" id="add" ${V.DEMO ? "disabled" : ""}>Add a what-if item</button>`;
+      ${d.whatifs.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(50, d.whatifs.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}
+      <button class="btn add-fab" id="add">Add a what-if item</button>`;
     V.$("#add", main).onclick = () => sheet(null);
     V.$("#ord", main).onchange = (e) => { ui.order = e.target.value; ui.asc = ui.order !== "price"; V.rerender(); };
     V.$("#dir", main).onclick = () => { ui.asc = !ui.asc; V.rerender(); };

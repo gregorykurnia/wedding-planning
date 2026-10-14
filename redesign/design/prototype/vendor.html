@@ -40,9 +40,17 @@ function optionSheet(o) {
       <div class="field"><label for="oi">What's included</label><textarea id="oi" dir="auto">${V.esc(o ? o.includes : "")}</textarea></div>
       <div class="field"><span class="lab"></span><label class="check"><input type="checkbox" id="opf" ${o ? (o.preferred ? "checked" : "") : (v.prices.length ? "" : "checked")}>The one we're leaning towards</label></div>
     </div>
-    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${isNew ? "Add option" : "Save"}</button></div>`, (el) => {
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add option</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
     V.$("#op", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
     V.$("[data-x]", el).onclick = V.closeSheet;
+    if (!isNew) {
+      const save = V.sheetSaver(el);
+      V.$("#on", el).onchange = (e) => save(() => { o.name = e.target.value.trim() || o.name; });
+      V.$("#op", el).onchange = (e) => save(() => { o.price = num(e.target.value); });
+      V.$("#oi", el).onchange = (e) => save(() => { o.includes = e.target.value; });
+      V.$("#opf", el).onchange = (e) => save(() => { if (e.target.checked) v.prices.forEach((x) => x.preferred = false); o.preferred = e.target.checked; });
+      return;
+    }
     V.$("[data-ok]", el).onclick = () => {
       const name = V.$("#on", el).value.trim() || "Price option";
       const t = o || { id: "o" + Date.now() };
@@ -67,7 +75,7 @@ function render(main) {
       <p class="save-state ${failed ? "failed" : ""}" id="save" role="status">${failed ? "1 change not saved" : V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
       <div class="chips" role="group" aria-label="Stage" style="justify-content:center;margin-top:18px">${stageChips}</div>
       ${b ? `<p class="origin">Chosen, and now a booking. <a class="link" href="${V.href("booking.html", { id: b.id })}">Open the booking</a></p>` : ""}
-      <div style="margin-top:34px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${String(p.price).length > 13 ? "fit" : ""}">${V.fig(p.price)}</p>` : `<p class="kicker">No price yet</p><p class="context">Add the prices they give you below, and mark the one you're leaning towards.</p>`}</div>
+      <div style="margin-top:34px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${V.longFig(p.price)}">${V.fig(p.price)}</p>` : `<p class="kicker">No price yet</p><p class="context">Add the prices they give you below, and mark the one you're leaning towards.</p>`}</div>
     </section>
 
     <h2 class="section-h">Contact and reputation</h2>
@@ -92,11 +100,11 @@ function render(main) {
       : v.notes ? `<div class="notes-view" dir="auto">${V.linkify(v.notes)}</div>` : `<p class="note">Nothing written yet.</p>`}
 
     <h2 class="section-h">Files <small>${v.files.length ? V.plural(v.files.length, "file") : "None yet"}</small></h2>
-    ${V.filesGrid(v.files, S === "uploading")}
+    ${V.filesGrid(v.files, S === "uploading", `Files › Vendors › ${v.name}`)}
 
     <section class="card" style="margin-top:56px;text-align:center">
       ${f ? `<h2 class="serif" style="font-size:26px;font-weight:500">On the shortlist</h2><p class="note" style="margin-top:6px">The shortlist has its own copy, so you can compare packages there without changing this vendor. New files here appear there too.</p><p style="margin-top:16px"><a class="btn quiet" href="${V.href("finalist.html", { id: f.id })}">Open on the shortlist</a></p>`
-        : `<h2 class="serif" style="font-size:26px;font-weight:500">Narrowing down ${V.esc(v.category)}?</h2><p class="note" style="margin-top:6px">Copy this vendor to the shortlist with its prices, contact, reviews, notes and files. This vendor stays exactly as it is.</p><p style="margin-top:16px"><button class="btn" id="copy" ${V.DEMO ? "disabled" : ""}>Copy to the shortlist</button></p>`}
+        : `<h2 class="serif" style="font-size:26px;font-weight:500">Narrowing down ${V.esc(v.category)}?</h2><p class="note" style="margin-top:6px">Copy this vendor to the shortlist with its prices, contact, reviews, notes and files. This vendor stays exactly as it is.</p><p style="margin-top:16px"><button class="btn" id="copy" ${V.DEMO ? "disabled" : ""}>Copy to the shortlist</button></p>${V.demoLine("copying")}`}
     </section>`;
   wire(main);
 }

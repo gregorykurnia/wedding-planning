@@ -9,9 +9,8 @@
    build can map one to the other.
 
    Status: draft for the design guide (stage 3). Not frozen or versioned;
-   that happens at stage 5. Values marked PROPOSED are not in the
-   prototype. They answer an open question in design-guide.md and only
-   apply once the owner agrees.
+   that happens at stage 5. The owner's answers to the stage 3 questions
+   (2026-10-14) are applied here and in the prototype.
    ===================================================================== */
 
 :root {
@@ -22,7 +21,7 @@
   --color-text:              #33262c;  /* [--ink] all body text, titles, primary button and toast fill */
   --color-text-strong-hover: #4a3740;  /* [.btn:hover] the primary button on hover */
   --color-text-muted:        #74626a;  /* [--ink-2] meta lines, labels, hints, kickers */
-  --color-decor:             #a8979e;  /* [--ink-3] chevrons, dotted leaders, idle icons. Never text */
+  --color-decor:             #a8979e;  /* [--ink-3] chevrons, dotted leaders, path separators. Never text, never a control's outline */
   --color-rule:              #f0e2e6;  /* [--line] hairlines between rows and sections */
   --color-edge:              #e6d3d9;  /* [--line-2] chip, quiet button, date card and input edges */
   --color-card-edge:         #f3d9e0;  /* [.card, .paper] the blush edge of cards and the document page */
@@ -67,20 +66,20 @@
   /* Champagne and gold: progress, worked-out values, the stationery thread. */
   --accent-thread:           #c6a466;  /* [--champagne] thread fill, stage steps, progress bars, "&" in the names */
   --accent-thread-track:     #f4ead7;  /* [--champagne-soft] the unfilled thread; same value as --glow-champagne */
-  --accent-gold-text:        #8a6a2e;  /* [--gold-ink] champagne as text: totals, guest numbers, "not saved yet" */
-  /* PROPOSED (open question 6): gold text on champagne tints, which currently falls under 4.5:1. */
-  --accent-gold-text-on-tint: #7d5f27; /* 4.97:1 on --glow-champagne, 5.20:1 on --surface-banner */
+  --accent-gold-text:        #8a6a2e;  /* [--gold-ink] champagne as text: totals, guest numbers, "not saved yet", the preferred package, payment dots */
+  --accent-gold-text-on-tint: #7d5f27; /* [--gold-ink-tint] gold text on champagne tints: gold flags, banners, the sorted note, calm sign-in notes.
+                                          4.97:1 on --glow-champagne, 5.20:1 on --surface-banner (owner, stage 3) */
 
   /* Sage: settled and done, used sparingly. */
   --accent-settled-text:     #4f6b55;  /* [--sage-ink] "Paid in full", tasks, WhatsApp, saved tick, RSVP attending */
   --accent-settled-wash:     #e3f0e6;  /* confirmed tick fill (items) */
 
   /* Small one-offs */
-  --accent-declined:         #8d7b83;  /* RSVP "Not attending" pressed. Off-palette: see open question 5 */
   --accent-toast-action:     #f0d9a8;  /* Undo / Open in a toast, on ink */
+  /* RSVP "Not attending" pressed uses --color-text-muted (owner, stage 3; was an off-palette #8d7b83). */
 
-  /* PROPOSED (accessibility gaps): idle control outlines that reach 3:1 on white. */
-  --color-control-outline:   #9a888f;  /* 3.34:1. Would replace --color-decor on the idle keen heart, handle and tick box */
+  /* Idle outlines of controls you can press: keen heart, drag handle, idle star and tick, task tick ring. */
+  --color-control-outline:   #9a888f;  /* [--control-outline] 3.34:1 on white (owner, stage 3) */
 
   /* ------------------------------------------------------------------
      4. Colour: the document editor's own palette (R1)
@@ -379,22 +378,21 @@
     4.83  --accent-gold-text on --surface-warm (totals, today)
     4.66  --accent-gold-text on --surface-mist (file type on a tile)
     4.51  --accent-gold-text on --surface-note ("Sorted for now"), just passes
-    4.40  --accent-gold-text on --surface-banner           FAILS at 14px (demonstration banner, calm sign-in notes)
+    5.20  --accent-gold-text-on-tint on --surface-banner (demonstration banner, calm sign-in notes)
+    4.97  --accent-gold-text-on-tint on --glow-champagne (gold flags: "due in 4 days", "Now a booking")
     4.23  --accent-gold-text on --glow-blush               passes only as large text (overview names, 30px+)
-    4.21  --accent-gold-text on --glow-champagne           FAILS at 13.5px (gold flags: "due in 4 days", "Now a booking")
     5.77  --doc-ink-cornflower on white;  8.51  --doc-ink-plum on white
-    4.15  --accent-attention on white                      FAILS as text: the ♡ before a preferred package
-    3.49  --accent-attention on --glow-blush               decorative ♡ on the wedding day (desktop only)
-    3.97  white on --accent-declined                       FAILS at 13–14px (RSVP "Not attending" pressed)
-    3.70  placeholder (--color-text-muted at 80%) on white  FAILS where the placeholder carries meaning ("Vendor not known yet")
-    2.77  --color-decor on white                           never used for words, except the document title placeholder "Untitled"
+    3.49  --accent-attention on --glow-blush               decorative ♡ on the wedding day (desktop only; the cell label says it)
+    5.68  white on --color-text-muted (RSVP "Not attending" pressed)
+    3.70  placeholder (--color-text-muted at 80%) on white  FAILS where the placeholder carries meaning ("Vendor not known yet"); open question 21
+    2.77  --color-decor on white                           never used for words, except the document title placeholder "Untitled" (open question 21)
     2.36  --accent-thread on white                         used for the "&" in the names (decorative)
 
    Non-text marks (need 3:1 when they carry meaning)
     4.15  focus ring (--accent-attention) on white; 3.48 against the ink button it surrounds
-    2.77  idle keen heart, drag handle, tick-box ring (--color-decor)   FAILS; PROPOSED --color-control-outline 3.34
-    2.36  thread fill, stage steps, payment dots (--accent-thread)       FAILS; the thread and stage repeat their meaning
-          in words ("42% paid", the stage name), the month's payment dots don't
+    3.34  idle keen heart, drag handle, star, tick and tick-box ring (--color-control-outline)
+    5.02  payment dots in the month (--accent-gold-text); every cell's label also names what's on that day
+    2.36  thread fill, stage steps (--accent-thread)       below 3:1, but both repeat their meaning in words ("54% paid", the stage name)
     1.43  --color-edge (chip, field and quiet-button edges)            identification relies on the text inside
     1.19  --accent-thread-track (thread track)                         decorative
    ===================================================================== */

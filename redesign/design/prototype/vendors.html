@@ -59,7 +59,7 @@ function list() {
     shown.forEach((v) => (groups[v.category] = groups[v.category] || []).push(v));
     html = Object.entries(groups).map(([c, vs]) => `<h2 class="cat-h" dir="auto">${V.esc(c)}<small>${V.plural(rows.filter((v) => v.category === c).length, "vendor")}</small></h2><ul class="ledger">${vs.map((v) => row(v, false)).join("")}</ul>`).join("");
   } else html = `<ul class="ledger" style="margin-top:18px">${shown.map((v) => row(v, !ui.cat)).join("")}</ul>`;
-  box.innerHTML = `<p class="count">${ui.q || ui.cat || ui.keen ? `${V.plural(rows.length, "vendor")} here` : `${V.plural(rows.length, "vendor")}`}${rows.length > ui.shown ? `, showing ${ui.shown.toLocaleString("en-GB")}` : ""}. <button class="link" id="export">Export ${rows.length === d.vendors.length ? "all" : "these"} to a spreadsheet</button></p>${html}
+  box.innerHTML = `<p class="count">${ui.q || ui.cat || ui.keen ? `${V.plural(rows.length, "vendor")} here` : `${V.plural(rows.length, "vendor")}`}${rows.length > ui.shown ? `, showing ${ui.shown.toLocaleString("id-ID")}` : ""}. <button class="link" id="export">Export ${rows.length === d.vendors.length ? "all" : "these"} to a spreadsheet</button></p>${html}
     ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown)} more</button></p>` : ""}`;
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
   V.$("#export").onclick = () => exportCsv(rows);
@@ -77,7 +77,7 @@ function exportCsv(rows) {
   const lines = [cols.map(q).join(",")].concat(rows.map((v) => [v.name, v.category, v.contact, v.phone, v.stage === "out" ? "Ruled out" : d.STAGES.find(([k]) => k === v.stage)[1], v.rating, v.reviewers, (preferred(v) || {}).price, v.notes].map(q).join(",")));
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv" }));
-  a.download = `vendors-${V.data.couple.join("-").toLowerCase().replace(/\s+/g, "-")}.csv`;
+  a.download = `vendors-${(V.data.couple || ["our", "wedding"]).join("-").toLowerCase().replace(/\s+/g, "-")}.csv`;
   a.click();
   V.toast(`Exported ${V.plural(rows.length, "vendor")} to ${a.download}`);
 }
@@ -85,7 +85,7 @@ function exportCsv(rows) {
 function hero() {
   const h = V.$("#hero-sub"); if (!h) return;
   const keen = d.vendors.filter((v) => v.keen).length;
-  h.textContent = `${V.plural(d.vendors.length, "vendor")}${keen ? `, ${keen.toLocaleString("en-GB")} you're keen on` : ""}`;
+  h.textContent = `${V.plural(d.vendors.length, "vendor")}${keen ? `, ${keen.toLocaleString("id-ID")} you're keen on` : ""}`;
 }
 
 /* F6: capture a vendor in a few seconds */
@@ -120,6 +120,7 @@ function catsSheet(state) {
       ${c.own ? `<div class="acts"><button class="link" data-ren="${i}">Rename</button><button class="link rose" data-del="${i}">Remove</button></div>` : ""}</li>`).join("")}</ul>
     <div class="fields" style="margin-top:18px"><div class="field ${state === "taken" ? "failed" : ""}"><label for="nc">New category</label><input id="nc" maxlength="40" placeholder="Up to 40 characters" value="${state === "taken" ? "Catering" : ""}">
       ${state === "taken" ? `<p class="err">There's already a category called Catering.</p>` : `<p class="hint" id="nc-left">40 characters left</p>`}</div></div>
+    ${V.demoLine()}
     <div class="acts"><button class="btn quiet" data-x>Done</button><button class="btn" data-add ${V.DEMO ? "disabled" : ""}>Add category</button></div>`, (el) => {
     const nc = V.$("#nc", el);
     nc.oninput = () => { const h = V.$("#nc-left", el); if (h) h.textContent = `${40 - nc.value.length} characters left`; };
@@ -139,8 +140,10 @@ function catsSheet(state) {
       V.$("[data-save]", li).onclick = () => {
         const n = rc.value.trim(); if (!n || n === c.name) return catsSheet();
         if (d.vendorCats.some((x) => x !== c && x.name.toLocaleLowerCase() === n.toLocaleLowerCase())) { rc.closest(".field").classList.add("failed"); if (!V.$(".err", li)) rc.insertAdjacentHTML("afterend", `<p class="err">That name is taken.</p>`); return; }
-        d.vendors.forEach((v) => { if (v.category === c.name) v.category = n; }); if (ui.cat === c.name) ui.cat = n; c.name = n;
-        V.saved(`Renamed to ${V.esc(n)}`); catsSheet(); V.rerender();
+        const old = c.name, wasCat = ui.cat === old;
+        d.vendors.forEach((v) => { if (v.category === old) v.category = n; }); if (wasCat) ui.cat = n; c.name = n;
+        catsSheet(); V.rerender();
+        V.saved(`Renamed to ${V.esc(n)}`, () => { d.vendors.forEach((v) => { if (v.category === n) v.category = old; }); if (ui.cat === n) ui.cat = old; c.name = old; if (!V.$(".scrim").hidden) catsSheet(); V.rerender(); });
       };
     });
     V.$$("[data-del]", el).forEach((b) => b.onclick = () => {
@@ -162,7 +165,7 @@ V.init({
   render(main) {
     const head = `<section class="hero"><h1>Vendors</h1><p class="sub" id="hero-sub"></p>${V.subnav("vendors.html")}</section>`;
     if (!d.vendors.length) {
-      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No vendors yet</h1><p>Add a vendor the moment you hear about one: a name is enough. Prices, reviews and files can follow.</p><div class="acts"><button class="btn" id="add" ${V.DEMO ? "" : ""}>Add a vendor</button></div></div>`;
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No vendors yet</h1><p>Add a vendor the moment you hear about one: a name is enough. Prices, reviews and files can follow.</p><div class="acts"><button class="btn" id="add">Add a vendor</button></div></div>`;
       V.$("#hero-sub").textContent = "Everyone you're considering";
       V.$("#add").onclick = () => addSheet();
       return;
@@ -170,7 +173,7 @@ V.init({
     const cats = d.vendorCats.map((c) => [c.name, d.vendors.filter((v) => v.category === c.name).length]).filter(([, n]) => n);
     const focused = document.activeElement && document.activeElement.id === "q";
     main.innerHTML = head + `
-      <div class="focus" role="group" aria-label="Focus on a category"><button class="chip" data-cat="" aria-pressed="${!ui.cat}">All<small>${d.vendors.length.toLocaleString("en-GB")}</small></button>${cats.map(([c, n]) => `<button class="chip" data-cat="${V.esc(c)}" aria-pressed="${ui.cat === c}" dir="auto">${V.esc(c)}<small>${n.toLocaleString("en-GB")}</small></button>`).join("")}<button class="chip dashed" id="cats">Edit categories</button></div>
+      <div class="focus" role="group" aria-label="Focus on a category"><button class="chip" data-cat="" aria-pressed="${!ui.cat}">All<small>${d.vendors.length.toLocaleString("id-ID")}</small></button>${cats.map(([c, n]) => `<button class="chip" data-cat="${V.esc(c)}" aria-pressed="${ui.cat === c}" dir="auto">${V.esc(c)}<small>${n.toLocaleString("id-ID")}</small></button>`).join("")}<button class="chip dashed" id="cats">Edit categories</button></div>
       <div class="tools" style="margin-top:18px">
         <label class="search">${V.ICON.search}<span class="sr">Search vendors</span><input id="q" type="search" placeholder="Search names, contacts and notes" value="${V.esc(ui.q)}"></label>
         <div class="toggles"><label class="check"><input type="checkbox" id="keen" ${ui.keen ? "checked" : ""}>Only ones we're keen on</label>

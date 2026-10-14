@@ -16,7 +16,9 @@
   --rose-soft: #fde8ee;
   --champagne: #c6a466;    /* progress, decoration */
   --gold-ink: #8a6a2e;     /* champagne as text, 5:1 */
+  --gold-ink-tint: #7d5f27; /* gold text on champagne tints, 5:1 there (owner, stage 3) */
   --sage-ink: #4f6b55;     /* "paid in full", used sparingly */
+  --control-outline: #9a888f; /* idle hearts, handles and tick rings, 3.3:1 on white */
 
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "Jost", system-ui, sans-serif;
@@ -75,11 +77,10 @@ main.wide { max-width: var(--col-wide); }
 .figure.md { font-size: clamp(48px, 7vw, 88px); }
 .figure .rp { font-size: .38em; font-weight: 400; vertical-align: .95em; margin-right: .2em; color: var(--ink-2); letter-spacing: 0; }
 .figure.late { color: var(--rose-ink); }
-.figure.fit { white-space: normal; overflow-wrap: anywhere; }
 .context { margin-top: 16px; font-size: 16.5px; color: var(--ink-2); }
 .context b { color: var(--ink); font-weight: 450; }
 .flag { display: inline-block; font-size: 13.5px; font-weight: 500; color: var(--rose-ink); background: var(--rose-soft); padding: 3px 12px; border-radius: var(--r-pill); white-space: nowrap; }
-.flag.gold { color: var(--gold-ink); background: var(--champagne-soft); }
+.flag.gold { color: var(--gold-ink-tint); background: var(--champagne-soft); }
 .flag.calm { color: var(--ink-2); background: #f6eef0; font-weight: 400; }
 
 /* the gold thread: how much is paid */
@@ -271,7 +272,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .message.inline h1 { font-size: 28px; }
 
 /* ---------- banners ---------- */
-.banner { margin: 0 auto; max-width: 760px; display: flex; gap: 12px 18px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: 14px; color: var(--gold-ink); background: rgba(244,234,215,.75); border-radius: var(--r-pill); padding: 9px 20px; text-align: center; }
+.banner { margin: 0 auto; max-width: 760px; display: flex; gap: 12px 18px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: 14px; color: var(--gold-ink-tint); background: rgba(244,234,215,.75); border-radius: var(--r-pill); padding: 9px 20px; text-align: center; }
 .banner.rose { color: var(--rose-ink); background: var(--rose-soft); }
 .banner-wrap { padding: 0 24px; }
 
@@ -294,6 +295,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .index li a[aria-current="page"] { font-style: italic; color: var(--gold-ink); }
 .index li a small { display: block; font-family: var(--sans); font-size: 14px; font-style: normal; color: var(--ink-2); margin-top: -2px; }
 .index .account { margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-2); display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.index .account span { max-width: 100%; overflow-wrap: anywhere; }
 
 /* ---------- sheet (phone) / dialog (desktop) ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(51,38,44,.28); z-index: 40; display: grid; place-items: center; padding: 24px; }
@@ -398,7 +400,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .check input { accent-color: var(--rose); width: 16px; height: 16px; }
 
 /* keen: a small heart, the one rose thing in a vendor row */
-.keen { background: none; border: 0; cursor: pointer; padding: 6px; margin: -6px; color: var(--ink-3); line-height: 0; }
+.keen { background: none; border: 0; cursor: pointer; padding: 6px; margin: -6px; color: var(--control-outline); line-height: 0; }
 .keen svg { width: 18px; height: 18px; }
 .keen[aria-pressed="true"] { color: var(--rose); }
 .keen[aria-pressed="true"] path { fill: currentColor; }
@@ -443,8 +445,8 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .fcard .pkgs .pn { overflow-wrap: anywhere; min-width: 0; }
 .fcard .pkgs .lead { flex: 1; border-bottom: 1px dotted var(--ink-3); transform: translateY(-4px); min-width: 16px; }
 .fcard .pkgs .pv { white-space: nowrap; }
-.fcard .pkgs li.preferred .pn, .fcard .pkgs li.preferred .pv { font-weight: 450; }
-.fcard .pkgs li.preferred .pn::before { content: "♡ "; color: var(--rose); }
+/* the package we're leaning towards: gold italic, as on the vendor and finalist screens */
+.fcard .pkgs li.preferred .pn, .fcard .pkgs li.preferred .pv { font-family: var(--serif); font-style: italic; font-size: 17px; font-weight: 500; color: var(--gold-ink); }
 .fcard .step { font-size: 14px; color: var(--ink); border-top: 1px solid var(--line); padding-top: 10px; margin-top: auto; overflow-wrap: anywhere; }
 .fcard .step span { color: var(--ink-2); }
 .fcard.moved { opacity: .7; }
@@ -464,3 +466,25 @@ a.entry:hover { background: rgba(253,232,238,.3); }
   .finalists { grid-template-columns: 1fr; }
   .range input { width: 110px; }
 }
+
+/* ---------- upload sheet (Files and every record) ---------- */
+  .queue { list-style: none; margin-top: 18px; border-top: 1px solid var(--line); }
+  .queue > li { padding: 14px 2px; border-bottom: 1px solid var(--line); }
+  .queue .qh { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
+  .queue .qn { font-weight: 450; overflow-wrap: anywhere; min-width: 0; }
+  .queue .qs { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+  .queue .qs.bad { color: var(--rose-ink); white-space: normal; text-align: right; }
+  .queue .qs.ok { color: var(--sage-ink); }
+  .queue .bar { height: 3px; background: var(--champagne-soft); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .queue .bar span { display: block; height: 100%; background: var(--champagne); transition: width .3s; }
+  .queue .qf { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .queue .qf input { border: 1px solid var(--line-2); border-radius: 10px; padding: 7px 10px; font-size: 14px; background: #fff; min-width: 0; }
+  .queue .qf input.wide { grid-column: 1 / -1; }
+  .drop-zone { margin-top: 18px; border: 1.5px dashed var(--line-2); border-radius: 18px; padding: 26px; text-align: center; color: var(--ink-2); font-size: 14.5px; }
+  .drop-zone.over { border-color: var(--rose); background: var(--rose-soft); }
+  .drop-zone b { display: block; color: var(--ink); font-weight: 450; margin-bottom: 4px; }
+@media (max-width: 760px) { .queue .qf { grid-template-columns: 1fr; } }
+.demo-line { margin-top: 14px; }
+
+/* A figure longer than 13 digits shrinks on every screen, never wraps (owner, stage 3). */
+.figure.long, .figure.md.long { font-size: clamp(30px, 5.5vw, 72px); }

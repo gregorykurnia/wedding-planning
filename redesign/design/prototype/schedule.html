@@ -28,7 +28,7 @@ const FILTERS = [["", "Everything"], ["payment", "Payments"], ["task", "Tasks"],
 function filtered() {
   const s = ui.q.toLocaleLowerCase();
   return A.items().filter((it) => (ui.done || it.status === "scheduled") &&
-    (!ui.kind || (ui.kind === "own" ? it.type === "event" : ui.kind === "call" ? /call/.test(it.kind) : ui.kind === "payment" || ui.kind === "task" ? it.type === ui.kind : it.kind === ui.kind)) &&
+    (!ui.kind || (ui.kind === "own" ? it.type === "event" : ui.kind === "call" ? /call/.test(it.kind) : ui.kind === "payment" ? it.type === "payment" || it.kind === "payment" : ui.kind === "task" ? it.type === "task" : it.kind === ui.kind)) &&
     (!s || (it.title + " " + (it.sub || "") + " " + (it.notes || "")).toLocaleLowerCase().includes(s)));
 }
 
@@ -62,7 +62,7 @@ function agenda(box) {
   Object.keys(byDay).sort().forEach((k) => groups.push([A.dayTitle(k), byDay[k], k === "2026-10-14" ? "today" : ""]));
   box.innerHTML = groups.map(([h, its, cls]) => { if (budget <= 0) return ""; const show = its.slice(0, budget); budget -= show.length;
     return `<h2 class="group-h ${cls === "late" ? "late" : ""}">${h}${cls === "today" ? `<small>Today</small>` : cls === "late" ? `<small>${V.plural(its.length, "thing")}</small>` : ""}</h2><ul class="agenda">${show.map(A.row).join("")}</ul>`; }).join("")
-    + (items.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show more</button></p>` : "");
+    + (items.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(80, items.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : "");
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 80; V.rerender(); };
   A.wireRows(box);
 }
@@ -77,7 +77,10 @@ function month(box) {
   for (let dd = 1; dd <= days; dd++) {
     const k = iso(dd), its = byDay[k] || [];
     const dots = its.slice(0, 3).map((i) => `<i class="${i.late && i.status === "scheduled" ? "late" : i.type}"></i>`).join("") + (its.length > 3 ? `<em>+${its.length - 3}</em>` : "");
-    cells += `<button class="mc ${k === "2026-10-14" ? "today" : ""} ${k === ui.day ? "sel" : ""} ${k === d.wedding ? "wed" : ""}" data-day="${k}" aria-label="${V.dateLong(k)}, ${its.length ? V.plural(its.length, "thing") : "nothing"}"><b>${dd}</b><span class="dots">${dots}</span></button>`;
+    /* the label says what the dots and marks show (owner, stage 3) */
+    const kinds = [["late", "late"], ["payment", "payment"], ["task", "task"], ["event", "event"]].map(([t, w]) => { const c = its.filter((i) => (i.late && i.status === "scheduled" ? "late" : i.type) === t).length; return c ? V.plural(c, w) : ""; }).filter(Boolean);
+    const label = [V.dateLong(k), k === "2026-10-14" ? "today" : "", k === d.wedding ? "the wedding day" : "", k === ui.day ? "selected" : "", kinds.length ? kinds.join(", ") : "nothing"].filter(Boolean).join(", ");
+    cells += `<button class="mc ${k === "2026-10-14" ? "today" : ""} ${k === ui.day ? "sel" : ""} ${k === d.wedding ? "wed" : ""}" data-day="${k}" aria-label="${label}" ${k === ui.day ? 'aria-pressed="true"' : ""}><b>${dd}</b><span class="dots">${dots}</span></button>`;
   }
   const sel = (byDay[ui.day] || []);
   box.innerHTML = `<div class="month-head"><button class="btn quiet small" id="prev" aria-label="Previous month">Earlier</button><h2 class="serif">${["January","February","March","April","May","June","July","August","September","October","November","December"][mo]} ${y}</h2><button class="btn quiet small" id="next" aria-label="Next month">Later</button></div>

@@ -14,12 +14,19 @@
   let added = null;
   try { added = JSON.parse(sessionStorage.getItem("veil-added") || "null"); } catch (e) {}
   if (added && !DEMO && STATE !== "empty") data.bookings.push(added);
+  /* Demonstration mode shows nothing about the wedding: no names, no date, nobody signed in. */
+  if (DEMO) Object.assign(data, { couple: null, wedding: null, me: { name: "", email: "" }, partner: "your partner", funders: [] });
 
   /* ---------- formatting ---------- */
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const group = (n) => Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const rp = (n) => (n < 0 ? "−" : "") + "Rp " + group(n);
-  const fig = (n) => `<span class="rp">Rp</span>${n < 0 ? "−" : ""}${group(n)}`;
+  /* The minus always comes first, as in rp(): "−Rp 12.000.000". */
+  const fig = (n) => `${n < 0 ? "−" : ""}<span class="rp">Rp</span>${group(n)}`;
+  /* A figure longer than 13 digits shrinks (never wraps) on every screen. */
+  const longFig = (n) => String(Math.round(Math.abs(n))).length > 13 ? "long" : "";
+  /* Counts are grouped with dots, like money: 1.206 bookings. */
+  const n0 = (n) => Number(n).toLocaleString("id-ID");
   const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const d8 = (iso) => new Date(iso + "T00:00:00");
@@ -27,7 +34,7 @@
   const dateShort = (iso) => { const d = d8(iso); return `${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)}${d.getFullYear() !== TODAY.getFullYear() ? " " + d.getFullYear() : ""}`; };
   const monthOf = (iso) => { const d = d8(iso); return MONTHS[d.getMonth()] + (d.getFullYear() !== TODAY.getFullYear() ? " " + d.getFullYear() : ""); };
   const daysFrom = (iso) => Math.round((d8(iso) - TODAY) / 86400000);
-  const plural = (n, one, many) => `${n.toLocaleString("en-GB")} ${n === 1 ? one : (many || one + "s")}`;
+  const plural = (n, one, many) => `${n.toLocaleString("id-ID")} ${n === 1 ? one : (many || one + "s")}`;
   const SOON = 14;
   const urgency = (iso) => { if (!iso) return "none"; const n = daysFrom(iso); return n < 0 ? "late" : n <= SOON ? "soon" : "later"; };
   const relDue = (iso) => {
@@ -78,7 +85,7 @@
   const wiParts = (w) => w.parts ? w.parts : [{ id: null, name: w.name, price: w.price, funder: w.funder }];
   const wiTotal = (w) => wiParts(w).reduce((s, p) => s + (p.price || 0), 0);
   const whatif = () => data.whatifs.reduce((s, w) => s + wiTotal(w), 0);
-  const daysLeft = () => daysFrom(data.wedding);
+  const daysLeft = () => data.wedding ? daysFrom(data.wedding) : null;
 
   /* ---------- links keep the data set and demo mode ---------- */
   const href = (path, extra) => {
@@ -115,19 +122,20 @@
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => [...(el || document).querySelectorAll(s)];
 
+  const names = () => data.couple ? `${esc(data.couple[0])} <span>&amp;</span> ${esc(data.couple[1])}` : "Our wedding planner";
   function header() {
-    const [a, b] = data.couple;
     return `<header class="top">
-      <a class="couple" href="${href("overview.html")}">${esc(a)} <span>&amp;</span> ${esc(b)}</a>
+      <a class="couple" href="${href("overview.html")}">${names()}</a>
       ${cfg.label ? `<div class="where">${esc(cfg.label)}</div>` : ""}
       <button class="menu-btn" aria-expanded="false" aria-controls="index"><i></i>Menu</button>
     </header>`;
   }
   function indexPage() {
     return `<div class="index" id="index" hidden role="dialog" aria-modal="true" aria-label="Menu">
-      <header class="top"><span class="couple">${esc(data.couple[0])} <span>&amp;</span> ${esc(data.couple[1])}</span><span></span><button class="menu-btn close-index"><i style="border-bottom:0;height:0"></i>Close</button></header>
+      <header class="top"><span class="couple">${names()}</span><span></span><button class="menu-btn close-index"><i style="border-bottom:0;height:0"></i>Close</button></header>
       <nav><ol>${SECTIONS.map(([t, s, h]) => `<li><a href="${h === "#" ? "#" : href(h)}" ${h === (cfg.section || "budget.html") ? 'aria-current="page"' : ""} ${h === "#" ? 'data-later="1"' : ""}>${t}<small>${s}</small></a></li>`).join("")}</ol>
-      <div class="account"><span>Signed in as ${esc(data.me.email)}</span><span><a class="link" href="${href("settings.html")}">Wedding settings</a>&emsp;<a class="link" href="signin.html?state=signedout">Sign out</a></span></div></nav>
+      <div class="account">${DEMO ? `<span>Demonstration mode: nobody is signed in</span><span><a class="link" href="${href("settings.html")}">Wedding settings</a>&emsp;<a class="link" href="signin.html?state=demo">Back to sign-in</a></span>`
+        : `<span>Signed in as ${esc(data.me.email)}</span><span><a class="link" href="${href("settings.html")}">Wedding settings</a>&emsp;<a class="link" href="signin.html?state=signedout">Sign out</a></span>`}</div></nav>
     </div>`;
   }
   function switcher() {
@@ -149,6 +157,7 @@
     btn.addEventListener("click", () => { idx.hidden = false; btn.setAttribute("aria-expanded", "true"); $(".close-index").focus(); });
     $(".close-index").addEventListener("click", () => { idx.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!idx.hidden) $(".close-index").click(); else closeSheet(); } });
+    document.addEventListener("click", (e) => { const u = e.target.closest("[data-upload]"); if (u) { e.preventDefault(); const t = uploadTargets[+u.dataset.upload]; uploadSheet({ where: t.where, onDone: (f) => { t.files.push({ name: f.name, size: mbText(f.mb), type: f.type, src: f.src }); rerender(); } }); } });
     document.addEventListener("click", (e) => { const a = e.target.closest("[data-later]"); if (a) { e.preventDefault(); toast("The prototype stops here. In the app, this opens the file or the file picker."); } });
     if (DEMO) $(".top").insertAdjacentHTML("afterend", `<div class="banner-wrap"><p class="banner">Demonstration mode. The planner isn't connected to its database yet, so there's nothing to show and changes aren't saved.</p></div>`);
   }
@@ -204,6 +213,20 @@
     if (opts.action) $("button", t).onclick = () => { opts.onAction && opts.onAction(); t.remove(); };
     setTimeout(() => t.remove(), opts.ms || 6000);
   }
+
+  /* Sheets that edit an existing record save as you go and end with Done (owner, stage 3). */
+  const sheetSaveLine = () => `<p class="save-state sheet-save" role="status">${DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>`;
+  function sheetSaver(el) {
+    const line = $(".sheet-save", el); let t = null;
+    return (apply) => {
+      if (DEMO) { if (line) line.textContent = "Demonstration mode: changes aren't saved"; return false; }
+      apply(); rerender();
+      if (line) { line.textContent = "Saving"; clearTimeout(t); t = setTimeout(() => (line.textContent = "Saved"), 450); }
+      return true;
+    };
+  }
+  /* Demonstration mode: actions open their sheet; only the final button is disabled, with this line. */
+  const demoLine = (what) => DEMO ? `<p class="sub demo-line">Demonstration mode: ${what || "adding"} is turned off.</p>` : "";
 
   /* Saving is immediate (A6). In demo mode nothing saves. */
   function saved(msg, undo) {
@@ -282,14 +305,66 @@
 
   /* ---------- shared pieces for records with files, stages and phone numbers ---------- */
   const FILE_EXT = { pdf: "pdf", doc: "doc", sheet: "xls" };
-  function filesGrid(files, uploading) {
+  const uploadTargets = [];
+  const mbText = (mb) => mb >= 1024 ? `${(Math.round(mb / 102.4) / 10)} GB` : mb < 1 ? `${Math.max(1, Math.round(mb * 1024))} KB` : `${(Math.round(mb * 10) / 10).toString()} MB`;
+  function filesGrid(files, uploading, where) {
+    const key = uploadTargets.push({ files, where: where || "Files" }) - 1;
     const fl = files.map((f) => `<li><a class="file" href="#" data-later="1"><div class="thumb">${f.type === "image" ? `<img src="${f.src}" alt="">` : `<span class="ext">${FILE_EXT[f.type] || "file"}</span>`}</div><div class="fn" dir="auto">${esc(f.name)}</div><div class="fs">${f.size}${f.fromVendor ? ", from the vendor" : ""}</div></a></li>`).join("");
     const up = uploading ? `<li><div class="file"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Signed contract scan.pdf</div><div class="fs">Shrinking from 14.2 MB to fit under 10 MB</div><div class="bar"><span style="width:35%"></span></div></div></li>
       <li><div class="file"><div class="thumb"><span class="ext">jpg</span></div><div class="fn">Transfer receipt.jpg</div><div class="fs">Uploading, 1.3 of 2.1 MB</div><div class="bar"><span style="width:62%"></span></div></div></li>
-      <li><div class="file bad"><div class="thumb"><span class="ext">zip</span></div><div class="fn">All photos.zip</div><div class="fs">Too large: 48 MB. Files can be up to 10 MB.</div></div></li>
+      <li><div class="file bad"><div class="thumb"><span class="ext">zip</span></div><div class="fn">All photos.zip</div><div class="fs">Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.</div></div></li>
       <li><div class="file bad"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Invoice.pdf</div><div class="fs">Upload failed. <button class="link rose">Try again</button></div></div></li>` : "";
-    return `<ul class="files">${fl}${up}<li><button class="file drop" data-later="1"><span><b>Add files</b>Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you.</span></button></li></ul>`;
+    return `<ul class="files">${fl}${up}<li><button class="file drop" data-upload="${key}"><span><b>Add files</b>Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you.</span></button></li></ul>`;
   }
+  /* R9, R10: one upload sheet everywhere (Files and every record). Several files at once, each with a name,
+     category and description; PDFs over 10 MB are shrunk, other big files are refused. */
+  const FILE_CATS = () => data.FILE_CATEGORIES || ["Contract", "Quote", "Receipt", "Invoice", "Brochure", "Moodboard", "Photo", "ID and legal", "Guest list", "Seating plan"];
+  function uploadSheet({ where, onDone, demoQueue }) {
+    openSheet(`<h2>Upload files</h2><p class="sub" dir="auto">Into ${esc(where)}. PDF, Word, Excel, CSV, ZIP, text and images, up to 10 MB each. Bigger PDFs are shrunk to fit.</p>
+      <div class="drop-zone" id="dz"><b>Drop files here</b>or <button class="link" id="pick">choose files</button><input type="file" id="fi" multiple hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.txt,image/*"></div>
+      <ul class="queue" id="queue"></ul>${DEMO ? `<p class="sub demo-line">Demonstration mode: uploading is turned off.</p>` : ""}
+      <div class="acts"><button class="btn" data-x>Done</button></div>`, (el) => {
+      $("[data-x]", el).onclick = closeSheet;
+      $("#pick", el).onclick = () => $("#fi", el).click();
+      const from = (list) => [...list].map((f) => ({ name: f.name, mb: f.size / 1048576, image: f.type.startsWith("image/") }));
+      $("#fi", el).onchange = (e) => add(from(e.target.files));
+      const dz = $("#dz", el);
+      dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); }; dz.ondragleave = () => dz.classList.remove("over");
+      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); add(from(e.dataTransfer.files)); };
+      if (demoQueue) add(demoQueue, true);
+    });
+    function add(items, frozen) {
+      const q = $("#queue");
+      if (!$("#ucats")) document.body.insertAdjacentHTML("beforeend", `<datalist id="ucats">${FILE_CATS().map((c) => `<option value="${esc(c)}">`).join("")}</datalist>`);
+      items.forEach((it, n) => {
+        const li = document.createElement("li"), pdf = /\.pdf$/i.test(it.name), big = it.mb > 10;
+        const base = it.name.replace(/\.[^.]+$/, "");
+        li.innerHTML = `<div class="qh"><span class="qn" dir="auto">${esc(it.name)}</span><span class="qs">${mbText(it.mb)}</span></div><div class="bar"><span style="width:0"></span></div>
+          <div class="qf"><input aria-label="Name for ${esc(it.name)}" value="${esc(base)}" dir="auto"><input aria-label="Category" list="ucats" placeholder="Category, optional" value="${esc(it.cat || "")}"><input class="wide" aria-label="Description" placeholder="Description, optional" dir="auto"></div>`;
+        q.appendChild(li);
+        const st = $(".qs", li), bar = $(".bar span", li);
+        const fail = (msg) => { st.className = "qs bad"; st.innerHTML = msg; $(".bar", li).remove(); $(".qf", li).remove(); };
+        if (it.state === "failed") return fail(`Upload failed. <button class="link rose">Try again</button>`);
+        if (big && !pdf) return fail(`Too large: ${mbText(it.mb)}. Files can be up to 10 MB; only PDFs are shrunk.`);
+        if (DEMO) return fail("Not uploaded: demonstration mode");
+        if (frozen && it.state) { st.textContent = it.state === "shrinking" ? `Shrinking from ${mbText(it.mb)} to fit under 10 MB` : it.state === "done" ? "Uploaded" : `Uploading, ${it.pct}%`; if (it.state === "done") st.className = "qs ok"; bar.style.width = (it.state === "done" ? 100 : it.pct || 35) + "%"; return; }
+        let pct = 0;
+        if (big) st.textContent = `Shrinking from ${mbText(it.mb)} to fit under 10 MB`;
+        setTimeout(() => {
+          const tick = setInterval(() => {
+            pct = Math.min(100, pct + 9 + n * 2); bar.style.width = pct + "%"; st.textContent = `Uploading, ${pct}%`;
+            if (pct >= 100) {
+              clearInterval(tick); st.className = "qs ok"; st.textContent = big ? `Uploaded, shrunk to ${mbText(Math.min(9.4, it.mb * .55))}` : "Uploaded";
+              const [nm, ct, ds] = $$(".qf input", li).map((i) => i.value.trim());
+              if (onDone) onDone({ name: (nm || base) + (it.name.match(/\.[^.]+$/) || [""])[0], mb: big ? Math.min(9.4, it.mb * .55) : it.mb, category: ct, desc: ds,
+                type: it.image ? "image" : pdf ? "pdf" : "doc", src: it.image ? "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#fce6ec"/></svg>') : null });
+            }
+          }, 220);
+        }, big ? 1400 : 200);
+      });
+    }
+  }
+
   /* The stage as a short gold thread of steps; ruled out is drawn apart. */
   function stageThread(stage, stages, label) {
     if (stage === "out") return `<span class="stage out">Ruled out</span>`;
@@ -306,7 +381,7 @@
   function linkify(text) {
     return esc(text).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (u) => `<a class="link" href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "")}</a>`).replace(/\n/g, "<br>");
   }
-  const compact = (n) => n == null ? "" : n >= 1e6 ? Math.round(n / 1e5) / 10 + "M" : n >= 1e4 ? Math.round(n / 100) / 10 + "k" : n.toLocaleString("en-GB");
+  const compact = (n) => n == null ? "" : n >= 1e6 ? Math.round(n / 1e5) / 10 + "M" : n >= 1e4 ? Math.round(n / 100) / 10 + "k" : n.toLocaleString("id-ID");
   const SUBNAVS = {
     vendors: ["Vendors, shortlist and venues", [["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]]],
     records: ["Documents and files", [["documents.html", "Documents"], ["files.html", "Files"]]],
@@ -326,9 +401,9 @@
   const WA_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 13.5l.9-2.8A5.6 5.6 0 1 1 5.6 13z"/><path d="M6 5.5c0 2.5 2 4.5 4.5 4.5l.7-1.2-1.4-.7-.6.6c-.8-.3-1.5-1-1.8-1.8l.6-.6-.7-1.4z" fill="currentColor" stroke="none"/></svg>';
   const waLink = (phone, label) => { const h = waHref(phone); return h ? `<a class="wa" href="${h}" target="_blank" rel="noopener">${WA_ICON}${esc(label || "WhatsApp")}</a>` : ""; };
   const HEART = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6a3.6 3.6 0 0 1 6.5 2.4C16.5 13.1 10 17 10 17z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
-  const count = (n) => n == null ? "" : n.toLocaleString("en-GB");
+  const count = (n) => n == null ? "" : n.toLocaleString("id-ID");
 
-  window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, group, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
+  window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, longFig, n0, group, names, mbText, uploadSheet, sheetSaveLine, sheetSaver, demoLine, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
     funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
     filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

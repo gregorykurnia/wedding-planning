@@ -66,10 +66,10 @@ V.init({
 
     main.innerHTML = back + `<section class="hero">
         <p class="kicker">${headKick}</p>
-        <p class="figure md num ${late.length ? "late" : ""} ${String(headFig).length > 13 ? "fit" : ""}">${V.fig(headFig)}</p>
+        <p class="figure md num ${late.length ? "late" : ""} ${V.longFig(headFig)}">${V.fig(headFig)}</p>
         <p class="context">${ctx}. In all, <b class="num">${V.rp(sum(all))}</b> across ${V.plural(all.length, "payment")}.</p>
       </section>${html}
-      ${all.length > ui.shown ? `<p class="count" style="text-align:center">Showing ${ui.shown.toLocaleString("en-GB")} of ${all.length.toLocaleString("en-GB")}</p><p style="text-align:center;margin-top:12px"><button class="btn quiet" id="more">Show more</button></p>` : ""}`;
+      ${all.length > ui.shown ? `<p class="count" style="text-align:center">Showing ${ui.shown.toLocaleString("id-ID")} of ${all.length.toLocaleString("id-ID")}</p><p style="text-align:center;margin-top:12px"><button class="btn quiet" id="more">Show ${Math.min(60, all.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
     V.$$("[data-pay]", main).forEach((b) => b.onclick = () => V.recordPayment(b.dataset.pay, b.dataset.part || null));
     const m = V.$("#more", main); if (m) m.onclick = () => { ui.shown += 60; V.rerender(); };
   },

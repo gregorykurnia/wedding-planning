@@ -41,7 +41,7 @@ function hero() {
   const kicker = t.over ? "Overpaid by" : t.left === 0 ? (t.price ? "Paid in full" : "No price yet") : "Still to pay";
   const n = t.next;
   box.innerHTML = `<p class="kicker">${kicker}</p>
-    ${t.left !== 0 ? `<p class="figure md num ${t.over ? "late" : ""} ${String(t.left).length > 13 ? "fit" : ""}">${V.fig(Math.abs(t.left))}</p>` : `<p class="figure md num" style="color:var(--gold-ink)">${V.fig(t.price)}</p>`}
+    ${t.left !== 0 ? `<p class="figure md num ${t.over ? "late" : ""} ${V.longFig(t.left)}">${V.fig(Math.abs(t.left))}</p>` : `<p class="figure md num ${V.longFig(t.price)}" style="color:var(--gold-ink)">${V.fig(t.price)}</p>`}
     <p class="context">${t.over ? `<b class="num">${V.rp(t.paid)}</b> paid against a price of <b class="num">${V.rp(t.price)}</b>. Check whether the price or a payment is wrong.` : `of <b class="num">${V.rp(t.price)}</b>, with <b class="num">${V.rp(t.paid)}</b> paid`}</p>
     <div class="thread ${t.over ? "over" : ""}" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% paid</span><span>${t.over ? "overpaid" : (100 - pct) + "% to go"}</span></span></div>
     ${n ? `<section class="card next" aria-label="Next payment" data-id="${b.id}">
@@ -83,7 +83,7 @@ function partBlock(p) {
     </div></details></li>`;
 }
 
-function files() { return V.filesGrid(b.files, S === "uploading"); }
+function files() { return V.filesGrid(b.files, S === "uploading", `Files › Bookings › ${b.name}`); }
 
 function render(main) {
   if (!b && V.DEMO) {
