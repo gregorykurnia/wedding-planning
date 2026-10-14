@@ -18,7 +18,10 @@ export interface Undoable {
 export async function removeWithUndo(
   collectionName: string,
   id: string,
-  opts: WriteOptions = {},
+  opts: WriteOptions & {
+    /** Throws to refuse the delete, given the record as it is now. */
+    guard?: (data: DocumentData) => void;
+  } = {},
 ): Promise<Undoable & { data: DocumentData }> {
   const database = requireDb(opts.db);
   const ref = doc(database, collectionName, id);
@@ -27,6 +30,7 @@ export async function removeWithUndo(
   const data = await transact(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
+    opts.guard?.(snap.data());
     tx.delete(ref);
     return snap.data();
   }, { db: database });
@@ -37,38 +41,56 @@ export async function removeWithUndo(
 }
 
 /**
- * Changes top-level fields and returns an undo that puts the earlier values
- * back (fields that didn't exist are removed again). Only the fields named in
- * `patch` are touched by either step, so the partner's other edits stay.
+ * Works out a change from the record as it is now, writes it, and returns an
+ * undo that puts the earlier values of those fields back (fields that didn't
+ * exist are removed again). Only the fields in the change are touched by
+ * either step, so the partner's other edits stay. `change` returning null
+ * writes nothing, and its undo does nothing.
  */
-export async function updateWithUndo(
+export async function patchWithUndo<R = undefined>(
+  collectionName: string,
+  id: string,
+  change: (data: DocumentData) => { patch: Record<string, unknown>; result?: R } | null,
+  opts: WriteOptions = {},
+): Promise<Undoable & { before: Record<string, unknown>; result: R | undefined; changed: boolean }> {
+  const database = requireDb(opts.db);
+  const ref = doc(database, collectionName, id);
+  const { before, result, changed } = await transact(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
+    const data = snap.data();
+    const out = change(data);
+    if (!out) return { before: {}, result: undefined, changed: false };
+    const previous: Record<string, unknown> = {};
+    for (const key of Object.keys(out.patch)) {
+      previous[key] = key in data ? data[key] : deleteField();
+    }
+    tx.update(ref, { ...out.patch, ...stamp(database) });
+    return { before: previous, result: out.result, changed: true };
+  }, { db: database });
+  return {
+    before,
+    result,
+    changed,
+    undo: async () => {
+      if (!changed) return;
+      await transact(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
+        tx.update(ref, { ...before, ...stamp(database) });
+      }, { db: database });
+    },
+  };
+}
+
+/** Changes top-level fields, with an undo that puts the earlier values back. */
+export function updateWithUndo(
   collectionName: string,
   id: string,
   patch: Record<string, unknown>,
   opts: WriteOptions = {},
 ): Promise<Undoable & { before: Record<string, unknown> }> {
-  const database = requireDb(opts.db);
-  const ref = doc(database, collectionName, id);
-  const before = await transact(async (tx) => {
-    const snap = await tx.get(ref);
-    if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
-    const data = snap.data();
-    const previous: Record<string, unknown> = {};
-    for (const key of Object.keys(patch)) {
-      previous[key] = key in data ? data[key] : deleteField();
-    }
-    tx.update(ref, { ...patch, ...stamp(database) });
-    return previous;
-  }, { db: database });
-  return {
-    before,
-    undo: () =>
-      transact(async (tx) => {
-        const snap = await tx.get(ref);
-        if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
-        tx.update(ref, { ...before, ...stamp(database) });
-      }, { db: database }),
-  };
+  return patchWithUndo(collectionName, id, () => ({ patch }), opts);
 }
 
 /**

@@ -1,0 +1,481 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from "firebase/firestore";
+import { bookingsFrom, isVendorBooked, isVenueBooked } from "@/lib/model/bookings";
+import { byFunder, totals } from "@/lib/model/money";
+import { vendorFromDoc, venueFromDoc } from "@/lib/data/adapters/bookings";
+import { fundersFrom, funderFromDoc } from "@/lib/data/adapters/funders";
+import {
+  addDirectBooking,
+  addPart,
+  addWhatIfPart,
+  markBooked,
+  parseBookingId,
+  recordPayment,
+  removeBooking,
+  removePart,
+  removeVendor,
+  removeVenue,
+  removeWhatIf,
+  removeWhatIfPart,
+  splitBooking,
+  splitWhatIf,
+} from "@/lib/data/bookings";
+import { removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
+import { removeCategory, renameCategory } from "@/lib/data/categories";
+import { bookFinalist, copyToShortlist, moveFinalistToVendors, removeFinalist } from "@/lib/data/shortlist";
+import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
+
+let gregory: Partner;
+let bella: Partner;
+
+beforeAll(async () => {
+  [gregory, bella] = await twoPartners();
+});
+
+afterAll(async () => {
+  await Promise.all([closeClient(gregory), closeClient(bella)]);
+});
+
+beforeEach(async () => {
+  await clearFirestore();
+});
+
+const g = () => ({ db: gregory.db });
+const b = () => ({ db: bella.db });
+
+async function read(col: string, id: string) {
+  return (await getDoc(doc(gregory.db, col, id))).data();
+}
+
+async function exists(col: string, id: string) {
+  return (await getDoc(doc(gregory.db, col, id))).exists();
+}
+
+async function bookingOf(kind: "vendor" | "venue", id: string) {
+  const data = (await read(kind === "vendor" ? "vendors" : "venues", id))!;
+  const record = kind === "vendor" ? vendorFromDoc(id, data) : venueFromDoc(id, data);
+  return kind === "vendor"
+    ? bookingsFrom([record as ReturnType<typeof vendorFromDoc>], [])[0]
+    : bookingsFrom([], [record as ReturnType<typeof venueFromDoc>])[0];
+}
+
+const vendorDoc = (extra: Record<string, unknown> = {}) => ({
+  name: "Dapur Lestari Catering",
+  category: "Food",
+  confirmedType: "Food",
+  contractStatus: "Consideration",
+  funder: "CK",
+  totalPrice: 100_000_000,
+  budgetSpent: 30_000_000,
+  nextTargetDate: "2026-12-01",
+  nextAction: "Pay the balance",
+  subEntries: [],
+  priceOptions: [
+    { id: "o1", description: "Silver", price: 90_000_000, selected: false },
+    { id: "o2", description: "Gold", price: 120_000_000, selected: true },
+  ],
+  createdAt: Timestamp.fromMillis(1),
+  ...extra,
+});
+
+describe("markBooked", () => {
+  it("makes a vendor a booking with its estimate from the option we lean towards, never twice; undo takes it back", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc());
+    const first = await markBooked({ kind: "vendor", id: "v1" }, "2026-10-14", g());
+    expect(first.changed).toBe(true);
+    let data = await read("vendors", "v1");
+    expect(data).toMatchObject({
+      contractStatus: "Chosen",
+      estimate: 120_000_000,
+      booking: { on: "2026-10-14", from: "vendor", removed: false },
+      totalPrice: 100_000_000,
+    });
+
+    const second = await markBooked({ kind: "vendor", id: "v1" }, "2026-11-01", b());
+    expect(second.changed).toBe(false);
+    expect((await read("vendors", "v1"))?.booking.on).toBe("2026-10-14");
+
+    await first.undo();
+    data = await read("vendors", "v1");
+    expect(data).toMatchObject({ contractStatus: "Consideration" });
+    expect(data).not.toHaveProperty("booking");
+    expect(data).not.toHaveProperty("estimate");
+  });
+
+  it("makes a venue a booking with the agreed price starting at its estimate", async () => {
+    await setDoc(doc(gregory.db, "venues", "p1"), { name: "Villa Samaya", status: "Toured", budgetEstimate: 300_000_000 });
+    const done = await markBooked({ kind: "venue", id: "p1" }, "2026-03-01", g());
+    expect(await read("venues", "p1")).toMatchObject({ status: "Booked", agreedPrice: 300_000_000 });
+    expect(isVenueBooked(venueFromDoc("p1", (await read("venues", "p1"))!))).toBe(true);
+    await done.undo();
+    expect(await read("venues", "p1")).toMatchObject({ status: "Toured" });
+    expect(await read("venues", "p1")).not.toHaveProperty("agreedPrice");
+  });
+});
+
+describe("addDirectBooking", () => {
+  it("adds a vendor record booked directly, and a retry with the same id adds nothing more", async () => {
+    const input = { name: " Wedding rings ", category: "Other", price: 25_000_000, paid: 5_000_000, funder: "Bella", due: "2026-11-30", step: "Collect" };
+    const { id, bookingId } = await addDirectBooking(input, "2026-10-14", { ...g(), id: "direct1" });
+    await addDirectBooking(input, "2026-10-14", { ...g(), id: "direct1" });
+    expect(parseBookingId(bookingId)).toEqual({ kind: "vendor", id });
+    expect((await getDocs(collection(gregory.db, "vendors"))).size).toBe(1);
+    const booking = await bookingOf("vendor", id);
+    expect(booking).toMatchObject({ name: "Wedding rings", price: 25_000_000, paid: 5_000_000, direct: true, funder: "Bella" });
+    await expect(addDirectBooking({ ...input, name: "  " }, null, g())).rejects.toMatchObject({ code: "failed" });
+  });
+});
+
+describe("split, parts, payments and removing a booking", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ contractStatus: "Chosen" }));
+  });
+
+  it("splits a booking into Deposit and Balance, and undo makes it single again", async () => {
+    const split = await splitBooking({ kind: "vendor", id: "v1" }, g());
+    expect(split.partIds).toHaveLength(2);
+    let booking = await bookingOf("vendor", "v1");
+    expect(booking.parts).toMatchObject([
+      { name: "Deposit", price: 30_000_000, paid: 30_000_000, funder: "CK", due: null },
+      { name: "Balance", price: 70_000_000, paid: 0, funder: "CK", due: "2026-12-01", step: "Pay the balance" },
+    ]);
+    expect(totals(booking)).toMatchObject({ price: 100_000_000, paid: 30_000_000 });
+    await expect(splitBooking({ kind: "vendor", id: "v1" }, b())).rejects.toMatchObject({ code: "failed" });
+
+    await split.undo();
+    booking = await bookingOf("vendor", "v1");
+    expect(booking.parts).toEqual([]);
+    expect(booking).toMatchObject({ price: 100_000_000, paid: 30_000_000 });
+  });
+
+  it("splits a booking with nothing paid into one First payment", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ contractStatus: "Chosen", budgetSpent: 0 }));
+    await splitBooking({ kind: "vendor", id: "v1" }, g());
+    expect((await bookingOf("vendor", "v1")).parts.map((p) => p.name)).toEqual(["First payment"]);
+  });
+
+  it("adds an Add-on part with the last part's funder, removes a part, and undoes both", async () => {
+    await splitBooking({ kind: "vendor", id: "v1" }, g());
+    await recordPayment({ kind: "vendor", id: "v1", partId: (await bookingOf("vendor", "v1")).parts[1].id! }, { amount: 1, paidOn: null, paidBy: null }, g());
+    const added = await addPart({ kind: "vendor", id: "v1" }, { ...b(), partId: "addon" });
+    await addPart({ kind: "vendor", id: "v1" }, { ...b(), partId: "addon" });
+    let booking = await bookingOf("vendor", "v1");
+    expect(booking.parts.map((p) => [p.name, p.funder])).toEqual([["Deposit", "CK"], ["Balance", "CK"], ["Add-on", "CK"]]);
+
+    const removed = await removePart({ kind: "vendor", id: "v1" }, booking.parts[1].id!, g());
+    expect((await bookingOf("vendor", "v1")).parts.map((p) => p.name)).toEqual(["Deposit", "Add-on"]);
+    await removed.undo();
+    booking = await bookingOf("vendor", "v1");
+    expect(booking.parts.map((p) => [p.name, p.paid])).toEqual([["Deposit", 30_000_000], ["Balance", 1], ["Add-on", 0]]);
+
+    await added.undo();
+    expect((await bookingOf("vendor", "v1")).parts.map((p) => p.name)).toEqual(["Deposit", "Balance"]);
+  });
+
+  it("records a payment on a single booking and on a part, keeps the history, and undo takes it out", async () => {
+    const single = await recordPayment(
+      { kind: "vendor", id: "v1" },
+      { amount: 20_000_000, paidOn: "2026-10-14", paidBy: "Gregory", receiptFileId: "f1" },
+      { ...b(), paymentId: "pay1" },
+    );
+    // A retry with the same id doesn't count it twice.
+    await recordPayment({ kind: "vendor", id: "v1" }, { amount: 20_000_000, paidOn: "2026-10-14", paidBy: "Gregory" }, { ...b(), paymentId: "pay1" });
+    let data = await read("vendors", "v1");
+    expect(data?.budgetSpent).toBe(50_000_000);
+    expect(data?.payments).toEqual([{ id: "pay1", amount: 20_000_000, paidOn: "2026-10-14", funder: "Gregory", receiptFileId: "f1" }]);
+    await single.undo();
+    data = await read("vendors", "v1");
+    expect(data?.budgetSpent).toBe(30_000_000);
+    expect(data?.payments).toEqual([]);
+
+    const { partIds } = await splitBooking({ kind: "vendor", id: "v1" }, g());
+    await expect(
+      recordPayment({ kind: "vendor", id: "v1" }, { amount: 5, paidOn: null, paidBy: null }, g()),
+    ).rejects.toMatchObject({ code: "failed" });
+    const onPart = await recordPayment(
+      { kind: "vendor", id: "v1", partId: partIds[1] },
+      { amount: 80_000_000, paidOn: "2026-10-15", paidBy: "CK" },
+      g(),
+    );
+    let booking = await bookingOf("vendor", "v1");
+    expect(booking.parts[1]).toMatchObject({ paid: 80_000_000 });
+    // Paying more than what's left is allowed and shows as overpaid.
+    expect(totals(booking).over).toBe(true);
+    await onPart.undo();
+    booking = await bookingOf("vendor", "v1");
+    expect(booking.parts[1]).toMatchObject({ paid: 0 });
+    await expect(
+      recordPayment({ kind: "vendor", id: "v1" }, { amount: 0, paidOn: null, paidBy: null }, g()),
+    ).rejects.toMatchObject({ code: "failed" });
+  });
+
+  it("removes a split booking from the budget and undo restores it with its parts", async () => {
+    await splitBooking({ kind: "vendor", id: "v1" }, g());
+    const before = await bookingOf("vendor", "v1");
+    const removed = await removeBooking({ kind: "vendor", id: "v1" }, b());
+    let data = await read("vendors", "v1");
+    expect(isVendorBooked(vendorFromDoc("v1", data!))).toBe(false);
+    expect(data?.booking).toEqual({ on: null, from: "vendor", removed: true });
+    expect(data?.subEntries).toHaveLength(2);
+
+    await removed.undo();
+    data = await read("vendors", "v1");
+    expect(isVendorBooked(vendorFromDoc("v1", data!))).toBe(true);
+    expect(await bookingOf("vendor", "v1")).toEqual(before);
+  });
+
+  it("won't remove a vendor or venue that is a booking unless asked; undo restores the record", async () => {
+    await expect(removeVendor("v1", g())).rejects.toThrow(/booking/);
+    const removed = await removeVendor("v1", { ...g(), evenIfBooked: true });
+    expect(await exists("vendors", "v1")).toBe(false);
+    await removed.undo();
+    expect(await read("vendors", "v1")).toMatchObject({ name: "Dapur Lestari Catering" });
+
+    await setDoc(doc(gregory.db, "venues", "p1"), { name: "Lawn", status: "Contacted" });
+    const venue = await removeVenue("p1", b());
+    expect(await exists("venues", "p1")).toBe(false);
+    await venue.undo();
+    expect(await exists("venues", "p1")).toBe(true);
+  });
+});
+
+describe("what-if items", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "hypotheticalItems", "w1"), {
+      name: "Live band",
+      type: "Music/DJ",
+      totalPrice: 40_000_000,
+      funder: "Bella",
+      subEntries: [],
+    });
+  });
+
+  it("splits into Part 1 and Part 2, adds a part, and merges back when one is left", async () => {
+    const split = await splitWhatIf("w1", g());
+    let data = await read("hypotheticalItems", "w1");
+    expect(data?.subEntries.map((p: { name: string; totalPrice: number; funder: string }) => [p.name, p.totalPrice, p.funder])).toEqual([
+      ["Part 1", 40_000_000, "Bella"],
+      ["Part 2", 0, "Bella"],
+    ]);
+    const added = await addWhatIfPart("w1", { ...b(), partId: "p3" });
+    expect((await read("hypotheticalItems", "w1"))?.subEntries).toHaveLength(3);
+    await added.undo();
+
+    const [p1, p2] = split.partIds;
+    await setDoc(doc(gregory.db, "hypotheticalItems", "w1"), {
+      subEntries: [
+        { id: p1, name: "Part 1", totalPrice: 40_000_000, funder: "Bella" },
+        { id: p2, name: "Part 2", totalPrice: 5_000_000, funder: "CK" },
+      ],
+    }, { merge: true });
+    const merged = await removeWhatIfPart("w1", p1, g());
+    data = await read("hypotheticalItems", "w1");
+    expect(data).toMatchObject({ subEntries: [], totalPrice: 5_000_000, funder: "CK" });
+
+    await merged.undo();
+    data = await read("hypotheticalItems", "w1");
+    expect(data).toMatchObject({ totalPrice: 40_000_000, funder: "Bella" });
+    expect(data?.subEntries).toHaveLength(2);
+  });
+
+  it("removes a what-if item with undo", async () => {
+    const removed = await removeWhatIf("w1", g());
+    expect(await exists("hypotheticalItems", "w1")).toBe(false);
+    await removed.undo();
+    expect(await read("hypotheticalItems", "w1")).toMatchObject({ name: "Live band" });
+  });
+});
+
+describe("funders", () => {
+  it("removing a funder moves its costs to Not assigned, keeps payments, and undo gives them back", async () => {
+    await setDoc(doc(gregory.db, "funders", "CK"), { name: "CK", order: 0 });
+    await setDoc(doc(gregory.db, "funders", "Bella"), { name: "Bella", order: 1 });
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ contractStatus: "Chosen", payments: [{ id: "x", amount: 1, funder: "CK" }] }));
+    await setDoc(doc(gregory.db, "venues", "p1"), {
+      name: "Villa",
+      status: "Booked",
+      funder: "Bella",
+      budgetEstimate: 10,
+      subEntries: [
+        { id: "a", name: "A", funder: "CK", totalPrice: 4 },
+        { id: "b", name: "B", funder: "Bella", totalPrice: 6 },
+      ],
+    });
+    await setDoc(doc(gregory.db, "hypotheticalItems", "w1"), { name: "Band", funder: "CK", totalPrice: 7 });
+
+    const removed = await removeFunder("CK", g());
+    expect(removed.moved).toBe(3);
+    expect(await exists("funders", "CK")).toBe(false);
+    expect(await read("vendors", "v1")).toMatchObject({ funder: null, payments: [{ id: "x", amount: 1, funder: "CK" }] });
+    expect((await read("venues", "p1"))?.subEntries.map((p: { funder: string | null }) => p.funder)).toEqual([null, "Bella"]);
+    expect((await read("hypotheticalItems", "w1"))?.funder).toBeNull();
+
+    const funders = fundersFrom(
+      (await getDocs(collection(gregory.db, "funders"))).docs.map((d) => funderFromDoc(d.id, d.data())),
+    );
+    const rows = byFunder(
+      bookingsFrom([vendorFromDoc("v1", (await read("vendors", "v1"))!)], [venueFromDoc("p1", (await read("venues", "p1"))!)]),
+      funders,
+    );
+    expect(rows.map((r) => [r.name, r.price])).toEqual([["Bella", 6], ["Not assigned", 100_000_004]]);
+
+    // Bella gives the what-if item a funder before the undo: hers stays.
+    await setDoc(doc(bella.db, "hypotheticalItems", "w1"), { funder: "Bella" }, { merge: true });
+    await removed.undo();
+    expect(await read("funders", "CK")).toMatchObject({ name: "CK", order: 0 });
+    expect((await read("vendors", "v1"))?.funder).toBe("CK");
+    expect((await read("venues", "p1"))?.subEntries.map((p: { funder: string | null }) => p.funder)).toEqual(["CK", "Bella"]);
+    expect((await read("hypotheticalItems", "w1"))?.funder).toBe("Bella");
+  });
+
+  it("renames a funder with undo", async () => {
+    await setDoc(doc(gregory.db, "funders", "Bella Fam"), { name: "Bella Fam", order: 3 });
+    const renamed = await renameFunderWithUndo("Bella Fam", " Bella's family ", g());
+    expect((await read("funders", "Bella Fam"))?.name).toBe("Bella's family");
+    await renamed.undo();
+    expect((await read("funders", "Bella Fam"))?.name).toBe("Bella Fam");
+    await expect(renameFunderWithUndo("Bella Fam", " ", g())).rejects.toMatchObject({ code: "failed" });
+  });
+});
+
+describe("categories", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "vendorCategories", "c1"), { name: "Henna", createdAt: Timestamp.fromMillis(5) });
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ category: "Henna", confirmedType: "Henna" }));
+    await setDoc(doc(gregory.db, "vendors", "v2"), vendorDoc({ category: "Food", confirmedType: "Food" }));
+    await setDoc(doc(gregory.db, "shortlist", "s1"), {
+      name: "Inai",
+      type: "Henna",
+      subEntries: [{ id: "k1", name: "Basic", type: "Henna" }],
+    });
+  });
+
+  it("renames ours everywhere it's used, refuses a taken name, and undo puts it back", async () => {
+    await expect(renameCategory("c1", "food", g())).rejects.toThrow(/already a category called Food/);
+    const renamed = await renameCategory("c1", "Henna art", g());
+    expect(await read("vendorCategories", "c1")).toMatchObject({ name: "Henna art" });
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Henna art", confirmedType: "Henna art" });
+    expect(await read("vendors", "v2")).toMatchObject({ category: "Food" });
+    expect(await read("shortlist", "s1")).toMatchObject({ type: "Henna art", subEntries: [{ type: "Henna art" }] });
+
+    await renamed.undo();
+    expect(await read("vendorCategories", "c1")).toMatchObject({ name: "Henna" });
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Henna", confirmedType: "Henna" });
+    expect(await read("shortlist", "s1")).toMatchObject({ type: "Henna", subEntries: [{ type: "Henna" }] });
+  });
+
+  it("removes ours, moving vendors and finalists to Other; undo brings the category back in its place", async () => {
+    const removed = await removeCategory("c1", g());
+    expect(removed.moved).toBe(2);
+    expect(await exists("vendorCategories", "c1")).toBe(false);
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Other", confirmedType: "Other" });
+    expect(await read("shortlist", "s1")).toMatchObject({ type: "Other" });
+
+    // Bella moves the finalist to Food before the undo: it stays in Food.
+    await setDoc(doc(bella.db, "shortlist", "s1"), { type: "Food" }, { merge: true });
+    await removed.undo();
+    const category = await read("vendorCategories", "c1");
+    expect(category).toMatchObject({ name: "Henna" });
+    expect((category?.createdAt as Timestamp).toMillis()).toBe(5);
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Henna", confirmedType: "Henna" });
+    expect(await read("shortlist", "s1")).toMatchObject({ type: "Food", subEntries: [{ type: "Henna" }] });
+  });
+});
+
+describe("shortlist", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ contactName: "Ayu", contactPhone: "0812", bridestoryReviewCount: 120 }));
+  });
+
+  it("copies a vendor once, with the option we lean towards as the main package; undo removes the copy", async () => {
+    const copied = await copyToShortlist("v1", g());
+    expect(copied.created).toBe(true);
+    const again = await copyToShortlist("v1", b());
+    expect(again).toMatchObject({ finalistId: copied.finalistId, created: false });
+    const data = await read("shortlist", copied.finalistId);
+    expect(data).toMatchObject({
+      name: "Dapur Lestari Catering",
+      type: "Food",
+      price: 120_000_000,
+      priceDescription: "Gold",
+      sourceVendorId: "v1",
+      preferredPackageId: "main",
+      bridestoryReviewers: 120,
+      subEntries: [{ name: "Silver", price: 90_000_000 }],
+    });
+    await copied.undo();
+    expect(await exists("shortlist", copied.finalistId)).toBe(false);
+  });
+
+  it("books a copied finalist by booking its vendor, never twice; undo takes the booking back", async () => {
+    const { finalistId } = await copyToShortlist("v1", g());
+    const silver = (await read("shortlist", finalistId))?.subEntries[0].id;
+    const booked = await bookFinalist(finalistId, silver, "2026-10-14", b());
+    expect(booked).toMatchObject({ bookingId: "vendor-v1", vendorId: "v1" });
+    expect(await read("vendors", "v1")).toMatchObject({
+      contractStatus: "Chosen",
+      estimate: 90_000_000,
+      totalPrice: 100_000_000,
+      booking: { on: "2026-10-14", from: "finalist", removed: false },
+    });
+    expect(await read("shortlist", finalistId)).toMatchObject({
+      movedTo: { kind: "booking", id: "vendor-v1" },
+      preferredPackageId: silver,
+    });
+    expect((await bookFinalist(finalistId, "main", null, g())).bookingId).toBe("vendor-v1");
+
+    await booked.undo();
+    expect(await read("vendors", "v1")).toMatchObject({ contractStatus: "Consideration", booking: null });
+    expect(await read("shortlist", finalistId)).toMatchObject({ movedTo: null, preferredPackageId: "main" });
+  });
+
+  it("books a finalist added straight to the shortlist as a new vendor booking; undo removes it", async () => {
+    await setDoc(doc(gregory.db, "shortlist", "s1"), { name: "Arka Studio", type: "Photos and Videos", price: 15, priceDescription: "Full day" });
+    const booked = await bookFinalist("s1", "main", "2026-10-14", { ...g(), vendorId: "new1" });
+    expect(await read("vendors", "new1")).toMatchObject({
+      name: "Arka Studio",
+      category: "Photos and Videos",
+      totalPrice: 15,
+      estimate: 15,
+      booking: { from: "finalist", removed: false },
+    });
+    expect((await bookingOf("vendor", "new1")).from).toBe("finalist");
+    await booked.undo();
+    expect(await exists("vendors", "new1")).toBe(false);
+    expect(await read("shortlist", "s1")).toMatchObject({ movedTo: null });
+  });
+
+  it("moves a from-scratch finalist into Vendors once; undo removes the vendor", async () => {
+    await setDoc(doc(gregory.db, "shortlist", "s1"), {
+      name: "Arka Studio",
+      type: "Photos and Videos",
+      price: 15,
+      priceDescription: "Full day",
+      subEntries: [{ id: "k1", name: "Half day", price: 9, priceDescription: "4 hours" }],
+      preferredPackageId: "k1",
+    });
+    const moved = await moveFinalistToVendors("s1", { ...g(), vendorId: "new2" });
+    expect(await read("vendors", "new2")).toMatchObject({
+      name: "Arka Studio",
+      contractStatus: "Consideration",
+      priceOptions: [
+        { description: "Full day", price: 15, selected: false },
+        { id: "k1", description: "4 hours", price: 9, selected: true },
+      ],
+    });
+    expect(await read("shortlist", "s1")).toMatchObject({ sourceVendorId: "new2", movedTo: { kind: "vendor", id: "new2" } });
+    await expect(moveFinalistToVendors("s1", b())).rejects.toMatchObject({ code: "failed" });
+
+    await moved.undo();
+    expect(await exists("vendors", "new2")).toBe(false);
+    expect(await read("shortlist", "s1")).toMatchObject({ sourceVendorId: null, movedTo: null });
+  });
+
+  it("removes a finalist with undo", async () => {
+    await setDoc(doc(gregory.db, "shortlist", "s1"), { name: "Arka" });
+    const removed = await removeFinalist("s1", g());
+    expect(await exists("shortlist", "s1")).toBe(false);
+    await removed.undo();
+    expect(await exists("shortlist", "s1")).toBe(true);
+  });
+});
