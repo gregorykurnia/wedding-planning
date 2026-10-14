@@ -502,7 +502,7 @@ You approve the plan before Step 7.
 - [x] Plan approved (2026-10-14)
 
 **Rebuild**
-- [ ] `redesign` branch created
+- [x] `redesign` branch created (2026-10-14)
 - [ ] Phase 1: data separated from rendering, no visual change, tests green
 - [ ] Phases 2–6
 - [ ] Phase 7: new UI is the default; frozen fallback and one-commit rollback in place and tested; old-names check passes (fallback excluded)

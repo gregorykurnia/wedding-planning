@@ -912,7 +912,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
-| 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | | [ ] |
+| 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | 46a2f8f; real cost to log from `/cost` | [x] |
 | 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | | [ ] |
 | 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | | [ ] |
 | 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | | [ ] |
@@ -1020,7 +1020,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 **Done when:** smoke tests pass before and after, the old UI on the preview matches production screen for screen, the model has unit tests for every rule in guide §6.8–§6.11, the rules are deployed, the migrations have run with a backup taken, and the Phase 1 review (Opus 5.5 High) passes.
 
 #### Task 1.1: Test harness · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 46a2f8f · real cost to log from `/cost`)
 - **Read:** this task; `node_modules/next/dist/docs/01-app/02-guides/testing/` (Vitest and Playwright pages).
 - **Do:** add Vitest (`npm test`) for `tests/model/**`, Playwright (`npm run test:e2e`) for `tests/e2e/**`, and the Firebase Local Emulator Suite (Auth + Firestore) through `firebase-tools` as a dev dependency, with `firebase.json` emulator ports and a seed script (`tests/e2e/seed.ts`) that signs in two emulator accounts with the allowlisted emails. Playwright starts the emulators and `next dev` with emulator env vars (`NEXT_PUBLIC_USE_EMULATORS=1`, read in `src/lib/firebase.ts` to call `connectFirestoreEmulator` and `connectAuthEmulator`). A second Playwright project runs with no Firebase env (demo mode).
 - **Done when:** `npm test` and `npm run test:e2e` run green with one trivial test each. Needs Java for the emulator (§9.2 Q11).
