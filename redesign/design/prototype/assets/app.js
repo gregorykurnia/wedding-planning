@@ -106,7 +106,7 @@
     ["Vendors", "Everyone we're considering, the shortlist and venues", "vendors.html"],
     ["Wedding items", "Every piece and who provides it", "#"],
     ["Schedule", "Appointments, tasks and deadlines", "#"],
-    ["Documents", "Notes, plans and files", "#"],
+    ["Documents", "Notes, plans and files", "documents.html"],
     ["Guests", "Who's coming to what", "#"],
   ];
   let cfg = {};
@@ -305,7 +305,21 @@
     return esc(text).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (u) => `<a class="link" href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "")}</a>`).replace(/\n/g, "<br>");
   }
   const compact = (n) => n == null ? "" : n >= 1e6 ? Math.round(n / 1e5) / 10 + "M" : n >= 1e4 ? Math.round(n / 100) / 10 + "k" : n.toLocaleString("en-GB");
-  const subnav = (here) => `<nav class="subnav" aria-label="Vendors, shortlist and venues">${[["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]].map(([h, t]) => `<a href="${href(h)}" ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`;
+  const SUBNAVS = {
+    vendors: ["Vendors, shortlist and venues", [["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]]],
+    records: ["Documents and files", [["documents.html", "Documents"], ["files.html", "Files"]]],
+  };
+  const subnav = (here, set) => { const [label, items] = SUBNAVS[set || "vendors"]; return `<nav class="subnav" aria-label="${label}">${items.map(([h, t]) => `<a href="${h === "files.html" && !window.VEIL_FILES ? "#" : href(h)}" ${h === "files.html" && !window.VEIL_FILES ? 'data-later="1"' : ""} ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`; };
+  /* "Now" for relative times: 11:30 on the fixed today */
+  const NOW = new Date(D.TODAY + "T11:30:00");
+  const ago = (iso) => {
+    const t = new Date(iso), m = Math.round((NOW - t) / 60000);
+    if (m < 1) return "just now"; if (m < 60) return `${m} min ago`;
+    if (t.toDateString() === NOW.toDateString()) return `${Math.round(m / 60)} ${Math.round(m / 60) === 1 ? "hour" : "hours"} ago`;
+    const y = new Date(NOW); y.setDate(y.getDate() - 1);
+    if (t.toDateString() === y.toDateString()) return "yesterday";
+    return dateShort(iso.slice(0, 10));
+  };
   const WA_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 13.5l.9-2.8A5.6 5.6 0 1 1 5.6 13z"/><path d="M6 5.5c0 2.5 2 4.5 4.5 4.5l.7-1.2-1.4-.7-.6.6c-.8-.3-1.5-1-1.8-1.8l.6-.6-.7-1.4z" fill="currentColor" stroke="none"/></svg>';
   const waLink = (phone, label) => { const h = waHref(phone); return h ? `<a class="wa" href="${h}" target="_blank" rel="noopener">${WA_ICON}${esc(label || "WhatsApp")}</a>` : ""; };
   const HEART = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6a3.6 3.6 0 0 1 6.5 2.4C16.5 13.1 10 17 10 17z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
@@ -313,5 +327,5 @@
 
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, group, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
     funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
-    filesGrid, stageThread, waHref, waLink, HEART, subnav, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
+    filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

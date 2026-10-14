@@ -42,3 +42,12 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Choosing a vendor** (stage "Chosen"), booking a finalist or marking a venue "Booked" creates the booking straight away and offers to open it. The noted price becomes the booking's estimate, which keeps it apart from the agreed price (B1, B12).
 - **The shortlist keeps its own copy** of a vendor. A line says so, and that files added to the vendor appear there too (F16, F20).
 - **No "remove vendor" or "remove finalist"**: no story asks for it. Ruling out does the job. Say if you want removal.
+
+### Session 3, documents group (2026-10-14)
+- **The owner asked to continue in the same session** rather than start a fresh `./start` session for this group.
+- **"Meeting notes" start.** Notes during a vendor meeting have to be fast, so the documents screen offers "Meeting notes" next to "New document". It opens with the cursor after "Meeting: " in the title, today's date, a prices table with a growing total, and a next-steps list. It's a starting layout, not a new kind of record. Say if you'd rather not have it.
+- **Save state is always in view:** at the end of the toolbar on a computer, and at the top of the screen on a phone (the toolbar sits above the keyboard). "Not saved yet" is gold, "Saving" spins, "Saved" has a sage tick, and "Couldn't save" turns rose, says the text is still there, and offers to try again (R5).
+- **Delete really deletes** (R7). The warning says it can't be undone and that it's gone for both of you, so there's no undo toast here, unlike everywhere else.
+- **Totals:** columns are A, B, C… and rows count from the title row, as in a spreadsheet. A growing range like `B2:B` runs to the last row and stops above the total itself, so a total at the bottom never counts itself. Totals show in gold so they read as worked out, not typed. Rupiah formatting carries over when the cells added up are in rupiah.
+- **Sorting** leaves the title row and any row holding a total where they are, so "Total" stays at the bottom.
+- **Fonts in documents:** Jost (default), Cormorant, Georgia and a monospace. They match the app's own type, plus a plain serif and a code face.

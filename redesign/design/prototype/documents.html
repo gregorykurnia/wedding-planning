@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  .starts { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .recent { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+  .dcard { display: flex; flex-direction: column; gap: 8px; padding: 22px 24px 18px; text-decoration: none; min-height: 210px; }
+  .dcard:hover { border-color: #ecc4cf; }
+  .dcard h2 { font-family: var(--serif); font-size: 24px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+  .dcard p.x { font-size: 14.5px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .dcard .when { margin-top: auto; font-size: 13px; color: var(--ink-2); padding-top: 10px; border-top: 1px solid var(--line); }
+  .drow { display: grid; grid-template-columns: 1fr auto; gap: 2px 24px; padding: 16px 4px; text-decoration: none; align-items: baseline; }
+  .drow:hover { background: rgba(253,232,238,.3); }
+  .drow .name { font-family: var(--serif); font-size: 21px; font-weight: 500; line-height: 1.25; }
+  .drow .x { grid-column: 1; font-size: 14px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .drow .when { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; grid-row: 1; grid-column: 2; }
+  mark { background: var(--champagne-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
+  .untitled { font-style: italic; color: var(--ink-2); }
+  @media (max-width: 900px) { .recent { grid-template-columns: 1fr; } .dcard { min-height: 0; } }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-docs.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const ui = { q: S === "noresults" ? "photographer contract" : "", shown: 60 };
+const text = (html) => html.replace(/<(td|th|li|p|h\d|pre|blockquote)[^>]*>/g, " ").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+const title = (doc) => doc.title ? V.esc(doc.title) : `<span class="untitled">Untitled</span>`;
+const by = (doc) => `${V.ago(doc.updated)}${doc.by === d.me.name ? "" : ` by ${V.esc(doc.by)}`}`;
+const sorted = () => d.docs.slice().sort((a, z) => z.updated.localeCompare(a.updated));
+
+function snippet(doc) {
+  const t = text(doc.html);
+  if (!ui.q) return V.esc(t.slice(0, 220)) || "Empty";
+  const i = t.toLocaleLowerCase().indexOf(ui.q.toLocaleLowerCase());
+  if (i < 0) return V.esc(t.slice(0, 160));
+  const a = Math.max(0, i - 50);
+  return (a ? "…" : "") + V.esc(t.slice(a, i)) + `<mark>${V.esc(t.slice(i, i + ui.q.length))}</mark>` + V.esc(t.slice(i + ui.q.length, i + ui.q.length + 120));
+}
+const markTitle = (doc) => { if (!ui.q || !doc.title) return title(doc); const i = doc.title.toLocaleLowerCase().indexOf(ui.q.toLocaleLowerCase()); return i < 0 ? V.esc(doc.title) : V.esc(doc.title.slice(0, i)) + `<mark>${V.esc(doc.title.slice(i, i + ui.q.length))}</mark>` + V.esc(doc.title.slice(i + ui.q.length)); };
+
+function list() {
+  const box = V.$("#list");
+  const s = ui.q.toLocaleLowerCase();
+  const all = sorted();
+  const rows = s ? all.filter((doc) => (doc.title + " " + text(doc.html)).toLocaleLowerCase().includes(s)) : all;
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>No documents match “${V.esc(ui.q)}”</h1><p>Search looks through titles and everything written inside, tables included.</p><div class="acts"><button class="btn quiet" id="clear">Clear the search</button></div></div>`;
+    V.$("#clear").onclick = () => { ui.q = ""; V.$("#q").value = ""; list(); V.$("#q").focus(); };
+    return;
+  }
+  const recent = s ? [] : rows.slice(0, 3), rest = s ? rows : rows.slice(3);
+  box.innerHTML = `${recent.length ? `<ul class="recent">${recent.map((doc) => `<li><a class="card dcard" data-id="${doc.id}" href="${V.href("doc.html", { id: doc.id })}"><h2 dir="auto">${title(doc)}</h2><p class="x" dir="auto">${snippet(doc)}</p><span class="when">Edited ${by(doc)}</span></a></li>`).join("")}</ul>` : ""}
+    ${s ? `<p class="count">${V.plural(rows.length, "document")} match</p>` : rest.length ? `<h2 class="section-h">Earlier <small>${V.plural(rest.length, "document")}</small></h2>` : ""}
+    ${rest.length ? `<ul class="ledger">${rest.slice(0, ui.shown).map((doc) => `<li><a class="drow" data-id="${doc.id}" href="${V.href("doc.html", { id: doc.id })}"><span class="name" dir="auto">${markTitle(doc)}</span><span class="when">${by(doc)}</span><span class="x" dir="auto">${snippet(doc)}</span></a></li>`).join("")}</ul>` : ""}
+    ${rest.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(60, rest.length - ui.shown)} more</button></p>` : ""}`;
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; list(); };
+}
+
+V.init({
+  where: "Documents", section: "documents.html", noun: "your documents", wide: true,
+  states: [["empty", "No documents yet"], ["noresults", "No results"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella starts a document"]],
+  render(main) {
+    const starts = `<div class="starts"><a class="btn" href="${V.href("doc.html", { new: "meeting" })}">Meeting notes</a><a class="btn quiet" href="${V.href("doc.html", { new: "blank" })}">New document</a></div>`;
+    const head = `<section class="hero"><h1>Documents</h1><p class="sub">${d.docs.length ? `${V.plural(d.docs.length, "document")}, newest first` : "Plans, research and meeting notes"}</p>${V.subnav("documents.html", "records")}${starts}</section>`;
+    if (!d.docs.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>Nothing written yet</h1><p>Start with meeting notes when you sit down with a vendor: the date, a table for prices and a list for next steps are ready, and everything saves as you type.</p></div>`;
+      return;
+    }
+    const focused = document.activeElement && document.activeElement.id === "q";
+    main.innerHTML = head + `<div class="tools" style="margin-top:36px"><label class="search">${V.ICON.search}<span class="sr">Search documents</span><input id="q" type="search" placeholder="Search titles and what's written inside" value="${V.esc(ui.q)}"></label></div><div id="list"></div>`;
+    list();
+    const q = V.$("#q"); q.oninput = () => { ui.q = q.value; ui.shown = 60; list(); };
+    if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  },
+  sync() {
+    setTimeout(() => {
+      d.docs.push(Object.assign({}, d.dsync.doc)); V.rerender();
+      V.$$(`[data-id="${d.dsync.doc.id}"]`).forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.dsync.by)} started “${V.esc(d.dsync.doc.title)}”`, { from: d.dsync.by, ms: 9000 });
+    }, 1600);
+  },
+});
+</script>
+</body>
+</html>

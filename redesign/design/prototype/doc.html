@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<link rel="stylesheet" href="assets/editor.css">
+</head>
+<body class="editing">
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-docs.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/formulas.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data, F = window.VeilFormulas;
+const qp = new URLSearchParams(location.search);
+let doc = null;
+if (qp.get("new")) {
+  doc = { id: "new" + Date.now(), title: qp.get("new") === "meeting" ? "Meeting: " : "", updated: "2026-10-14T11:30", by: d.me.name, html: qp.get("new") === "meeting" ? window.VEIL_DATA.NORMAL.meetingTemplate(V.dateLong("2026-10-14")) : "<p><br></p>", fresh: true };
+  d.docs.push(doc);
+} else doc = d.docs.find((x) => x.id === (qp.get("id") || (V.STRESS ? "s-long" : S === "formula-error" ? "scratch" : "kebun-meeting")));
+
+/* ---------- toolbar ---------- */
+const I = (p) => `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  undo: I('<path d="M7 5L3.5 8.5 7 12"/><path d="M4 8.5h8a4.5 4.5 0 0 1 0 9H9"/>'),
+  redo: I('<path d="M13 5l3.5 3.5L13 12"/><path d="M16 8.5H8a4.5 4.5 0 0 0 0 9h3"/>'),
+  ul: I('<circle cx="4.5" cy="6" r=".9" fill="currentColor"/><circle cx="4.5" cy="10" r=".9" fill="currentColor"/><circle cx="4.5" cy="14" r=".9" fill="currentColor"/><path d="M8 6h8M8 10h8M8 14h8"/>'),
+  ol: I('<path d="M3.5 4.5h1.2v3.2M3.4 12h2.2l-2.2 3h2.3M8 6h8M8 10h8M8 14h8"/>'),
+  link: I('<path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.6-2.6a3 3 0 0 0-4.2-4.2l-1 1"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0l-2.6 2.6a3 3 0 0 0 4.2 4.2l1-1"/>'),
+  table: I('<rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M3 8h14M3 12h14M8 4v12"/>'),
+  clear: I('<path d="M5 5h9M9.5 5l-2.5 10"/><path d="M12 12l4 4M16 12l-4 4"/>'),
+  color: I('<path d="M6.5 13L10 4l3.5 9M7.7 10h4.6"/><path d="M4 16.5h12" stroke-width="2.2" class="swatch-line"/>'),
+  mark: I('<path d="M12.5 3.5l4 4-6.5 6.5H6v-4z"/><path d="M4 16.5h12" stroke-width="2.2" class="swatch-line"/>'),
+};
+const COLORS = [["Ink", "#33262c"], ["Rose", "#b8355b"], ["Gold", "#8a6a2e"], ["Sage", "#4f6b55"], ["Cornflower", "#4a63a8"], ["Plum", "#6e3b63"]];
+const HIGHLIGHTS = [["Blush", "#fce6ec"], ["Champagne", "#f4ead7"], ["Mint", "#e3f0e6"], ["Sky", "#e3ebfa"], ["Lilac", "#efe6f6"]];
+
+function toolbar() {
+  const b = (cmd, label, inner, extra = "") => `<button type="button" class="tb" data-cmd="${cmd}" aria-label="${label}" title="${label}" ${extra}>${inner}</button>`;
+  return `<div class="toolbar" role="toolbar" aria-label="Formatting">
+    <div class="tg">${b("undo", "Undo", ICONS.undo)}${b("redo", "Redo", ICONS.redo)}</div>
+    <div class="tg"><label class="sr" for="blk">Text style</label><select id="blk" class="tsel"><option value="p">Body text</option><option value="h1">Title</option><option value="h2">Heading</option><option value="h3">Subheading</option><option value="blockquote">Quote</option><option value="pre">Code</option></select>
+      <label class="sr" for="fnt">Font</label><select id="fnt" class="tsel"><option value="Jost">Jost</option><option value="Cormorant Garamond">Cormorant</option><option value="Georgia">Georgia</option><option value="ui-monospace">Mono</option></select>
+      <label class="sr" for="sz">Size</label><select id="sz" class="tsel"><option value="2">Small</option><option value="3" selected>Normal</option><option value="5">Large</option><option value="6">Huge</option></select></div>
+    <div class="tg">${b("bold", "Bold", "<b>B</b>")}${b("italic", "Italic", "<i>I</i>")}${b("underline", "Underline", "<u>U</u>")}${b("strikeThrough", "Strikethrough", "<s>S</s>")}</div>
+    <div class="tg">${b("pop-color", "Text colour", ICONS.color, 'aria-haspopup="true"')}${b("pop-mark", "Highlight", ICONS.mark, 'aria-haspopup="true"')}</div>
+    <div class="tg">${b("insertUnorderedList", "Bullet points", ICONS.ul)}${b("insertOrderedList", "Numbered steps", ICONS.ol)}</div>
+    <div class="tg">${b("link", "Link", ICONS.link)}${b("pop-table", "Table", ICONS.table, 'aria-haspopup="true"')}${b("clear", "Clear formatting", ICONS.clear)}</div>
+    <p class="save-state" id="save" role="status" aria-live="polite"></p>
+  </div>
+  <div class="table-bar" id="tbar" hidden role="toolbar" aria-label="Table">
+    <span class="fx"><b id="addr">A1</b><span id="fx-text"></span></span>
+    <span class="tg"><span class="tl">Row</span><button type="button" data-t="row-above">Above</button><button type="button" data-t="row-below">Below</button><button type="button" data-t="row-del" class="rose">Remove</button></span>
+    <span class="tg"><span class="tl">Column</span><button type="button" data-t="col-left">Left</button><button type="button" data-t="col-right">Right</button><button type="button" data-t="col-del" class="rose">Remove</button></span>
+    <span class="tg"><label class="tl" for="many">Add</label><input id="many" type="number" min="1" max="50" value="5" aria-describedby="many-h"><select id="many-what" aria-label="Rows or columns"><option value="rows">rows</option><option value="cols">columns</option></select><button type="button" data-t="many">Add</button><span class="sr" id="many-h">1 to 50 at a time</span></span>
+    <span class="tg"><span class="tl">Sort</span><button type="button" data-t="sort-asc" title="Sort by this column, A to Z or smallest first">Ascending</button><button type="button" data-t="sort-desc" title="Sort by this column, Z to A or largest first">Descending</button></span>
+    <span class="tg"><span class="tl">Width</span><button type="button" data-t="narrow">Narrower</button><button type="button" data-t="wide">Wider</button></span>
+    <span class="tg"><button type="button" data-t="head" id="head-btn" aria-pressed="true">Title row</button><button type="button" data-t="table-del" class="rose">Remove table</button></span>
+  </div>`;
+}
+
+/* ---------- saving (R5): unsaved, saving, saved, failed ---------- */
+let saveTimer = null, failing = S === "savefail" || S === "offline-edit";
+function setSave(kind, extra) {
+  const el = V.$("#save"); if (!el) return;
+  const msg = {
+    saved: `Saved${extra ? " " + extra : ""}`,
+    unsaved: "Not saved yet",
+    saving: "Saving",
+    failed: S === "offline-edit" ? `Not saved: you're offline. Keep this page open. <button class="link rose" id="retry">Try again</button>` : `Couldn't save your last changes. They're still here. <button class="link rose" id="retry">Try again</button>`,
+    demo: "Demonstration mode: not saved",
+  }[kind];
+  el.className = "save-state " + kind; el.innerHTML = (kind === "saved" ? '<span class="tick" aria-hidden="true"></span>' : kind === "saving" ? '<span class="spin" aria-hidden="true"></span>' : kind === "unsaved" ? '<span class="dot" aria-hidden="true"></span>' : "") + msg;
+  const r = V.$("#retry"); if (r) r.onclick = () => { failing = false; attempt(); };
+}
+function dirty() {
+  if (V.DEMO) { setSave("demo"); return; }
+  setSave("unsaved"); clearTimeout(saveTimer); saveTimer = setTimeout(attempt, 900);
+}
+function attempt() {
+  setSave("saving");
+  setTimeout(() => {
+    if (failing) { setSave("failed"); return; }
+    doc.title = V.$("#title").value; doc.html = V.$("#ed").innerHTML; doc.updated = "2026-10-14T11:30"; doc.by = d.me.name;
+    setSave("saved", "just now");
+  }, 650);
+}
+
+/* ---------- selection memory, so selects and popovers act on the text you chose ---------- */
+let range = null;
+document.addEventListener("selectionchange", () => {
+  const sel = getSelection(), ed = V.$("#ed");
+  if (!ed || !sel.rangeCount) return;
+  const r = sel.getRangeAt(0);
+  if (ed.contains(r.commonAncestorContainer)) { range = r.cloneRange(); onCaret(); }
+});
+const restore = () => { if (!range) return; const s = getSelection(); s.removeAllRanges(); s.addRange(range); };
+const exec = (cmd, val) => { V.$("#ed").focus(); restore(); document.execCommand(cmd, false, val); dirty(); syncTools(); };
+
+function syncTools() {
+  ["bold", "italic", "underline", "strikeThrough", "insertUnorderedList", "insertOrderedList"].forEach((c) => {
+    const b = V.$(`[data-cmd="${c}"]`); if (b) b.setAttribute("aria-pressed", String(document.queryCommandState(c)));
+  });
+  const blk = (document.queryCommandValue("formatBlock") || "p").toLowerCase().replace(/[<>]/g, "");
+  const sel = V.$("#blk"); if (sel) sel.value = ["h1", "h2", "h3", "blockquote", "pre"].includes(blk) ? blk : "p";
+}
+
+/* ---------- popovers ---------- */
+function pop(btn, html, wire) {
+  closePop();
+  const p = document.createElement("div"); p.className = "pop"; p.innerHTML = html;
+  document.body.appendChild(p);
+  const r = btn.getBoundingClientRect();
+  p.style.left = Math.max(8, Math.min(innerWidth - p.offsetWidth - 8, r.left + scrollX)) + "px";
+  const below = r.bottom + 8 + p.offsetHeight < innerHeight;
+  p.style.top = (below ? r.bottom + 8 : r.top - p.offsetHeight - 8) + scrollY + "px";
+  wire(p);
+  setTimeout(() => document.addEventListener("mousedown", outside), 0);
+}
+function outside(e) { if (!e.target.closest(".pop")) closePop(); }
+function closePop() { V.$$(".pop").forEach((p) => p.remove()); document.removeEventListener("mousedown", outside); }
+
+function colorPop(btn, kind) {
+  const list = kind === "color" ? COLORS : HIGHLIGHTS;
+  pop(btn, `<p class="pop-h">${kind === "color" ? "Text colour" : "Highlight"}</p><div class="swatches">${list.map(([n, c]) => `<button type="button" class="sw" style="--c:${c}" data-c="${c}" aria-label="${n}" title="${n}"></button>`).join("")}${kind === "mark" ? `<button type="button" class="sw none" data-c="transparent" aria-label="No highlight" title="No highlight"></button>` : ""}</div>`, (p) => {
+    V.$$(".sw", p).forEach((s) => { s.onmousedown = (e) => e.preventDefault(); s.onclick = () => { document.execCommand("styleWithCSS", false, true); exec(kind === "color" ? "foreColor" : "hiliteColor", s.dataset.c); closePop(); }; });
+  });
+}
+function tablePop(btn) {
+  pop(btn, `<p class="pop-h" id="tsize">Choose a size</p><div class="grid" role="grid">${Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) => `<button type="button" data-r="${r + 1}" data-c="${c + 1}" aria-label="${r + 1} by ${c + 1}"></button>`).join("")).join("")}</div>`, (p) => {
+    V.$$("[data-r]", p).forEach((b) => {
+      b.onmousedown = (e) => e.preventDefault();
+      b.onmouseenter = b.onfocus = () => { V.$$("[data-r]", p).forEach((x) => x.classList.toggle("on", +x.dataset.r <= +b.dataset.r && +x.dataset.c <= +b.dataset.c)); V.$("#tsize", p).textContent = `${b.dataset.r} rows, ${b.dataset.c} columns`; };
+      b.onclick = () => { insertTable(+b.dataset.r, +b.dataset.c); closePop(); };
+    });
+  });
+}
+function insertTable(rows, cols) {
+  const head = `<tr>${Array.from({ length: cols }, () => "<th><br></th>").join("")}</tr>`;
+  const body = Array.from({ length: Math.max(1, rows - 1) }, () => `<tr>${Array.from({ length: cols }, () => "<td><br></td>").join("")}</tr>`).join("");
+  exec("insertHTML", `<table class="dt" data-head="1">${head}${body}</table><p><br></p>`);
+  F.computeAll(V.$("#ed"));
+}
+
+/* ---------- links ---------- */
+function linkSheet(a) {
+  const text = a ? a.textContent : (range ? range.toString() : "");
+  V.openSheet(`<h2>${a ? "Edit link" : "Add a link"}</h2><div class="fields"><div class="field"><label for="lu">Web address</label><input id="lu" type="url" autofocus placeholder="https://" value="${V.esc(a ? a.getAttribute("href") : "")}"></div><div class="field"><label for="lt">Text</label><input id="lt" value="${V.esc(text)}" placeholder="What the link says"></div></div>
+    <div class="acts">${a ? `<button class="btn quiet" data-rm>Remove link</button>` : `<button class="btn quiet" data-x>Cancel</button>`}<button class="btn" data-ok>${a ? "Save" : "Add link"}</button></div>`, (el) => {
+    const x = V.$("[data-x]", el); if (x) x.onclick = V.closeSheet;
+    const rm = V.$("[data-rm]", el); if (rm) rm.onclick = () => { a.replaceWith(document.createTextNode(a.textContent)); V.closeSheet(); dirty(); };
+    V.$("[data-ok]", el).onclick = () => {
+      let u = V.$("#lu", el).value.trim(); if (!u) { V.$("#lu", el).focus(); return; }
+      if (!/^[a-z]+:/i.test(u)) u = "https://" + u;
+      const t = V.$("#lt", el).value.trim() || u.replace(/^https?:\/\//, "");
+      V.closeSheet();
+      if (a) { a.href = u; a.textContent = t; dirty(); }
+      else exec("insertHTML", `<a href="${V.esc(u)}">${V.esc(t)}</a>&nbsp;`);
+    };
+  });
+}
+function linkBubble(a) {
+  closeBubble();
+  const b = document.createElement("div"); b.className = "bubble";
+  b.innerHTML = `<a href="${V.esc(a.href)}" target="_blank" rel="noopener" class="link">${V.esc(a.href.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40))}</a><button type="button" class="link" data-e>Edit</button>`;
+  document.body.appendChild(b);
+  const r = a.getBoundingClientRect();
+  b.style.left = Math.max(8, Math.min(innerWidth - b.offsetWidth - 8, r.left + scrollX)) + "px"; b.style.top = r.bottom + 6 + scrollY + "px";
+  V.$("[data-e]", b).onclick = () => { closeBubble(); linkSheet(a); };
+}
+function closeBubble() { V.$$(".bubble").forEach((x) => x.remove()); }
+
+/* ---------- tables (R2, R3) and formulas (R4) ---------- */
+let cell = null;
+function onCaret() {
+  const s = getSelection(); if (!s.rangeCount) return;
+  let n = s.anchorNode; if (n && n.nodeType === 3) n = n.parentNode;
+  const c = n && n.closest ? n.closest("td, th") : null;
+  if (c === cell) return;
+  if (cell && cell.isConnected) leaveCell(cell);
+  cell = c && V.$("#ed").contains(c) ? c : null;
+  const bar = V.$("#tbar"); bar.hidden = !cell;
+  if (cell) enterCell(cell);
+  syncTools();
+}
+function enterCell(c) {
+  const t = c.closest("table"), [r, k] = F.pos(c);
+  V.$("#addr").textContent = F.col(k) + (r + 1);
+  V.$("#head-btn").setAttribute("aria-pressed", String(t.dataset.head === "1"));
+  if (c.dataset.f) {
+    c.classList.add("editing-f"); c.textContent = c.dataset.f;
+    const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(c); rg.collapse(false); s.removeAllRanges(); s.addRange(rg);
+  }
+  showFx(c);
+}
+function showFx(c) {
+  const fx = V.$("#fx-text"), err = c.dataset.err;
+  fx.innerHTML = c.dataset.f ? `<code>${V.esc(c.dataset.f)}</code>${err ? ` <span class="fx-err">${V.esc(err)}</span>` : ""}` : `<span class="fx-hint">Type =SUM(B2:B6) for a total. B2:B keeps growing as rows are added.</span>`;
+}
+function leaveCell(c) {
+  c.classList.remove("editing-f");
+  const txt = c.textContent.trim();
+  if (txt.startsWith("=")) c.dataset.f = txt; else if (c.dataset.f && txt !== c.dataset.f) delete c.dataset.f;
+  F.computeAll(V.$("#ed"));
+}
+
+function tableAction(a) {
+  if (!cell) return;
+  const t = cell.closest("table"), [r, k] = F.pos(cell), rows = [...t.rows], ncols = rows[0].cells.length;
+  const before = t.outerHTML;
+  const newRow = (tag = "td") => { const tr = document.createElement("tr"); for (let i = 0; i < ncols; i++) tr.appendChild(Object.assign(document.createElement(tag), { innerHTML: "<br>" })); return tr; };
+  const cols = () => { let cg = t.querySelector("colgroup"); if (!cg) { cg = document.createElement("colgroup"); for (let i = 0; i < ncols; i++) cg.appendChild(document.createElement("col")); t.prepend(cg); } return [...cg.children]; };
+  leaveCell(cell);
+  switch (a) {
+    case "row-above": if (r === 0 && t.dataset.head === "1") rows[0].after(newRow()); else rows[r].before(newRow()); break;
+    case "row-below": rows[r].after(newRow()); break;
+    case "row-del": if (rows.length > 1) rows[r].remove(); break;
+    case "col-left": case "col-right": rows.forEach((tr, i) => { const c = document.createElement(tr.cells[0].tagName); c.innerHTML = "<br>"; a === "col-left" ? tr.cells[k].before(c) : tr.cells[k].after(c); }); const cg = t.querySelector("colgroup"); if (cg) cg.children[k][a === "col-left" ? "before" : "after"](document.createElement("col")); break;
+    case "col-del": if (ncols > 1) { rows.forEach((tr) => tr.cells[k].remove()); const g = t.querySelector("colgroup"); if (g && g.children[k]) g.children[k].remove(); } break;
+    case "many": {
+      const n = Math.max(1, Math.min(50, parseInt(V.$("#many").value, 10) || 1));
+      V.$("#many").value = n;
+      if (V.$("#many-what").value === "rows") { let at = rows[r]; for (let i = 0; i < n; i++) { const nr = newRow(); at.after(nr); at = nr; } }
+      else for (let i = 0; i < n; i++) rows.forEach((tr) => { const c = document.createElement(tr.cells[0].tagName); c.innerHTML = "<br>"; tr.cells[k].after(c); });
+      if (V.$("#many-what").value === "cols") { const g = t.querySelector("colgroup"); if (g) g.remove(); }
+      break;
+    }
+    case "sort-asc": case "sort-desc": F.sort(t, k, a === "sort-asc"); break;
+    case "narrow": case "wide": { const cs = cols(), w = cs.map((c, i) => parseFloat(c.style.width) || 100 / ncols); w[k] = Math.max(8, Math.min(80, w[k] + (a === "wide" ? 6 : -6))); cs.forEach((c, i) => c.style.width = w[i] + "%"); break; }
+    case "head": { const on = t.dataset.head !== "1"; t.dataset.head = on ? "1" : "0"; [...t.rows[0].cells].forEach((c) => { const n = document.createElement(on ? "th" : "td"); n.innerHTML = c.innerHTML; [...c.attributes].forEach((at) => n.setAttribute(at.name, at.value)); c.replaceWith(n); }); break; }
+    case "table-del": {
+      const next = t.nextSibling, parent = t.parentNode; t.remove(); cell = null; V.$("#tbar").hidden = true; F.computeAll(V.$("#ed")); dirty();
+      V.toast("Removed the table", { action: "Undo", onAction: () => { const w = document.createElement("div"); w.innerHTML = before; parent.insertBefore(w.firstChild, next); F.computeAll(V.$("#ed")); dirty(); } });
+      return;
+    }
+  }
+  F.computeAll(V.$("#ed")); dirty();
+  const nt = V.$("#ed").contains(t) ? t : null;
+  const target = nt && (nt.rows[Math.min(r + (a === "row-below" ? 1 : 0), nt.rows.length - 1)] || nt.rows[0]);
+  const nc = target && target.cells[Math.min(a === "col-right" ? k + 1 : k, target.cells.length - 1)];
+  cell = null; if (nc) { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(nc); rg.collapse(true); s.removeAllRanges(); s.addRange(rg); onCaret(); }
+}
+
+/* ---------- page ---------- */
+function render(main) {
+  if (!doc) { main.innerHTML = `<a class="back" href="${V.href("documents.html")}">${V.ICON.back}Documents</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "No documents in demonstration mode" : "This document was deleted"}</h1><p>${V.DEMO ? "The planner isn't connected to its database yet." : `${V.esc(d.partner)} deleted it on another device. It can't be brought back.`}</p><div class="acts"><a class="btn" href="${V.href("documents.html")}">See all documents</a></div></div>`; return; }
+  document.title = doc.title || "Untitled";
+  main.innerHTML = `<a class="back" href="${V.href("documents.html")}">${V.ICON.back}Documents</a>
+    ${toolbar()}
+    ${S === "sync-edit" ? `<p class="banner" style="margin-top:14px"><span class="sync-dot"></span>${V.esc(d.partner)} is also in this document. Their changes appear as they type.</p>` : ""}
+    <article class="paper">
+      <label class="sr" for="title">Title</label><textarea id="title" class="doc-title" rows="1" placeholder="Untitled" dir="auto">${V.esc(doc.title)}</textarea>
+      <p class="doc-meta">${doc.fresh ? "New document" : `Edited ${V.ago(doc.updated)}${doc.by === d.me.name ? "" : " by " + V.esc(doc.by)}`}</p>
+      <div id="ed" class="ed" contenteditable="${V.DEMO ? "false" : "true"}" role="textbox" aria-multiline="true" aria-label="Document" dir="auto" spellcheck="true">${doc.html || "<p><br></p>"}</div>
+    </article>
+    <div class="danger-zone">${doc.fresh ? "" : `<button class="link rose" id="del">Delete this document</button>`}</div>`;
+  const ed = V.$("#ed"), title = V.$("#title");
+  /* the table tools sit right against the toolbar, however tall it wraps */
+  if (window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty("--tbh", V.$(".toolbar").offsetHeight + "px")).observe(V.$(".toolbar"));
+  F.computeAll(ed);
+  const grow = () => { title.style.height = "auto"; title.style.height = title.scrollHeight + "px"; };
+  grow(); title.oninput = () => { grow(); dirty(); };
+  title.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); ed.focus(); } };
+  ed.addEventListener("input", () => { if (cell && cell.classList.contains("editing-f")) showFx(cell); dirty(); });
+  ed.addEventListener("click", (e) => { const a = e.target.closest("a"); if (a) { e.preventDefault(); linkBubble(a); } else closeBubble(); });
+  ed.addEventListener("keydown", (e) => {
+    const m = e.metaKey || e.ctrlKey;
+    if (m && e.key.toLowerCase() === "k") { e.preventDefault(); linkSheet(null); }
+    if (e.key === "Tab" && cell) { e.preventDefault(); const cells = [...cell.closest("table").querySelectorAll("th, td")], i = cells.indexOf(cell), n = cells[i + (e.shiftKey ? -1 : 1)]; if (n) { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(n); s.removeAllRanges(); s.addRange(rg); } }
+  });
+  V.$$(".toolbar [data-cmd]").forEach((b) => {
+    b.onmousedown = (e) => e.preventDefault();
+    b.onclick = () => {
+      const c = b.dataset.cmd;
+      if (c === "pop-color") return colorPop(b, "color");
+      if (c === "pop-mark") return colorPop(b, "mark");
+      if (c === "pop-table") return tablePop(b);
+      if (c === "link") return linkSheet(null);
+      if (c === "clear") { exec("removeFormat"); exec("formatBlock", "p"); return; }
+      exec(c);
+    };
+  });
+  V.$("#blk").onchange = (e) => exec("formatBlock", e.target.value);
+  V.$("#fnt").onchange = (e) => { document.execCommand("styleWithCSS", false, true); exec("fontName", e.target.value); };
+  V.$("#sz").onchange = (e) => exec("fontSize", e.target.value);
+  V.$$("#tbar [data-t]").forEach((b) => { b.onmousedown = (e) => { if (b.tagName === "BUTTON") e.preventDefault(); }; b.onclick = () => tableAction(b.dataset.t); });
+  const del = V.$("#del");
+  if (del) del.onclick = async () => {
+    if (!await V.confirm({ title: `Delete “${doc.title || "Untitled"}”?`, body: `This can't be undone. The document and everything in it, tables included, will be gone for you and ${V.esc(d.partner)}.`, action: "Delete for good", danger: true })) return;
+    del.classList.add("busy");
+    d.docs.splice(d.docs.indexOf(doc), 1); doc = null; render(main); V.$(".message h1").textContent = "Document deleted"; V.$(".message p").textContent = "It's gone for both of you.";
+  };
+
+  /* starting states */
+  if (V.DEMO) setSave("demo");
+  else if (S === "savefail" || S === "offline-edit") setSave("failed");
+  else if (S === "unsaved") setSave("unsaved");
+  else if (S === "saving") setSave("saving");
+  else setSave("saved", doc.fresh ? "" : V.ago(doc.updated));
+  if (doc.fresh) { title.focus(); title.setSelectionRange(title.value.length, title.value.length); }
+  if (S === "table" || S === "formula" || S === "formula-error") {
+    const pick = S === "table" ? ed.querySelector("td") : S === "formula" ? ed.querySelector("td[data-f]") : ed.querySelector("td[data-err]");
+    if (pick) { ed.focus(); const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(pick); rg.collapse(false); s.removeAllRanges(); s.addRange(rg); onCaret(); pick.scrollIntoView({ block: "center" }); }
+  }
+}
+
+V.init({
+  where: "Documents", section: "documents.html", noun: "this document",
+  states: [["unsaved", "Not saved yet"], ["saving", "Saving"], ["savefail", "Couldn't save"], ["offline-edit", "Went offline while writing"], ["table", "Cursor in a table"], ["formula", "Editing a total"], ["formula-error", "A total with a mistake"], ["sync-edit", "Bella is in it too"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  render,
+});
+</script>
+</body>
+</html>
