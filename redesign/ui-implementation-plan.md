@@ -913,7 +913,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
 | 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | 46a2f8f; real cost to log from `/cost` | [x] |
-| 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | | [ ] |
+| 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | see Task 1.2 heading; real cost to log from `/cost` | [x] |
 | 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | | [ ] |
 | 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | | [ ] |
 | 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | | [ ] |

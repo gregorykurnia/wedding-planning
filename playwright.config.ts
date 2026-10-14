@@ -24,6 +24,10 @@ const emulatorAppEnv = {
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: EMULATOR_PROJECT_ID,
   NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:test",
   NEXT_DIST_DIR: ".next-e2e",
+  // Fake Cloudinary config so the upload controls are enabled. The specs
+  // stub every request to api.cloudinary.com, so nothing leaves the machine.
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",
+  NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "test-preset",
 };
 
 // Demo mode: every Firebase variable empty. Values already in the process
@@ -40,6 +44,10 @@ export default defineConfig({
   testDir: "./tests/e2e",
   globalSetup: "./tests/e2e/global-setup.ts",
   workers: 1,
+  // The first visit to each page compiles it in dev mode, which can take a
+  // while, so a whole test gets more than Playwright's default 30 seconds.
+  timeout: 150_000,
+  expect: { timeout: 10_000 },
   reporter: "list",
   projects: [
     {
