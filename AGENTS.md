@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Completed the Step 1 second leak review of the blank-slate redesign: rewrote the stories in `redesign/handoff/inventory.md` that implied the current layout, order or wording (now version 1.1), and logged every removed detail in `redesign/inventory-notes.md` §7. A whole-word banned-word check of `redesign/handoff/` is clean; the formal Step 1b scan is still to do.
 - 2026-10-14: Completed Step 1 of the blank-slate redesign: wrote `redesign/handoff/inventory.md` (81 layout-free job stories in 7 job groups, plus states, roles and constraints), the starter `priorities.md`, `brief.md` and `needs.md`, and the owner-only `redesign/inventory-notes.md` (code map, current behaviour, data model, 18 placeholders and 37 bugs to decide in Step 2). The banned-word scan of `redesign/handoff/` is clean.
 - 2026-10-14: Completed Step 0 and the Step 0b firewall check for the blank-slate redesign. The owner reported all checks passing, and the checklist in `redesign/redesign-plan.md` is ticked.
 - 2026-10-14: Added the design studio setup: `redesign/studio.sh` and the studio templates in `redesign/studio-template/` (studio `CLAUDE.md` and `settings.json`), generated from the redesign plan. Enabled `frontend-design` in the studio, kept every other plugin off, and changed the codebase path deny rules to `//` absolute paths.

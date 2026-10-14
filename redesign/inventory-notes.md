@@ -310,7 +310,33 @@ Each needs a keep / drop / rework decision. Anything kept gets a job story added
 
 ## §7 Details removed during leak reviews
 
-*(Filled in by the second leak review.)*
+Second leak review, 2026-10-14 (Sonnet 5.5 High, fresh session that read only `handoff/inventory.md`). Inventory is now version 1.1. For each change: what was removed from the handoff, and why Agent C or the owner may still need it. The designer never sees this section.
+
+**Structure and order**
+- **Group order (O, F, B, G, T, S, R, A) and the sub-group headings (Venues, Vendors, Shortlist, Documents, Files)** mirrored the navigation order and the page split. Sub-headings are now job-flavoured ("Weigh up venues", "Weigh up vendors", "Narrow down to finalists", "Write and calculate", "Store paperwork"), and a note at the top says group order and detail order are arbitrary. The old page split is in §1.
+- **Field lists in column order** (G1, B3, F6) were regrouped by meaning (who it is / money / what's next, and so on). The original order follows the table column order.
+- **T intro "separate from vendor comparison"** implied a separate destination; now "kept independently of any vendor comparison".
+
+**Layout and control implied**
+- **F2 "one representative photo for each venue"** implied a thumbnail on each venue entry. Now only "recognise each venue by sight". Behaviour is in §2 (a cover thumbnail that opens the gallery; there are no cover or delete controls) and the cover bug is §5 #22.
+- **F12 and F19 "move between vendor categories (seeing how many…)"** implied category tabs with count badges. Now "focus on any one category, knowing how many each has".
+- **F17 "show or hide a finalist's packages"** implied an expand/collapse control. Now "see a finalist on its own or together with its packages".
+- **F10 "set apart"** implied a separate grouping or dimmed styling. Now "clearly distinguishable".
+- **F14 "'other' always comes last"** is a sort-order detail of the category list. Now "'other' remains the catch-all". Agent C: Other is kept last among the categories, including custom ones (see the 2026-10-10 change-log entry in `AGENTS.md`).
+- **S4 "step back and forward by day or month, jump back to today"** implied previous/next/today controls. Now "move to earlier or later days or months, and return to today".
+- **S9 "finished tasks kept apart"** implied a separate section. Now "out of my way but recoverable".
+- **R6 "ordered by most recently edited, each with a short preview"** implied a sorted list with snippets. Now "most recently edited easiest to reach", "recognise at a glance by title and short extract".
+- **O1 "preparation year"** implied a year-long progress bar. Now "how much of our preparation time has passed". Agent C: it is a progress ring over a fixed 365-day window (§2).
+- **O3 and O4 "in one place" / "the summary"** implied a single summary destination. Now "together" and "the overall picture".
+- **G4 "when looking at guests invited to both events"** implied the headcounts only appear when the event filter is set to Both. Now framed as a need ("balancing the two sides among guests invited to both events"). Agent C: the family and business-connection headcounts only show when Event is filtered to Both.
+- **States "Loading… switching areas" and "Offline… previously visited areas"** used navigation language. Now "moving to a different part of the planner" and "things I've opened before".
+- **S5/S6 "the schedule"** named a destination. Now "everything with a date" and "what's coming".
+
+**Current wording and labels**
+- **F11 "favourite"** was the current label for the starred vendor flag. Now "one I'm especially keen on".
+- **T3/T4/T5 "work on next" in quotes** was the current column label. Now described as a need ("mark them as the ones to work on next"), unquoted. Agent C: the label is "Next?" (§2).
+- **F3 and F10 stage lists** followed the stored values in their current order (`VenueStatus`: Shortlist / Contacted / Toured / Booked / Rejected; `ContractStatus`: List / Inquiring / Consideration / Chosen / Done / Rejected). Now phrased as progression, not as labels. Note the first venue and vendor values, "Shortlist" and "List", differ from the inventory's "first noted" (§2). The stage values are data, so the progression stays, but the designer may rename them.
+- **B3, B4, B6 "next target date" and "next action"** were the current field labels. Now "the date the next payment or step is due" and "next step"; B6 uses "due date".
 
 ## §8 Guess-the-layout test results
 
