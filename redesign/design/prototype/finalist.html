@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finalist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const id = new URLSearchParams(location.search).get("id") || (V.STRESS ? "sf-deep" : "f-kebun");
+const f = d.finalists.find((x) => x.id === id);
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+const pref = () => f.packages.find((p) => p.preferred) || null;
+let editingNotes = false;
+
+function setSave(t) { const el = V.$("#save"); if (el) el.textContent = t; }
+function save(apply, after) { if (V.DEMO) { setSave("Not saved: demonstration mode"); return; } apply(); setSave("Saving"); setTimeout(() => { setSave("Saved"); if (after) after(); }, 450); }
+
+/* F17: each package has its own price, inclusions, reviews, next step, notes and files */
+function packageSheet(p) {
+  const isNew = !p;
+  V.openSheet(`<h2>${isNew ? "Add a package" : "Edit package"}</h2><p class="sub" dir="auto">${V.esc(f.name)}</p>
+    <div class="fields">
+      <div class="field"><label for="pn">Name</label><input id="pn" dir="auto" autofocus value="${V.esc(p ? p.name : "")}" placeholder="For example, Full styling"></div>
+      <div class="field"><label for="pp">Price</label><input id="pp" class="num" inputmode="numeric" value="${p ? V.rp(p.price) : ""}" placeholder="Rp 0"></div>
+      <div class="field"><label for="pi">What's included</label><textarea id="pi" dir="auto">${V.esc(p ? p.includes : "")}</textarea></div>
+      <div class="field"><label for="pr">Reviews</label><input id="pr" inputmode="numeric" value="${p && p.reviews != null ? p.reviews : ""}" placeholder="How many reviews mention it"></div>
+      <div class="field"><label for="ps">Next step</label><input id="ps" dir="auto" value="${V.esc(p ? p.step : "")}" placeholder="What has to happen next"></div>
+      <div class="field"><label for="po">Notes</label><textarea id="po" dir="auto">${V.esc(p ? p.notes : "")}</textarea></div>
+      <div class="field"><span class="lab">Files</span><div>${isNew ? `<p class="hint" style="margin:0">Add the package first, then attach its files.</p>` : V.filesGrid(p.files || (p.files = []), false, `Files › Shortlist › ${f.name} › ${p.name}`)}</div></div>
+    </div>
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add package</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    V.$("#pp", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    if (!isNew) {
+      const save = V.sheetSaver(el);
+      const set = (id, fn) => V.$(id, el).onchange = (e) => save(() => fn(e.target.value));
+      set("#pn", (x) => { p.name = x.trim() || p.name; }); set("#pp", (x) => { p.price = num(x); }); set("#pi", (x) => { p.includes = x; });
+      set("#pr", (x) => { p.reviews = x ? num(x) : null; }); set("#ps", (x) => { p.step = x; }); set("#po", (x) => { p.notes = x; });
+      return;
+    }
+    V.$("[data-ok]", el).onclick = () => {
+      const t = p || { id: "k" + Date.now(), files: [], preferred: !f.packages.length };
+      Object.assign(t, { name: V.$("#pn", el).value.trim() || "Package", price: num(V.$("#pp", el).value), includes: V.$("#pi", el).value, reviews: V.$("#pr", el).value ? num(V.$("#pr", el).value) : null, step: V.$("#ps", el).value, notes: V.$("#po", el).value });
+      if (isNew) f.packages.push(t);
+      V.closeSheet(); V.rerender(); V.saved(isNew ? `Added ${V.esc(t.name)}` : "Saved");
+    };
+  });
+}
+
+/* F24: move a chosen finalist on, details carried across */
+function moveSheet(to) {
+  const p = pref() || f.packages[0];
+  V.openSheet(to === "booking"
+    ? `<h2>Book ${V.esc(f.name)}</h2><p class="sub">It becomes a confirmed booking, with the package you choose as its price.</p>
+       <div class="chips" role="radiogroup" aria-label="Package" style="justify-content:center;margin-top:20px">${f.packages.map((k) => `<button class="chip" role="radio" data-k="${k.id}" aria-pressed="${k === p}" aria-checked="${k === p}">${V.esc(k.name)}, ${V.rp(k.price)}</button>`).join("") || `<p class="sub">No packages yet, so the booking starts without a price.</p>`}</div>
+       <p class="sub" style="margin-top:18px">Contact, notes and files come along. You'll set the funder and due dates on the booking.</p>
+       ${V.demoLine("booking")}
+       <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Book it</button></div>`
+    : `<h2>Move ${V.esc(f.name)} into Vendors?</h2><p class="sub">Its packages become price options, and contact, reviews, notes and files come along. It stays on the shortlist too.</p>
+       ${V.demoLine("moving")}
+       <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Move into Vendors</button></div>`, (el) => {
+    V.$$("[data-k]", el).forEach((c) => c.onclick = () => V.$$("[data-k]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }));
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-ok]", el).onclick = (e) => {
+      const btn = e.currentTarget; btn.classList.add("busy"); btn.textContent = to === "booking" ? "Booking" : "Moving";
+      setTimeout(() => {
+        if (to === "booking") {
+          const chosen = V.$("[data-k][aria-pressed=true]", el), k = chosen ? f.packages.find((x) => x.id === chosen.dataset.k) : null;
+          const bid = f.vendor || f.id;
+          d.bookings.push({ id: bid, name: f.name, category: f.category, origin: { from: "vendor", on: "2026-10-14" }, estimate: k ? k.price : null, price: k ? k.price : 0, paid: 0, funder: null, due: null, step: k ? k.step : "", files: f.files.slice() });
+          f.moved = "booking"; V.closeSheet(); V.rerender();
+          V.toast(`${V.esc(f.name)} is now a booking`, { action: "Open", onAction: () => location.href = V.href("booking.html", { id: bid }) });
+        } else {
+          const vid = "v-" + f.id;
+          d.vendors.push({ id: vid, name: f.name, category: f.category, contact: f.contact, phone: f.phone, stage: "considering", rating: null, reviewers: f.reviews, keen: true, added: "2026-10-14",
+            prices: f.packages.map((k) => ({ id: k.id, name: k.name, price: k.price, includes: k.includes, preferred: !!k.preferred })), notes: f.notes, files: f.files.slice() });
+          f.vendor = vid; V.closeSheet(); V.rerender(); V.toast(`${V.esc(f.name)} is now in Vendors`);
+        }
+      }, 650);
+    };
+  });
+}
+
+function render(main) {
+  if (!f) { main.innerHTML = `<a class="back" href="${V.href("shortlist.html")}">${V.ICON.back}Shortlist</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "Nothing on the shortlist in demonstration mode" : "This finalist isn't here any more"}</h1><div class="acts"><a class="btn" href="${V.href("shortlist.html")}">See the shortlist</a></div></div>`; return; }
+  document.title = f.name;
+  const p = pref(), booked = f.moved === "booking";
+  const vendor = f.vendor && d.vendors.find((v) => v.id === f.vendor);
+  main.innerHTML = `<a class="back" href="${V.href("shortlist.html")}">${V.ICON.back}Shortlist</a>
+    <section class="hero"><p class="sub" dir="auto">${V.esc(f.category)}</p><h1 dir="auto">${V.esc(f.name)}</h1>
+      <p class="save-state" id="save" role="status">${V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
+      <p class="origin">${vendor ? `Copied from <a class="link" href="${V.href("vendor.html", { id: vendor.id })}">${V.esc(vendor.name)}</a> in Vendors. Changes here don't touch it.` : "Added straight to the shortlist"}</p>
+      ${booked ? `<p class="origin"><span class="flag gold">Now a booking</span> <a class="link" href="${V.href("booking.html", { id: f.vendor || f.id })}">Open the booking</a></p>` : ""}
+      <div style="margin-top:30px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${V.longFig(p.price)}">${V.fig(p.price)}</p>` : `<p class="kicker">No package chosen yet</p>`}</div>
+    </section>
+
+    <h2 class="section-h">Packages <small>${V.plural(f.packages.length, "package")}</small></h2>
+    ${f.packages.length ? `<ul class="menu-card">${f.packages.map((k) => `<li class="${k.preferred ? "preferred" : ""}"><div class="line"><span class="on" dir="auto">${V.esc(k.name)}</span><span class="lead"></span><span class="op num">${V.rp(k.price)}</span></div>
+        ${k.includes ? `<p class="inc" dir="auto">${V.esc(k.includes)}</p>` : ""}
+        <p class="inc">${[k.reviews != null ? V.plural(k.reviews, "review") : "", k.step ? "Next: " + V.esc(k.step) : "", k.files && k.files.length ? V.plural(k.files.length, "file") : ""].filter(Boolean).join(". ")}</p>
+        ${k.notes ? `<p class="inc" dir="auto" style="color:var(--ink)">${V.linkify(k.notes)}</p>` : ""}
+        <div class="acts">${k.preferred ? `<span class="pref">The one we're leaning towards</span>` : `<button class="link" data-pref="${k.id}">Lean towards this one</button>`}<button class="link" data-edit="${k.id}">Edit</button><button class="link rose" data-del="${k.id}">Remove</button></div></li>`).join("")}</ul>`
+      : `<p class="note">No packages yet. Add each offer they make, with its own price and what's included.</p>`}
+    <p style="margin-top:16px"><button class="btn quiet small" id="add-pkg">Add a package</button></p>
+
+    <h2 class="section-h">Contact and popularity</h2>
+    <div class="fields">
+      <div class="field"><label for="c1">Contact person</label><input id="c1" data-k="contact" dir="auto" value="${V.esc(f.contact)}"></div>
+      <div class="field"><label for="c2">Phone</label><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><input id="c2" data-k="phone" type="tel" value="${V.esc(f.phone)}" style="flex:1;min-width:160px" placeholder="0812 3456 7890">${V.waLink(f.phone, "Message on WhatsApp")}</div></div>
+      <div class="field"><label for="c3">Reviews</label><input id="c3" data-k="reviews" inputmode="numeric" value="${f.reviews ?? ""}" placeholder="How many reviews"></div>
+      <div class="field"><label for="c4">Instagram followers</label><input id="c4" data-k="followers" inputmode="numeric" value="${f.followers ?? ""}" placeholder="How many followers"></div>
+      <div class="field"><label for="c5">Next step</label><input id="c5" data-k="step" dir="auto" value="${V.esc(f.step)}" placeholder="What has to happen next"></div>
+    </div>
+
+    <h2 class="section-h">Notes ${editingNotes ? "" : `<button class="link" id="edit-notes" style="font-family:var(--sans);font-size:14px">${f.notes ? "Edit" : "Add notes"}</button>`}</h2>
+    ${editingNotes ? `<div class="fields"><div class="field" style="grid-template-columns:1fr"><label for="notes" class="sr">Notes</label><textarea id="notes" dir="auto" style="min-height:160px">${V.esc(f.notes)}</textarea></div></div><p style="margin-top:12px"><button class="btn quiet small" id="done-notes">Done</button></p>`
+      : f.notes ? `<div class="notes-view" dir="auto">${V.linkify(f.notes)}</div>` : `<p class="note">Nothing written yet.</p>`}
+
+    <h2 class="section-h">Files <small>${f.files.length ? V.plural(f.files.length, "file") : "None yet"}</small></h2>
+    ${vendor ? `<p class="note" style="margin:-4px 0 14px">Files added to ${V.esc(vendor.name)} in Vendors appear here by themselves.</p>` : ""}
+    ${V.filesGrid(f.files, S === "uploading", vendor ? `Files › Vendors › ${vendor.name}` : `Files › Shortlist › ${f.name}`)}
+
+    ${booked ? "" : `<section class="card" style="margin-top:56px;text-align:center"><h2 class="serif" style="font-size:26px;font-weight:500">Chosen this one?</h2>
+      <p class="note" style="margin-top:6px">Book it to make it a confirmed booking${vendor ? "" : ", or move it into Vendors to keep it on file"}. Its details come along, so nothing is typed twice.</p>
+      <p style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">${vendor ? "" : `<button class="btn quiet" id="to-vendors">Move into Vendors</button>`}<button class="btn" id="to-booking">Book it</button></p></section>`}`;
+
+  V.$$("[data-k]", main).forEach((el) => el.addEventListener("change", () => { const k = el.dataset.k; save(() => { f[k] = ["reviews", "followers"].includes(k) ? (el.value ? num(el.value) : null) : el.value; }, () => { if (k === "phone") V.rerender(); }); }));
+  V.$$("[data-pref]", main).forEach((b) => b.onclick = () => save(() => f.packages.forEach((k) => k.preferred = k.id === b.dataset.pref), () => V.rerender()));
+  V.$$("[data-edit]", main).forEach((b) => b.onclick = () => packageSheet(f.packages.find((k) => k.id === b.dataset.edit)));
+  V.$$("[data-del]", main).forEach((b) => b.onclick = async () => {
+    const i = f.packages.findIndex((k) => k.id === b.dataset.del), k = f.packages[i];
+    if (!await V.confirm({ title: `Remove ${k.name}?`, body: `${V.rp(k.price)}. You can undo for a few seconds.`, action: "Remove package", danger: true })) return;
+    f.packages.splice(i, 1); V.rerender(); V.saved(`Removed ${V.esc(k.name)}`, () => { f.packages.splice(i, 0, k); V.rerender(); });
+  });
+  V.$("#add-pkg", main).onclick = () => packageSheet(null);
+  const en = V.$("#edit-notes", main); if (en) en.onclick = () => { editingNotes = true; V.rerender(); V.$("#notes").focus(); };
+  const dn = V.$("#done-notes", main); if (dn) dn.onclick = () => { f.notes = V.$("#notes").value; editingNotes = false; V.rerender(); };
+  const tb = V.$("#to-booking", main); if (tb) tb.onclick = () => moveSheet("booking");
+  const tv = V.$("#to-vendors", main); if (tv) tv.onclick = () => moveSheet("vendors");
+}
+
+V.init({
+  where: "Vendors", section: "vendors.html", noun: "this finalist",
+  states: [["booking", "Booking it"], ["uploading", "Uploading files"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  render,
+});
+if (S === "booking" && f) moveSheet("booking");
+if (S === "savefail" && f && f.packages.length) packageSheet(f.packages[0]);
+</script>
+</body>
+</html>

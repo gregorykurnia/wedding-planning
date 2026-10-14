@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payments due</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil;
+const ui = { shown: 60 };
+
+function row(x) {
+  const d = new Date(x.due + "T00:00:00");
+  const late = x.urgency === "late";
+  const title = x.b.parts ? `${x.b.name}, ${x.p.name.toLowerCase()}` : x.b.name;
+  return `<li class="due ${late ? "late" : ""}" data-id="${x.b.id}">
+    <span class="date-card" aria-hidden="true"><b>${d.getDate()}</b><span>${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()]}</span></span>
+    <a class="what name" dir="auto" href="${V.href("booking.html", { id: x.b.id })}">${V.esc(title)}</a>
+    <span class="amt num">${V.rp(x.left)}</span>
+    <span class="meta">${late ? `<span class="when-late">${V.relDue(x.due)}</span>, ` : x.urgency === "soon" ? `${V.relDue(x.due)}, ` : `${V.dateLong(x.due)}, `}${V.esc(V.paidBy(x.funder))}${x.p.step && x.p.step !== x.p.name ? `. <span dir="auto">${V.esc(x.p.step)}</span>` : ""}</span>
+    <span class="act"><button class="btn ${late ? "" : "quiet"} small" data-pay="${x.b.id}" data-part="${x.p.id || ""}">Record payment</button></span>
+  </li>`;
+}
+
+V.init({
+  where: "Budget", noun: "payments due",
+  states: [["empty", "Nothing due"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  render(main) {
+    const all = V.dues();
+    const late = all.filter((x) => x.urgency === "late"), soon = all.filter((x) => x.urgency === "soon"), later = all.filter((x) => x.urgency === "later");
+    const sum = (l) => l.reduce((s, x) => s + x.left, 0);
+    const back = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>`;
+
+    if (!all.length) {
+      main.innerHTML = back + `<section class="hero"><h1>Payments due</h1></section><div class="message inline">${V.ICON.knot}<h1>Nothing to pay right now</h1><p>${V.data.bookings.length ? "Every booking with a due date is paid up. Bookings without a date don't show here." : "Once you have bookings with due dates, every unpaid amount shows here in date order."}</p><div class="acts"><a class="btn quiet" href="${V.href("bookings.html")}">See bookings</a></div></div>`;
+      return;
+    }
+
+    /* S6: grasp the urgency at once. The figure is what's late; if nothing is, what's due soon. */
+    const headFig = late.length ? sum(late) : soon.length ? sum(soon) : sum(all);
+    const headKick = late.length ? `Late, across ${V.plural(late.length, "payment")}` : soon.length ? `Due in the next ${V.SOON} days` : "Still to pay on dated bookings";
+    const ctx = late.length ? `and <b class="num">${V.rp(sum(soon))}</b> more due in the next ${V.SOON} days` : soon.length ? `nothing is late` : `nothing is late or due in the next ${V.SOON} days`;
+
+    let groups = [];
+    if (late.length) groups.push({ h: "Late", cls: "late", items: late });
+    if (soon.length) groups.push({ h: `In the next ${V.SOON} days`, items: soon });
+    const months = {};
+    later.forEach((x) => { const m = V.monthOf(x.due); (months[m] = months[m] || []).push(x); });
+    Object.entries(months).forEach(([m, items]) => groups.push({ h: m, items }));
+
+    let budget = ui.shown;
+    const html = groups.map((g) => {
+      if (budget <= 0) return "";
+      const items = g.items.slice(0, Math.max(budget, 0)); budget -= items.length;
+      return `<h2 class="group-h ${g.cls || ""}">${g.h}<small class="num">${V.rp(sum(g.items))}</small></h2><ul class="dues">${items.map(row).join("")}</ul>`;
+    }).join("");
+
+    main.innerHTML = back + `<section class="hero">
+        <p class="kicker">${headKick}</p>
+        <p class="figure md num ${late.length ? "late" : ""} ${V.longFig(headFig)}">${V.fig(headFig)}</p>
+        <p class="context">${ctx}. In all, <b class="num">${V.rp(sum(all))}</b> across ${V.plural(all.length, "payment")}.</p>
+      </section>${html}
+      ${all.length > ui.shown ? `<p class="count" style="text-align:center">Showing ${ui.shown.toLocaleString("id-ID")} of ${all.length.toLocaleString("id-ID")}</p><p style="text-align:center;margin-top:12px"><button class="btn quiet" id="more">Show ${Math.min(60, all.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
+    V.$$("[data-pay]", main).forEach((b) => b.onclick = () => V.recordPayment(b.dataset.pay, b.dataset.part || null));
+    const m = V.$("#more", main); if (m) m.onclick = () => { ui.shown += 60; V.rerender(); };
+  },
+});
+</script>
+</body>
+</html>

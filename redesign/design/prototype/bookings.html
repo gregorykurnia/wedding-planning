@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil;
+const ORDERS = [
+  ["due", "Next due date"], ["name", "Name"], ["category", "Category"], ["price", "Price"], ["paid", "Paid"],
+  ["left", "Still to pay"], ["funder", "Funder"], ["estimate", "Difference from estimate"], ["booked", "Date booked"],
+];
+const ui = { q: V.STATE === "noresults" ? "fireworks" : new URLSearchParams(location.search).get("q") || "", order: "due", asc: true, shown: 100 };
+
+function key(b, t) {
+  switch (ui.order) {
+    case "name": return b.name.toLocaleLowerCase();
+    case "category": return (b.category || "￿").toLocaleLowerCase();
+    case "price": return t.price;
+    case "paid": return t.paid;
+    case "left": return t.left;
+    case "funder": return t.funders.map(V.funderName).join(", ").toLocaleLowerCase();
+    case "estimate": return b.estimate == null ? null : t.price - b.estimate;
+    case "booked": return b.origin.on;
+    default: return t.next ? t.next.due : null;
+  }
+}
+function sorted(list) {
+  const rows = list.map((b) => ({ b, t: V.totals(b) })).map((r) => ({ ...r, k: key(r.b, r.t) }));
+  rows.sort((a, z) => {
+    if (a.k == null && z.k == null) return 0;
+    if (a.k == null) return 1; if (z.k == null) return -1; /* blanks always last */
+    const c = typeof a.k === "number" ? a.k - z.k : String(a.k).localeCompare(String(z.k));
+    return ui.asc ? c : -c;
+  });
+  return rows;
+}
+function matches(b) {
+  if (!ui.q) return true;
+  const s = ui.q.toLocaleLowerCase();
+  return [b.name, b.category, ...V.partsOf(b).flatMap((p) => [p.name, p.step]), ...V.totals(b).funders.map(V.funderName)].some((x) => (x || "").toLocaleLowerCase().includes(s));
+}
+function status(t) {
+  if (t.over) return `<span class="left over">Overpaid by <span class="num">${V.rp(-t.left)}</span></span>`;
+  if (t.left === 0) return `<span class="left done">${t.price ? "Paid in full" : "No price yet"}</span>`;
+  const u = t.next ? V.urgency(t.next.due) : "none";
+  return `<span class="left ${u === "late" ? "late" : ""}"><span class="num">${V.rp(t.left)}</span> ${u === "late" ? "late" : "to pay"}</span>`;
+}
+function partLine(p) {
+  const left = p.price - (p.paid || 0);
+  let v;
+  if ((p.paid || 0) > p.price) v = `<span class="pv late">overpaid by ${V.rp(-left)}</span>`;
+  else if (left === 0) v = `<span class="pv done">paid ${V.rp(p.price)}</span>`;
+  else if (p.due) v = `<span class="pv ${V.urgency(p.due) === "late" ? "late" : ""}">${V.rp(left)}, ${V.urgency(p.due) === "late" ? "was due " : ""}${V.dateShort(p.due)}</span>`;
+  else v = `<span class="pv">${V.rp(left)}, no date</span>`;
+  return `<li><span class="pn">${V.esc(p.name)}</span><span class="lead"></span>${v}</li>`;
+}
+function entry({ b, t }) {
+  const funders = t.funders.length > 2 ? V.plural(t.funders.length, "funder") : V.andList(t.funders.map(V.funderName));
+  let parts = "";
+  if (b.parts) {
+    const ps = b.parts.length > 5 ? b.parts.filter((p) => p.price - (p.paid || 0) !== 0).slice(0, 4) : b.parts;
+    const more = b.parts.length - ps.length;
+    parts = `<ul class="parts">${ps.map(partLine).join("")}${more ? `<li class="more">and ${V.plural(more, "more part")}</li>` : ""}</ul>`;
+  }
+  const est = b.estimate != null && t.price !== b.estimate ? `, ${V.rp(Math.abs(t.price - b.estimate))} ${t.price < b.estimate ? "under" : "over"} the estimate` : "";
+  return `<li><a class="entry" data-id="${b.id}" href="${V.href("booking.html", { id: b.id })}">
+    <span class="name" dir="auto">${V.esc(b.name)}</span><span class="price num">${V.rp(t.price)}</span>
+    <span class="meta">${V.esc(b.category || "No category")}, ${V.esc(t.funders.length === 1 && t.funders[0] === null ? "no funder yet" : "paid by " + funders)}${est}</span>${status(t)}
+    ${parts}</a></li>`;
+}
+
+V.init({
+  where: "Budget", noun: "your bookings", wide: true,
+  states: [["empty", "Nothing booked yet"], ["noresults", "No results"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  render(main) {
+    const d = V.data, B = V.budget();
+    const head = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>
+      <section class="hero"><h1>Bookings</h1><p class="sub">${d.bookings.length ? `${V.plural(B.count, "booking")}, <span class="num">${V.rp(B.price)}</span> committed` : "Everything you've committed to"}</p></section>`;
+    if (!d.bookings.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>Nothing booked yet</h1><p>Choosing a vendor or booking a venue adds it here. For anything that skipped the comparison, add it yourself.</p><div class="acts"><a class="btn" href="${V.href("booking-new.html")}">Add booking</a></div></div>`;
+      return;
+    }
+    const focused = document.activeElement && document.activeElement.id === "q";
+    main.innerHTML = head + `<div class="tools">
+        <label class="search">${V.ICON.search}<span class="sr">Search bookings</span><input id="q" type="search" placeholder="Search bookings" value="${V.esc(ui.q)}"></label>
+        <div class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <button class="dir" id="dir" aria-label="${ui.asc ? "Ascending, switch to descending" : "Descending, switch to ascending"}">${ui.asc ? "Ascending" : "Descending"}</button></div>
+      </div><div id="list"></div><a class="btn add-fab" href="${V.href("booking-new.html")}">Add booking</a>`;
+    list();
+    const q = V.$("#q", main);
+    q.oninput = () => { ui.q = q.value; ui.shown = 100; list(); };
+    if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    V.$("#ord", main).onchange = (e) => { ui.order = e.target.value; ui.asc = !["price", "paid", "left"].includes(ui.order); list(); V.$("#dir").textContent = ui.asc ? "Ascending" : "Descending"; };
+    V.$("#dir", main).onclick = (e) => { ui.asc = !ui.asc; e.currentTarget.textContent = ui.asc ? "Ascending" : "Descending"; list(); };
+  },
+});
+
+function list() {
+  const box = V.$("#list");
+  const rows = sorted(V.data.bookings.filter(matches));
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>No bookings match “${V.esc(ui.q)}”</h1><p>Search looks through names, categories, parts, next steps and funders.</p><div class="acts"><button class="btn quiet" id="clear">Clear the search</button></div></div>`;
+    V.$("#clear").onclick = () => { ui.q = ""; V.$("#q").value = ""; list(); V.$("#q").focus(); };
+    return;
+  }
+  const shown = rows.slice(0, ui.shown);
+  box.innerHTML = `${rows.length > ui.shown || ui.q ? `<p class="count">${ui.q ? `${V.plural(rows.length, "booking")} match` : `Showing ${shown.length.toLocaleString("id-ID")} of ${rows.length.toLocaleString("id-ID")}`}</p>` : ""}
+    <ul class="ledger">${shown.map(entry).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown)} more</button></p>` : ""}`;
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
+}
+</script>
+</body>
+</html>

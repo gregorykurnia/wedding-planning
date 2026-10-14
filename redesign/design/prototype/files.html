@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  .crumbs { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 8px; font-size: 14px; color: var(--ink-2); margin-bottom: 8px; }
+  .crumbs a, .crumbs button { color: var(--ink-2); text-decoration: none; background: none; border: 0; cursor: pointer; font-size: 14px; padding: 2px 0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .crumbs a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--champagne); }
+  .crumbs .sep { color: var(--ink-3); }
+  .folder-acts { display: flex; gap: 18px; justify-content: center; font-size: 14px; margin-top: 10px; flex-wrap: wrap; }
+  .starts { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  .frow { display: grid; grid-template-columns: 48px 1fr auto; gap: 2px 18px; align-items: center; padding: 12px 4px; text-decoration: none; width: 100%; background: none; border: 0; text-align: left; cursor: pointer; }
+  .frow:hover { background: rgba(253,232,238,.3); }
+  .frow .ico { width: 48px; height: 48px; border-radius: 12px; background: #fbf5f6; display: grid; place-items: center; overflow: hidden; grid-row: span 2; border: 1px solid var(--line); }
+  .frow .ico img { width: 100%; height: 100%; object-fit: cover; }
+  .frow .ico .ext { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--gold-ink); }
+  .frow .ico svg { width: 26px; height: 26px; color: var(--champagne); }
+  .frow.folder .ico { background: var(--champagne-soft); border-color: transparent; }
+  .frow .fname { font-family: var(--serif); font-size: 20px; font-weight: 500; line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
+  .frow .fmeta { font-size: 13.5px; color: var(--ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .frow .fside { font-size: 13.5px; color: var(--ink-2); text-align: right; white-space: nowrap; grid-row: span 2; }
+  .frow .cat { color: var(--gold-ink); }
+  .preview { height: 180px; border-radius: 18px; background: #fbf5f6; display: grid; place-items: center; overflow: hidden; margin-top: 18px; border: 1px solid var(--line); }
+  .preview img { width: 100%; height: 100%; object-fit: contain; }
+  .preview .ext { font-family: var(--serif); font-style: italic; font-size: 44px; color: var(--gold-ink); }
+  .tree { list-style: none; margin-top: 18px; max-height: 46vh; overflow: auto; border-top: 1px solid var(--line); }
+  .tree label { display: flex; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 15px; overflow-wrap: anywhere; }
+  .tree input { accent-color: var(--rose); flex: none; }
+  .tree .off { color: var(--ink-3); cursor: not-allowed; }
+  @media (max-width: 760px) { .frow .fside { grid-row: auto; grid-column: 2; text-align: left; } .frow .ico { grid-row: span 3; } }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-files.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const qp = new URLSearchParams(location.search);
+let here = qp.get("folder") || (S === "emptyfolder" ? "newf" : V.STRESS && S === "deep" ? "deep29" : null);
+if (S === "emptyfolder" && !d.folders.find((x) => x.id === "newf")) d.folders.push({ id: "newf", name: "Rings", parent: null });
+const ui = { q: S === "noresults" ? "passport" : "", hits: 200 };
+const FOLDER = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="3" y="7" width="20" height="14" rx="2"/><path d="M3 9l10 7 10-7"/></svg>';
+const EXT = { pdf: "pdf", doc: "doc", sheet: "xls", zip: "zip" };
+const size = (mb) => V.mbText(mb);
+const fold = (id) => d.folders.find((x) => x.id === id);
+const kids = (id) => d.folders.filter((x) => x.parent === id).sort((a, z) => a.name.localeCompare(z.name));
+const filesIn = (id) => d.files.filter((x) => x.folder === id);
+const path = (id) => { const out = []; let f = fold(id); while (f) { out.unshift(f); f = fold(f.parent); } return out; };
+const desc = (id) => { const all = [id]; kids(id).forEach((k) => all.push(...desc(k.id))); return all; };
+const pathName = (id) => id ? path(id).map((x) => x.name).join(" › ") : "Files";
+const fhref = (id) => V.href("files.html", id ? { folder: id } : {});
+const icon = (x) => x.type === "image" ? `<img src="${x.src}" alt="">` : `<span class="ext">${EXT[x.type] || "file"}</span>`;
+
+function crumbs() {
+  if (!here) return "";
+  const p = path(here), all = [{ id: null, name: "Files" }].concat(p.slice(0, -1));
+  const long = all.length > 4;
+  const show = long && !ui.full ? [all[0], null].concat(all.slice(-2)) : all;
+  return `<nav class="crumbs" aria-label="Where you are">${show.map((c) => c ? `<a href="${fhref(c.id)}" dir="auto">${V.esc(c.name)}</a>` : `<button id="more-crumbs" aria-label="Show the full path">…</button>`).join(`<span class="sep" aria-hidden="true">›</span>`)}</nav>`;
+}
+
+function fileRow(x, withPath) {
+  return `<li><button class="frow" data-file="${x.id}"><span class="ico">${icon(x)}</span><span class="fname" dir="auto">${V.esc(x.name)}</span>
+    <span class="fside">${size(x.size)}<br>${V.dateShort(x.date)}</span>
+    <span class="fmeta" dir="auto">${[x.category ? `<span class="cat">${V.esc(x.category)}</span>` : "", withPath ? `in ${V.esc(pathName(x.folder))}` : V.esc(x.desc)].filter(Boolean).join(", ") || "&nbsp;"}</span></button></li>`;
+}
+function folderRow(f) {
+  const nf = kids(f.id).length, nx = filesIn(f.id).length;
+  return `<li><a class="frow folder" href="${fhref(f.id)}" data-id="${f.id}"><span class="ico">${FOLDER}</span><span class="fname" dir="auto">${V.esc(f.name)}</span><span class="fside">${V.ICON.chev}</span>
+    <span class="fmeta">${[nf ? V.plural(nf, "folder") : "", nx ? V.plural(nx, "file") : ""].filter(Boolean).join(", ") || "Empty"}</span></a></li>`;
+}
+
+function render(main) {
+  const cur = here ? fold(here) : null;
+  if (here && !cur) { here = null; return render(main); }
+  const fs = kids(here), xs = filesIn(here).sort((a, z) => z.date.localeCompare(a.date));
+  const total = d.files.reduce((s, x) => s + x.size, 0);
+  const head = `<section class="hero">${crumbs()}<h1 dir="auto">${cur ? V.esc(cur.name) : "Files"}</h1>
+      <p class="sub">${cur ? [fs.length ? V.plural(fs.length, "folder") : "", xs.length ? V.plural(xs.length, "file") : ""].filter(Boolean).join(", ") || "Empty" : d.files.length ? `${V.plural(d.files.length, "file")}, ${size(total)} in all` : "Contracts, quotes, receipts and photos"}</p>
+      ${cur ? `<div class="folder-acts"><button class="link" id="ren">Rename</button><button class="link" id="mov">Move</button><button class="link rose" id="delf">Delete folder</button></div>` : V.subnav("files.html", "records")}
+      <div class="starts"><button class="btn" id="up">Upload files</button><button class="btn quiet" id="newf">New folder</button></div></section>`;
+  if (!d.files.length && !d.folders.length) {
+    main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No files yet</h1><p>Upload quotes, contracts and photos from vendors. Up to 10 MB each, and big PDFs are shrunk for you.</p></div>`;
+    wireHead(main); return;
+  }
+  const focused = document.activeElement && document.activeElement.id === "q";
+  main.innerHTML = head + `<div class="tools" style="margin-top:34px"><label class="search">${V.ICON.search}<span class="sr">Find a file</span><input id="q" type="search" placeholder="Find a file in any folder, by name or description" value="${V.esc(ui.q)}"></label></div><div id="list"></div>`;
+  wireHead(main); list();
+  const q = V.$("#q"); q.oninput = () => { ui.q = q.value; ui.hits = 200; list(); };
+  if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+}
+
+function list() {
+  const box = V.$("#list");
+  if (ui.q) {
+    const s = ui.q.toLocaleLowerCase();
+    const hits = d.files.filter((x) => (x.name + " " + x.desc).toLocaleLowerCase().includes(s));
+    box.innerHTML = hits.length ? `<p class="count">${V.plural(hits.length, "file")} in all folders${hits.length > ui.hits ? `, showing ${ui.hits.toLocaleString("id-ID")}` : ""}</p><ul class="ledger" style="margin-top:12px">${hits.slice(0, ui.hits).map((x) => fileRow(x, true)).join("")}</ul>
+      ${hits.length > ui.hits ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more-hits">Show ${Math.min(200, hits.length - ui.hits).toLocaleString("id-ID")} more</button></p>` : ""}`
+      : `<div class="message inline"><h1>No files match “${V.esc(ui.q)}”</h1><p>The search looks at every folder, by file name and description.</p><div class="acts"><button class="btn quiet" id="clear">Clear the search</button></div></div>`;
+    const c = V.$("#clear"); if (c) c.onclick = () => { ui.q = ""; V.$("#q").value = ""; list(); };
+    const mh = V.$("#more-hits"); if (mh) mh.onclick = () => { ui.hits += 200; list(); };
+  } else {
+    const fs = kids(here), xs = filesIn(here).sort((a, z) => z.date.localeCompare(a.date));
+    box.innerHTML = (!fs.length && !xs.length) ? `<div class="message inline"><h1>This folder is empty</h1><p>Upload files into it, or make folders inside it.</p></div>`
+      : `${fs.length ? `<h2 class="section-h">Folders</h2><ul class="ledger">${fs.map(folderRow).join("")}</ul>` : ""}
+         ${xs.length ? `<h2 class="section-h">Files <small>newest first</small></h2><ul class="ledger">${xs.slice(0, ui.shown || 100).map((x) => fileRow(x)).join("")}</ul>${xs.length > (ui.shown || 100) ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, xs.length - (ui.shown || 100)).toLocaleString("id-ID")} more</button></p>` : ""}` : ""}`;
+    const m = V.$("#more"); if (m) m.onclick = () => { ui.shown = (ui.shown || 100) + 100; list(); };
+  }
+  V.$$("[data-file]", box).forEach((b) => b.onclick = () => fileSheet(d.files.find((x) => x.id === b.dataset.file)));
+}
+
+function wireHead(main) {
+  V.$("#up", main).onclick = () => uploadSheet();
+  V.$("#newf", main).onclick = () => folderNameSheet(null);
+  const mc = V.$("#more-crumbs", main); if (mc) mc.onclick = () => { ui.full = true; V.rerender(); };
+  const cur = here && fold(here); if (!cur) return;
+  V.$("#ren", main).onclick = () => folderNameSheet(cur);
+  V.$("#mov", main).onclick = () => moveSheet({ folder: cur });
+  V.$("#delf", main).onclick = async () => {
+    const n = desc(cur.id).length - 1, nx = d.files.filter((x) => desc(cur.id).includes(x.folder)).length;
+    if (n || nx) {
+      V.openSheet(`<h2>Empty ${V.esc(cur.name)} first</h2><p class="sub">It still holds ${[nx ? V.plural(nx, "file") : "", n ? V.plural(n, "folder") : ""].filter(Boolean).join(" and ")}. Move or delete them, then delete the folder.</p><div class="acts"><button class="btn" data-x>OK</button></div>`, (el) => V.$("[data-x]", el).onclick = V.closeSheet);
+      return;
+    }
+    if (!await V.confirm({ title: `Delete ${cur.name}?`, body: "The folder is empty. You can undo for a few seconds.", action: "Delete folder", danger: true })) return;
+    const i = d.folders.indexOf(cur), parent = cur.parent;
+    d.folders.splice(i, 1); here = parent; history.replaceState(null, "", fhref(parent)); V.rerender();
+    V.saved(`Deleted ${V.esc(cur.name)}`, () => { d.folders.splice(i, 0, cur); here = cur.id; history.replaceState(null, "", fhref(cur.id)); V.rerender(); });
+  };
+}
+
+function folderNameSheet(f) {
+  V.openSheet(`<h2>${f ? "Rename folder" : "New folder"}</h2><p class="sub">${f ? "" : `Inside ${V.esc(pathName(here))}`}</p><div class="fields"><div class="field"><label for="fn">Name</label><input id="fn" dir="auto" autofocus value="${V.esc(f ? f.name : "")}" placeholder="For example, Rings"></div></div>
+    ${V.demoLine(f ? "renaming" : "adding")}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>${f ? "Rename" : "Make folder"}</button></div>`, (el) => {
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    const go = () => {
+      const n = V.$("#fn", el).value.trim(); if (!n) { V.$("#fn", el).focus(); return; }
+      const parent = f ? f.parent : here;
+      if (d.folders.some((x) => x !== f && x.parent === parent && x.name.toLocaleLowerCase() === n.toLocaleLowerCase())) { const fl = V.$("#fn", el).closest(".field"); fl.classList.add("failed"); if (!V.$(".err", fl)) fl.insertAdjacentHTML("beforeend", `<p class="err">There's already a folder called ${V.esc(n)} here.</p>`); return; }
+      if (f) { const old = f.name; f.name = n; V.closeSheet(); V.rerender(); V.saved(`Renamed to ${V.esc(n)}`, () => { f.name = old; V.rerender(); }); }
+      else { const nf = { id: "fo" + Date.now(), name: n, parent: here }; d.folders.push(nf); V.closeSheet(); V.rerender(); V.saved(`Made ${V.esc(n)}`); V.$$(`[data-id="${nf.id}"]`).forEach((e) => e.classList.add("flash")); }
+    };
+    V.$("[data-ok]", el).onclick = go; V.$("#fn", el).onkeydown = (e) => { if (e.key === "Enter") go(); };
+  });
+}
+
+/* R11, R12: move a file, or a folder with everything inside it */
+function moveSheet({ file, folder }) {
+  const blocked = folder ? desc(folder.id) : [];
+  const from = file ? file.folder : folder.parent;
+  const opts = [];
+  const walk = (parent, depth) => kids(parent).forEach((f) => { opts.push([f, depth]); walk(f.id, depth + 1); });
+  walk(null, 1);
+  const n = folder ? d.files.filter((x) => blocked.includes(x.folder)).length : 0;
+  V.openSheet(`<h2 dir="auto">Move ${V.esc(file ? file.name : folder.name)}</h2><p class="sub">${folder ? `With everything inside it${n ? `: ${V.plural(n, "file")}` : ""}${blocked.length > 1 ? ` and ${V.plural(blocked.length - 1, "folder")}` : ""}.` : `Now in ${V.esc(pathName(from))}.`}</p>
+    <ul class="tree" role="radiogroup" aria-label="Move to">
+      <li><label class="${from === null ? "off" : ""}"><input type="radio" name="to" value="" ${from === null ? "disabled" : ""}>Files, the top level${from === null ? " (it's here now)" : ""}</label></li>
+      ${opts.map(([f, depth]) => { const off = blocked.includes(f.id) || f.id === from; return `<li><label class="${off ? "off" : ""}" style="padding-left:${4 + Math.min(depth, 12) * 16}px"><input type="radio" name="to" value="${f.id}" ${off ? "disabled" : ""}><span dir="auto">${V.esc(f.name)}</span>${f.id === from ? " (it's here now)" : blocked.includes(f.id) && f.id !== folder.id ? " (inside it)" : f.id === (folder && folder.id) ? " (this folder)" : ""}</label></li>`; }).join("")}
+    </ul>
+    ${V.demoLine("moving")}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok disabled>Move here</button></div>`, (el) => {
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$$("input[name=to]", el).forEach((r) => r.onchange = () => { if (!V.DEMO) V.$("[data-ok]", el).disabled = false; });
+    V.$("[data-ok]", el).onclick = () => {
+      const to = (V.$("input[name=to]:checked", el) || {}).value || null;
+      const t = file || folder, key = file ? "folder" : "parent", old = t[key];
+      t[key] = to; V.closeSheet(); V.rerender();
+      V.saved(`Moved to ${V.esc(pathName(to))}`, () => { t[key] = old; V.rerender(); });
+    };
+  });
+}
+
+/* R10, R11, R13 */
+function fileSheet(x) {
+  V.openSheet(`<h2 dir="auto">${V.esc(x.name)}</h2><p class="sub">${size(x.size)}, added ${V.dateLong(x.date)}, in ${V.esc(pathName(x.folder))}</p>
+    <div class="preview">${icon(x)}</div>
+    <div class="fields">
+      <div class="field"><label for="xn">Name</label><input id="xn" dir="auto" value="${V.esc(x.name)}"></div>
+      <div class="field"><label for="xc">Category</label><input id="xc" list="cats" value="${V.esc(x.category)}" placeholder="Choose or type your own"><datalist id="cats">${d.FILE_CATEGORIES.map((c) => `<option value="${V.esc(c)}">`).join("")}</datalist></div>
+      <div class="field"><label for="xd">Description</label><textarea id="xd" dir="auto" placeholder="What it is, so you can find it later">${V.esc(x.desc)}</textarea></div>
+    </div>
+    <div class="acts"><a class="btn quiet" href="#" data-later="1">Open</a><a class="btn quiet" href="#" data-later="1">Download</a><button class="btn quiet" data-move>Move</button><button class="btn" data-x>Done</button></div>
+    <p style="text-align:center;margin-top:18px"><button class="link rose" data-del>Delete for good</button></p>`, (el) => {
+    ["xn", "xc", "xd"].forEach((k) => V.$("#" + k, el).onchange = (e) => {
+      const key = { xn: "name", xc: "category", xd: "desc" }[k]; const v = e.target.value.trim(), old = x[key];
+      if (key === "name" && !v) { e.target.value = x.name; return; }
+      x[key] = v; V.rerender();
+      /* every rename gets undo (owner, stage 3) */
+      if (key === "name") V.saved(`Renamed to ${V.esc(v)}`, () => { x.name = old; const i = V.$("#xn"); if (i) i.value = old; V.rerender(); }); else V.saved("Saved");
+    });
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-move]", el).onclick = () => moveSheet({ file: x });
+    V.$("[data-del]", el).onclick = async () => {
+      if (!await V.confirm({ title: `Delete ${x.name}?`, body: `It's removed from storage for good, freeing ${size(x.size)}. It can't be brought back.`, action: "Delete for good", danger: true })) return;
+      d.files.splice(d.files.indexOf(x), 1); V.rerender(); V.toast(`Deleted ${V.esc(x.name)}`);
+    };
+  });
+}
+
+/* R9, R10: the shared upload sheet (assets/app.js), filing into the folder you're in */
+function uploadSheet(demoQueue) {
+  V.uploadSheet({ where: pathName(here), demoQueue, onDone: (x) => {
+    d.files.push({ id: "u" + Date.now() + Math.round(Math.random() * 1e4), name: x.name, folder: here, size: x.mb, date: "2026-10-14", category: x.category, desc: x.desc, type: x.type, src: x.src });
+    list();
+  } });
+}
+
+V.init({
+  where: "Documents", section: "documents.html", noun: "your files", wide: true,
+  states: [["empty", "No files yet"], ["emptyfolder", "An empty folder"], ["noresults", "No results"], ["uploading", "Uploading"], ["file", "A file's details"], ["moving", "Moving a folder"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella uploads a file"]],
+  render,
+  sync() {
+    setTimeout(() => {
+      const x = { id: "sx", name: "Bella's dress fitting.jpg", folder: here, size: 2.2, date: "2026-10-14", category: "Photo", desc: "Second fitting", type: "image", src: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#f4ead7"/></svg>') };
+      d.files.push(x); V.rerender(); V.$$('[data-file="sx"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} uploaded ${V.esc(x.name)}`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
+});
+if (S === "uploading") uploadSheet([
+  { name: "Signed contract.pdf", mb: 2.1, state: "done", cat: "Contract" },
+  { name: "Transfer receipt.jpg", mb: 2.1, state: "uploading", pct: 62, image: true, cat: "Receipt" },
+  { name: "Scanned brochure.pdf", mb: 14.2, state: "shrinking", pct: 20 },
+  { name: "All photos.zip", mb: 48 },
+  { name: "Invoice.pdf", mb: 0.3, state: "failed" },
+]);
+if (S === "file") { const x = d.files.find((y) => y.folder === here) || d.files[0]; if (x) fileSheet(x); }
+if (S === "moving") { const f = d.folders.find((y) => y.id === "catering"); if (f) moveSheet({ folder: f }); }
+</script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget, Greg &amp; Bella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --mist: #edf6f5;
+    --mist-2: #dcefed;
+    --ink: #0e3440;
+    --ink-2: #4c6a72;
+    --ink-3: #87a0a6;
+    --line: #e0ebea;
+
+    --lagoon: #00a896;      /* paid, on track */
+    --lagoon-soft: #c9eee8;
+    --tang: #ff7419;        /* overdue, due soon */
+    --tang-soft: #ffe7d6;
+    --tang-ink: #c24e00;
+    --lilac: #9b84ff;       /* what-if, projection */
+    --lilac-soft: #ebe6ff;
+    --sun: #ffd23c;         /* the day itself */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Geologica", system-ui, sans-serif; font-weight: 340;
+    color: var(--ink); background: var(--paper);
+    font-size: 14.5px; line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  b, strong { font-weight: 560; }
+
+  .page { max-width: 1360px; margin: 0 auto; padding: 30px 44px 130px; }
+
+  /* ---------- top ---------- */
+  .top { display: flex; align-items: center; gap: 24px; }
+  h1 { font-weight: 640; font-size: 32px; letter-spacing: -0.025em; }
+  .when { color: var(--ink-2); font-size: 14px; }
+  .when b { color: var(--ink); }
+  .top .grow { flex: 1; }
+  .search {
+    display: flex; align-items: center; gap: 10px; width: 300px;
+    background: var(--mist); border-radius: 12px; padding: 10px 14px; color: var(--ink-3); font-size: 14px;
+  }
+  .search kbd { margin-left: auto; font: inherit; font-size: 12px; color: var(--ink-3); background: var(--paper); border-radius: 6px; padding: 1px 7px; }
+  .btn { font: inherit; font-weight: 560; font-size: 14px; border: 0; border-radius: 12px; padding: 11px 18px; cursor: pointer; white-space: nowrap; }
+  .btn.primary { background: var(--ink); color: #fff; }
+
+  /* ---------- figures ---------- */
+  .figures { display: flex; gap: 0; margin-top: 26px; }
+  .fig { padding: 2px 34px 2px 0; margin-right: 34px; border-right: 1px solid var(--line); }
+  .fig:last-child { border-right: 0; }
+  .fig span { display: block; font-size: 13px; color: var(--ink-2); }
+  .fig b { display: block; font-size: 26px; font-weight: 520; letter-spacing: -0.02em; margin-top: 2px; }
+  .fig b small { font-size: 14px; font-weight: 420; color: var(--ink-2); letter-spacing: 0; margin-left: 4px; }
+  .fig.paid b { color: var(--lagoon); }
+  .fig.proj b { color: #6a52e0; }
+  .fig.proj span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: var(--lilac); margin-right: 7px; }
+
+  /* ---------- runway ---------- */
+  .runway {
+    margin-top: 26px; background: var(--mist); border-radius: 28px;
+    padding: 22px 30px 18px; position: relative;
+  }
+  .runway-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .runway-head h2 { font-size: 15px; font-weight: 560; }
+  .runway-head p { font-size: 13px; color: var(--ink-2); }
+  .runway-head p b { color: var(--tang-ink); }
+
+  .track { display: grid; grid-template-columns: 62fr 38fr; height: 220px; margin-top: 8px; position: relative; }
+  .near, .far { position: relative; border-bottom: 2px solid var(--ink); }
+  .far { display: grid; grid-template-columns: repeat(4, 1fr); border-left: 1px dashed #a9c4c2; }
+
+  .post { position: absolute; bottom: 0; width: 10px; border-radius: 6px 6px 0 0; background: var(--lagoon); }
+  .post.late { background: var(--tang); }
+  .post.soon { background: repeating-linear-gradient(180deg, var(--tang) 0 6px, #ff9a57 6px 9px); }
+  .tag { position: absolute; padding-bottom: 8px; white-space: nowrap; line-height: 1.25; }
+  .tag b { display: block; font-size: 13.5px; font-weight: 600; }
+  .tag span { display: block; font-size: 12px; color: var(--ink-2); }
+  .tag.late b { color: var(--tang-ink); }
+
+  .today { position: absolute; top: 4px; bottom: -26px; width: 0; border-left: 2px solid var(--ink); }
+  .today::after { content: "Today"; position: absolute; top: 0; left: 6px; font-size: 12px; font-weight: 600; }
+
+  .month { position: relative; border-right: 1px dashed #c4d8d6; }
+  .month:last-child { border-right: 0; }
+  .month .mbar { position: absolute; bottom: 0; left: 18%; right: 18%; border-radius: 10px 10px 0 0; background: color-mix(in srgb, var(--lagoon) 45%, #fff); }
+  .month .mtag { position: absolute; left: 18%; padding-bottom: 8px; line-height: 1.25; }
+  .month .mtag b { display: block; font-size: 13px; font-weight: 600; }
+  .month .mtag span { font-size: 12px; color: var(--ink-2); }
+  .day { position: absolute; top: 4px; bottom: -26px; left: 64%; border-left: 2px dashed var(--ink); }
+  .day i { position: absolute; top: -2px; left: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px var(--mist); }
+
+  .axis { display: grid; grid-template-columns: 62fr 38fr; margin-top: 6px; font-size: 12px; color: var(--ink-2); height: 22px; }
+  .axis .na { position: relative; }
+  .axis .na span { position: absolute; }
+  .axis .fa { display: grid; grid-template-columns: repeat(4, 1fr); padding-left: 1px; }
+  .axis .fa span { padding-left: 10px; }
+  .axis .fa .wd { font-weight: 600; color: var(--ink); }
+  .runway .note { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+
+  .vrun { display: none; }
+
+  /* ---------- lower ---------- */
+  .lower { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; margin-top: 34px; align-items: start; }
+  h2.sec { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .sec-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .sec-row p { font-size: 13px; color: var(--ink-2); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { text-align: left; font-weight: 420; font-size: 12.5px; color: var(--ink-3); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th.r, td.r { text-align: right; }
+  th.sorted { color: var(--ink); font-weight: 560; }
+  th.sorted::after { content: ""; display: inline-block; margin-left: 6px; border: 4px solid transparent; border-top-color: currentColor; vertical-align: -1px; }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+  td .sub { display: block; font-size: 12.5px; color: var(--ink-2); }
+  td.name b { font-weight: 560; }
+  .chev { display: inline-block; width: 16px; color: var(--ink-3); font-size: 11px; }
+  .who { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+  .who i { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-style: normal; font-size: 10.5px; font-weight: 640; background: var(--mist-2); color: var(--ink); }
+  .meter { display: inline-block; width: 52px; height: 5px; border-radius: 3px; background: var(--mist-2); vertical-align: middle; margin-right: 8px; overflow: hidden; }
+  .meter i { display: block; height: 100%; background: var(--lagoon); }
+  .pill { display: inline-block; font-size: 12px; font-weight: 560; padding: 2px 9px; border-radius: 999px; }
+  .pill.late { background: var(--tang-soft); color: var(--tang-ink); }
+  .pill.soon { background: #fff2c2; color: #8a6200; }
+  .pill.done { background: var(--lagoon-soft); color: #00695e; }
+  .neg { color: var(--tang-ink); font-weight: 560; }
+
+  tr.open td { background: var(--mist); border-bottom-color: transparent; }
+  tr.open td:first-child { border-radius: 12px 0 0 0; }
+  tr.open td:last-child { border-radius: 0 12px 0 0; }
+  tr.part td { background: var(--mist); font-size: 13.5px; padding-top: 8px; padding-bottom: 8px; border-bottom: 1px dashed #c9dedc; }
+  tr.part td.name { padding-left: 36px; }
+  tr.part.last td { border-bottom: 1px solid var(--line); }
+  tr.part.last td:first-child { border-radius: 0 0 0 12px; }
+  tr.part.last td:last-child { border-radius: 0 0 12px 0; }
+  tr.add td { background: var(--mist); }
+  tr.add button { font: inherit; font-size: 13px; font-weight: 560; color: #00796b; background: none; border: 0; cursor: pointer; padding-left: 26px; }
+
+  /* who pays */
+  .funds { margin-top: 12px; }
+  .fund { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .fund:first-child { border-top: 1px solid var(--line); }
+  .fund .fh { display: flex; justify-content: space-between; align-items: center; }
+  .fund .fh b { font-weight: 560; }
+  .fund .fh span { font-size: 12.5px; color: var(--ink-2); }
+  .fund .fbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 9px 0 7px; background: var(--mist-2); }
+  .fund .fbar i { background: var(--lagoon); }
+  .fund .fn { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+  .fund .fn b { color: var(--ink); }
+  .fund.unassigned .fh b { color: var(--ink-2); font-style: italic; font-weight: 460; }
+
+  /* ---------- floating island ---------- */
+  .island {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 2px;
+    background: rgba(14, 52, 64, .94); backdrop-filter: blur(12px);
+    border-radius: 18px; padding: 6px; box-shadow: 0 14px 40px rgba(14,52,64,.25);
+  }
+  .island a { color: #b7d0d3; text-decoration: none; font-size: 13.5px; font-weight: 440; padding: 9px 15px; border-radius: 13px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .island a:hover { color: #fff; }
+  .island a[aria-current="page"] { background: #fff; color: var(--ink); font-weight: 560; }
+  .island .sep { width: 1px; height: 22px; background: rgba(255,255,255,.18); margin: 0 6px; }
+  .island svg { width: 18px; height: 18px; }
+  .island .ph { display: none; }
+
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--lagoon); outline-offset: 2px; }
+
+  /* ---------- narrower desktop ---------- */
+  @media (max-width: 1200px) {
+    .lower { grid-template-columns: 1fr; }
+    .search { width: 220px; }
+    .page { padding: 26px 28px 120px; }
+  }
+
+  /* ---------- phone ---------- */
+  @media (max-width: 760px) {
+    body { font-size: 14px; }
+    .page { padding: 18px 16px 120px; }
+    .top { flex-wrap: wrap; gap: 4px 12px; }
+    h1 { font-size: 26px; }
+    .top .grow, .search { display: none; }
+    .top .btn { margin-left: auto; padding: 9px 14px; }
+    .when { order: 3; width: 100%; }
+    .figures { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-top: 18px; }
+    .fig { padding: 0; margin: 0; border: 0; }
+    .fig b { font-size: 19px; }
+    .fig b small { display: none; }
+
+    .runway { padding: 16px 16px 14px; border-radius: 22px; margin-top: 20px; }
+    .track, .axis, .runway .note { display: none; }
+    .vrun { display: block; margin-top: 10px; }
+    .vrow { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; padding: 6px 0; }
+    .vrow .d { font-size: 12px; color: var(--ink-2); line-height: 1.2; }
+    .vrow .d b { display: block; color: var(--ink); font-size: 13px; }
+    .vbar { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .vbar i { height: 10px; border-radius: 0 6px 6px 0; background: var(--lagoon); flex: none; }
+    .vbar.late i { background: var(--tang); }
+    .vbar.soon i { background: repeating-linear-gradient(90deg, var(--tang) 0 6px, #ff9a57 6px 9px); }
+    .vbar.far i { background: color-mix(in srgb, var(--lagoon) 45%, #fff); }
+    .vbar span { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vbar span b { color: var(--ink); }
+    .vbar.late span b { color: var(--tang-ink); }
+    .vrow.todayrow { padding: 2px 0; }
+    .vrow.todayrow .d { font-weight: 600; color: var(--ink); font-size: 12px; }
+    .vrow.todayrow hr { border: 0; border-top: 2px solid var(--ink); }
+    .vrow.dayrow .d b { color: var(--ink); }
+    .vrow.dayrow .vbar span { color: var(--ink); font-weight: 560; }
+    .vrow.dayrow .vbar i { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); }
+
+    .lower { margin-top: 28px; gap: 30px; }
+    thead, td.hide-sm, th.hide-sm { display: none; }
+    table, tbody { display: block; }
+    tr { display: grid; grid-template-columns: 1fr auto; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    td { border: 0 !important; padding: 0; white-space: normal; }
+    td.r { text-align: right; }
+    tr.open, tr.part, tr.add { padding-left: 12px; padding-right: 12px; background: var(--mist); }
+    tr.open { border-radius: 12px 12px 0 0; border-bottom: 0; margin-top: 4px; }
+    tr.part { border-bottom: 1px dashed #c9dedc; }
+    tr.add { border-radius: 0 0 12px 12px; margin-bottom: 4px; }
+    tr.open td, tr.part td, tr.add td { background: none; border-radius: 0 !important; }
+    tr.part td.name { padding-left: 14px; }
+    tr.add button { padding-left: 14px; }
+
+    .island { left: 12px; right: 12px; transform: none; bottom: 14px; justify-content: space-between; border-radius: 20px; }
+    .island .dt, .island .sep { display: none; }
+    .island .ph { display: flex; flex-direction: column; gap: 3px; padding: 7px 0 6px; flex: 1; font-size: 11px; }
+    .island .ph svg { width: 21px; height: 21px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <h1>Budget</h1>
+    <p class="when"><b>157 days</b> until Saturday 20 March 2027</p>
+    <span class="grow"></span>
+    <div class="search" role="search">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5" stroke-linecap="round"/></svg>
+      Search everything
+      <kbd>⌘K</kbd>
+    </div>
+    <button class="btn primary">Add booking</button>
+  </header>
+
+  <section class="figures" aria-label="Totals">
+    <div class="fig"><span>Committed</span><b>Rp 948.800.000<small>10 bookings</small></b></div>
+    <div class="fig paid"><span>Paid</span><b>Rp 448.550.000<small>47%</small></b></div>
+    <div class="fig"><span>Still to pay</span><b>Rp 500.250.000</b></div>
+    <div class="fig proj"><span>With what-if items</span><b>Rp 1.003.800.000</b></div>
+  </section>
+
+  <section class="runway" aria-labelledby="rw">
+    <div class="runway-head">
+      <h2 id="rw">Payments between now and the day</h2>
+      <p><b>Rp 34.000.000 overdue.</b> Rp 71.500.000 due in the next two weeks.</p>
+    </div>
+
+    <!-- desktop: the next six weeks in detail, later months summed -->
+    <div class="track">
+      <div class="near">
+        <div class="post late" style="left:17.8%; height:61px"></div>
+        <div class="tag late" style="left:17.8%; bottom:61px"><b>34.000.000</b><span>Studio Rana</span></div>
+
+        <div class="today" style="left:28.9%"></div>
+
+        <div class="post soon" style="left:37.8%; height:78px"></div>
+        <div class="tag" style="left:37.8%; bottom:78px"><b>55.500.000</b><span>Dapur Lestari</span></div>
+
+        <div class="post soon" style="left:55.6%; height:42px"></div>
+        <div class="tag" style="left:55.6%; bottom:42px"><b>16.000.000</b><span>Sora Quartet</span></div>
+
+        <div class="post" style="left:68.9%; height:83px"></div>
+        <div class="tag" style="left:68.9%; bottom:83px"><b>63.000.000</b><span>Balai Kirana</span></div>
+
+        <div class="post" style="left:73.3%; height:32px"></div>
+        <div class="tag" style="left:75.5%; bottom:6px"><b>9.250.000</b><span>Kertas &amp; Co.</span></div>
+      </div>
+      <div class="far">
+        <div class="month"><div class="mbar" style="height:60px"></div><div class="mtag" style="bottom:60px"><b>33.600.000</b><span>1 payment</span></div></div>
+        <div class="month"><div class="mbar" style="height:46px"></div><div class="mtag" style="bottom:46px"><b>19.500.000</b><span>1 payment</span></div></div>
+        <div class="month"><div class="mbar" style="height:140px"></div><div class="mtag" style="bottom:140px"><b>180.600.000</b><span>2 payments</span></div></div>
+        <div class="month"><div class="mbar" style="height:99px; right:46%"></div><div class="mtag" style="bottom:99px"><b>90.000.000</b><span>2 payments</span></div><div class="day"><i></i></div></div>
+      </div>
+    </div>
+    <div class="axis">
+      <div class="na">
+        <span style="left:17.8%">9 Oct</span><span style="left:37.8%">18 Oct</span><span style="left:55.6%">26 Oct</span><span style="left:68.9%">1 Nov</span><span style="left:74.5%">3 Nov</span>
+      </div>
+      <div class="fa"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar, <span class="wd">the day</span></span></div>
+    </div>
+    <p class="note">The next six weeks are shown day by day; after that, each month is one bar.</p>
+
+    <!-- phone: the same runway, turned on its side -->
+    <div class="vrun">
+      <div class="vrow"><div class="d"><b>9 Oct</b></div><div class="vbar late"><i style="width:43px"></i><span><b>34.000.000</b> Studio Rana</span></div></div>
+      <div class="vrow todayrow"><div class="d">Today</div><hr></div>
+      <div class="vrow"><div class="d"><b>18 Oct</b></div><div class="vbar soon"><i style="width:55px"></i><span><b>55.500.000</b> Dapur Lestari</span></div></div>
+      <div class="vrow"><div class="d"><b>26 Oct</b></div><div class="vbar soon"><i style="width:29px"></i><span><b>16.000.000</b> Sora Quartet</span></div></div>
+      <div class="vrow"><div class="d"><b>1 Nov</b></div><div class="vbar"><i style="width:58px"></i><span><b>63.000.000</b> Balai Kirana</span></div></div>
+      <div class="vrow"><div class="d"><b>3 Nov</b></div><div class="vbar"><i style="width:22px"></i><span><b>9.250.000</b> Kertas &amp; Co.</span></div></div>
+      <div class="vrow"><div class="d"><b>Dec</b></div><div class="vbar far"><i style="width:42px"></i><span><b>33.600.000</b> 1 payment</span></div></div>
+      <div class="vrow"><div class="d"><b>Jan</b></div><div class="vbar far"><i style="width:32px"></i><span><b>19.500.000</b> 1 payment</span></div></div>
+      <div class="vrow"><div class="d"><b>Feb</b></div><div class="vbar far"><i style="width:98px"></i><span><b>180.600.000</b> 2 payments</span></div></div>
+      <div class="vrow"><div class="d"><b>Mar</b></div><div class="vbar far"><i style="width:69px"></i><span><b>90.000.000</b> 2 payments</span></div></div>
+      <div class="vrow dayrow"><div class="d"><b>20 Mar</b></div><div class="vbar"><i></i><span>The day</span></div></div>
+    </div>
+  </section>
+
+  <div class="lower">
+    <section aria-labelledby="bk">
+      <div class="sec-row"><h2 class="sec" id="bk">Bookings</h2><p>Sorted by what's left to pay</p></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Booking</th><th class="hide-sm">Paid by</th><th class="r hide-sm">Price</th><th class="r hide-sm">Paid</th>
+            <th class="r sorted">Left to pay</th><th class="hide-sm">Next</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="open">
+            <td class="name"><span class="chev">▼</span><b>Balai Kirana Ballroom</b><span class="sub" style="padding-left:16px">Reception venue, 3 parts</span></td>
+            <td class="hide-sm"><span class="who"><i>G</i>Greg's family</span></td>
+            <td class="r hide-sm">420.000.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:50%"></i></span>210.000.000</td>
+            <td class="r"><b>210.000.000</b></td>
+            <td class="hide-sm">1 Nov<span class="sub">2nd instalment</span></td>
+          </tr>
+          <tr class="part">
+            <td class="name">Deposit, 30%<span class="sub">Paid 12 Aug</span></td>
+            <td class="hide-sm"><span class="who"><i>G</i>Greg's family</span></td>
+            <td class="r hide-sm">126.000.000</td>
+            <td class="r hide-sm">126.000.000</td>
+            <td class="r"><span class="pill done">Paid</span></td>
+            <td class="hide-sm"></td>
+          </tr>
+          <tr class="part">
+            <td class="name">2nd instalment, 35%<span class="sub">Transfer the rest</span></td>
+            <td class="hide-sm"><span class="who"><i>G</i>Greg's family</span></td>
+            <td class="r hide-sm">147.000.000</td>
+            <td class="r hide-sm">84.000.000</td>
+            <td class="r">63.000.000</td>
+            <td class="hide-sm">1 Nov</td>
+          </tr>
+          <tr class="part last">
+            <td class="name">Final payment, 35%<span class="sub">After final headcount</span></td>
+            <td class="hide-sm"><span class="who"><i>G</i>Greg's family</span></td>
+            <td class="r hide-sm">147.000.000</td>
+            <td class="r hide-sm">0</td>
+            <td class="r">147.000.000</td>
+            <td class="hide-sm">20 Feb 2027</td>
+          </tr>
+          <tr>
+            <td class="name"><span class="chev">▶</span><b>Dapur Lestari Catering</b><span class="sub" style="padding-left:16px">Catering, 800 guests</span></td>
+            <td class="hide-sm"><span class="who"><i>B</i>Bella's family</span></td>
+            <td class="r hide-sm">185.000.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:30%"></i></span>55.500.000</td>
+            <td class="r"><b>129.500.000</b></td>
+            <td class="hide-sm"><span class="pill soon">In 4 days</span><span class="sub">2nd payment</span></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="chev">▶</span><b>Rumah Bunga Kemang</b><span class="sub" style="padding-left:16px">Decoration and flowers</span></td>
+            <td class="hide-sm"><span class="who"><i>–</i>Not assigned</span></td>
+            <td class="r hide-sm">96.000.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:30%"></i></span>28.800.000</td>
+            <td class="r"><b>67.200.000</b></td>
+            <td class="hide-sm">5 Dec<span class="sub">2nd payment</span></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="chev">▶</span><b>Studio Rana</b><span class="sub" style="padding-left:16px">Photo and video</span></td>
+            <td class="hide-sm"><span class="who"><i>U</i>Us</span></td>
+            <td class="r hide-sm">68.000.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:50%"></i></span>34.000.000</td>
+            <td class="r"><b>34.000.000</b></td>
+            <td class="hide-sm"><span class="pill late">5 days late</span><span class="sub">Final payment</span></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="chev">▶</span><b>Sora Quartet</b><span class="sub" style="padding-left:16px">Band</span></td>
+            <td class="hide-sm"><span class="who"><i>G</i>Greg's family</span></td>
+            <td class="r hide-sm">32.000.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:0%"></i></span>0</td>
+            <td class="r"><b>32.000.000</b></td>
+            <td class="hide-sm"><span class="pill soon">26 Oct</span><span class="sub">Deposit</span></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="chev">▶</span><b>Hantaran Ayu</b><span class="sub" style="padding-left:16px">Sangjit hampers</span></td>
+            <td class="hide-sm"><span class="who"><i>B</i>Bella's family</span></td>
+            <td class="r hide-sm">12.800.000</td>
+            <td class="r hide-sm"><span class="meter"><i style="width:100%; background:var(--tang)"></i></span>14.000.000</td>
+            <td class="r neg">−1.200.000<span class="sub">Overpaid</span></td>
+            <td class="hide-sm">None</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <aside aria-labelledby="wp">
+      <div class="sec-row"><h2 class="sec" id="wp">Who pays</h2><p>Paid and still to pay</p></div>
+      <div class="funds">
+        <div class="fund"><div class="fh"><b>Greg's family</b><span>of 452.000.000</span></div><div class="fbar"><i style="width:46%"></i></div><div class="fn"><span><b>210.000.000</b> paid</span><span><b>242.000.000</b> to pay</span></div></div>
+        <div class="fund"><div class="fh"><b>Bella's family</b><span>of 197.800.000</span></div><div class="fbar"><i style="width:35%"></i></div><div class="fn"><span><b>69.500.000</b> paid</span><span><b>128.300.000</b> to pay</span></div></div>
+        <div class="fund"><div class="fh"><b>Us</b><span>of 203.000.000</span></div><div class="fbar"><i style="width:69%"></i></div><div class="fn"><span><b>140.250.000</b> paid</span><span><b>62.750.000</b> to pay</span></div></div>
+        <div class="fund unassigned"><div class="fh"><b>Not assigned yet</b><span>of 96.000.000</span></div><div class="fbar"><i style="width:30%"></i></div><div class="fn"><span><b>28.800.000</b> paid</span><span><b>67.200.000</b> to pay</span></div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<nav class="island" aria-label="Main">
+  <a class="dt" href="#">Today</a>
+  <a class="dt" href="#" aria-current="page">Budget</a>
+  <a class="dt" href="#">Vendors</a>
+  <a class="dt" href="#">Shortlist</a>
+  <a class="dt" href="#">Items</a>
+  <a class="dt" href="#">Schedule</a>
+  <a class="dt" href="#">Records</a>
+  <a class="dt" href="#">Guests</a>
+  <span class="sep"></span>
+  <a class="dt" href="#" aria-label="Search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5" stroke-linecap="round"/></svg></a>
+
+  <a class="ph" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Today</a>
+  <a class="ph" href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 19h16M7 19v-5M12 19V8M17 19v-9"/></svg>Budget</a>
+  <a class="ph" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c1-4 4-6 8-6s7 2 8 6"/><circle cx="12" cy="8" r="3.5"/></svg>Vendors</a>
+  <a class="ph" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>Search</a>
+  <a class="ph" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More</a>
+</nav>
+</body>
+</html>

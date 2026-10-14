@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget, Greg &amp; Bella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --wash: #f2f4fa;
+    --ink: #191b3a;
+    --ink-2: #565b7a;
+    --ink-3: #8b90ab;
+    --line: #e4e7f1;
+
+    /* every funder owns one colour, everywhere */
+    --greg: #2f5bff;
+    --bella: #ff4f8b;
+    --us: #8a4dff;
+    --none: #a9afc6;
+
+    --late: #ff4a1c;
+    --late-bg: #fff0ea;
+    --soon: #f0a500;
+    --soon-bg: #fff6dc;
+
+    --r-lg: 22px;
+    --r-md: 14px;
+    --r-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-stretch: 100%;
+    color: var(--ink);
+    background: var(--paper);
+    font-size: 15px;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  .wide { font-stretch: 125%; }
+
+  /* ---------- shell ---------- */
+  .shell { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  .rail {
+    background: var(--wash);
+    padding: 32px 22px 28px 28px;
+    display: flex; flex-direction: column; gap: 36px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .couple { font-stretch: 125%; font-weight: 800; font-size: 19px; letter-spacing: -0.01em; line-height: 1.15; }
+  .couple small { display: block; font-stretch: 100%; font-weight: 500; font-size: 13px; color: var(--ink-2); margin-top: 6px; letter-spacing: 0; }
+
+  .nav { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--r-sm);
+    color: var(--ink-2); text-decoration: none;
+    font-weight: 560; font-size: 15.5px;
+  }
+  .nav a:hover { background: #e8ebf5; color: var(--ink); }
+  .nav a[aria-current="page"] { background: var(--paper); color: var(--ink); font-weight: 720; box-shadow: 0 1px 0 var(--line); }
+  .nav .tick { width: 18px; height: 6px; border-radius: 3px; background: transparent; flex: none; }
+  .nav a[aria-current="page"] .tick {
+    background: linear-gradient(90deg, var(--greg) 0 47%, var(--bella) 47% 68%, var(--us) 68% 90%, var(--none) 90%);
+  }
+
+  .countdown { margin-top: auto; }
+  .countdown b { display: block; font-stretch: 125%; font-weight: 800; font-size: 40px; line-height: 1; letter-spacing: -0.02em; }
+  .countdown span { color: var(--ink-2); font-size: 13px; }
+  .countdown .track { margin-top: 12px; height: 4px; border-radius: 2px; background: #dfe3ee; overflow: hidden; }
+  .countdown .track i { display: block; height: 100%; width: 64%; background: var(--ink); border-radius: 2px; }
+
+  main { padding: 36px 56px 64px; max-width: 1240px; width: 100%; }
+
+  /* ---------- header ---------- */
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  h1 { font-stretch: 125%; font-weight: 820; font-size: 30px; letter-spacing: -0.02em; }
+  .actions { display: flex; gap: 10px; }
+  .btn {
+    font: inherit; font-weight: 640; font-size: 14.5px;
+    border-radius: 999px; padding: 10px 18px; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.quiet { background: var(--wash); color: var(--ink); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* ---------- statement ---------- */
+  .statement {
+    margin-top: 28px;
+    font-size: 27px; line-height: 1.3; font-weight: 380; letter-spacing: -0.01em;
+    color: var(--ink-2); max-width: 30em;
+  }
+  .statement strong { color: var(--ink); font-weight: 760; font-stretch: 112%; }
+  .statement .over { display: inline-block; font-size: 14px; font-weight: 620; color: var(--late); background: var(--late-bg); border-radius: 999px; padding: 3px 11px; vertical-align: 5px; letter-spacing: 0; }
+
+  /* ---------- the ribbon ---------- */
+  .ribbon-wrap { margin-top: 26px; }
+  .ribbon { display: flex; gap: 3px; height: 92px; }
+  .seg {
+    --c: var(--none);
+    position: relative; min-width: 4px;
+    border-radius: 6px; overflow: hidden;
+    background:
+      repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 30%, #fff) 0 5px, color-mix(in srgb, var(--c) 18%, #fff) 5px 10px);
+  }
+  .seg:first-child { border-radius: var(--r-md) 6px 6px var(--r-md); }
+  .seg:last-child { border-radius: 6px var(--r-md) var(--r-md) 6px; }
+  .seg .paid { position: absolute; inset: 0 auto 0 0; background: var(--c); }
+  .seg .lbl {
+    position: absolute; left: 12px; top: 10px; right: 8px;
+    color: #fff; font-size: 13px; font-weight: 680; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .seg.dark .lbl { color: var(--ink); }
+  .seg .lbl small { display: block; font-weight: 450; opacity: .85; font-size: 12px; }
+  .seg.overspent { outline: 2px solid var(--late); outline-offset: 2px; }
+  .seg.n, .funder.n { min-width: 150px; }
+  .g { --c: var(--greg); } .b { --c: var(--bella); } .u { --c: var(--us); } .n { --c: var(--none); }
+
+  .funders { display: flex; gap: 3px; margin-top: 12px; }
+  .funder { border-top: 3px solid var(--c); padding-top: 10px; min-width: 0; padding-right: 10px; }
+  .funder h3 { font-size: 14px; font-weight: 720; }
+  .funder p { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .funder p b { color: var(--ink); font-weight: 620; }
+
+  .key { display: flex; gap: 18px; margin-top: 14px; font-size: 12.5px; color: var(--ink-3); }
+  .key span { display: inline-flex; align-items: center; gap: 7px; }
+  .key i { width: 22px; height: 10px; border-radius: 3px; display: inline-block; }
+  .key .k-paid { background: var(--ink-2); }
+  .key .k-left { background: repeating-linear-gradient(135deg, #cfd3e2 0 3px, #e6e9f2 3px 6px); }
+
+  /* ---------- lower grid ---------- */
+  .lower { display: grid; grid-template-columns: 340px 1fr; gap: 40px; margin-top: 44px; align-items: start; }
+  h2 { font-stretch: 125%; font-weight: 780; font-size: 18px; letter-spacing: -0.01em; }
+  .sub { color: var(--ink-2); font-size: 13.5px; margin-top: 3px; }
+
+  /* pay next */
+  .due { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .pay {
+    display: grid; grid-template-columns: 6px 1fr auto; gap: 4px 14px; align-items: center;
+    padding: 13px 16px 13px 12px; border-radius: var(--r-md); background: var(--wash);
+  }
+  .pay .bar { grid-row: span 2; align-self: stretch; border-radius: 3px; background: var(--c); }
+  .pay .who { font-weight: 660; font-size: 14.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pay .amt { font-weight: 720; font-size: 14.5px; text-align: right; }
+  .pay .meta { font-size: 12.5px; color: var(--ink-2); }
+  .pay .when { font-size: 12.5px; text-align: right; color: var(--ink-2); }
+  .pay.late { background: var(--late-bg); }
+  .pay.late .when { color: var(--late); font-weight: 700; }
+  .pay.soon { background: var(--soon-bg); }
+  .pay.soon .when { color: #9a6a00; font-weight: 680; }
+  .more { margin-top: 10px; font-size: 13.5px; font-weight: 620; color: var(--greg); text-decoration: none; display: inline-block; }
+
+  /* bookings */
+  .bk-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
+  .sort { font-size: 13px; color: var(--ink-2); }
+  .sort b { color: var(--ink); font-weight: 650; }
+  .table { margin-top: 16px; border-top: 1px solid var(--line); }
+  .row {
+    display: grid; grid-template-columns: minmax(0, 1fr) 190px 128px 112px; gap: 16px; align-items: center;
+    padding: 13px 4px; border-bottom: 1px solid var(--line);
+  }
+  .row.colh { font-size: 12.5px; color: var(--ink-3); padding: 9px 4px; }
+  .row.colh span:not(:first-child) { text-align: right; }
+  .name { display: flex; gap: 12px; align-items: center; min-width: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .name div { min-width: 0; }
+  .name b { display: block; font-weight: 660; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .name small { display: block; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress { text-align: right; font-size: 13px; color: var(--ink-2); }
+  .progress .p { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c) 18%, #fff); margin-top: 6px; overflow: hidden; }
+  .progress .p i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+  .num { text-align: right; font-weight: 680; font-size: 14.5px; }
+  .num small { display: block; font-weight: 450; font-size: 12.5px; color: var(--ink-2); }
+  .num.neg { color: var(--late); }
+  .next { text-align: right; font-size: 13px; }
+  .next small { display: block; color: var(--ink-2); font-size: 12.5px; }
+  .next.late { color: var(--late); font-weight: 680; }
+
+  .row.open { border-bottom: 0; background: var(--wash); border-radius: var(--r-md) var(--r-md) 0 0; padding-left: 14px; padding-right: 14px; margin-top: 6px; }
+  .parts { background: var(--wash); border-radius: 0 0 var(--r-md) var(--r-md); padding: 0 14px 12px; margin-bottom: 6px; }
+  .part {
+    display: grid; grid-template-columns: minmax(0, 1fr) 190px 128px 112px; gap: 16px; align-items: center;
+    padding: 10px 0 10px 22px; border-top: 1px dashed #d4d8e6; font-size: 13.5px;
+  }
+  .part .pn { min-width: 0; }
+  .part .pn b { font-weight: 600; }
+  .part .pn small { display: block; font-size: 12.5px; color: var(--ink-2); }
+  .part .pn .fund { display: inline-flex; align-items: center; gap: 6px; }
+  .part .pn .fund i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+  .part .num { font-size: 13.5px; }
+  .addpart { margin: 8px 0 0 22px; font: inherit; font-size: 13.5px; font-weight: 640; color: var(--greg); background: none; border: 0; cursor: pointer; }
+
+  .whatif {
+    margin-top: 18px; padding: 14px 18px; border-radius: var(--r-md);
+    border: 1.5px dashed #c9bfff; color: var(--ink-2); font-size: 13.5px;
+    display: flex; justify-content: space-between; gap: 16px; align-items: center;
+  }
+  .whatif b { color: var(--ink); font-weight: 680; }
+
+  .tabbar { display: none; }
+
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--greg); outline-offset: 2px; }
+
+  /* ---------- tablet ---------- */
+  @media (max-width: 1180px) {
+    .lower { grid-template-columns: 1fr; }
+    main { padding: 32px 36px 56px; }
+  }
+
+  /* ---------- phone ---------- */
+  @media (max-width: 760px) {
+    .shell { display: block; }
+    .rail { display: none; }
+    main { padding: 18px 18px 110px; }
+    .head h1 { font-size: 24px; }
+    .btn.quiet { display: none; }
+    .btn.primary { padding: 9px 14px; }
+    .statement { font-size: 19px; margin-top: 14px; }
+    .statement .over { font-size: 12.5px; vertical-align: 2px; }
+    .ribbon-wrap { margin-top: 18px; }
+    .ribbon { height: 64px; gap: 2px; }
+    .seg .lbl { display: none; }
+    .funders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+    .funder { flex: none !important; min-width: 0 !important; }
+    .seg.n { min-width: 4px; }
+    .key { display: none; }
+    .lower { margin-top: 30px; gap: 32px; }
+    .row, .part { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+    .row.colh { display: none; }
+    .row .progress { grid-column: 1 / -1; order: 3; text-align: left; }
+    .row .progress .p { margin-top: 4px; }
+    .row .next, .part .next { display: none; }
+    .part .progress { display: none; }
+    .part { padding-left: 12px; }
+    .whatif { flex-direction: column; align-items: start; gap: 4px; }
+
+    .tabbar {
+      display: flex; position: fixed; left: 12px; right: 12px; bottom: 14px;
+      background: rgba(255,255,255,.92); backdrop-filter: blur(14px);
+      border-radius: 20px; padding: 6px; justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(25,27,58,.12), 0 0 0 1px var(--line);
+    }
+    .tabbar a { flex: 1; text-align: center; text-decoration: none; color: var(--ink-3); font-size: 11.5px; font-weight: 600; padding: 7px 0 6px; border-radius: 14px; }
+    .tabbar a svg { display: block; margin: 0 auto 3px; width: 22px; height: 22px; }
+    .tabbar a[aria-current="page"] { color: var(--ink); background: var(--wash); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="rail" aria-label="Main">
+    <div class="couple">Greg &amp; Bella<small>Saturday 20 March 2027</small></div>
+    <ul class="nav">
+      <li><a href="#">  <span class="tick"></span>Overview</a></li>
+      <li><a href="#" aria-current="page"><span class="tick"></span>Budget</a></li>
+      <li><a href="#">  <span class="tick"></span>Vendors</a></li>
+      <li><a href="#">  <span class="tick"></span>Shortlist</a></li>
+      <li><a href="#">  <span class="tick"></span>Wedding items</a></li>
+      <li><a href="#">  <span class="tick"></span>Schedule</a></li>
+      <li><a href="#">  <span class="tick"></span>Documents</a></li>
+      <li><a href="#">  <span class="tick"></span>Files</a></li>
+      <li><a href="#">  <span class="tick"></span>Guests</a></li>
+    </ul>
+    <div class="countdown">
+      <b>157</b><span>days to go, 64% of our planning time used</span>
+      <div class="track"><i></i></div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="head">
+      <h1>Budget</h1>
+      <div class="actions">
+        <button class="btn quiet">What-if items</button>
+        <button class="btn primary"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>Add booking</button>
+      </div>
+    </div>
+
+    <p class="statement">
+      We've committed to <strong>Rp 948.800.000</strong>, paid <strong>Rp 448.550.000</strong>
+      and have <strong>Rp 500.250.000</strong> left to pay.
+      <span class="over">1 booking overpaid</span>
+    </p>
+
+    <section class="ribbon-wrap" aria-label="Every booking, sized by price and coloured by funder">
+      <div class="ribbon">
+        <div class="seg g" style="flex:420"><div class="paid" style="width:50%"></div><div class="lbl">Reception venue<small>Balai Kirana</small></div></div>
+        <div class="seg g" style="flex:32"><div class="paid" style="width:0%"></div></div>
+        <div class="seg dark b" style="flex:185"><div class="paid" style="width:30%"></div><div class="lbl">Catering<small>Dapur Lestari</small></div></div>
+        <div class="seg b overspent" style="flex:12.8"><div class="paid" style="width:100%"></div></div>
+        <div class="seg dark u" style="flex:68"><div class="paid" style="width:50%"></div><div class="lbl">Photo<small>Studio Rana</small></div></div>
+        <div class="seg u" style="flex:54"><div class="paid" style="width:100%"></div><div class="lbl">Gown</div></div>
+        <div class="seg u" style="flex:38"><div class="paid" style="width:100%"></div></div>
+        <div class="seg u" style="flex:24.5"><div class="paid" style="width:20%"></div></div>
+        <div class="seg u" style="flex:18.5"><div class="paid" style="width:50%"></div></div>
+        <div class="seg dark n" style="flex:96"><div class="paid" style="width:30%"></div><div class="lbl">Flowers<small>Rumah Bunga</small></div></div>
+      </div>
+
+      <div class="funders">
+        <div class="funder g" style="flex:452"><h3>Greg's family</h3><p><b>Rp 210.000.000</b> paid<br><b>Rp 242.000.000</b> to pay</p></div>
+        <div class="funder b" style="flex:197.8"><h3>Bella's family</h3><p><b>Rp 69.500.000</b> paid<br><b>Rp 128.300.000</b> to pay</p></div>
+        <div class="funder u" style="flex:203"><h3>Us</h3><p><b>Rp 140.250.000</b> paid<br><b>Rp 62.750.000</b> to pay</p></div>
+        <div class="funder n" style="flex:96"><h3>Not assigned</h3><p><b>Rp 28.800.000</b> paid<br><b>Rp 67.200.000</b> to pay</p></div>
+      </div>
+      <div class="key"><span><i class="k-paid"></i>Paid</span><span><i class="k-left"></i>Still to pay</span><span>Each block is one booking, sized by its price</span></div>
+    </section>
+
+    <div class="lower">
+      <section aria-labelledby="pn">
+        <h2 id="pn">Pay next</h2>
+        <p class="sub">Rp 34.000.000 overdue, Rp 71.500.000 due in the next two weeks</p>
+        <div class="due">
+          <div class="pay late u"><span class="bar"></span><span class="who">Studio Rana</span><span class="amt">Rp 34.000.000</span><span class="meta">Final payment, Us</span><span class="when">5 days late</span></div>
+          <div class="pay soon b"><span class="bar"></span><span class="who">Dapur Lestari Catering</span><span class="amt">Rp 55.500.000</span><span class="meta">2nd payment, Bella's family</span><span class="when">Sunday 18 Oct</span></div>
+          <div class="pay soon g"><span class="bar"></span><span class="who">Sora Quartet</span><span class="amt">Rp 16.000.000</span><span class="meta">Deposit, Greg's family</span><span class="when">Monday 26 Oct</span></div>
+          <div class="pay g"><span class="bar"></span><span class="who">Balai Kirana Ballroom</span><span class="amt">Rp 63.000.000</span><span class="meta">2nd instalment, Greg's family</span><span class="when">1 Nov</span></div>
+          <div class="pay u"><span class="bar"></span><span class="who">Kertas &amp; Co.</span><span class="amt">Rp 9.250.000</span><span class="meta">Balance, Us</span><span class="when">3 Nov</span></div>
+        </div>
+        <a class="more" href="#">All 11 payments due</a>
+      </section>
+
+      <section aria-labelledby="bk">
+        <div class="bk-head">
+          <div><h2 id="bk">Bookings</h2><p class="sub">10 confirmed</p></div>
+          <span class="sort">Ordered by <b>next due date</b></span>
+        </div>
+        <div class="table" role="table">
+          <div class="row colh" role="row"><span>Booking</span><span>Paid</span><span>Left to pay</span><span>Next due</span></div>
+
+          <div class="row u" role="row">
+            <div class="name"><span class="dot"></span><div><b>Studio Rana</b><small>Photo and video</small></div></div>
+            <div class="progress">34.000.000 of 68.000.000<div class="p"><i style="width:50%"></i></div></div>
+            <div class="num">Rp 34.000.000</div>
+            <div class="next late">9 Oct<small>Final payment</small></div>
+          </div>
+
+          <div class="row b" role="row">
+            <div class="name"><span class="dot"></span><div><b>Dapur Lestari Catering</b><small>Catering, 800 guests</small></div></div>
+            <div class="progress">55.500.000 of 185.000.000<div class="p"><i style="width:30%"></i></div></div>
+            <div class="num">Rp 129.500.000</div>
+            <div class="next">18 Oct<small>2nd payment</small></div>
+          </div>
+
+          <div class="row g open" role="row">
+            <div class="name"><span class="dot"></span><div><b>Balai Kirana Ballroom</b><small>Reception venue, 3 parts</small></div></div>
+            <div class="progress">210.000.000 of 420.000.000<div class="p"><i style="width:50%"></i></div></div>
+            <div class="num">Rp 210.000.000</div>
+            <div class="next">1 Nov<small>2nd instalment</small></div>
+          </div>
+          <div class="parts g">
+            <div class="part">
+              <div class="pn"><b>Deposit, 30%</b><small><span class="fund"><i></i>Greg's family</span></small></div>
+              <div class="progress">126.000.000 of 126.000.000</div>
+              <div class="num">Rp 0<small>Paid in full</small></div>
+              <div class="next">Done<small>Paid 12 Aug</small></div>
+            </div>
+            <div class="part">
+              <div class="pn"><b>2nd instalment, 35%</b><small><span class="fund"><i></i>Greg's family</span></small></div>
+              <div class="progress">84.000.000 of 147.000.000</div>
+              <div class="num">Rp 63.000.000</div>
+              <div class="next">1 Nov<small>Transfer the rest</small></div>
+            </div>
+            <div class="part">
+              <div class="pn"><b>Final payment, 35%</b><small><span class="fund"><i></i>Greg's family</span></small></div>
+              <div class="progress">0 of 147.000.000</div>
+              <div class="num">Rp 147.000.000</div>
+              <div class="next">20 Feb 2027<small>Final headcount</small></div>
+            </div>
+            <button class="addpart">Add a part</button>
+          </div>
+
+          <div class="row b" role="row">
+            <div class="name"><span class="dot"></span><div><b>Hantaran Ayu</b><small>Sangjit hampers</small></div></div>
+            <div class="progress">14.000.000 of 12.800.000<div class="p"><i style="width:100%; background: var(--late)"></i></div></div>
+            <div class="num neg">−Rp 1.200.000<small>Overpaid</small></div>
+            <div class="next">None<small>Ask for a refund?</small></div>
+          </div>
+
+          <div class="row n" role="row">
+            <div class="name"><span class="dot"></span><div><b>Rumah Bunga Kemang</b><small>Decoration and flowers</small></div></div>
+            <div class="progress">28.800.000 of 96.000.000<div class="p"><i style="width:30%"></i></div></div>
+            <div class="num">Rp 67.200.000</div>
+            <div class="next">5 Dec<small>2nd payment</small></div>
+          </div>
+
+          <div class="row u" role="row">
+            <div class="name"><span class="dot"></span><div><b>Atelier Sekar</b><small>Bridal gown</small></div></div>
+            <div class="progress">54.000.000 of 54.000.000<div class="p"><i style="width:100%"></i></div></div>
+            <div class="num">Rp 0<small>Paid in full</small></div>
+            <div class="next">Done</div>
+          </div>
+        </div>
+
+        <div class="whatif">
+          <span>2 what-if items add <b>Rp 55.000.000</b>.</span>
+          <span>Projected total <b>Rp 1.003.800.000</b></span>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Today</a>
+  <a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="8" width="18" height="8" rx="3"/><path d="M10 8v8M15 8v8"/></svg>Budget</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c1-4 4-6 8-6s7 2 8 6"/><circle cx="12" cy="8" r="3.5"/></svg>Vendors</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M9 12h6M9 16h4"/></svg>Records</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More</a>
+</nav>
+</body>
+</html>

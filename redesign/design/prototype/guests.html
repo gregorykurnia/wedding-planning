@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  .counts { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .counts .card { padding: 22px 26px; }
+  .counts h2 { font-family: var(--serif); font-size: 24px; font-weight: 500; text-align: center; }
+  .counts .sub2 { font-size: 13.5px; color: var(--ink-2); text-align: center; margin-top: 2px; }
+  .tally { list-style: none; margin-top: 12px; }
+  .tally li { display: flex; align-items: baseline; gap: 10px; padding: 5px 0; font-size: 15px; }
+  .tally .lead { flex: 1; border-bottom: 1px dotted var(--ink-3); transform: translateY(-4px); min-width: 20px; }
+  .tally b { font-family: var(--serif); font-size: 21px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .tally li.apart { color: var(--ink-2); }
+  .sides { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 16px; margin-top: 12px; text-align: center; }
+  .sides .rule { background: var(--line); }
+  .sides h3 { font-family: var(--serif); font-size: 19px; font-weight: 500; font-style: italic; color: var(--gold-ink); }
+  .sides p { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
+  .sides p b { display: block; font-family: var(--serif); font-size: 28px; font-weight: 500; color: var(--ink); line-height: 1.1; }
+  .unclear { font-size: 13.5px; color: var(--ink-2); text-align: center; margin-top: 12px; }
+  .grow { display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 2px 16px; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+  .grow .no { font-family: var(--serif); font-size: 17px; color: var(--gold-ink); font-style: italic; grid-row: span 2; align-self: start; padding-top: 3px; }
+  .grow .gname { font-family: var(--serif); font-size: 21px; font-weight: 500; line-height: 1.25; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; overflow-wrap: anywhere; }
+  .grow .gname:hover { text-decoration: underline; text-decoration-color: var(--champagne); }
+  .grow .gname small { font-family: var(--sans); font-size: 14px; color: var(--ink-2); font-weight: 340; margin-left: 6px; }
+  .grow .gmeta { font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; grid-column: 2; }
+  .grow .gmeta .food { color: var(--gold-ink); }
+  .grow .right { grid-row: span 2; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .grow .inv { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+  .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--r-pill); padding: 2px; background: #fff; }
+  .seg button { border: 0; background: none; border-radius: var(--r-pill); padding: 4px 11px; font-size: 13px; cursor: pointer; color: var(--ink-2); white-space: nowrap; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .seg button[aria-pressed="true"][data-r="yes"] { background: var(--sage-ink); }
+  .seg button[aria-pressed="true"][data-r="no"] { background: var(--ink-2); }
+  .stepper { display: inline-flex; align-items: center; gap: 12px; }
+  .stepper button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-2); background: #fff; cursor: pointer; font-size: 18px; }
+  .stepper b { font-family: var(--serif); font-size: 24px; font-weight: 500; min-width: 24px; text-align: center; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-top: 12px; font-size: 14px; }
+  @media (max-width: 760px) {
+    .counts { grid-template-columns: 1fr; }
+    .grow { grid-template-columns: 40px minmax(0,1fr); }
+    .grow .right { grid-row: auto; grid-column: 2; align-items: flex-start; margin-top: 8px; }
+    .seg button { padding: 7px 13px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-guests.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const ui = { q: S === "noresults" ? "Surabaya" : "", rsvp: S === "waiting" ? "waiting" : "", invite: "", order: "no", asc: true, shown: 100, failed: null };
+/* G8: a quick RSVP tap that didn't save keeps the choice and offers a retry */
+if (S === "savefail") { const f = d.guests.find((g) => g.rsvp === "yes") || d.guests[0]; ui.failed = f ? f.no : null; }
+const ORDERS = [["no", "Number"], ["name", "Name"], ["conn", "Connection"], ["country", "Country"], ["invite", "Invited to"], ["sent", "Invitation sent"], ["rsvp", "RSVP"], ["plus", "Plus-ones"], ["food", "Food notes"]];
+const inviteName = (k) => d.INVITE.find((x) => x[0] === k)[1];
+const heads = (g) => 1 + (g.plus || 0);
+const sum = (l) => l.reduce((s, g) => s + heads(g), 0);
+
+/* G4: side and kind worked out from how each guest is connected; friends count as family */
+function side(g) { const c = (g.conn || "").toLowerCase(); return /groom|greg|新郎/.test(c) ? "groom" : /bride|bella|新娘/.test(c) ? "bride" : null; }
+const business = (g) => /colleague|business|client|office|partner|同事/.test((g.conn || "").toLowerCase());
+
+function counts() {
+  const all = d.guests, going = all.filter((g) => g.rsvp !== "no");
+  const both = going.filter((g) => g.invite === "both"), rec = going.filter((g) => ["both", "reception", "maybe"].includes(g.invite)), cer = going.filter((g) => ["both", "ceremony"].includes(g.invite)), uns = going.filter((g) => g.invite === "unsure");
+  const bothAll = all.filter((g) => g.invite === "both" && g.rsvp !== "no");
+  const s = { gf: 0, bf: 0, gb: 0, bb: 0, unclear: 0 };
+  bothAll.forEach((g) => { const sd = side(g); if (!sd) { s.unclear += heads(g); return; } s[(sd === "groom" ? "g" : "b") + (business(g) ? "b" : "f")] += heads(g); });
+  return { total: sum(all), yes: sum(all.filter((g) => g.rsvp === "yes")), waiting: sum(all.filter((g) => g.rsvp === "waiting")), both: sum(both), rec: sum(rec), recMaybe: sum(going.filter((g) => g.invite === "maybe")), cer: sum(cer), uns: sum(uns), s };
+}
+
+function visible() {
+  const q = ui.q.toLocaleLowerCase();
+  let l = d.guests.filter((g) => (!ui.rsvp || g.rsvp === ui.rsvp) && (!ui.invite || g.invite === ui.invite) && (!q || [g.name, g.conn, g.country, g.food].some((x) => (x || "").toLocaleLowerCase().includes(q))));
+  const key = { no: (g) => g.no, name: (g) => g.name.toLocaleLowerCase(), conn: (g) => (g.conn || null) && g.conn.toLocaleLowerCase(), country: (g) => g.country || null, invite: (g) => d.INVITE.findIndex((x) => x[0] === g.invite), sent: (g) => g.sent ? 0 : 1, rsvp: (g) => d.RSVP.findIndex((x) => x[0] === g.rsvp), plus: (g) => g.plus, food: (g) => g.food || null }[ui.order];
+  return l.map((g) => ({ g, k: key(g) })).sort((a, z) => a.k == null && z.k == null ? a.g.no - z.g.no : a.k == null ? 1 : z.k == null ? -1 : ((typeof a.k === "number" ? a.k - z.k : String(a.k).localeCompare(String(z.k))) * (ui.asc ? 1 : -1)) || a.g.no - z.g.no).map((r) => r.g);
+}
+
+function row(g) {
+  const bad = ui.failed === g.no;
+  return `<li class="grow ${bad ? "failed-row" : ""}" data-no="${g.no}"><span class="no" aria-label="Guest number ${g.no}">${g.no}</span>
+    <button class="gname" data-open="${g.no}" dir="auto">${V.esc(g.name)}${g.plus ? `<small>+${g.plus}</small>` : ""}</button>
+    <div class="right"><span class="inv">${inviteName(g.invite)}${g.sent ? "" : ", invitation not sent"}</span>
+      <span class="seg" role="radiogroup" aria-label="RSVP for ${V.esc(g.name)}">${d.RSVP.map(([k, l]) => `<button role="radio" data-r="${k}" aria-checked="${g.rsvp === k}" aria-pressed="${g.rsvp === k}">${l}</button>`).join("")}</span></div>
+    <span class="gmeta" dir="auto">${[V.esc(g.conn), V.esc(g.country), g.food ? `<span class="food">${V.esc(g.food.length > 90 ? g.food.slice(0, 88) + "…" : g.food)}</span>` : ""].filter(Boolean).join(", ") || "&nbsp;"}</span>
+    ${bad ? `<p class="row-err" role="alert">Couldn't save the reply for ${V.esc(g.name)}. Your choice is kept. <button class="link rose" data-retry>Try again</button></p>` : ""}</li>`;
+}
+
+function render(main) {
+  const c = counts();
+  const head = `<section class="hero"><h1>Guests</h1><p class="sub">${d.guests.length ? `${V.plural(d.guests.length, "guest")} invited, ${V.plural(c.total, "person", "people")} with plus-ones` : "Who's coming to what"}</p>
+    ${d.guests.length ? `<p class="kicker" style="margin-top:30px">Attending so far</p><p class="figure md num">${c.yes.toLocaleString("id-ID")}</p><p class="context">people, plus-ones included. <b>${c.waiting.toLocaleString("id-ID")}</b> still to reply.</p>` : ""}</section>`;
+  if (!d.guests.length) {
+    main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No guests yet</h1><p>Add each guest with how they're connected to you, which events they're invited to and any plus-ones. Headcounts for each event work themselves out.</p><div class="acts"><button class="btn" id="add">Add a guest</button></div></div>`;
+    V.$("#add").onclick = () => guestSheet(null); return;
+  }
+  const s = c.s;
+  const focused = document.activeElement && document.activeElement.id === "q";
+  main.innerHTML = head + `<div class="counts">
+      <section class="card"><h2>Headcounts</h2><p class="sub2">Plus-ones included; anyone not attending left out</p>
+        <ul class="tally"><li>Both events<span class="lead"></span><b>${c.both}</b></li><li>Reception<span class="lead"></span><b>${c.rec}</b></li>
+        ${c.recMaybe ? `<li class="apart" style="font-size:13.5px;padding-left:14px">of which, if space allows<span class="lead"></span>${c.recMaybe}</li>` : ""}
+        <li>Ceremony<span class="lead"></span><b>${c.cer}</b></li><li class="apart">Unsure, living abroad<span class="lead"></span><b>${c.uns}</b></li></ul></section>
+      <section class="card"><h2>Both sides</h2><p class="sub2">Guests invited to both events; friends count as family</p>
+        <div class="sides"><div><h3>Groom's side</h3><p><b>${s.gf}</b>family</p><p><b>${s.gb}</b>business</p></div><span class="rule"></span><div><h3>Bride's side</h3><p><b>${s.bf}</b>family</p><p><b>${s.bb}</b>business</p></div></div>
+        ${s.unclear ? `<p class="unclear">${V.plural(s.unclear, "person", "people")} not counted: their connection doesn't say groom's or bride's.</p>` : ""}</section></div>
+    <div class="tools"><label class="search">${V.ICON.search}<span class="sr">Search guests</span><input id="q" type="search" placeholder="Search names, connections, countries and food notes" value="${V.esc(ui.q)}"></label>
+      <span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></span></div>
+    <div class="filters"><span class="order"><label for="fr">RSVP</label><select id="fr"><option value="">Any</option>${d.RSVP.map(([k, l]) => `<option value="${k}" ${ui.rsvp === k ? "selected" : ""}>${l}</option>`).join("")}</select></span>
+      <span class="order"><label for="fi">Invited to</label><select id="fi"><option value="">Any event</option>${d.INVITE.map(([k, l]) => `<option value="${k}" ${ui.invite === k ? "selected" : ""}>${l}</option>`).join("")}</select></span>
+      ${ui.q || ui.rsvp || ui.invite ? `<button class="link" id="reset">Show everyone</button>` : ""}</div>
+    <div id="list"></div><button class="btn add-fab" id="add">Add a guest</button>`;
+  list();
+  const q = V.$("#q"); q.oninput = () => { ui.q = q.value; list(); };
+  if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  V.$("#ord").onchange = (e) => { ui.order = e.target.value; ui.asc = true; V.rerender(); };
+  V.$("#dir").onclick = () => { ui.asc = !ui.asc; V.rerender(); };
+  V.$("#fr").onchange = (e) => { ui.rsvp = e.target.value; V.rerender(); };
+  V.$("#fi").onchange = (e) => { ui.invite = e.target.value; V.rerender(); };
+  const r = V.$("#reset"); if (r) r.onclick = () => { ui.q = ""; ui.rsvp = ""; ui.invite = ""; V.rerender(); };
+  V.$("#add").onclick = () => guestSheet(null);
+}
+
+function list() {
+  const box = V.$("#list"), rows = visible();
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>No guests match${ui.q ? ` “${V.esc(ui.q)}”` : ""}</h1><p>Search looks at names, connections, countries and food notes.</p><div class="acts"><button class="btn quiet" id="r2">Show everyone</button></div></div>`;
+    V.$("#r2").onclick = () => { ui.q = ""; ui.rsvp = ""; ui.invite = ""; V.rerender(); }; return;
+  }
+  box.innerHTML = `<p class="count">${ui.q || ui.rsvp || ui.invite ? `${V.plural(rows.length, "guest")} of ${d.guests.length.toLocaleString("id-ID")}` : V.plural(rows.length, "guest")}</p><ul class="ledger" style="margin-top:10px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
+  V.$$("[data-retry]", box).forEach((b) => b.onclick = () => { ui.failed = null; V.rerender(); V.saved("Saved"); });
+  V.$$(".grow", box).forEach((li) => {
+    const g = d.guests.find((x) => x.no === +li.dataset.no);
+    V.$("[data-open]", li).onclick = () => guestSheet(g);
+    V.$$("[data-r]", li).forEach((b) => b.onclick = () => {
+      if (V.DEMO) return V.toast("Not saved: demonstration mode");
+      const old = g.rsvp; g.rsvp = b.dataset.r; V.rerender();
+      V.saved(`${V.esc(g.name)}: ${d.RSVP.find((x) => x[0] === g.rsvp)[1].toLowerCase()}`, () => { g.rsvp = old; V.rerender(); });
+    });
+  });
+}
+
+/* G1, G2, G7 */
+function guestSheet(g) {
+  const isNew = !g;
+  const v = g || { name: "", country: "Indonesia", conn: "", invite: "both", sent: false, rsvp: "waiting", plus: 0, food: "" };
+  V.openSheet(`<h2 dir="auto">${isNew ? "Add a guest" : V.esc(v.name)}</h2><p class="sub">${isNew ? `Will be guest number ${Math.max(0, ...d.guests.map((x) => x.no)) + 1}` : `Guest number ${v.no}`}</p>
+    <div class="fields">
+      <div class="field"><label for="gn">Name</label><input id="gn" dir="auto" ${isNew ? "autofocus" : ""} value="${V.esc(v.name)}"></div>
+      <div class="field"><label for="gc">How they're connected</label><input id="gc" dir="auto" value="${V.esc(v.conn)}" placeholder="For example, groom's uncle or bride's colleague"><p class="hint">Mention groom's or bride's so the two sides add up.</p></div>
+      <div class="field"><label for="gk">Country</label><input id="gk" dir="auto" value="${V.esc(v.country)}"></div>
+      <div class="field"><span class="lab">Invited to</span><div class="chips" role="radiogroup" aria-label="Invited to">${d.INVITE.map(([k, l]) => `<button type="button" class="chip" role="radio" data-i="${k}" aria-pressed="${v.invite === k}" aria-checked="${v.invite === k}">${l}</button>`).join("")}</div></div>
+      <div class="field"><span class="lab">Invitation</span><label class="check"><input type="checkbox" id="gs" ${v.sent ? "checked" : ""}>Sent</label></div>
+      <div class="field"><span class="lab">RSVP</span><span class="seg" role="radiogroup" aria-label="RSVP">${d.RSVP.map(([k, l]) => `<button type="button" role="radio" data-r="${k}" aria-checked="${v.rsvp === k}" aria-pressed="${v.rsvp === k}">${l}</button>`).join("")}</span></div>
+      <div class="field"><span class="lab">Plus-ones</span><span class="stepper"><button type="button" data-p="-1" aria-label="One fewer">−</button><b id="gp" aria-live="polite">${v.plus}</b><button type="button" data-p="1" aria-label="One more">+</button></span></div>
+      <div class="field"><label for="gf">Food notes</label><textarea id="gf" dir="auto" placeholder="Allergies, halal, vegetarian, children's meals">${V.esc(v.food)}</textarea></div>
+    </div>
+    ${isNew ? V.demoLine() : V.sheetSaveLine()}
+    <div class="acts">${isNew ? `<button class="btn quiet" data-again ${V.DEMO ? "disabled" : ""}>Add and start another</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add guest</button>` : `<button class="btn" data-x>Done</button>`}</div>
+    ${isNew ? "" : `<p style="text-align:center;margin-top:16px"><button class="link rose" data-del>Remove guest</button></p>`}`, (el) => {
+    let plus = v.plus;
+    /* G1 in a sheet: an existing guest saves as you go (owner, stage 3) */
+    const sv = isNew ? null : V.sheetSaver(el);
+    const keep = () => { if (!sv) return; const x = collect(); if (!x.name) { V.$("#gn", el).value = g.name; x.name = g.name; } sv(() => Object.assign(g, x)); };
+    V.$$("[data-i]", el).forEach((c) => c.onclick = () => { V.$$("[data-i]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
+    V.$$(".seg [data-r]", el).forEach((c) => c.onclick = () => { V.$$(".seg [data-r]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
+    V.$$("[data-p]", el).forEach((b) => b.onclick = () => { plus = Math.max(0, Math.min(20, plus + +b.dataset.p)); V.$("#gp", el).textContent = plus; keep(); });
+    if (sv) V.$$("input, textarea", el).forEach((x) => x.addEventListener("change", keep));
+    const collect = () => ({ name: V.$("#gn", el).value.trim(), conn: V.$("#gc", el).value.trim(), country: V.$("#gk", el).value.trim(), invite: V.$("[data-i][aria-pressed=true]", el).dataset.i, sent: V.$("#gs", el).checked, rsvp: V.$(".seg [aria-pressed=true]", el).dataset.r, plus, food: V.$("#gf", el).value.trim() });
+    const save = (again) => {
+      const x = collect(); if (!x.name) { V.$("#gn", el).focus(); return; }
+      if (isNew) { const ng = Object.assign({ no: Math.max(0, ...d.guests.map((y) => y.no)) + 1 }, x); d.guests.push(ng); V.rerender(); V.saved(`Added ${V.esc(ng.name)} as guest ${ng.no}`); if (again) guestSheet(null); else V.closeSheet(); }
+      else { Object.assign(g, x); V.closeSheet(); V.rerender(); V.saved("Saved"); }
+    };
+    const ok = V.$("[data-ok]", el); if (ok) ok.onclick = () => save(false);
+    const ag = V.$("[data-again]", el); if (ag) ag.onclick = () => save(true);
+    const xx = V.$("[data-x]", el); if (xx) xx.onclick = V.closeSheet;
+    const del = V.$("[data-del]", el);
+    if (del) del.onclick = async () => {
+      const body = g.plus ? `${V.esc(g.name)} was bringing ${V.plural(g.plus, "plus-one")}, so the headcount drops by ${heads(g)}. You can undo for a few seconds.` : "You can undo for a few seconds. Their number isn't reused.";
+      if (!await V.confirm({ title: `Remove ${g.name}?`, body, action: "Remove guest", danger: true })) return;
+      const i = d.guests.indexOf(g); d.guests.splice(i, 1); V.rerender();
+      V.saved(`Removed ${V.esc(g.name)}`, () => { d.guests.splice(i, 0, g); V.rerender(); });
+    };
+  });
+}
+
+V.init({
+  where: "Guests", section: "guests.html", noun: "your guests", wide: true,
+  states: [["empty", "No guests yet"], ["noresults", "No results"], ["waiting", "Who hasn't replied"], ["guest", "A guest's details"], ["remove", "Removing a guest"], ["savefail", "A reply didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella records an RSVP"]],
+  render,
+  sync() { setTimeout(() => { const g = d.guests.find((x) => x.rsvp === "waiting"); if (!g) return; g.rsvp = "yes"; V.rerender(); const li = V.$(`.grow[data-no="${g.no}"]`); if (li) li.classList.add("flash"); V.toast(`${V.esc(d.partner)} marked ${V.esc(g.name)} as attending`, { from: d.partner, ms: 9000 }); }, 1600); },
+});
+if (S === "guest" && d.guests.length) guestSheet(d.guests.find((g) => g.no === 3) || d.guests[0]);
+if (S === "remove" && d.guests.length) { guestSheet(d.guests.find((g) => g.no === 3) || d.guests[0]); const b = V.$(".sheet [data-del]"); if (b) b.click(); }
+</script>
+</body>
+</html>

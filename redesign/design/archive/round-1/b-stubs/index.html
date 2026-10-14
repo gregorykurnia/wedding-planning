@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget, Greg &amp; Bella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalnia:wdth,wght@100..125,100..700&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2a1d3d;
+    --ink-2: #5e5470;
+    --paper: #ffffff;
+
+    /* one sorbet per part of the planner */
+    --today: #ffe56a;
+    --budget: #bdf0d3;
+    --vendors: #d8cbff;
+    --shortlist: #ffcdb2;
+    --items: #bfe2ff;
+    --schedule: #ffc8de;
+    --records: #e3f59b;
+    --guests: #a9ede8;
+
+    --budget-deep: #0f7a4f;
+
+    /* funders */
+    --greg: #3d6bff;
+    --bella: #f2508f;
+    --us: #8d5cf6;
+    --none: #b1a9bf;
+
+    --late: #e8432a;
+    --soon: #c98600;
+
+    --stub: 128px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Schibsted Grotesk", system-ui, sans-serif;
+    color: var(--ink); background: var(--paper);
+    font-size: 15px; line-height: 1.45;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .serif { font-family: "Kalnia", Georgia, serif; }
+
+  /* ---------- folder tabs ---------- */
+  .tabs {
+    display: flex; align-items: end; gap: 6px;
+    padding: 22px 28px 0; position: relative; z-index: 2;
+  }
+  .tabs .who {
+    font-family: "Kalnia", serif; font-stretch: 125%; font-weight: 500; font-size: 22px;
+    margin-right: 22px; padding-bottom: 12px; white-space: nowrap;
+  }
+  .tab {
+    text-decoration: none; color: var(--ink);
+    background: var(--c); font-weight: 560; font-size: 14.5px;
+    padding: 10px 20px 12px; border-radius: 16px 16px 0 0;
+    white-space: nowrap; transform: translateY(6px);
+  }
+  .tab:hover { transform: translateY(2px); }
+  .tab[aria-current="page"] { transform: none; padding: 14px 26px 14px; font-weight: 700; }
+  .tabs .gap { flex: 1; }
+  .tabs .days { padding-bottom: 12px; font-size: 14px; color: var(--ink-2); white-space: nowrap; }
+  .tabs .days b { font-family: "Kalnia", serif; font-weight: 600; font-size: 20px; color: var(--ink); }
+
+  /* ---------- the sheet ---------- */
+  .sheet {
+    background: var(--budget);
+    margin: 0 28px 28px; border-radius: 0 30px 30px 30px;
+    padding: 44px 56px 60px;
+    min-height: calc(100vh - 92px);
+  }
+
+  .hero { display: flex; justify-content: space-between; align-items: end; gap: 32px; flex-wrap: wrap; }
+  .hero h1 { font-size: 16px; font-weight: 600; }
+  .big {
+    font-family: "Kalnia", serif; font-stretch: 112%; font-weight: 400;
+    font-size: clamp(46px, 7vw, 104px); line-height: .95; letter-spacing: -0.02em;
+    margin-top: 6px;
+  }
+  .big .rp { font-size: .42em; letter-spacing: 0; vertical-align: .9em; margin-right: .18em; font-weight: 500; }
+  .hero .then { margin-top: 14px; font-size: 17px; color: var(--ink-2); max-width: 36em; }
+  .hero .then b { color: var(--ink); font-weight: 650; }
+  .hero-actions { display: flex; gap: 10px; }
+  .btn {
+    font: inherit; font-weight: 650; font-size: 15px; cursor: pointer;
+    padding: 12px 22px; border-radius: 999px; border: 0; white-space: nowrap;
+  }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+  h2 { font-family: "Kalnia", serif; font-stretch: 125%; font-weight: 500; font-size: 26px; letter-spacing: -0.01em; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .section-head p { color: var(--ink-2); font-size: 14px; }
+
+  /* ---------- tickets ---------- */
+  .ticket {
+    --x: calc(100% - var(--stub));
+    position: relative; display: grid; grid-template-columns: 1fr var(--stub);
+    background: var(--paper); border-radius: 18px;
+    -webkit-mask:
+      radial-gradient(circle at var(--x) 0, transparent 10px, #000 10.5px) top / 100% 51% no-repeat,
+      radial-gradient(circle at var(--x) 100%, transparent 10px, #000 10.5px) bottom / 100% 51% no-repeat;
+            mask:
+      radial-gradient(circle at var(--x) 0, transparent 10px, #000 10.5px) top / 100% 51% no-repeat,
+      radial-gradient(circle at var(--x) 100%, transparent 10px, #000 10.5px) bottom / 100% 51% no-repeat;
+  }
+  .ticket .main { padding: 18px 20px 18px 22px; min-width: 0; }
+  .ticket .stub {
+    padding: 18px 18px; border-left: 2px dashed #d9d3e3;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  }
+  .ticket .stub .amt { font-family: "Kalnia", serif; font-weight: 600; font-size: 19px; line-height: 1.15; }
+  .ticket .stub .lbl { font-size: 12.5px; color: var(--ink-2); }
+  .ticket .stub .date { font-size: 13px; font-weight: 650; margin-top: 4px; }
+  .ticket .vendor { font-weight: 680; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticket .what { color: var(--ink-2); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .funder { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; margin-top: 10px; }
+  .funder i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .g { --c: var(--greg); } .b { --c: var(--bella); } .u { --c: var(--us); } .n { --c: var(--none); }
+
+  .ticket.late .stub { background: #fff1ec; }
+  .ticket.late .date { color: var(--late); }
+  .ticket.soon .stub { background: #fff8e0; }
+  .ticket.soon .date { color: var(--soon); }
+
+  /* pay next row */
+  .paynext { margin-top: 52px; }
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr) 150px; gap: 14px; margin-top: 18px; }
+  .strip .rest {
+    border: 2px dashed rgba(42,29,61,.25); border-radius: 18px;
+    display: flex; flex-direction: column; justify-content: center; padding: 16px 18px;
+    text-decoration: none; color: var(--ink); font-weight: 650; font-size: 14.5px;
+  }
+  .strip .rest span { font-weight: 450; color: var(--ink-2); font-size: 13px; }
+
+  /* lower: bookings + funders */
+  .lower { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 48px; margin-top: 56px; align-items: start; }
+  .bookings { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+  .bookings .ticket { --stub: 168px; }
+  .progress { margin-top: 12px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); }
+  .progress .bar { flex: 1; height: 6px; border-radius: 3px; background: #efecf3; overflow: hidden; max-width: 260px; }
+  .progress .bar i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+  .over-flag { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 700; color: var(--late); background: #fff1ec; padding: 2px 9px; border-radius: 999px; vertical-align: 2px; }
+
+  /* an opened booking: its parts hang off it as smaller stubs */
+  .opened { background: rgba(255,255,255,.45); border-radius: 22px; padding: 8px 8px 14px; }
+  .parts { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; margin-top: 10px; padding: 0 6px; }
+  .part {
+    background: var(--paper); border-radius: 14px; padding: 13px 15px; position: relative;
+    border-top: 2px dashed #d9d3e3; min-width: 0;
+  }
+  .part b { display: block; font-size: 13.5px; font-weight: 650; }
+  .part .amt { font-family: "Kalnia", serif; font-weight: 600; font-size: 17px; margin-top: 4px; }
+  .part small { display: block; font-size: 12.5px; color: var(--ink-2); }
+  .part.done { background: rgba(255,255,255,.55); }
+  .part.done .amt { color: var(--ink-2); }
+  .stamp {
+    position: absolute; right: 10px; top: 10px; transform: rotate(-8deg);
+    border: 2px solid var(--budget-deep); color: var(--budget-deep);
+    font-weight: 800; font-size: 11px; padding: 1px 7px; border-radius: 6px;
+  }
+  .addpart {
+    font: inherit; font-weight: 650; font-size: 13.5px; color: var(--ink);
+    border: 2px dashed rgba(42,29,61,.25); background: transparent; border-radius: 14px; padding: 0 16px; cursor: pointer;
+  }
+
+  /* who pays */
+  .funders { margin-top: 18px; display: flex; flex-direction: column; gap: 22px; }
+  .fd h3 { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 700; }
+  .fd h3 i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+  .fd .split { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0 8px; background: rgba(255,255,255,.7); }
+  .fd .split i { background: var(--c); border-radius: 5px; }
+  .fd dl { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  .fd dt { font-size: 12.5px; color: var(--ink-2); }
+  .fd dd { font-family: "Kalnia", serif; font-weight: 600; font-size: 17px; }
+  .whatif { margin-top: 30px; padding-top: 18px; border-top: 2px dashed rgba(42,29,61,.2); font-size: 14px; color: var(--ink-2); }
+  .whatif b { color: var(--ink); }
+  .whatif a { display: inline-block; margin-top: 6px; color: var(--ink); font-weight: 650; }
+
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  /* ---------- narrower desktops ---------- */
+  @media (max-width: 1200px) {
+    .lower { grid-template-columns: 1fr; }
+    .strip { grid-template-columns: 1fr 1fr; }
+    .tabs .tab:not([aria-current]) { padding: 10px 14px 12px; }
+  }
+
+  /* ---------- phone ---------- */
+  @media (max-width: 760px) {
+    .tabs { padding: 14px 0 0 14px; overflow-x: auto; scrollbar-width: none; gap: 5px; }
+    .tabs .who, .tabs .gap, .tabs .days { display: none; }
+    .tab { font-size: 13.5px; padding: 9px 14px 11px; }
+    .tab[aria-current="page"] { padding: 12px 18px 12px; }
+    .sheet { margin: 0; border-radius: 0 24px 0 0; padding: 26px 18px 48px; }
+    .hero { gap: 18px; }
+    .hero .then { font-size: 15px; margin-top: 10px; }
+    .hero-actions { width: 100%; }
+    .hero-actions .btn { flex: 1; padding: 11px 14px; font-size: 14px; }
+    .big { font-size: 42px; }
+    h2 { font-size: 22px; }
+    .paynext { margin-top: 34px; }
+    .strip { grid-template-columns: 1fr; gap: 10px; }
+    .strip .rest { padding: 14px 18px; }
+    .ticket { --stub: 120px; }
+    .bookings .ticket { --stub: 128px; }
+    .ticket .main { padding: 15px 14px 15px 16px; }
+    .ticket .stub { padding: 14px 12px; }
+    .ticket .stub .amt { font-size: 16px; }
+    .progress .bar { display: none; }
+    .parts { grid-template-columns: 1fr; padding: 0; }
+    .addpart { padding: 12px; }
+    .lower { margin-top: 40px; gap: 40px; }
+  }
+</style>
+</head>
+<body>
+  <nav class="tabs" aria-label="Main">
+    <span class="who">Greg &amp; Bella</span>
+    <a class="tab" style="--c: var(--today)" href="#">Today</a>
+    <a class="tab" style="--c: var(--budget)" href="#" aria-current="page">Budget</a>
+    <a class="tab" style="--c: var(--vendors)" href="#">Vendors</a>
+    <a class="tab" style="--c: var(--shortlist)" href="#">Shortlist</a>
+    <a class="tab" style="--c: var(--items)" href="#">Items</a>
+    <a class="tab" style="--c: var(--schedule)" href="#">Schedule</a>
+    <a class="tab" style="--c: var(--records)" href="#">Records</a>
+    <a class="tab" style="--c: var(--guests)" href="#">Guests</a>
+    <span class="gap"></span>
+    <span class="days"><b>157</b> days until 20 March</span>
+  </nav>
+
+  <main class="sheet">
+    <section class="hero">
+      <div>
+        <h1>Still to pay</h1>
+        <p class="big"><span class="rp">Rp</span>500.250.000</p>
+        <p class="then">We've paid <b>Rp 448.550.000</b> of the <b>Rp 948.800.000</b> we've committed to across 10 bookings.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn ghost">What-if items</button>
+        <button class="btn primary">Add booking</button>
+      </div>
+    </section>
+
+    <section class="paynext" aria-labelledby="pn">
+      <div class="section-head">
+        <h2 id="pn">Pay next</h2>
+        <p>Rp 34.000.000 is overdue</p>
+      </div>
+      <div class="strip">
+        <article class="ticket late u">
+          <div class="main"><div class="vendor">Studio Rana</div><div class="what">Photo and video, final payment</div><span class="funder"><i></i>Us</span></div>
+          <div class="stub"><span class="amt">34.000.000</span><span class="date">5 days late</span></div>
+        </article>
+        <article class="ticket soon b">
+          <div class="main"><div class="vendor">Dapur Lestari Catering</div><div class="what">Catering, 2nd payment</div><span class="funder"><i></i>Bella's family</span></div>
+          <div class="stub"><span class="amt">55.500.000</span><span class="date">In 4 days</span></div>
+        </article>
+        <article class="ticket soon g">
+          <div class="main"><div class="vendor">Sora Quartet</div><div class="what">Band, deposit</div><span class="funder"><i></i>Greg's family</span></div>
+          <div class="stub"><span class="amt">16.000.000</span><span class="date">Mon 26 Oct</span></div>
+        </article>
+        <a class="rest" href="#">8 more<span>through 13 March</span></a>
+      </div>
+    </section>
+
+    <div class="lower">
+      <section aria-labelledby="bk">
+        <div class="section-head">
+          <h2 id="bk">Bookings</h2>
+          <p>Biggest first</p>
+        </div>
+        <div class="bookings">
+
+          <div class="opened">
+            <article class="ticket g">
+              <div class="main">
+                <div class="vendor">Balai Kirana Ballroom</div>
+                <div class="what">Reception venue, in 3 parts</div>
+                <div class="progress"><span class="bar"><i style="width:50%"></i></span>Rp 210.000.000 paid of 420.000.000</div>
+              </div>
+              <div class="stub"><span class="lbl">Left to pay</span><span class="amt">210.000.000</span><span class="date">Next 1 Nov</span></div>
+            </article>
+            <div class="parts">
+              <div class="part done"><span class="stamp">Paid</span><b>Deposit, 30%</b><div class="amt">126.000.000</div><small>Paid 12 Aug, Greg's family</small></div>
+              <div class="part"><b>2nd instalment</b><div class="amt">63.000.000 left</div><small>of 147.000.000, due 1 Nov</small></div>
+              <div class="part"><b>Final payment</b><div class="amt">147.000.000</div><small>Due 20 Feb, after final headcount</small></div>
+              <button class="addpart">Add part</button>
+            </div>
+          </div>
+
+          <article class="ticket b">
+            <div class="main">
+              <div class="vendor">Dapur Lestari Catering</div>
+              <div class="what">Catering for 800 guests, in 3 parts</div>
+              <div class="progress"><span class="bar"><i style="width:30%"></i></span>Rp 55.500.000 paid of 185.000.000</div>
+            </div>
+            <div class="stub"><span class="lbl">Left to pay</span><span class="amt">129.500.000</span><span class="date">Next 18 Oct</span></div>
+          </article>
+
+          <article class="ticket n">
+            <div class="main">
+              <div class="vendor">Rumah Bunga Kemang</div>
+              <div class="what">Decoration and flowers, no funder yet</div>
+              <div class="progress"><span class="bar"><i style="width:30%"></i></span>Rp 28.800.000 paid of 96.000.000</div>
+            </div>
+            <div class="stub"><span class="lbl">Left to pay</span><span class="amt">67.200.000</span><span class="date">Next 5 Dec</span></div>
+          </article>
+
+          <article class="ticket u">
+            <div class="main">
+              <div class="vendor">Studio Rana</div>
+              <div class="what">Photo and video</div>
+              <div class="progress"><span class="bar"><i style="width:50%"></i></span>Rp 34.000.000 paid of 68.000.000</div>
+            </div>
+            <div class="stub"><span class="lbl">Left to pay</span><span class="amt">34.000.000</span><span class="date" style="color:var(--late)">Overdue</span></div>
+          </article>
+
+          <article class="ticket b">
+            <div class="main">
+              <div class="vendor">Hantaran Ayu<span class="over-flag">Overpaid</span></div>
+              <div class="what">Sangjit hampers</div>
+              <div class="progress"><span class="bar"><i style="width:100%; background:var(--late)"></i></span>Rp 14.000.000 paid of 12.800.000</div>
+            </div>
+            <div class="stub"><span class="lbl">Paid too much</span><span class="amt" style="color:var(--late)">1.200.000</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside aria-labelledby="wp">
+        <h2 id="wp">Who pays</h2>
+        <div class="funders">
+          <div class="fd g"><h3><i></i>Greg's family</h3><div class="split"><i style="width:46%"></i></div>
+            <dl><dt>Paid</dt><dt>Still to pay</dt><dd>210.000.000</dd><dd>242.000.000</dd></dl></div>
+          <div class="fd b"><h3><i></i>Bella's family</h3><div class="split"><i style="width:35%"></i></div>
+            <dl><dt>Paid</dt><dt>Still to pay</dt><dd>69.500.000</dd><dd>128.300.000</dd></dl></div>
+          <div class="fd u"><h3><i></i>Us</h3><div class="split"><i style="width:69%"></i></div>
+            <dl><dt>Paid</dt><dt>Still to pay</dt><dd>140.250.000</dd><dd>62.750.000</dd></dl></div>
+          <div class="fd n"><h3><i></i>Not assigned yet</h3><div class="split"><i style="width:30%"></i></div>
+            <dl><dt>Paid</dt><dt>Still to pay</dt><dd>28.800.000</dd><dd>67.200.000</dd></dl></div>
+        </div>
+        <p class="whatif">With our 2 what-if items, the total would be <b>Rp 1.003.800.000</b>.<br><a href="#">See what-if items</a></p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const id = new URLSearchParams(location.search).get("id") || (V.STRESS ? "sv-long" : "kebun");
+const v = d.vendors.find((x) => x.id === id);
+let editingNotes = false;
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+const preferred = () => v.prices.find((o) => o.preferred) || null;
+const booking = () => d.bookings.find((b) => b.id === v.id);
+const finalist = () => d.finalists.find((f) => f.vendor === v.id);
+
+function setSave(t, failed) { const el = V.$("#save"); if (el) { el.textContent = t; el.classList.toggle("failed", !!failed); } }
+function save(apply, after) {
+  if (V.DEMO) { setSave("Not saved: demonstration mode"); return; }
+  apply(); setSave("Saving"); setTimeout(() => { setSave("Saved"); if (after) after(); }, 450);
+}
+
+/* F8: price options; one is preferred and counts as the price */
+function optionSheet(o) {
+  const isNew = !o;
+  V.openSheet(`<h2>${isNew ? "Add a price option" : "Edit price option"}</h2><p class="sub">${V.esc(v.name)}</p>
+    <div class="fields">
+      <div class="field"><label for="on">Name</label><input id="on" dir="auto" autofocus placeholder="For example, Package B" value="${V.esc(o ? o.name : "")}"></div>
+      <div class="field"><label for="op">Price</label><input id="op" class="num" inputmode="numeric" placeholder="Rp 0" value="${o ? V.rp(o.price) : ""}"></div>
+      <div class="field"><label for="oi">What's included</label><textarea id="oi" dir="auto">${V.esc(o ? o.includes : "")}</textarea></div>
+      <div class="field"><span class="lab"></span><label class="check"><input type="checkbox" id="opf" ${o ? (o.preferred ? "checked" : "") : (v.prices.length ? "" : "checked")}>The one we're leaning towards</label></div>
+    </div>
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add option</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    V.$("#op", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    if (!isNew) {
+      const save = V.sheetSaver(el);
+      V.$("#on", el).onchange = (e) => save(() => { o.name = e.target.value.trim() || o.name; });
+      V.$("#op", el).onchange = (e) => save(() => { o.price = num(e.target.value); });
+      V.$("#oi", el).onchange = (e) => save(() => { o.includes = e.target.value; });
+      V.$("#opf", el).onchange = (e) => save(() => { if (e.target.checked) v.prices.forEach((x) => x.preferred = false); o.preferred = e.target.checked; });
+      return;
+    }
+    V.$("[data-ok]", el).onclick = () => {
+      const name = V.$("#on", el).value.trim() || "Price option";
+      const t = o || { id: "o" + Date.now() };
+      Object.assign(t, { name, price: num(V.$("#op", el).value), includes: V.$("#oi", el).value });
+      if (V.$("#opf", el).checked) v.prices.forEach((x) => x.preferred = false);
+      t.preferred = V.$("#opf", el).checked;
+      if (isNew) v.prices.push(t);
+      V.closeSheet(); V.rerender(); V.saved(isNew ? `Added ${V.esc(name)}` : "Saved");
+    };
+  });
+}
+
+function render(main) {
+  if (!v) { main.innerHTML = `<a class="back" href="${V.href("vendors.html")}">${V.ICON.back}Vendors</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "No vendors in demonstration mode" : "This vendor isn't here any more"}</h1><p>${V.DEMO ? "The planner isn't connected to its database yet." : "Open Vendors to see everyone you're considering."}</p><div class="acts"><a class="btn" href="${V.href("vendors.html")}">See all vendors</a></div></div>`; return; }
+  document.title = v.name;
+  const p = preferred(), b = booking(), f = finalist();
+  const stageChips = d.STAGES.concat([["out", "Ruled out"]]).map(([k, l]) => `<button class="chip" data-stage="${k}" aria-pressed="${v.stage === k}">${l}</button>`).join("");
+  const failed = S === "savefail";
+  main.innerHTML = `<a class="back" href="${V.href("vendors.html")}">${V.ICON.back}Vendors</a>
+    <section class="hero ${v.stage === "out" ? "ruled" : ""}"><p class="sub" dir="auto">${V.esc(v.category)}</p>
+      <h1 dir="auto"><span class="t">${V.esc(v.name)}</span> <button class="keen" id="keen" aria-pressed="${v.keen}" aria-label="Keen on this vendor" style="vertical-align:middle">${V.HEART}</button></h1>
+      <p class="save-state ${failed ? "failed" : ""}" id="save" role="status">${failed ? "1 change not saved" : V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
+      <div class="chips" role="group" aria-label="Stage" style="justify-content:center;margin-top:18px">${stageChips}</div>
+      ${b ? `<p class="origin">Chosen, and now a booking. <a class="link" href="${V.href("booking.html", { id: b.id })}">Open the booking</a></p>` : ""}
+      <div style="margin-top:34px">${p ? `<p class="kicker" dir="auto">Leaning towards ${V.esc(p.name)}</p><p class="figure md num ${V.longFig(p.price)}">${V.fig(p.price)}</p>` : `<p class="kicker">No price yet</p><p class="context">Add the prices they give you below, and mark the one you're leaning towards.</p>`}</div>
+    </section>
+
+    <h2 class="section-h">Contact and reputation</h2>
+    <div class="fields">
+      <div class="field"><label for="c-contact">Contact person</label><input id="c-contact" data-k="contact" dir="auto" value="${V.esc(v.contact)}" placeholder="Who you talk to"></div>
+      <div class="field"><label for="c-phone">Phone</label><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><input id="c-phone" data-k="phone" type="tel" value="${V.esc(v.phone)}" placeholder="0812 3456 7890" style="flex:1;min-width:160px">${V.waLink(v.phone, "Message on WhatsApp")}</div></div>
+      <div class="field"><label for="c-cat">Category</label><select id="c-cat" data-k="category">${d.vendorCats.map((c) => `<option ${c.name === v.category ? "selected" : ""}>${V.esc(c.name)}</option>`).join("")}</select></div>
+      <div class="field ${failed ? "failed" : ""}"><label for="c-rating">Review rating</label><input id="c-rating" data-k="rating" inputmode="decimal" value="${failed ? "4,9" : v.rating == null ? "" : V.dec(v.rating)}" placeholder="For example, 4,8">
+        ${failed ? `<p class="err">Couldn't save this change. What you typed is kept. <button class="link rose" data-retry>Try again</button></p>` : `<p class="hint">Out of 5, from their public reviews</p>`}</div>
+      <div class="field"><label for="c-rev">Number of reviewers</label><input id="c-rev" data-k="reviewers" inputmode="numeric" value="${v.reviewers ?? ""}" placeholder="How many people reviewed them"></div>
+    </div>
+
+    <h2 class="section-h">Prices <small>${v.prices.length ? V.plural(v.prices.length, "option") : ""}</small></h2>
+    ${v.prices.length ? `<ul class="menu-card">${v.prices.map((o) => `<li class="${o.preferred ? "preferred" : ""}"><div class="line"><span class="on" dir="auto">${V.esc(o.name)}</span><span class="lead"></span><span class="op num">${V.rp(o.price)}</span></div>
+      ${o.includes ? `<p class="inc" dir="auto">${V.esc(o.includes)}</p>` : ""}
+      <div class="acts">${o.preferred ? `<span class="pref">The one we're leaning towards</span>` : `<button class="link" data-pref="${o.id}">Lean towards this one</button>`}<button class="link" data-edit="${o.id}">Edit</button><button class="link rose" data-del="${o.id}">Remove</button></div></li>`).join("")}</ul>`
+      : `<p class="note">No prices yet. When they send a price list, add each option here.</p>`}
+    <p style="margin-top:16px"><button class="btn quiet small" id="add-opt">Add a price option</button></p>
+
+    <h2 class="section-h">Notes ${editingNotes ? "" : `<button class="link" id="edit-notes" style="font-family:var(--sans);font-size:14px">${v.notes ? "Edit" : "Add notes"}</button>`}</h2>
+    ${editingNotes ? `<div class="fields"><div class="field" style="grid-template-columns:1fr"><label for="notes" class="sr">Notes</label><textarea id="notes" data-k="notes" dir="auto" style="min-height:160px">${V.esc(v.notes)}</textarea></div></div><p style="margin-top:12px"><button class="btn quiet small" id="done-notes">Done</button></p>`
+      : v.notes ? `<div class="notes-view" dir="auto">${V.linkify(v.notes)}</div>` : `<p class="note">Nothing written yet.</p>`}
+
+    <h2 class="section-h">Files <small>${v.files.length ? V.plural(v.files.length, "file") : "None yet"}</small></h2>
+    ${V.filesGrid(v.files, S === "uploading", `Files › Vendors › ${v.name}`)}
+
+    <section class="card" style="margin-top:56px;text-align:center">
+      ${f ? `<h2 class="serif" style="font-size:26px;font-weight:500">On the shortlist</h2><p class="note" style="margin-top:6px">The shortlist has its own copy, so you can compare packages there without changing this vendor. New files here appear there too.</p><p style="margin-top:16px"><a class="btn quiet" href="${V.href("finalist.html", { id: f.id })}">Open on the shortlist</a></p>`
+        : `<h2 class="serif" style="font-size:26px;font-weight:500">Narrowing down ${V.esc(v.category)}?</h2><p class="note" style="margin-top:6px">Copy this vendor to the shortlist with its prices, contact, reviews, notes and files. This vendor stays exactly as it is.</p><p style="margin-top:16px"><button class="btn" id="copy" ${V.DEMO ? "disabled" : ""}>Copy to the shortlist</button></p>${V.demoLine("copying")}`}
+    </section>`;
+  wire(main);
+}
+
+function wire(main) {
+  V.$("#keen", main).onclick = (e) => { v.keen = !v.keen; e.currentTarget.setAttribute("aria-pressed", String(v.keen)); V.saved(v.keen ? "Marked as one you're keen on" : "Unmarked"); };
+  V.$$("[data-stage]", main).forEach((c) => c.onclick = () => {
+    const before = v.stage, k = c.dataset.stage; if (k === before) return;
+    save(() => { v.stage = k; }, () => {
+      V.rerender();
+      /* B1: choosing a vendor makes it a booking */
+      if (k === "chosen" && !booking()) {
+        const p = preferred() || v.prices[0];
+        d.bookings.push({ id: v.id, name: v.name, category: v.category, origin: { from: "vendor", on: "2026-10-14" }, estimate: p ? p.price : null, price: p ? p.price : 0, paid: 0, funder: null, due: null, step: "", files: v.files.slice() });
+        V.rerender();
+        V.toast(`${V.esc(v.name)} is now a booking`, { action: "Open", onAction: () => location.href = V.href("booking.html", { id: v.id }) });
+      }
+    });
+  });
+  V.$$("[data-k]", main).forEach((el) => el.addEventListener("change", () => {
+    const k = el.dataset.k; let val = el.value;
+    if (k === "rating") val = val ? Math.min(5, parseFloat(val.replace(",", "."))) : null;
+    if (k === "reviewers") val = val ? num(val) : null;
+    save(() => { v[k] = val; }, () => { if (k === "phone" || k === "category") V.rerender(); });
+  }));
+  V.$$("[data-retry]", main).forEach((x) => x.onclick = () => { x.closest(".field").classList.remove("failed"); x.closest(".err").remove(); setSave("Saving"); setTimeout(() => setSave("Saved"), 500); });
+  V.$$("[data-pref]", main).forEach((b) => b.onclick = () => save(() => v.prices.forEach((o) => o.preferred = o.id === b.dataset.pref), () => V.rerender()));
+  V.$$("[data-edit]", main).forEach((b) => b.onclick = () => optionSheet(v.prices.find((o) => o.id === b.dataset.edit)));
+  V.$$("[data-del]", main).forEach((b) => b.onclick = async () => {
+    const i = v.prices.findIndex((o) => o.id === b.dataset.del), o = v.prices[i];
+    if (!await V.confirm({ title: `Remove ${o.name}?`, body: `${V.rp(o.price)}${o.preferred ? ". It's the one you're leaning towards, so no price will count until you choose another" : ""}. You can undo for a few seconds.`, action: "Remove option", danger: true })) return;
+    v.prices.splice(i, 1); V.rerender(); V.saved(`Removed ${V.esc(o.name)}`, () => { v.prices.splice(i, 0, o); V.rerender(); });
+  });
+  V.$("#add-opt", main).onclick = () => optionSheet(null);
+  const en = V.$("#edit-notes", main); if (en) en.onclick = () => { editingNotes = true; V.rerender(); V.$("#notes").focus(); };
+  const dn = V.$("#done-notes", main); if (dn) dn.onclick = () => { v.notes = V.$("#notes").value; editingNotes = false; V.rerender(); };
+  const cp = V.$("#copy", main);
+  if (cp) cp.onclick = () => {
+    cp.classList.add("busy"); cp.textContent = "Copying";
+    setTimeout(() => {
+      const fin = { id: "f-" + v.id, vendor: v.id, name: v.name, category: v.category, contact: v.contact, phone: v.phone, reviews: v.reviewers, followers: null, step: "", notes: v.notes,
+        packages: v.prices.map((o) => ({ id: o.id, name: o.name, price: o.price, includes: o.includes, reviews: v.reviewers, step: "", notes: "", files: [], preferred: o.preferred })), files: v.files.map((x) => Object.assign({ fromVendor: true }, x)) };
+      d.finalists.push(fin); V.rerender();
+      V.saved(`Copied ${V.esc(v.name)} to the shortlist`, () => { d.finalists.splice(d.finalists.indexOf(fin), 1); V.rerender(); });
+    }, 600);
+  };
+}
+
+V.init({
+  where: "Vendors", section: "vendors.html", noun: "this vendor",
+  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  render,
+});
+</script>
+</body>
+</html>

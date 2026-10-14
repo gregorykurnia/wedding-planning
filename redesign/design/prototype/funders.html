@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who pays</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil;
+let editing = V.STATE === "rename" ? "greg" : null;
+let adding = V.STATE === "adding";
+
+function row(r) {
+  const pct = r.price ? Math.max(0, Math.min(100, Math.round(r.paid / r.price * 100))) : 0;
+  const un = r.id === null;
+  const who = editing === r.id && !un
+    ? `<label class="sr" for="rn">Funder name</label><input id="rn" dir="auto" value="${V.esc(r.name)}" maxlength="60">`
+    : V.esc(r.name);
+  const rest = r.left < 0 ? `<span style="color:var(--rose-ink)">${V.rp(-r.left)} overpaid</span>` : V.rp(r.left);
+  return `<li class="funder ${un ? "unassigned" : ""}" data-f="${r.id ?? ""}">
+    <span class="who" dir="auto">${who}</span><span class="rest num">${rest}</span>
+    <span class="meta">${r.count ? `Paid <span class="num">${V.rp(r.paid)}</span> of <span class="num">${V.rp(r.price)}</span>` : un ? "Every cost has a funder" : "Nothing assigned yet"}</span><span class="meta r">${r.left < 0 ? "" : "still to pay"}</span>
+    ${r.count ? `<div class="thread small ${r.left < 0 ? "over" : ""}" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span></div>` : ""}
+    <div class="acts">${un
+      ? (r.count ? `<a class="link" href="${V.href("bookings.html", { q: "Not assigned" })}">See what has no funder</a>` : "")
+      : editing === r.id ? `<button class="link" data-save>Save name</button><button class="link" data-cancel>Cancel</button>`
+      : `<button class="link" data-rename>Rename</button><button class="link rose" data-remove>Remove</button>`}</div>
+  </li>`;
+}
+
+V.init({
+  where: "Budget", noun: "who pays",
+  states: [["empty", "Nothing booked yet"], ["rename", "Renaming a funder"], ["adding", "Adding a funder"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  render(main) {
+    const rows = V.byFunder(), B = V.budget();
+    main.innerHTML = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>
+      <section class="hero"><h1>Who pays</h1><p class="sub">What each of you and your families have paid, and what's still to pay</p></section>
+      ${V.data.bookings.length ? "" : `<p class="note" style="text-align:center">Nothing is booked yet, so nobody owes anything. Funders you add here can be chosen on every booking.</p>`}
+      <ul class="funders">${rows.map(row).join("")}
+        ${adding ? `<li class="funder"><span class="who"><label class="sr" for="nf">New funder's name</label><input id="nf" dir="auto" placeholder="For example, Tante Lily" maxlength="60"></span><span></span><div class="acts"><button class="link" data-add-save ${V.DEMO ? "disabled" : ""}>Add funder</button><button class="link" data-add-cancel>Cancel</button></div>${V.DEMO ? `<p class="sub demo-line" style="grid-column:1/-1;text-align:left">Demonstration mode: adding is turned off.</p>` : ""}</li>` : ""}
+      </ul>
+      ${adding ? "" : `<p style="margin-top:22px"><button class="btn quiet small" id="add">Add a funder</button></p>`}
+      ${V.data.bookings.length ? `<p class="note">Together that's <b class="num">${V.rp(B.paid)}</b> paid and <b class="num">${V.rp(B.left)}</b> still to pay, the same totals as the budget. Still to pay is always the price minus what's been paid.</p>` : ""}`;
+    wire(main);
+  },
+});
+
+function wire(main) {
+  const rn = V.$("#rn", main);
+  if (rn) {
+    rn.focus(); rn.select();
+    const done = (ok) => {
+      const f = V.data.funders.find((x) => x.id === editing), old = f.name, nv = rn.value.trim();
+      editing = null;
+      if (ok && nv && nv !== old) { f.name = nv; V.rerender(); V.saved(`Renamed to ${V.esc(nv)}`, () => { f.name = old; V.rerender(); }); }
+      else V.rerender();
+    };
+    rn.onkeydown = (e) => { if (e.key === "Enter") done(true); if (e.key === "Escape") { e.stopPropagation(); done(false); } };
+    V.$("[data-save]", main).onclick = () => done(true);
+    V.$("[data-cancel]", main).onclick = () => done(false);
+  }
+  V.$$("[data-rename]", main).forEach((b) => b.onclick = () => { editing = b.closest(".funder").dataset.f; V.rerender(); });
+  V.$$("[data-remove]", main).forEach((b) => b.onclick = async () => {
+    const id = b.closest(".funder").dataset.f, f = V.data.funders.find((x) => x.id === id);
+    const r = V.byFunder().find((x) => x.id === id);
+    const body = r.count ? `${V.plural(r.count, "cost")} (${V.rp(r.price)}) will move to Not assigned. Payments already recorded stay as they are. You can undo for a few seconds.` : "Nothing is assigned to them. You can undo for a few seconds.";
+    if (!await V.confirm({ title: `Remove ${f.name}?`, body: V.esc(body), action: "Remove funder", danger: true })) return;
+    const i = V.data.funders.indexOf(f), moved = [];
+    V.data.bookings.forEach((bk) => { if (bk.parts) bk.parts.forEach((p) => { if (p.funder === id) { p.funder = null; moved.push(p); } }); else if (bk.funder === id) { bk.funder = null; moved.push(bk); } });
+    V.data.funders.splice(i, 1); V.rerender();
+    V.saved(`Removed ${V.esc(f.name)}`, () => { V.data.funders.splice(i, 0, f); moved.forEach((p) => p.funder = id); V.rerender(); });
+  });
+  const add = V.$("#add", main); if (add) add.onclick = () => { adding = true; V.rerender(); V.$("#nf").focus(); };
+  const nf = V.$("#nf", main);
+  if (nf) {
+    const done = (ok) => {
+      const nv = nf.value.trim(); adding = false;
+      if (ok && nv) { const f = { id: "f" + Date.now(), name: nv }; V.data.funders.push(f); V.rerender(); V.saved(`Added ${V.esc(nv)}`, () => { V.data.funders.splice(V.data.funders.indexOf(f), 1); V.rerender(); }); }
+      else V.rerender();
+    };
+    nf.onkeydown = (e) => { if (e.key === "Enter" && !V.DEMO) done(true); if (e.key === "Escape") { e.stopPropagation(); done(false); } };
+    V.$("[data-add-save]", main).onclick = () => done(true);
+    V.$("[data-add-cancel]", main).onclick = () => done(false);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE;
+const id = new URLSearchParams(location.search).get("id") || (V.STRESS ? "s-deep" : "samaya");
+let b = S === "gone" ? null : V.data.bookings.find((x) => x.id === id);
+const open = new Set();
+
+const money = (n) => V.rp(n || 0);
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+const funderOptions = (cur) => V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<option value="${f.id}" ${(cur ?? "") === f.id ? "selected" : ""}>${V.esc(f.name)}</option>`).join("");
+const FROM = { vendor: "Booked from Vendors", venue: "Booked from Venues", direct: "Added directly" };
+
+function setSave(text, failed) {
+  const el = V.$("#save"); if (!el) return;
+  el.textContent = text; el.classList.toggle("failed", !!failed);
+}
+function save(apply) {
+  if (V.DEMO) { setSave("Not saved: demonstration mode"); return; }
+  apply(); setSave("Saving");
+  setTimeout(() => { setSave("Saved"); hero(); }, 450);
+}
+
+function hero() {
+  const t = V.totals(b), box = V.$("#hero"); if (!box) return;
+  const pct = t.price ? Math.max(0, Math.min(100, Math.round(t.paid / t.price * 100))) : 0;
+  const kicker = t.over ? "Overpaid by" : t.left === 0 ? (t.price ? "Paid in full" : "No price yet") : "Still to pay";
+  const n = t.next;
+  box.innerHTML = `<p class="kicker">${kicker}</p>
+    ${t.left !== 0 ? `<p class="figure md num ${t.over ? "late" : ""} ${V.longFig(t.left)}">${V.fig(Math.abs(t.left))}</p>` : `<p class="figure md num ${V.longFig(t.price)}" style="color:var(--gold-ink)">${V.fig(t.price)}</p>`}
+    <p class="context">${t.over ? `<b class="num">${V.rp(t.paid)}</b> paid against a price of <b class="num">${V.rp(t.price)}</b>. Check whether the price or a payment is wrong.` : `of <b class="num">${V.rp(t.price)}</b>, with <b class="num">${V.rp(t.paid)}</b> paid`}</p>
+    <div class="thread ${t.over ? "over" : ""}" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% paid</span><span>${t.over ? "overpaid" : (100 - pct) + "% to go"}</span></span></div>
+    ${n ? `<section class="card next" aria-label="Next payment" data-id="${b.id}">
+      <span class="label">Next step</span>${V.urgency(n.due) === "late" ? `<span class="flag">${V.relDue(n.due)}</span>` : V.urgency(n.due) === "soon" ? `<span class="flag gold">${V.relDue(n.due)}</span>` : `<span class="flag calm">${V.dateShort(n.due)}</span>`}
+      <h2 class="name">${V.esc(n.step || n.name)}</h2><span class="amt num">${V.rp(n.price - (n.paid || 0))}</span>
+      <span class="meta">${b.parts ? V.esc(n.name) + ", " : ""}${V.esc(V.paidBy(n.funder ?? null))}, ${V.urgency(n.due) === "late" ? "was due" : "due"} ${V.dateLong(n.due)}</span>
+      <button class="btn" id="pay-next">Record payment</button></section>` : ""}`;
+  const pb = V.$("#pay-next"); if (pb) pb.onclick = () => V.recordPayment(b.id, n.id);
+}
+
+function field(key, label, value, opts = {}) {
+  const idf = `f-${opts.part || "b"}-${key}`;
+  const failed = S === "savefail" && key === "paid" && (opts.part || "b") === (b.parts ? b.parts[b.parts.length - 1].id : "b");
+  let input;
+  if (opts.type === "funder") input = `<select id="${idf}" data-k="${key}">${funderOptions(value)}</select>`;
+  else if (opts.type === "category") input = `<select id="${idf}" data-k="${key}"><option value="">No category</option>${V.data.categories.map((c) => `<option ${c === value ? "selected" : ""}>${V.esc(c)}</option>`).join("")}</select>`;
+  else if (opts.type === "date") input = `<input id="${idf}" type="date" data-k="${key}" value="${value || ""}">`;
+  else if (opts.type === "money") input = `<input id="${idf}" class="num" inputmode="numeric" data-k="${key}" data-money="1" value="${failed ? "Rp 75.000.000" : value == null ? "" : money(value)}" placeholder="${opts.ph || "Rp 0"}">`;
+  else input = `<input id="${idf}" data-k="${key}" dir="auto" value="${V.esc(value || "")}" placeholder="${V.esc(opts.ph || "")}">`;
+  return `<div class="field ${failed ? "failed" : ""}" data-part="${opts.part || ""}"><label for="${idf}">${label}</label>${input}
+    ${failed ? `<p class="err">Couldn't save this change. What you typed is kept. <button class="link rose" data-retry>Try again</button></p>` : opts.hint ? `<p class="hint">${opts.hint}</p>` : ""}</div>`;
+}
+
+function partBlock(p) {
+  const left = p.price - (p.paid || 0), u = V.urgency(p.due);
+  const st = (p.paid || 0) > p.price ? `<span class="ps late">overpaid by ${V.rp(-left)}</span>` : left === 0 ? `<span class="ps done">paid in full</span>`
+    : p.due ? `<span class="ps ${u === "late" ? "late" : ""}">${V.rp(left)} ${u === "late" ? V.relDue(p.due) : "due " + V.dateShort(p.due)}</span>` : `<span class="ps">${V.rp(left)} to pay, no date</span>`;
+  return `<li><details class="part" data-p="${p.id}" ${open.has(p.id) || S === "savefail" && p === b.parts[b.parts.length - 1] ? "open" : ""}>
+    <summary><span class="pn" dir="auto">${V.esc(p.name)}</span><span class="pa num">${V.rp(p.price)}</span>${V.ICON.chev}<span class="pm">${V.esc(V.funderName(p.funder ?? null))}</span>${st}</summary>
+    <div class="fields">
+      ${field("name", "Name", p.name, { part: p.id })}
+      ${field("price", "Price", p.price, { part: p.id, type: "money" })}
+      ${field("paid", "Paid so far", p.paid, { part: p.id, type: "money" })}
+      ${field("funder", "Funder", p.funder, { part: p.id, type: "funder" })}
+      ${field("due", "Due date", p.due, { part: p.id, type: "date", hint: left > 0 ? "" : "Paid parts don't need a due date." })}
+      ${field("step", "Next step", p.step, { part: p.id, ph: "What has to happen next" })}
+      <div class="field"><span class="lab">Files</span><div>${V.filesGrid(p.files || (p.files = []), false, `Files › Bookings › ${b.name} › ${p.name}`)}</div></div>
+      <div class="field"><span class="lab"></span><div style="display:flex;gap:20px;flex-wrap:wrap">${left > 0 ? `<button class="link" data-pay-part="${p.id}">Record a payment</button>` : ""}<button class="link rose" data-remove-part="${p.id}">Remove this part</button></div></div>
+    </div></details></li>`;
+}
+
+function files() { return V.filesGrid(b.files, S === "uploading", `Files › Bookings › ${b.name}`); }
+
+function render(main) {
+  if (!b && V.DEMO) {
+    main.innerHTML = `<a class="back" href="${V.href("bookings.html")}">${V.ICON.back}Bookings</a><div class="message">${V.ICON.knot}<h1>No bookings in demonstration mode</h1><p>The planner isn't connected to its database yet, so there are no bookings to open.</p></div>`;
+    return;
+  }
+  if (!b) {
+    main.innerHTML = `<a class="back" href="${V.href("bookings.html")}">${V.ICON.back}Bookings</a><div class="message">${V.ICON.knot}<h1>This booking was removed</h1><p>${V.esc(V.data.partner)} removed it on another device a moment ago. It's no longer part of the budget.</p><div class="acts"><a class="btn" href="${V.href("bookings.html")}">See all bookings</a></div></div>`;
+    return;
+  }
+  document.title = b.name;
+  const t = V.totals(b);
+  const est = b.estimate != null ? (t.price === b.estimate ? `You estimated <b class="num">${V.rp(b.estimate)}</b> while comparing, exactly the agreed price.`
+    : `You estimated <b class="num">${V.rp(b.estimate)}</b> while comparing. The agreed price is <b class="num">${V.rp(Math.abs(t.price - b.estimate))}</b> ${t.price < b.estimate ? "lower" : "higher"}.`) : "";
+  main.innerHTML = `<a class="back" href="${V.href("bookings.html")}">${V.ICON.back}Bookings</a>
+    <section class="hero"><p class="sub">${V.esc(b.category || "No category")}</p><h1 dir="auto">${V.esc(b.name)}</h1>
+      <p class="save-state ${S === "savefail" ? "failed" : ""}" id="save" role="status">${S === "savefail" ? "1 change not saved" : V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
+      <div id="hero" style="margin-top:28px"></div>
+      <p class="origin">${FROM[b.origin.from]} on ${V.dateLong(b.origin.on)}</p></section>
+
+    <h2 class="section-h">Details</h2>
+    <div class="fields">
+      ${field("name", "Name", b.name)}
+      ${field("category", "Category", b.category, { type: "category" })}
+      ${b.parts ? `<div class="field"><span class="lab">Price</span><span class="static num">${V.rp(t.price)} <span style="color:var(--ink-2);font-size:14px">from ${V.plural(b.parts.length, "part")}</span></span></div>` : field("price", "Agreed price", b.price, { type: "money" })}
+      ${field("estimate", "Estimate", b.estimate, { type: "money", ph: "No estimate", hint: "What you noted while comparing. It never changes the agreed price." })}
+      ${b.parts ? "" : field("paid", "Paid so far", b.paid, { type: "money" }) + field("funder", "Funder", b.funder, { type: "funder" }) + field("due", "Due date", b.due, { type: "date" }) + field("step", "Next step", b.step, { ph: "What has to happen next" })}
+    </div>
+    ${est ? `<p class="note">${est}</p>` : ""}
+
+    <h2 class="section-h">${b.parts ? `Parts <small>${V.plural(b.parts.length, "part")}; totals, funders and dates come from them</small>` : `Parts <small>Paying in instalments or adding extras?</small>`}</h2>
+    ${b.parts ? `<ul class="part-list">${b.parts.map(partBlock).join("")}</ul><p style="margin-top:18px"><button class="btn quiet small" id="add-part">Add a part</button></p>`
+      : `<p class="note">Split this booking into parts, each with its own price, payment, funder and due date. What's already paid becomes the first part.</p><p style="margin-top:16px"><button class="btn quiet small" id="split">Split into parts</button></p>`}
+
+    <h2 class="section-h">Files <small>${b.files.length ? V.plural(b.files.length, "file") : "None yet"}</small></h2>
+    ${files()}
+
+    <div class="danger-zone"><button class="link rose" id="remove">Remove this booking</button></div>`;
+  hero();
+  wire(main);
+}
+
+function wire(main) {
+  V.$$("details.part", main).forEach((d) => d.addEventListener("toggle", () => d.open ? open.add(d.dataset.p) : open.delete(d.dataset.p)));
+  V.$$("[data-k]", main).forEach((el) => {
+    el.addEventListener("change", () => {
+      const pid = el.closest(".field").dataset.part, k = el.dataset.k;
+      const target = pid ? b.parts.find((p) => p.id === pid) : b;
+      let v = el.value;
+      if (el.dataset.money) { v = el.value.trim() === "" && k === "estimate" ? null : num(el.value); el.value = v == null ? "" : money(v); }
+      if (k === "funder") v = v || null;
+      if (k === "due") v = v || null;
+      save(() => { target[k] = v; });
+      if (pid && ["name", "price", "paid", "funder", "due"].includes(k)) setTimeout(() => render(main), 470);
+    });
+  });
+  V.$$("[data-retry]", main).forEach((x) => x.onclick = () => { x.closest(".field").classList.remove("failed"); x.closest(".err").remove(); setSave("Saving"); setTimeout(() => setSave("Saved"), 500); });
+  V.$$("[data-pay-part]", main).forEach((x) => x.onclick = () => V.recordPayment(b.id, x.dataset.payPart));
+  V.$$("[data-remove-part]", main).forEach((x) => x.onclick = async () => {
+    const i = b.parts.findIndex((p) => p.id === x.dataset.removePart), p = b.parts[i];
+    if (!await V.confirm({ title: `Remove “${p.name}”?`, body: `Its price of ${V.rp(p.price)} and ${V.rp(p.paid || 0)} paid come off this booking's totals.`, action: "Remove part", danger: true })) return;
+    b.parts.splice(i, 1); render(main);
+    V.saved(`Removed ${V.esc(p.name)}`, () => { b.parts.splice(i, 0, p); render(main); });
+  });
+  const sp = V.$("#split", main);
+  if (sp) sp.onclick = () => {
+    const before = JSON.parse(JSON.stringify(b));
+    const paid = b.paid || 0;
+    const parts = [];
+    if (paid > 0) parts.push({ id: "p1", name: "Deposit", price: Math.min(paid, b.price), paid: Math.min(paid, b.price), funder: b.funder, due: null, step: "" });
+    parts.push({ id: "p2", name: paid > 0 ? "Balance" : "First payment", price: b.price - Math.min(paid, b.price), paid: Math.max(0, paid - b.price), funder: b.funder, due: b.due, step: b.step });
+    b.parts = parts; ["price", "paid", "funder", "due", "step"].forEach((k) => delete b[k]);
+    open.add(parts[parts.length - 1].id); render(main);
+    V.saved(`Split into ${V.plural(parts.length, "part")}`, () => { Object.keys(b).forEach((k) => delete b[k]); Object.assign(b, before); render(main); });
+  };
+  const ap = V.$("#add-part", main);
+  if (ap) ap.onclick = () => {
+    const pid = "p" + Date.now();
+    b.parts.push({ id: pid, name: "Add-on", price: 0, paid: 0, funder: b.parts[b.parts.length - 1].funder, due: null, step: "" });
+    open.add(pid); render(main);
+    const f = V.$(`#f-${pid}-name`); if (f) { f.focus(); f.select(); }
+  };
+  V.$("#remove", main).onclick = async () => {
+    const t = V.totals(b);
+    const what = [b.parts ? V.plural(b.parts.length, "part") : null, t.paid ? `${V.rp(t.paid)} of recorded payments` : null, b.files.length ? V.plural(b.files.length, "file") : null].filter(Boolean);
+    if (!await V.confirm({ title: `Remove ${b.name}?`, body: `It leaves the budget${what.length ? ", with its " + what.join(", ").replace(/, ([^,]*)$/, " and $1") : ""}. You can undo for a few seconds.`, action: "Remove booking", danger: true })) return;
+    const i = V.data.bookings.indexOf(b), kept = b;
+    V.data.bookings.splice(i, 1); b = null; render(main);
+    V.$(".message h1").textContent = `${kept.name} was removed`;
+    V.$(".message p").textContent = "It's no longer part of the budget.";
+    V.saved(`Removed ${V.esc(kept.name)}`, () => { V.data.bookings.splice(i, 0, kept); b = kept; render(main); });
+  };
+}
+
+V.init({
+  where: "Budget", noun: "this booking",
+  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["gone", "Removed by Bella"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  render,
+});
+</script>
+</body>
+</html>

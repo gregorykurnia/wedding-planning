@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+const ui = { q: S === "noresults" ? "beach" : "", stage: "", max: S === "noresults" ? 200 * 1000000 : null, min: null, hideOut: true, order: "cost", asc: true, shown: 60 };
+
+function visible() {
+  const s = ui.q.toLocaleLowerCase();
+  const list = d.venues.filter((v) => (!s || [v.name, v.notes, v.location].some((x) => (x || "").toLocaleLowerCase().includes(s))) &&
+    (!ui.stage || v.stage === ui.stage) && (!ui.hideOut || v.stage !== "out") &&
+    (ui.max == null || (v.cost != null && v.cost <= ui.max)) && (ui.min == null || (v.capacity != null && v.capacity >= ui.min)));
+  const k = ui.order === "cost" ? (v) => v.cost : ui.order === "capacity" ? (v) => v.capacity : (v) => v.name.toLocaleLowerCase();
+  return list.sort((a, z) => k(a) == null ? 1 : k(z) == null ? -1 : (typeof k(a) === "number" ? k(a) - k(z) : k(a).localeCompare(k(z))) * (ui.asc ? 1 : -1));
+}
+
+function row(v) {
+  return `<li data-id="${v.id}" class="${v.stage === "out" ? "ruled" : ""}"><div class="vrow">
+    <span class="first"><a class="name" dir="auto" href="#" data-open="${v.id}">${V.esc(v.name)}</a></span>
+    ${v.cost != null ? `<span class="price num">${V.rp(v.cost)}</span>` : `<span class="price none">No estimate</span>`}
+    <span class="meta" dir="auto">${V.esc(v.location || "No location")}</span><span class="right">${v.capacity != null ? `Up to ${v.capacity.toLocaleString("id-ID")} guests` : "Capacity unknown"}</span>
+    <div class="foot">${V.stageThread(v.stage, d.VENUE_STAGES)}${v.files.length ? `<span class="meta">${V.plural(v.files.length, "file")}</span>` : ""}${v.notes ? `<span class="meta" dir="auto" style="flex-basis:100%">${V.linkify(v.notes.length > 140 ? v.notes.slice(0, 138) + "…" : v.notes)}</span>` : ""}</div>
+  </div></li>`;
+}
+
+/* F1, F3, F22: capture or edit a venue */
+function venueSheet(v) {
+  const isNew = !v;
+  V.openSheet(`<h2 dir="auto">${isNew ? "Add a venue" : V.esc(v.name)}</h2>
+    <div class="chips" role="group" aria-label="Stage" style="justify-content:center;margin-top:16px">${d.VENUE_STAGES.concat([["out", "Ruled out"]]).map(([k, l]) => `<button class="chip" data-st="${k}" aria-pressed="${(v ? v.stage : "noted") === k}">${l}</button>`).join("")}</div>
+    <div class="fields">
+      <div class="field"><label for="n">Name</label><input id="n" dir="auto" value="${V.esc(v ? v.name : "")}" ${isNew ? "autofocus" : ""} placeholder="For example, Puri Taman Sari"></div>
+      <div class="field"><label for="l">Location</label><input id="l" dir="auto" value="${V.esc(v ? v.location : "")}"></div>
+      <div class="field"><label for="c">Estimated cost</label><input id="c" class="num" inputmode="numeric" value="${v && v.cost != null ? V.rp(v.cost) : ""}" placeholder="Rp 0"></div>
+      <div class="field"><label for="g">Most guests</label><input id="g" inputmode="numeric" value="${v && v.capacity != null ? v.capacity : ""}" placeholder="Maximum capacity"></div>
+      <div class="field"><label for="t">Notes</label><textarea id="t" dir="auto">${V.esc(v ? v.notes : "")}</textarea></div>
+    </div>
+    ${v ? `<h3 class="section-h" style="font-size:22px;margin-top:26px">Files</h3>${V.filesGrid(v.files, false, `Files › Venues › ${v.name}`)}` : ""}
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add venue</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    const save = isNew ? null : V.sheetSaver(el);
+    V.$$("[data-st]", el).forEach((c) => c.onclick = () => { V.$$("[data-st]", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) setStage(c.dataset.st); });
+    V.$("#c", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    /* B1: booking a venue makes it a booking, with the estimate kept apart (B12) */
+    const booked = (t) => {
+      if (d.bookings.find((b) => b.id === t.id)) return false;
+      d.bookings.push({ id: t.id, name: t.name, category: "Venue", origin: { from: "venue", on: "2026-10-14" }, estimate: t.cost, price: t.cost || 0, paid: 0, funder: null, due: null, step: "", files: t.files.slice() });
+      V.toast(`${V.esc(t.name)} is now a booking`, { action: "Open", onAction: () => location.href = V.href("booking.html", { id: t.id }) });
+      return true;
+    };
+    function setStage(k) { const was = v.stage; if (save(() => { v.stage = k; }) && k === "booked" && was !== "booked") booked(v); }
+    if (save) {
+      const set = (id, fn) => V.$(id, el).onchange = (e) => save(() => fn(e.target.value));
+      set("#n", (x) => { v.name = x.trim() || v.name; }); set("#l", (x) => { v.location = x.trim(); });
+      set("#c", (x) => { v.cost = x.trim() ? num(x) : null; }); set("#g", (x) => { v.capacity = x.trim() ? num(x) : null; }); set("#t", (x) => { v.notes = x; });
+      return;
+    }
+    V.$("[data-ok]", el).onclick = () => {
+      const n = V.$("#n", el).value.trim(); if (!n) { V.$("#n", el).focus(); return; }
+      const t = v || { id: "ven" + Date.now(), files: [] }, was = v ? v.stage : null;
+      Object.assign(t, { name: n, location: V.$("#l", el).value.trim(), cost: V.$("#c", el).value ? num(V.$("#c", el).value) : null, capacity: V.$("#g", el).value ? num(V.$("#g", el).value) : null, notes: V.$("#t", el).value, stage: V.$("[data-st][aria-pressed=true]", el).dataset.st });
+      d.venues.push(t);
+      V.closeSheet(); V.rerender();
+      if (!(t.stage === "booked" && booked(t))) V.saved(`Added ${V.esc(n)}`, () => { d.venues.splice(d.venues.indexOf(t), 1); V.rerender(); });
+    };
+  });
+}
+
+V.init({
+  where: "Vendors", section: "vendors.html", noun: "your venues", wide: true,
+  states: [["empty", "No venues yet"], ["noresults", "No results"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a venue"]],
+  sync() {
+    setTimeout(() => {
+      const v = { id: "vsync", name: "Bukit Jimbaran Lawn", location: "Jimbaran, Bali", cost: 295000000, capacity: 350, stage: "noted", notes: "Found by Bella; ask about the rain plan.", files: [] };
+      d.venues.push(v); V.rerender(); V.$$('[data-id="vsync"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added ${V.esc(v.name)}`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
+  render(main) {
+    const booked = d.venues.find((v) => v.stage === "booked");
+    const head = `<section class="hero"><h1>Venues</h1><p class="sub">${booked ? `Booked: <a class="link" href="${V.href("booking.html", { id: booked.id })}">${V.esc(booked.name)}</a>` : d.venues.length ? V.plural(d.venues.length, "venue") : "Places you're weighing up"}</p>${V.subnav("venues.html")}</section>`;
+    if (!d.venues.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No venues yet</h1><p>Note each venue you hear about with its cost and how many guests it holds, so you can compare them later.</p><div class="acts"><button class="btn" id="add">Add a venue</button></div></div>`;
+      V.$("#add").onclick = () => venueSheet(null); return;
+    }
+    const focused = document.activeElement && document.activeElement.id;
+    main.innerHTML = head + `
+      <div class="tools">
+        <label class="search">${V.ICON.search}<span class="sr">Search venues</span><input id="q" type="search" placeholder="Search names, places and notes" value="${V.esc(ui.q)}"></label>
+        <span class="order"><label for="ord">Order by</label><select id="ord"><option value="cost" ${ui.order === "cost" ? "selected" : ""}>Cost</option><option value="capacity" ${ui.order === "capacity" ? "selected" : ""}>Capacity</option><option value="name" ${ui.order === "name" ? "selected" : ""}>Name</option></select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></span>
+      </div>
+      <div class="tools" style="margin-top:6px;justify-content:flex-start">
+        <span class="order"><label for="st">Stage</label><select id="st"><option value="">Any</option>${d.VENUE_STAGES.concat([["out", "Ruled out"]]).map(([k, l]) => `<option value="${k}" ${ui.stage === k ? "selected" : ""}>${l}</option>`).join("")}</select></span>
+        <label class="range">Costs at most <input id="max" class="num" inputmode="numeric" placeholder="Any" value="${ui.max != null ? V.rp(ui.max) : ""}"></label>
+        <label class="range">Holds at least <input id="min" inputmode="numeric" placeholder="Any" value="${ui.min ?? ""}"> guests</label>
+        <label class="check" style="font-size:14px"><input type="checkbox" id="hide" ${ui.hideOut ? "checked" : ""}>Hide ruled out</label>
+      </div>
+      <div id="list"></div>
+      <button class="btn add-fab" id="add">Add a venue</button>`;
+    list();
+    const q = V.$("#q"); q.oninput = () => { ui.q = q.value; list(); };
+    if (focused === "q") { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    V.$("#ord").onchange = (e) => { ui.order = e.target.value; ui.asc = e.target.value !== "capacity"; V.rerender(); };
+    V.$("#dir").onclick = () => { ui.asc = !ui.asc; V.rerender(); };
+    V.$("#st").onchange = (e) => { ui.stage = e.target.value; if (ui.stage === "out") ui.hideOut = false; V.rerender(); };
+    V.$("#max").onchange = (e) => { ui.max = e.target.value.trim() ? num(e.target.value) : null; V.rerender(); };
+    V.$("#min").onchange = (e) => { ui.min = e.target.value.trim() ? num(e.target.value) : null; V.rerender(); };
+    V.$("#hide").onchange = (e) => { ui.hideOut = e.target.checked; list(); };
+    V.$("#add").onclick = () => venueSheet(null);
+  },
+});
+
+function list() {
+  const box = V.$("#list"), rows = visible(), out = d.venues.filter((v) => v.stage === "out").length;
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>No venues match</h1><p>Nothing fits ${[ui.q ? `“${V.esc(ui.q)}”` : "", ui.max != null ? `at most ${V.rp(ui.max)}` : "", ui.min != null ? `at least ${ui.min} guests` : "", ui.stage ? "that stage" : ""].filter(Boolean).join(", ") || "these choices"}.</p><div class="acts"><button class="btn quiet" id="reset">Show every venue</button></div></div>`;
+    V.$("#reset").onclick = () => { Object.assign(ui, { q: "", stage: "", max: null, min: null, hideOut: false }); V.rerender(); };
+    return;
+  }
+  box.innerHTML = `<p class="count">${V.plural(rows.length, "venue")}${ui.hideOut && out ? `, ${out} ruled out hidden` : ""}</p><ul class="ledger" style="margin-top:12px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(60, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
+  V.$$("[data-open]", box).forEach((a) => a.onclick = (e) => { e.preventDefault(); venueSheet(d.venues.find((v) => v.id === a.dataset.open)); });
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; list(); };
+}
+if (S === "savefail" && d.venues.length) venueSheet(d.venues[1] || d.venues[0]);
+</script>
+</body>
+</html>

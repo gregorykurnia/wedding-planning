@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What-if items</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  /* What-if amounts are set in italic with a dashed leader: not real money yet. */
+  .wi .price, .wi .pv { font-style: italic; }
+  .wi .parts .lead { border-bottom-style: dashed; }
+  .carry { list-style: none; margin-top: 14px; }
+  .carry li { display: flex; align-items: baseline; gap: 10px; font-size: 15px; padding: 4px 0; }
+  .carry .lead { flex: 1; border-bottom: 1px dashed var(--ink-3); transform: translateY(-4px); min-width: 24px; }
+  .carry .pn { overflow-wrap: anywhere; }
+  .carry .pv { white-space: nowrap; font-style: italic; }
+  .pe { list-style: none; margin-top: 10px; display: grid; gap: 14px; }
+  .pe li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .pe input, .pe select { width: 100%; min-width: 0; }
+  @media (max-width: 760px) { .pe li { grid-template-columns: 1fr 1fr; } .pe li input:first-of-type { grid-column: 1 / -1; } .pe li button { justify-self: start; } }
+  .entry .acts { grid-column: 1 / -1; display: flex; gap: 18px; font-size: 14px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil;
+const ui = { shown: 50, order: "added", asc: true };
+const ORDERS = [["added", "Order added"], ["name", "Name"], ["category", "Category"], ["price", "Price"], ["funder", "Who would pay"]];
+function sortedItems() {
+  const list = V.data.whatifs.slice();
+  if (ui.order === "added") return ui.asc ? list : list.reverse();
+  const k = (w) => ui.order === "price" ? V.wiTotal(w) : ui.order === "name" ? w.name.toLocaleLowerCase() : ui.order === "category" ? (w.category || null) : (V.wiParts(w).map((p) => p.funder == null ? null : V.funderName(p.funder))[0] ?? null);
+  return list.map((w) => ({ w, k: k(w) })).sort((a, z) => a.k == null ? 1 : z.k == null ? -1 : (typeof a.k === "number" ? a.k - z.k : String(a.k).localeCompare(String(z.k))) * (ui.asc ? 1 : -1)).map((r) => r.w);
+}
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+
+function item(w) {
+  const ps = V.wiParts(w), total = V.wiTotal(w);
+  const fs = [...new Set(ps.map((p) => p.funder ?? null))];
+  const who = fs.length > 2 ? V.plural(fs.length, "funder") : V.andList(fs.map((f) => f === null ? "nobody yet" : V.funderName(f)));
+  let parts = "";
+  if (w.parts) {
+    const shown = w.parts.slice(0, 5);
+    parts = `<ul class="parts">${shown.map((p) => `<li><span class="pn" dir="auto">${V.esc(p.name)}</span><span class="lead"></span><span class="pv">${V.rp(p.price)}, ${V.esc(p.funder == null ? "no funder yet" : V.funderName(p.funder))}</span></li>`).join("")}${w.parts.length > 5 ? `<li class="more">and ${V.plural(w.parts.length - 5, "more part")}</li>` : ""}</ul>`;
+  }
+  return `<li class="wi"><div class="entry" data-w="${w.id}">
+    <span class="name" dir="auto">${V.esc(w.name)}</span><span class="price num">${V.rp(total)}</span>
+    <span class="meta">${V.esc(w.category || "No category")}, would be paid by ${V.esc(who)}</span><span></span>
+    ${parts}
+    <div class="acts"><button class="link" data-edit>Edit</button><button class="link rose" data-remove>Remove</button></div></div></li>`;
+}
+
+const catOptions = (cur) => `<option value="">No category</option>` + V.data.categories.map((c) => `<option ${c === cur ? "selected" : ""}>${V.esc(c)}</option>`).join("");
+const funderSel = (cur, attrs) => `<select ${attrs}>${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<option value="${f.id}" ${(cur ?? "") === f.id ? "selected" : ""}>${V.esc(f.name)}</option>`).join("")}</select>`;
+
+/* B8, B10: a what-if item can be split into parts, each with its own price and who would pay */
+function partsEditor(w) {
+  return `<h3 class="section-h" style="font-size:22px;margin-top:26px">Parts <small>${V.plural(w.parts.length, "part")}; the price comes from them</small></h3>
+    <p class="sub" style="text-align:left;margin-top:0"><span class="num" id="wtotal">${V.rp(V.wiTotal(w))}</span> in all</p>
+    <ul class="pe">${w.parts.map((x) => `<li data-part="${x.id}">
+      <label class="sr" for="pn-${x.id}">Part name</label><input id="pn-${x.id}" data-pk="name" dir="auto" value="${V.esc(x.name)}">
+      <label class="sr" for="pp-${x.id}">Price</label><input id="pp-${x.id}" data-pk="price" class="num" inputmode="numeric" value="${V.rp(x.price)}">
+      <label class="sr" for="pf-${x.id}">Who would pay</label>${funderSel(x.funder, `id="pf-${x.id}" data-pk="funder"`)}
+      <button type="button" class="link rose" data-rm="${x.id}" aria-label="Remove ${V.esc(x.name)}">Remove</button></li>`).join("")}</ul>
+    <p style="margin-top:10px"><button type="button" class="link" id="add-part">Add a part</button></p>`;
+}
+
+function sheet(w) {
+  const isNew = !w;
+  const p = w && !w.parts ? w : null;
+  V.openSheet(`<h2>${isNew ? "Add a what-if item" : "Edit " + V.esc(w.name)}</h2><p class="sub">Kept apart from your bookings until you decide.</p>
+    <div class="fields">
+      <div class="field"><label for="wn">What it is</label><input id="wn" dir="auto" value="${V.esc(w ? w.name : "")}" placeholder="For example, a photo booth" autofocus></div>
+      <div class="field"><label for="wc">Category</label><select id="wc">${catOptions(w ? w.category : "")}</select></div>
+      ${w && w.parts ? ""
+        : `<div class="field"><label for="wp">Price</label><input id="wp" class="num" inputmode="numeric" value="${p ? V.rp(p.price) : ""}" placeholder="Rp 0"></div>
+           <div class="field"><span class="lab">Who would pay</span><div class="chips" role="group" aria-label="Who would pay">${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<button type="button" class="chip" data-f="${f.id}" aria-pressed="${(p ? (p.funder ?? "") : "") === f.id}">${V.esc(f.name)}</button>`).join("")}</div></div>`}
+    </div>
+    ${w && w.parts ? partsEditor(w)
+      : isNew ? `<p class="sub" style="margin-top:14px">Paying in stages? Add the item first, then split it into parts.</p>`
+      : `<p class="sub" style="margin-top:14px">Paying in stages? <button type="button" class="link" id="split">Split into parts</button>, each with its own price and who would pay.</p>`}
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add item</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    const save = isNew ? null : V.sheetSaver(el);
+    const chipsNow = () => V.$(".chip[aria-pressed=true]", el);
+    V.$$(".chip", el).forEach((c) => c.onclick = () => { V.$$(".chip", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) save(() => { w.funder = c.dataset.f || null; }); });
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    if (save) {
+      const again = (ok, focus) => { if (!ok) return; sheet(w); const f = focus && V.$(focus); if (f) { f.focus(); if (f.select) f.select(); } };
+      V.$("#wn", el).onchange = (e) => { const v = e.target.value.trim(); if (!v) { e.target.value = w.name; return; } save(() => { w.name = v; }); };
+      V.$("#wc", el).onchange = (e) => save(() => { w.category = e.target.value; });
+      const wp = V.$("#wp", el); if (wp) wp.onchange = (e) => { const v = num(e.target.value); e.target.value = V.rp(v); save(() => { w.price = v; }); };
+      const sp = V.$("#split", el);
+      if (sp) sp.onclick = () => again(save(() => {
+        const t = Date.now(), f = w.funder ?? null;
+        w.parts = [{ id: "wp" + t + "a", name: "Part 1", price: w.price || 0, funder: f }, { id: "wp" + t + "b", name: "Part 2", price: 0, funder: f }];
+        delete w.price; delete w.funder;
+      }), ".pe li:first-child [data-pk=name]");
+      V.$$(".pe li", el).forEach((li) => {
+        const x = w.parts.find((q) => q.id === li.dataset.part);
+        V.$$("[data-pk]", li).forEach((inp) => inp.onchange = () => {
+          const k = inp.dataset.pk; let v = inp.value;
+          if (k === "price") { v = num(v); inp.value = V.rp(v); } else if (k === "funder") v = v || null; else { v = v.trim() || x.name; inp.value = v; }
+          if (save(() => { x[k] = v; })) { const t = V.$("#wtotal", el); if (t) t.textContent = V.rp(V.wiTotal(w)); }
+        });
+        V.$("[data-rm]", li).onclick = () => again(save(() => {
+          w.parts.splice(w.parts.indexOf(x), 1);
+          if (w.parts.length === 1) { const o = w.parts[0]; w.price = o.price; w.funder = o.funder; delete w.parts; }
+        }));
+      });
+      const ap = V.$("#add-part", el);
+      if (ap) ap.onclick = () => again(save(() => { const n = w.parts.length + 1; w.parts.push({ id: "wp" + Date.now(), name: "Part " + n, price: 0, funder: w.parts[w.parts.length - 1].funder ?? null }); }), ".pe li:last-child [data-pk=name]");
+      return;
+    }
+    V.$("[data-ok]", el).onclick = () => {
+      const name = V.$("#wn", el).value.trim(); if (!name) { V.$("#wn", el).focus(); return; }
+      const chip = chipsNow();
+      const n = { id: "w" + Date.now(), name, category: V.$("#wc", el).value, price: num(V.$("#wp", el).value), funder: chip && chip.dataset.f || null }; V.data.whatifs.unshift(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(name)}`, () => { V.data.whatifs.shift(); V.rerender(); });
+    };
+  });
+}
+
+V.init({
+  where: "Budget", noun: "your what-if items",
+  states: [["empty", "No what-if items"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an idea"]],
+  sync() {
+    setTimeout(() => {
+      const d = V.data, n = { id: "wsync", name: "Live band for the reception", category: "Music", price: 18000000, funder: d.funders.length ? d.funders[Math.min(1, d.funders.length - 1)].id : null };
+      d.whatifs.unshift(n); V.rerender();
+      V.$$('[data-w="wsync"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added “${V.esc(n.name)}”`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
+  render(main) {
+    const d = V.data, B = V.budget(), wi = V.whatif();
+    const back = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>`;
+    if (!d.whatifs.length) {
+      main.innerHTML = back + `<section class="hero"><h1>What-if items</h1></section><div class="message inline">${V.ICON.knot}<h1>Try an idea before you commit</h1><p>Add something you're weighing up, like fireworks or a second photographer, and see what the total would become. It stays apart from your real bookings.</p><div class="acts"><button class="btn" id="add">Add a what-if item</button></div></div>`;
+      V.$("#add", main).onclick = () => sheet(null);
+      return;
+    }
+    const projected = B.price + wi;
+    const share = projected ? Math.round(B.price / projected * 100) : 0;
+    /* B10: who would carry the extra */
+    const carry = {};
+    d.whatifs.forEach((w) => V.wiParts(w).forEach((p) => { const k = p.funder ?? "null"; carry[k] = (carry[k] || 0) + p.price; }));
+    const carryRows = Object.entries(carry).sort((a, z) => z[1] - a[1]);
+
+    main.innerHTML = back + `<section class="hero">
+        <p class="kicker">If you went ahead with everything here</p>
+        <p class="figure md num ${V.longFig(projected)}">${V.fig(projected)}</p>
+        <p class="context"><b class="num">${V.rp(B.price)}</b> already committed, plus <b class="num">${V.rp(wi)}</b> in what-if items</p>
+        <div class="thread" role="img" aria-label="${share}% committed, the rest what-if"><span class="done" style="width:${share}%"></span><span class="maybe" style="left:${share}%;right:0"></span><span class="ends"><span>Committed</span><span>What-if</span></span></div>
+      </section>
+      <h2 class="section-h">Who would pay the extra</h2>
+      <ul class="carry">${carryRows.slice(0, 8).map(([k, v]) => `<li><span class="pn" dir="auto">${V.esc(k === "null" ? "Not assigned yet" : V.funderName(k))}</span><span class="lead"></span><span class="pv num">+ ${V.rp(v)}</span></li>`).join("")}${carryRows.length > 8 ? `<li class="more" style="color:var(--ink-2);font-size:14px">and ${V.plural(carryRows.length - 8, "more funder")}</li>` : ""}</ul>
+      <h2 class="section-h">Items <small>${V.plural(d.whatifs.length, "item")}</small></h2>
+      <div class="tools" style="margin-top:4px;justify-content:flex-end"><div class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></div></div>
+      <ul class="ledger">${sortedItems().slice(0, ui.shown).map(item).join("")}</ul>
+      ${d.whatifs.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(50, d.whatifs.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}
+      <button class="btn add-fab" id="add">Add a what-if item</button>`;
+    V.$("#add", main).onclick = () => sheet(null);
+    V.$("#ord", main).onchange = (e) => { ui.order = e.target.value; ui.asc = ui.order !== "price"; V.rerender(); };
+    V.$("#dir", main).onclick = () => { ui.asc = !ui.asc; V.rerender(); };
+    const m = V.$("#more", main); if (m) m.onclick = () => { ui.shown += 50; V.rerender(); };
+    V.$$("[data-edit]", main).forEach((b) => b.onclick = () => sheet(d.whatifs.find((w) => w.id === b.closest(".entry").dataset.w)));
+    V.$$("[data-remove]", main).forEach((b) => b.onclick = async () => {
+      const w = d.whatifs.find((x) => x.id === b.closest(".entry").dataset.w);
+      if (!await V.confirm({ title: `Remove ${w.name}?`, body: `${V.rp(V.wiTotal(w))} comes off the projected total. You can undo for a few seconds.`, action: "Remove item", danger: true })) return;
+      const i = d.whatifs.indexOf(w); d.whatifs.splice(i, 1); V.rerender();
+      V.saved(`Removed ${V.esc(w.name)}`, () => { d.whatifs.splice(i, 0, w); V.rerender(); });
+    });
+  },
+});
+if (V.STATE === "savefail" && V.data.whatifs.length) sheet(V.data.whatifs[0]);
+</script>
+</body>
+</html>

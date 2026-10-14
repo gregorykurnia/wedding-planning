@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  body { display: grid; place-items: center; padding: 24px; }
+  .gate { width: min(440px, 100%); text-align: center; }
+  .gate .mark { width: 64px; height: 64px; color: var(--champagne); margin: 0 auto; }
+  .gate h1 { font-family: var(--serif); font-weight: 400; font-size: 46px; line-height: 1.05; margin-top: 18px; }
+  .gate .sub { color: var(--ink-2); margin-top: 10px; font-size: 15.5px; }
+  .gate form { margin-top: 30px; text-align: left; }
+  .gate .google { width: 100%; justify-content: center; background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); padding: 13px 22px; }
+  .gate .google:hover { background: rgba(253,232,238,.5); }
+  .gate .google svg { width: 18px; height: 18px; }
+  .or { display: flex; align-items: center; gap: 14px; color: var(--ink-2); font-size: 13.5px; margin: 22px 0 6px; }
+  .or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+  .gate .field { grid-template-columns: 1fr; }
+  .gate .go { width: 100%; margin-top: 22px; padding: 13px 22px; }
+  .gate .problem { margin-top: 20px; text-align: left; border-radius: 16px; padding: 14px 18px; font-size: 14.5px; background: var(--rose-soft); color: var(--rose-ink); }
+  .gate .problem.calm { background: rgba(244,234,215,.75); color: var(--gold-ink-tint); }
+  .gate .foot { margin-top: 26px; font-size: 13.5px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="gate" id="gate"></div>
+<details class="proto"><summary>Prototype</summary><div class="box"><b>States</b>
+  <a href="signin.html">Normal</a><a href="signin.html?state=busy">Signing in</a><a href="signin.html?state=wrong">Wrong email or password</a><a href="signin.html?state=notallowed">Account not allowed</a><a href="signin.html?state=signedout">Just signed out</a><a href="signin.html?state=offline">Offline</a><a href="signin.html?state=demo">Not connected (demonstration)</a>
+  <b>Screens</b><a href="index.html">All screens and states</a></div></details>
+<script>
+const S = new URLSearchParams(location.search).get("state") || "normal";
+const G = '<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.7H9v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.9 10.7a5.4 5.4 0 0 1 0-3.4V5H.9a9 9 0 0 0 0 8z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.5 1.4l2.6-2.6A9 9 0 0 0 .9 5l3 2.3C4.6 5.2 6.6 3.6 9 3.6z"/></svg>';
+const knot = '<svg class="mark" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><path d="M36 36c-8-10-22-14-24-6s14 10 24 6zM36 36c8-10 22-14 24-6s-14 10-24 6z"/><path d="M36 36c-4 8-10 18-14 24M36 36c4 8 10 18 14 24"/><circle cx="36" cy="36" r="3"/></svg>';
+const busy = S === "busy", off = S === "offline", demo = S === "demo";
+const problem = {
+  wrong: `<p class="problem" role="alert">That email and password don't match. Check them and try again, or continue with Google.</p>`,
+  notallowed: `<p class="problem" role="alert">You're signed in as <b>someone.else@gmail.com</b>, which isn't one of the two accounts that can open this planner. Sign in with Greg's or Bella's account instead.</p>`,
+  signedout: `<p class="problem calm" role="status">You've signed out. Nothing is shown on this device until one of you signs in again.</p>`,
+  offline: `<p class="problem calm" role="status">You're offline. Signing in needs a connection; try again once this device is back online.</p>`,
+}[S] || "";
+document.getElementById("gate").innerHTML = `${knot}<h1>Our wedding planner</h1><p class="sub">For the two of us only. Sign in to see everything.</p>
+  ${demo ? `<p class="problem calm" style="margin-top:28px">The planner isn't connected to its database yet. You can look around in demonstration mode: there's no data and nothing is saved.</p><p style="margin-top:20px"><a class="btn go" href="overview.html?state=demo">Look around</a></p>`
+  : `<form id="f" novalidate>
+    <button type="button" class="btn google" ${busy || off ? "disabled" : ""}>${G}Continue with Google</button>
+    <p class="or">or with email</p>
+    <div class="fields" style="border-top:0">
+      <div class="field" style="border-bottom:0"><label for="em">Email</label><input id="em" type="email" autocomplete="username" value="${S === "wrong" || busy ? "greg@example.com" : ""}" ${busy ? "readonly" : ""}></div>
+      <div class="field ${S === "wrong" ? "failed" : ""}" style="border-bottom:0"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" value="${busy ? "••••••••••" : ""}" ${busy ? "readonly" : ""} ${S === "wrong" ? 'aria-invalid="true" autofocus' : ""}></div>
+    </div>
+    ${problem}
+    <button class="btn go ${busy ? "busy" : ""}" ${off ? "disabled" : ""}>${busy ? "Signing in" : "Sign in"}</button>
+    ${S === "notallowed" ? `<p class="foot"><button type="button" class="link">Use a different Google account</button></p>` : ""}
+  </form>`}`;
+const f = document.getElementById("f");
+if (f) f.onsubmit = (e) => { e.preventDefault(); const b = f.querySelector(".go"); b.classList.add("busy"); b.textContent = "Signing in"; setTimeout(() => location.href = "overview.html", 900); };
+</script>
+</body>
+</html>
