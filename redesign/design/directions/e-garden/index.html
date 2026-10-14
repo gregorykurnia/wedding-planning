@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget, Greg &amp; Bella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1f2d27;
+    --ink-2: #5d6f66;
+    --ink-3: #93a39b;
+    --line: #e4ede7;
+    --leaf: #2f9a62;
+    --leaf-deep: #1d6e45;
+    --sage: #eef6f0;
+    --sage-2: #d9ecdf;
+    --peony: #e9557f;
+    --peony-soft: #fde6ed;
+    --sun: #f2b53a;
+    --sun-soft: #fdf3da;
+
+    --f-greg: #5a9ad8;
+    --f-bella: #e9557f;
+    --f-us: #2f9a62;
+    --f-none: #c2ccc6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-weight: 400;
+    color: var(--ink); background: #fff; font-size: 15px; line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 48px; }
+
+  /* ---------- header ---------- */
+  .head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-top: 26px; }
+  .days { font-size: 13.5px; color: var(--ink-2); }
+  .days b { color: var(--ink); font-weight: 650; }
+  .couple { font-weight: 300; font-size: 25px; letter-spacing: -0.01em; text-align: center; }
+  .couple { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .couple .sp { width: 30px; height: 40px; flex: none; }
+  .couple .sp.l { transform: rotate(-38deg); margin-right: 10px; }
+  .couple .sp.r { transform: scaleX(-1) rotate(-38deg); margin-left: 10px; }
+  .couple em { font-style: italic; font-weight: 300; color: var(--leaf); padding: 0 4px; }
+  .people { justify-self: end; display: flex; }
+  .people span { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 650; border: 2px solid #fff; }
+  .people span:first-child { background: #e3eefa; color: #2f5f95; }
+  .people span:last-child { background: var(--peony-soft); color: #a8305a; margin-left: -8px; }
+
+  nav.main { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
+  nav.main a { text-decoration: none; color: var(--ink-2); font-size: 14.5px; font-weight: 500; padding: 8px 14px; border-radius: 999px; }
+  nav.main a:hover { color: var(--ink); background: var(--sage); }
+  nav.main a[aria-current="page"] { color: var(--leaf-deep); background: var(--sage); font-weight: 650; }
+
+  /* ---------- hero panel ---------- */
+  .hero {
+    position: relative; overflow: hidden; margin-top: 22px;
+    background: var(--sage); border-radius: 36px; padding: 44px 52px 44px;
+    display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; align-items: start;
+  }
+  .hero h1 { font-size: 15px; font-weight: 600; color: var(--leaf-deep); }
+  .figure { font-weight: 250; font-size: clamp(42px, 5.6vw, 76px); letter-spacing: -0.035em; line-height: 1.05; margin-top: 6px; white-space: nowrap; }
+  .figure .rp { font-size: .45em; font-weight: 400; letter-spacing: 0; margin-right: .15em; vertical-align: .55em; color: var(--ink-2); }
+  .context { margin-top: 12px; color: var(--ink-2); font-size: 15.5px; max-width: 30em; }
+  .context b { color: var(--ink); font-weight: 600; }
+  .paidbar { margin-top: 22px; height: 12px; border-radius: 6px; background: #fff; overflow: hidden; display: flex; max-width: 470px; }
+  .paidbar i { display: block; height: 100%; }
+  .legend { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .acts { display: flex; gap: 10px; margin-top: 28px; }
+  .btn { font: inherit; font-size: 14.5px; font-weight: 600; border-radius: 999px; padding: 11px 20px; cursor: pointer; border: 0; white-space: nowrap; }
+  .btn.primary { background: var(--leaf-deep); color: #fff; }
+  .btn.soft { background: #fff; color: var(--ink); }
+
+  .paynext { background: #fff; border-radius: 26px; padding: 22px 24px 16px; }
+  .paynext .ph { display: flex; justify-content: space-between; align-items: baseline; }
+  .paynext h2 { font-size: 17px; font-weight: 650; }
+  .paynext .ph span { font-size: 13px; color: var(--ink-2); }
+  .pn { display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .pn:last-of-type { border-bottom: 0; }
+  .pn b { font-weight: 600; font-size: 15px; }
+  .pn .a { font-weight: 600; text-align: right; font-size: 15px; }
+  .pn small { font-size: 13px; color: var(--ink-2); }
+  .pn .w { text-align: right; font-size: 13px; font-weight: 600; }
+  .pn.late .w { color: var(--peony); }
+  .pn.late { margin: 6px -12px 0; padding: 14px 12px; background: var(--peony-soft); border-radius: 16px; border-bottom: 0; }
+  .pn.soon .w { color: #a8740a; }
+  .seeall { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--leaf-deep); text-decoration: none; }
+
+  /* ---------- who pays ---------- */
+  .sec { margin-top: 48px; }
+  .sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .sec-h h2 { font-size: 21px; font-weight: 650; letter-spacing: -0.015em; }
+  .sec-h p { font-size: 13.5px; color: var(--ink-2); }
+  .funders { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 18px; }
+  .fd { padding: 4px 28px 4px 0; margin-right: 28px; border-right: 1px solid var(--line); }
+  .fd:last-child { border-right: 0; margin-right: 0; }
+  .fd .n { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .fd .n i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .fd .big { font-size: 24px; font-weight: 350; letter-spacing: -0.02em; margin-top: 8px; }
+  .fd .big small { font-size: 13px; color: var(--ink-2); font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+  .fd .bar { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c) 18%, #fff); margin: 10px 0 8px; overflow: hidden; }
+  .fd .bar i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+  .fd .s { font-size: 13px; color: var(--ink-2); }
+
+  /* ---------- bookings ---------- */
+  .list { margin-top: 14px; }
+  .bk { display: grid; grid-template-columns: minmax(0, 1.4fr) 150px 200px 150px 120px; gap: 18px; align-items: center; padding: 16px 8px; border-bottom: 1px solid var(--line); }
+  .bk .nm b { display: block; font-weight: 600; font-size: 15px; }
+  .bk .nm small { font-size: 13px; color: var(--ink-2); }
+  .bk .who { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+  .bk .who i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .bk .pr { font-size: 13px; color: var(--ink-2); }
+  .bk .pr .bar { height: 5px; border-radius: 3px; background: var(--sage-2); margin-top: 6px; overflow: hidden; }
+  .bk .pr .bar i { display: block; height: 100%; background: var(--leaf); }
+  .bk .left { text-align: right; font-weight: 600; }
+  .bk .left small { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-2); }
+  .bk .due { text-align: right; font-size: 13.5px; }
+  .bk .due small { display: block; color: var(--ink-2); font-size: 12.5px; }
+  .bk.over .left { color: var(--peony); }
+
+  .bk.open { background: var(--sage); border-radius: 20px 20px 0 0; border-bottom: 0; padding-left: 20px; padding-right: 20px; margin-top: 8px; }
+  .parts { background: var(--sage); border-radius: 0 0 20px 20px; padding: 0 20px 14px; }
+  .part { display: grid; grid-template-columns: minmax(0, 1.4fr) 150px 200px 150px 120px; gap: 18px; align-items: center; padding: 11px 0 11px 18px; border-top: 1px dashed #c6dfcd; font-size: 14px; }
+  .part small { display: block; font-size: 12.5px; color: var(--ink-2); }
+  .part .left { text-align: right; font-weight: 600; }
+  .part .due { text-align: right; }
+  .chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #fff; color: var(--leaf-deep); }
+
+  .tabbar { display: none; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--leaf); outline-offset: 3px; }
+
+  @media (max-width: 1100px) {
+    .bk, .part { grid-template-columns: minmax(0, 1fr) 180px 130px 110px; }
+    .bk .who, .part .who { display: none; }
+  }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 0 16px; }
+    .head { grid-template-columns: 1fr auto; padding-top: 18px; }
+    .couple { justify-content: flex-start; font-size: 22px; }
+    .couple .sp { width: 22px; height: 30px; }
+    .couple .sp.r { display: none; }
+    .head .days { display: none; }
+    nav.main { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 26px 20px 22px; border-radius: 28px; gap: 26px; margin-top: 16px; }
+    .figure { font-size: 44px; }
+    .context { font-size: 14.5px; }
+    .acts { margin-top: 20px; }
+    .acts .btn { flex: 1; }
+    .paynext { padding: 18px 18px 12px; margin: 0 -6px; }
+    .funders { grid-template-columns: 1fr 1fr; gap: 22px 0; }
+    .fd:nth-child(2n) { border-right: 0; margin-right: 0; }
+    .fd { padding-right: 14px; margin-right: 14px; }
+    .fd .big { font-size: 19px; }
+    .fd .big small { display: block; margin: 0; }
+    .bk, .part { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+    .bk .pr { grid-column: 1 / -1; order: 3; }
+    .bk .due, .part .due, .part .pr { display: none; }
+    .part { padding-left: 10px; }
+    .sec { margin-top: 36px; }
+    body { padding-bottom: 100px; }
+
+    .tabbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line); padding: 8px 8px 22px; justify-content: space-around;
+    }
+    .tabbar a { text-decoration: none; color: var(--ink-3); font-size: 11px; font-weight: 600; text-align: center; flex: 1; }
+    .tabbar svg { display: block; margin: 0 auto 4px; width: 22px; height: 22px; }
+    .tabbar a[aria-current="page"] { color: var(--leaf-deep); }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="sprig" viewBox="0 0 200 260">
+      <path d="M100 258 C 96 205, 104 150, 97 100 S 100 30, 108 4" fill="none" stroke="#2f9a62" stroke-width="1.3" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
+      <g fill="#cfe7d7" stroke="#2f9a62" stroke-width="1" style="vector-effect:non-scaling-stroke">
+        <ellipse cx="82" cy="228" rx="17" ry="13" transform="rotate(-20 82 228)"/>
+        <ellipse cx="117" cy="204" rx="17" ry="13" transform="rotate(20 117 204)"/>
+        <ellipse cx="84" cy="174" rx="16" ry="12" transform="rotate(-25 84 174)"/>
+        <ellipse cx="116" cy="148" rx="15" ry="11.5" transform="rotate(25 116 148)"/>
+        <ellipse cx="81" cy="120" rx="14" ry="10.5" transform="rotate(-28 81 120)"/>
+        <ellipse cx="112" cy="94" rx="13" ry="10" transform="rotate(28 112 94)"/>
+        <ellipse cx="85" cy="66" rx="11" ry="8.5" transform="rotate(-30 85 66)"/>
+        <ellipse cx="114" cy="40" rx="9" ry="7" transform="rotate(30 114 40)"/>
+      </g>
+      <g fill="#fde6ed" stroke="#e9557f" stroke-width="1">
+        <circle cx="128" cy="176" r="5"/><circle cx="135" cy="181" r="5"/><circle cx="132" cy="189" r="5"/><circle cx="124" cy="189" r="5"/><circle cx="121" cy="181" r="5"/>
+      </g>
+      <circle cx="128" cy="183" r="2.6" fill="#f2b53a"/>
+    </symbol></svg>
+<div class="wrap">
+  <header class="head">
+    <p class="days"><b>157 days</b> until 20 March</p>
+    <div class="couple"><svg class="sp l" aria-hidden="true"><use href="#sprig"/></svg>Greg<em>&amp;</em>Bella<svg class="sp r" aria-hidden="true"><use href="#sprig"/></svg></div>
+    <div class="people" aria-label="Signed in as Greg"><span>G</span><span>B</span></div>
+  </header>
+
+  <nav class="main" aria-label="Main">
+    <a href="#">Today</a>
+    <a href="#" aria-current="page">Budget</a>
+    <a href="#">Vendors</a>
+    <a href="#">Shortlist</a>
+    <a href="#">Wedding items</a>
+    <a href="#">Schedule</a>
+    <a href="#">Documents</a>
+    <a href="#">Files</a>
+    <a href="#">Guests</a>
+  </nav>
+
+  <section class="hero" aria-labelledby="stp">
+
+    <div>
+      <h1 id="stp">Still to pay</h1>
+      <p class="figure"><span class="rp">Rp</span>500.250.000</p>
+      <p class="context">We've paid <b>Rp 448.550.000</b> of the <b>Rp 948.800.000</b> we've committed to across 10 bookings.</p>
+      <div class="paidbar" aria-label="Paid so far, by funder">
+        <i style="width:22.1%; background: var(--f-greg)"></i>
+        <i style="width:7.3%; background: var(--f-bella)"></i>
+        <i style="width:14.8%; background: var(--f-us)"></i>
+        <i style="width:3%; background: var(--f-none)"></i>
+      </div>
+      <div class="legend">
+        <span style="--c: var(--f-greg)"><i></i>Greg's family</span>
+        <span style="--c: var(--f-bella)"><i></i>Bella's family</span>
+        <span style="--c: var(--f-us)"><i></i>Us</span>
+        <span style="--c: var(--f-none)"><i></i>Not assigned</span>
+        <span>White is still to pay</span>
+      </div>
+      <div class="acts">
+        <button class="btn primary">Add booking</button>
+        <button class="btn soft">What-if items</button>
+      </div>
+    </div>
+
+    <aside class="paynext" aria-labelledby="pn">
+      <div class="ph"><h2 id="pn">Pay next</h2><span>11 payments until March</span></div>
+      <div class="pn late"><b>Studio Rana</b><span class="a">Rp 34.000.000</span><small>Final payment, paid by us</small><span class="w">5 days late</span></div>
+      <div class="pn soon"><b>Dapur Lestari Catering</b><span class="a">Rp 55.500.000</span><small>2nd payment, Bella's family</small><span class="w">Sunday 18 Oct</span></div>
+      <div class="pn soon"><b>Sora Quartet</b><span class="a">Rp 16.000.000</span><small>Deposit, Greg's family</small><span class="w">Monday 26 Oct</span></div>
+      <div class="pn"><b>Balai Kirana Ballroom</b><span class="a">Rp 63.000.000</span><small>2nd instalment, Greg's family</small><span class="w">1 Nov</span></div>
+      <a class="seeall" href="#">See all payments</a>
+    </aside>
+  </section>
+
+  <section class="sec" aria-labelledby="wp">
+    <div class="sec-h"><h2 id="wp">Who pays</h2><p>Still to pay for each, worked out from every booking and part</p></div>
+    <div class="funders">
+      <div class="fd" style="--c: var(--f-greg)"><div class="n"><i></i>Greg's family</div><div class="big">Rp 242.000.000<small>to pay</small></div><div class="bar"><i style="width:46%"></i></div><div class="s">Rp 210.000.000 paid of 452.000.000</div></div>
+      <div class="fd" style="--c: var(--f-bella)"><div class="n"><i></i>Bella's family</div><div class="big">Rp 128.300.000<small>to pay</small></div><div class="bar"><i style="width:35%"></i></div><div class="s">Rp 69.500.000 paid of 197.800.000</div></div>
+      <div class="fd" style="--c: var(--f-us)"><div class="n"><i></i>Us</div><div class="big">Rp 62.750.000<small>to pay</small></div><div class="bar"><i style="width:69%"></i></div><div class="s">Rp 140.250.000 paid of 203.000.000</div></div>
+      <div class="fd" style="--c: var(--f-none)"><div class="n"><i></i>Not assigned yet</div><div class="big">Rp 67.200.000<small>to pay</small></div><div class="bar"><i style="width:30%"></i></div><div class="s">Rp 28.800.000 paid of 96.000.000</div></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="bk" style="margin-bottom: 64px">
+    <div class="sec-h"><h2 id="bk">Bookings</h2><p>10 confirmed, biggest first</p></div>
+    <div class="list">
+      <div class="bk open" style="--c: var(--f-greg)">
+        <div class="nm"><b>Balai Kirana Ballroom</b><small>Reception venue, in 3 parts</small></div>
+        <span class="who"><i></i>Greg's family</span>
+        <div class="pr">Rp 210.000.000 of 420.000.000<div class="bar"><i style="width:50%"></i></div></div>
+        <div class="left">Rp 210.000.000<small>left to pay</small></div>
+        <div class="due">1 Nov<small>2nd instalment</small></div>
+      </div>
+      <div class="parts">
+        <div class="part" style="--c: var(--f-greg)"><div>Deposit, 30%<small>Greg's family</small></div><span class="who"></span><div class="pr">Rp 126.000.000 of 126.000.000</div><div class="left"><span class="chip">Paid</span></div><div class="due">12 Aug</div></div>
+        <div class="part" style="--c: var(--f-greg)"><div>2nd instalment, 35%<small>Greg's family</small></div><span class="who"></span><div class="pr">Rp 84.000.000 of 147.000.000</div><div class="left">Rp 63.000.000</div><div class="due">1 Nov</div></div>
+        <div class="part" style="--c: var(--f-greg)"><div>Final payment, 35%<small>After the final headcount</small></div><span class="who"></span><div class="pr">Rp 0 of 147.000.000</div><div class="left">Rp 147.000.000</div><div class="due">20 Feb 2027</div></div>
+      </div>
+      <div class="bk" style="--c: var(--f-bella)">
+        <div class="nm"><b>Dapur Lestari Catering</b><small>Catering for 800 guests</small></div>
+        <span class="who"><i></i>Bella's family</span>
+        <div class="pr">Rp 55.500.000 of 185.000.000<div class="bar"><i style="width:30%"></i></div></div>
+        <div class="left">Rp 129.500.000<small>left to pay</small></div>
+        <div class="due">18 Oct<small>2nd payment</small></div>
+      </div>
+      <div class="bk" style="--c: var(--f-none)">
+        <div class="nm"><b>Rumah Bunga Kemang</b><small>Decoration and flowers</small></div>
+        <span class="who"><i></i>Not assigned</span>
+        <div class="pr">Rp 28.800.000 of 96.000.000<div class="bar"><i style="width:30%"></i></div></div>
+        <div class="left">Rp 67.200.000<small>left to pay</small></div>
+        <div class="due">5 Dec<small>2nd payment</small></div>
+      </div>
+      <div class="bk over" style="--c: var(--f-bella)">
+        <div class="nm"><b>Hantaran Ayu</b><small>Sangjit hampers</small></div>
+        <span class="who"><i></i>Bella's family</span>
+        <div class="pr">Rp 14.000.000 of 12.800.000<div class="bar"><i style="width:100%; background: var(--peony)"></i></div></div>
+        <div class="left">−Rp 1.200.000<small>overpaid</small></div>
+        <div class="due">None</div>
+      </div>
+      <a class="seeall" href="#">See all 10 bookings</a>
+    </div>
+  </section>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></svg>Today</a>
+  <a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="6" width="17" height="12" rx="3"/><path d="M3.5 10h17M7.5 14.5h3"/></svg>Budget</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c1-4 4-6 8-6s7 2 8 6"/><circle cx="12" cy="8" r="3.5"/></svg>Vendors</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M9 12h6M9 16h4"/></svg>Documents</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More</a>
+</nav>
+</body>
+</html>

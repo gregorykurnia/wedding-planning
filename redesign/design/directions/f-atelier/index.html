@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget, Greg &amp; Bella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Hanken+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1e2a55;
+    --ink-2: #5a6488;
+    --ink-3: #9aa2bf;
+    --line: #e4e9f4;
+    --sky: #eef3fc;
+    --sky-2: #d9e4f8;
+    --corn: #4766d6;
+    --corn-soft: #c9d6f6;
+    --marigold: #f2b13b;
+    --mari-soft: #fef3dc;
+    --rose: #de4f78;
+    --rose-soft: #fde8ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Hanken Grotesk", system-ui, sans-serif; font-weight: 400;
+    color: var(--ink); background: #fff; font-size: 14.5px; line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  .bodoni { font-family: "Bodoni Moda", Didot, serif; }
+
+  .shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+
+  /* ---------- side ---------- */
+  .side { border-right: 1px solid var(--line); padding: 30px 22px; display: flex; flex-direction: column; gap: 30px; position: sticky; top: 0; height: 100vh; }
+  .crest { display: flex; align-items: center; gap: 12px; }
+  .crest .mono {
+    width: 46px; height: 58px; border: 1.2px solid var(--ink); border-radius: 23px 23px 4px 4px;
+    display: grid; place-items: center; font-family: "Bodoni Moda", serif; font-size: 17px; font-weight: 500; line-height: 1;
+  }
+  .crest .mono span { font-style: italic; color: var(--marigold); font-size: 14px; display: block; text-align: center; margin: 1px 0; }
+  .crest b { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 18px; display: block; line-height: 1.2; }
+  .crest small { font-size: 12.5px; color: var(--ink-2); }
+  .side ul { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+  .side a { display: block; text-decoration: none; color: var(--ink-2); font-weight: 500; padding: 9px 12px; border-radius: 10px; }
+  .side a:hover { background: var(--sky); color: var(--ink); }
+  .side a[aria-current="page"] { background: var(--sky); color: var(--ink); font-weight: 650; box-shadow: inset 3px 0 0 var(--corn); }
+  .side .group { font-size: 12px; color: var(--ink-3); padding: 14px 12px 4px; }
+  .side .count { margin-top: auto; padding: 16px; border-radius: 16px; background: var(--mari-soft); }
+  .side .count b { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 30px; line-height: 1; }
+  .side .count p { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+
+  main { padding: 30px 44px 60px; max-width: 1240px; }
+
+  .head { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+  h1 { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 44px; letter-spacing: -0.01em; line-height: 1; }
+  .head p { color: var(--ink-2); margin-top: 8px; }
+  .acts { display: flex; gap: 10px; }
+  .btn { font: inherit; font-weight: 600; font-size: 14px; border-radius: 999px; padding: 10px 18px; border: 0; cursor: pointer; white-space: nowrap; }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.line { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--sky-2); }
+
+  /* ---------- top row: arch, pay next, who pays ---------- */
+  .top { display: grid; grid-template-columns: 290px minmax(0, 1fr) minmax(0, 1fr); gap: 22px; margin-top: 26px; align-items: stretch; }
+
+  /* the arch fills from the bottom as payments go in */
+  .arch {
+    position: relative; overflow: hidden; border-radius: 145px 145px 22px 22px;
+    background: var(--sky); padding: 70px 22px 46px; text-align: center; min-height: 330px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .arch .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 47%; background: var(--corn-soft); }
+  .arch .fill::before { content: ""; position: absolute; left: 0; right: 0; top: 0; border-top: 1.5px solid var(--corn); }
+  .arch > *:not(.fill) { position: relative; }
+  .arch .l { font-size: 13.5px; color: var(--ink-2); }
+  .arch .v { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 28px; line-height: 1.15; margin-top: 6px; letter-spacing: -0.01em; }
+  .arch .v small { display: block; font-size: 15px; font-weight: 400; color: var(--ink-2); }
+  .arch .rule { width: 40px; border-top: 1px solid var(--ink-3); margin: 16px auto; }
+  .arch .s { font-size: 13.5px; color: var(--ink-2); }
+  .arch .s b { color: var(--ink); font-weight: 650; }
+  .arch .pct { position: absolute; left: 0; right: 0; bottom: 14px; font-size: 12px; font-weight: 650; color: var(--corn); }
+
+  .panel { border: 1px solid var(--line); border-radius: 22px; padding: 20px 22px; }
+  .panel-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .panel h2 { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 21px; }
+  .panel-h span { font-size: 12.5px; color: var(--ink-2); }
+
+  .pay { display: grid; grid-template-columns: 52px 1fr auto; gap: 0 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .pay:first-of-type { border-top: 0; }
+  .date { text-align: center; border-radius: 12px; padding: 5px 0; background: var(--sky); line-height: 1.1; }
+  .date b { display: block; font-family: "Bodoni Moda", serif; font-size: 19px; font-weight: 500; }
+  .date span { font-size: 11.5px; color: var(--ink-2); }
+  .pay.late .date { background: var(--rose-soft); }
+  .pay.late .date b, .pay.late .date span { color: var(--rose); }
+  .pay.soon .date { background: var(--mari-soft); }
+  .pay .n b { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pay .n small { font-size: 12.5px; color: var(--ink-2); }
+  .pay .n small.lt { color: var(--rose); font-weight: 600; }
+  .pay .a { font-weight: 600; text-align: right; white-space: nowrap; }
+
+  .fund { padding: 11px 0; border-top: 1px solid var(--line); }
+  .fund:first-of-type { border-top: 0; }
+  .fund .fh { display: flex; justify-content: space-between; gap: 10px; }
+  .fund .fh b { font-weight: 600; }
+  .fund .fh span { font-weight: 600; }
+  .fund .bar { display: flex; height: 6px; border-radius: 3px; background: var(--sky); margin: 7px 0 5px; overflow: hidden; }
+  .fund .bar i { background: var(--corn); border-radius: 3px; }
+  .fund .fs { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); }
+  .fund.none .fh b { color: var(--ink-2); font-weight: 500; }
+  .fund.none .bar i { background: var(--ink-3); }
+
+  /* ---------- bookings ---------- */
+  .bookings { margin-top: 34px; }
+  .bh { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
+  .bh h2 { font-family: "Bodoni Moda", serif; font-weight: 500; font-size: 26px; }
+  .bh .tools { display: flex; gap: 8px; align-items: center; }
+  .seg { display: inline-flex; background: var(--sky); border-radius: 999px; padding: 3px; }
+  .seg button { font: inherit; font-size: 13px; font-weight: 550; border: 0; background: transparent; color: var(--ink-2); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(30,42,85,.08); }
+  .sortby { font-size: 13px; color: var(--ink-2); }
+  .sortby b { color: var(--ink); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { text-align: left; font-weight: 500; font-size: 12.5px; color: var(--ink-3); padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 12px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+  .r { text-align: right; }
+  td small { display: block; font-size: 12.5px; color: var(--ink-2); }
+  td.nm b { font-weight: 600; }
+  .tag { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+  .tag i { width: 8px; height: 8px; border-radius: 50%; background: var(--corn); }
+  .tag.bella i { background: var(--rose); }
+  .tag.us i { background: var(--marigold); }
+  .tag.none i { background: var(--ink-3); }
+  .mini { display: inline-block; width: 56px; height: 5px; border-radius: 3px; background: var(--sky-2); vertical-align: middle; margin-left: 8px; overflow: hidden; }
+  .mini i { display: block; height: 100%; background: var(--corn); }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+  .pill.late { background: var(--rose-soft); color: var(--rose); }
+  .pill.soon { background: var(--mari-soft); color: #9a6a00; }
+  .pill.paid { background: var(--sky); color: var(--corn); }
+  .neg { color: var(--rose); font-weight: 600; }
+
+  tr.open td { background: var(--sky); border-bottom: 0; }
+  tr.open td:first-child { border-radius: 14px 0 0 0; }
+  tr.open td:last-child { border-radius: 0 14px 0 0; }
+  tr.part td { background: var(--sky); font-size: 13.5px; padding-top: 9px; padding-bottom: 9px; border-bottom: 1px dashed var(--sky-2); }
+  tr.part td.nm { padding-left: 34px; }
+  tr.part.end td { border-bottom: 1px solid var(--line); }
+  tr.part.end td:first-child { border-radius: 0 0 0 14px; }
+  tr.part.end td:last-child { border-radius: 0 0 14px 0; }
+
+  .phone-nav { display: none; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--corn); outline-offset: 2px; }
+
+  @media (max-width: 1240px) {
+    .top { grid-template-columns: 250px minmax(0, 1fr); }
+    .top .whopays { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 760px) {
+    .shell { display: block; }
+    .side { display: none; }
+    main { padding: 0 16px 60px; }
+    .phone-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; position: sticky; top: 0; background: rgba(255,255,255,.94); backdrop-filter: blur(10px); z-index: 3;
+    }
+    .phone-nav .crest .mono { width: 34px; height: 42px; font-size: 13px; border-radius: 17px 17px 3px 3px; }
+    .phone-nav .crest .mono span { font-size: 11px; }
+    .phone-nav .crest b { font-size: 16px; }
+    .phone-nav .menu { font: inherit; font-weight: 600; background: var(--sky); border: 0; border-radius: 999px; padding: 8px 14px; color: var(--ink); }
+    .head { flex-direction: column; align-items: start; gap: 14px; margin-top: 6px; }
+    h1 { font-size: 34px; }
+    .acts { width: 100%; }
+    .acts .btn { flex: 1; }
+    .top { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
+    .arch { min-height: 280px; border-radius: 160px 160px 22px 22px; padding-top: 56px; }
+    .panel { padding: 16px 16px; }
+    .bh { flex-direction: column; align-items: start; }
+    .sortby { display: none; }
+    thead, .hm { display: none; }
+    table, tbody { display: block; }
+    tr { display: grid; grid-template-columns: 1fr auto; border-bottom: 1px solid var(--line); padding: 10px 0; }
+    td { border: 0 !important; padding: 0; white-space: normal; }
+    tr.open, tr.part { background: var(--sky); padding-left: 12px; padding-right: 12px; }
+    tr.open { border-radius: 14px 14px 0 0; border-bottom: 0; }
+    tr.part { border-bottom: 1px dashed var(--sky-2); }
+    tr.part.end { border-radius: 0 0 14px 14px; }
+    tr.open td, tr.part td { background: none; border-radius: 0 !important; }
+    tr.part td.nm { padding-left: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="side" aria-label="Main">
+    <div class="crest"><div class="mono">G<span>&amp;</span>B</div><div><b>Greg &amp; Bella</b><small>20 March 2027</small></div></div>
+    <ul>
+      <li><a href="#">Today</a></li>
+      <li class="group">Plan</li>
+      <li><a href="#" aria-current="page">Budget</a></li>
+      <li><a href="#">Vendors</a></li>
+      <li><a href="#">Shortlist</a></li>
+      <li><a href="#">Wedding items</a></li>
+      <li><a href="#">Schedule</a></li>
+      <li class="group">Keep</li>
+      <li><a href="#">Documents</a></li>
+      <li><a href="#">Files</a></li>
+      <li><a href="#">Guests</a></li>
+    </ul>
+    <div class="count"><b>157</b><p>days to go, and 64% of our planning time behind us</p></div>
+  </nav>
+
+  <main>
+    <div class="phone-nav">
+      <div class="crest"><div class="mono">G<span>&amp;</span>B</div><b>Budget</b></div>
+      <button class="menu">Menu</button>
+    </div>
+
+    <div class="head">
+      <div><h1>Budget</h1><p>10 bookings, 4 funders, 2 what-if items</p></div>
+      <div class="acts"><button class="btn line">What-if items</button><button class="btn primary">Add booking</button></div>
+    </div>
+
+    <div class="top">
+      <section class="arch" aria-label="Still to pay">
+        <div class="fill"></div>
+        <span class="pct">47% paid</span>
+        <p class="l">Still to pay</p>
+        <p class="v">Rp 500.250.000<small>of Rp 948.800.000</small></p>
+        <div class="rule"></div>
+        <p class="s"><b>Rp 448.550.000</b> paid so far</p>
+        <p class="s">With what-if items, <b>Rp 1.003.800.000</b></p>
+      </section>
+
+      <section class="panel" aria-labelledby="pn">
+        <div class="panel-h"><h2 id="pn">Pay next</h2><span>Rp 34.000.000 overdue</span></div>
+        <div class="pay late"><div class="date"><b>9</b><span>Oct</span></div><div class="n"><b>Studio Rana</b><small class="lt">5 days late, final payment</small></div><span class="a">Rp 34.000.000</span></div>
+        <div class="pay soon"><div class="date"><b>18</b><span>Oct</span></div><div class="n"><b>Dapur Lestari Catering</b><small>2nd payment, Bella's family</small></div><span class="a">Rp 55.500.000</span></div>
+        <div class="pay soon"><div class="date"><b>26</b><span>Oct</span></div><div class="n"><b>Sora Quartet</b><small>Deposit, Greg's family</small></div><span class="a">Rp 16.000.000</span></div>
+        <div class="pay"><div class="date"><b>1</b><span>Nov</span></div><div class="n"><b>Balai Kirana Ballroom</b><small>2nd instalment, Greg's family</small></div><span class="a">Rp 63.000.000</span></div>
+        <div class="pay"><div class="date"><b>3</b><span>Nov</span></div><div class="n"><b>Kertas &amp; Co.</b><small>Balance, us</small></div><span class="a">Rp 9.250.000</span></div>
+      </section>
+
+      <section class="panel whopays" aria-labelledby="wp">
+        <div class="panel-h"><h2 id="wp">Who pays</h2><span>Paid and still to pay</span></div>
+        <div class="fund"><div class="fh"><b>Greg's family</b><span>Rp 242.000.000</span></div><div class="bar"><i style="width:46%"></i></div><div class="fs"><span>Rp 210.000.000 paid</span><span>still to pay</span></div></div>
+        <div class="fund"><div class="fh"><b>Bella's family</b><span>Rp 128.300.000</span></div><div class="bar"><i style="width:35%"></i></div><div class="fs"><span>Rp 69.500.000 paid</span><span>still to pay</span></div></div>
+        <div class="fund"><div class="fh"><b>Us</b><span>Rp 62.750.000</span></div><div class="bar"><i style="width:69%"></i></div><div class="fs"><span>Rp 140.250.000 paid</span><span>still to pay</span></div></div>
+        <div class="fund none"><div class="fh"><b>Not assigned yet</b><span>Rp 67.200.000</span></div><div class="bar"><i style="width:30%"></i></div><div class="fs"><span>Rp 28.800.000 paid</span><span>still to pay</span></div></div>
+      </section>
+    </div>
+
+    <section class="bookings" aria-labelledby="bk">
+      <div class="bh">
+        <h2 id="bk">Bookings</h2>
+        <div class="tools">
+          <div class="seg" role="group" aria-label="Show"><button aria-pressed="true">Confirmed</button><button aria-pressed="false">What-if</button></div>
+          <span class="sortby">Sorted by <b>left to pay</b></span>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Booking</th><th class="hm">Who pays</th><th class="r hm">Price</th><th class="r hm">Paid</th><th class="r">Left to pay</th><th class="hm">Next</th></tr></thead>
+        <tbody>
+          <tr class="open">
+            <td class="nm"><b>Balai Kirana Ballroom</b><small>Reception venue, 3 parts</small></td>
+            <td class="hm"><span class="tag"><i></i>Greg's family</span></td>
+            <td class="r hm">420.000.000</td>
+            <td class="r hm">210.000.000<span class="mini"><i style="width:50%"></i></span></td>
+            <td class="r"><b>210.000.000</b></td>
+            <td class="hm">1 Nov<small>2nd instalment</small></td>
+          </tr>
+          <tr class="part">
+            <td class="nm">Deposit, 30%<small>Paid 12 Aug</small></td>
+            <td class="hm"><span class="tag"><i></i>Greg's family</span></td>
+            <td class="r hm">126.000.000</td><td class="r hm">126.000.000</td>
+            <td class="r"><span class="pill paid">Paid</span></td><td class="hm"></td>
+          </tr>
+          <tr class="part">
+            <td class="nm">2nd instalment, 35%<small>Transfer the rest</small></td>
+            <td class="hm"><span class="tag"><i></i>Greg's family</span></td>
+            <td class="r hm">147.000.000</td><td class="r hm">84.000.000</td>
+            <td class="r">63.000.000</td><td class="hm">1 Nov</td>
+          </tr>
+          <tr class="part end">
+            <td class="nm">Final payment, 35%<small>After the final headcount</small></td>
+            <td class="hm"><span class="tag"><i></i>Greg's family</span></td>
+            <td class="r hm">147.000.000</td><td class="r hm">0</td>
+            <td class="r">147.000.000</td><td class="hm">20 Feb 2027</td>
+          </tr>
+          <tr>
+            <td class="nm"><b>Dapur Lestari Catering</b><small>Catering for 800 guests</small></td>
+            <td class="hm"><span class="tag bella"><i></i>Bella's family</span></td>
+            <td class="r hm">185.000.000</td>
+            <td class="r hm">55.500.000<span class="mini"><i style="width:30%"></i></span></td>
+            <td class="r"><b>129.500.000</b></td>
+            <td class="hm"><span class="pill soon">18 Oct</span><small>2nd payment</small></td>
+          </tr>
+          <tr>
+            <td class="nm"><b>Rumah Bunga Kemang</b><small>Decoration and flowers</small></td>
+            <td class="hm"><span class="tag none"><i></i>Not assigned</span></td>
+            <td class="r hm">96.000.000</td>
+            <td class="r hm">28.800.000<span class="mini"><i style="width:30%"></i></span></td>
+            <td class="r"><b>67.200.000</b></td>
+            <td class="hm">5 Dec<small>2nd payment</small></td>
+          </tr>
+          <tr>
+            <td class="nm"><b>Studio Rana</b><small>Photo and video</small></td>
+            <td class="hm"><span class="tag us"><i></i>Us</span></td>
+            <td class="r hm">68.000.000</td>
+            <td class="r hm">34.000.000<span class="mini"><i style="width:50%"></i></span></td>
+            <td class="r"><b>34.000.000</b></td>
+            <td class="hm"><span class="pill late">5 days late</span><small>Final payment</small></td>
+          </tr>
+          <tr>
+            <td class="nm"><b>Sora Quartet</b><small>Band</small></td>
+            <td class="hm"><span class="tag"><i></i>Greg's family</span></td>
+            <td class="r hm">32.000.000</td>
+            <td class="r hm">0<span class="mini"><i style="width:0%"></i></span></td>
+            <td class="r"><b>32.000.000</b></td>
+            <td class="hm"><span class="pill soon">26 Oct</span><small>Deposit</small></td>
+          </tr>
+          <tr>
+            <td class="nm"><b>Hantaran Ayu</b><small>Sangjit hampers</small></td>
+            <td class="hm"><span class="tag bella"><i></i>Bella's family</span></td>
+            <td class="r hm">12.800.000</td>
+            <td class="r hm">14.000.000<span class="mini"><i style="width:100%; background: var(--rose)"></i></span></td>
+            <td class="r neg">−1.200.000<small>Overpaid</small></td>
+            <td class="hm">None</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+</body>
+</html>

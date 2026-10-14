@@ -1,9 +1,14 @@
 # Design progress
 
-## Stage 1: three directions (in progress)
-- 2026-10-14: built three directions for the #1 daily job (bookings and the budget), each with an opened booking showing its instalments:
-  - `directions/a-ribbon/`: the budget as one colour ribbon, coloured by funder
-  - `directions/b-stubs/`: bookings as tickets, sections as folder tabs
-  - `directions/c-runway/`: payments on a timeline to the wedding day
-- All three use the same mock budget: 10 bookings, Rp 948.800.000 committed, Rp 448.550.000 paid, one overdue payment and one overpaid booking.
-- Next: the owner runs `! ./shoot`, compares, and picks one (or a mix).
+## Stage 1: directions (in progress)
+
+### Round 1 (rejected), now in `archive/round-1/`
+- 2026-10-14: A Ribbon, B Stubs and C Runway. The owner rejected all three (see decisions.md).
+
+### Round 2
+- 2026-10-14: three new directions for the budget screen, spread from minimal to full:
+  - `directions/d-veil/`: minimal and invitation-like, one figure and one next payment
+  - `directions/e-garden/`: medium, sage and greenery, centred names with a section row
+  - `directions/f-atelier/`: fuller, with an arch that fills as you pay, a side menu and the full table
+- Same mock budget as round 1.
+- Next: the owner runs `./shoot` from a normal Terminal and picks one (or a mix).
