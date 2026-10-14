@@ -915,7 +915,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | 46a2f8f; real cost to log from `/cost` | [x] |
 | 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | see Task 1.2 heading; real cost to log from `/cost` | [x] |
 | 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | real cost to log from `/cost` | [x] |
-| 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | | [ ] |
+| 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | real cost to log from `/cost` | [x] |
 | 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | | [ ] |
 | 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | | [ ] |
 | 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | | [ ] |
@@ -1038,7 +1038,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** every URL works as before, smoke tests pass, `/new` renders the placeholder.
 
 #### Task 1.4: Money model · Opus 5.5 Medium
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · f714247 · real cost to log from `/cost`)
 - **Read:** §2.7; guide §6.9, §4.4, §4.5, §4.8, §5.4–§5.10; prototype `assets/app.js` (money model block, `recordPayment`); `inventory-notes.md` §3 (data model) and §9 (§5 decisions #1–#5).
 - **Files:** `src/lib/model/money.ts`, `bookings.ts`, `tests/model/money.test.ts`.
 - **Do:** pure functions over plain objects: `bookingsFrom(vendors, venues)` (every booked venue counts; membership by the `booking` field, with the legacy status rule as a fallback until migration 1.11 has run; direct bookings), `partsOf`, `totals` (price, paid, still to pay, next due, funders, overpaid), `budget`, `dues` (undated never included, `SOON = 14`, `urgency`), `byFunder` (Not assigned row), `whatIfTotals`, `projected`, `collapseParts` (first 4 still owing + "and N more"), `splitPlan` (Deposit/Balance/First payment, guide §6.9), `estimateDifference`, `recordPaymentPreview` (pays in full / still to pay after / more than what's left). Money is integer rupiah.
