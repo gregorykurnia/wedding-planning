@@ -4,6 +4,8 @@ import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { SheetHost } from "./sheet";
+import { ToastHost } from "./toasts";
 
 // Becomes veilHref("/") and veilHref("/sign-in") once Task 2.4 adds it.
 const HOME = "/new";
@@ -11,8 +13,8 @@ const SIGN_IN = "/new/sign-in";
 
 /**
  * Everything the new UI's screens share: the session (who is signed in, demo
- * mode, online or offline) and the gate. Toasts and sheets mount here too, as
- * `<ToastHost>` and `<SheetHost>` around `<Gate>`, once Task 2.6 builds them.
+ * mode, online or offline), the gate, and the toast and sheet hosts. Sheets sit
+ * inside the toasts, so a sheet can raise a toast.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const session = useSessionSource();
@@ -20,9 +22,13 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionContext.Provider value={session}>
       {/* useSearchParams needs a Suspense boundary, or the build fails. */}
-      <Suspense fallback={<Busy />}>
-        <Gate>{children}</Gate>
-      </Suspense>
+      <ToastHost>
+        <Suspense fallback={<Busy />}>
+          <SheetHost>
+            <Gate>{children}</Gate>
+          </SheetHost>
+        </Suspense>
+      </ToastHost>
     </SessionContext.Provider>
   );
 }

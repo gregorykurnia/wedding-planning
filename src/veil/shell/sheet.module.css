@@ -1,0 +1,68 @@
+/* Guide §4.14. Ported from the prototype's .scrim, .sheet, h2, .sub and .acts. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--surface-scrim);
+  z-index: var(--z-sheet);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.scrim[hidden] {
+  display: none;
+}
+
+.sheet {
+  background-color: var(--surface-sheet);
+  background-image: var(--glow-sheet);
+  border-radius: var(--radius-sheet);
+  width: min(var(--measure-sheet), 100%);
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 30px 32px 28px;
+  box-shadow: var(--shadow-sheet);
+  outline: none;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-sheet-title);
+  line-height: var(--leading-heading);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.acts {
+  display: flex;
+  gap: var(--gap-buttons);
+  justify-content: center;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) /* --bp-phone */ {
+  .scrim {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .sheet {
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    padding: 26px 22px calc(30px + env(safe-area-inset-bottom));
+  }
+}

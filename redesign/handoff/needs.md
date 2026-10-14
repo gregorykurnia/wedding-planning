@@ -1,4 +1,4 @@
-Open needs: N1–N13
+Open needs: N1–N14
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -15,3 +15,4 @@ Open needs: N1–N13
 | N11 | When I ask to be reminded about something I've arranged, I want to choose only reminders that will really arrive (the planner can send them once a day, each morning, so a day or a week ahead), so that I never count on one that can't come, including for things I set up before. | Step 6 | open |
 | N12 | When something we need to arrange is for more than one person, such as suits for the groom's father and brothers or make-up for both mothers, I want to name everyone it's for on that one item, so that it still comes up when I look for what any of them needs. | Step 7 | open |
 | N13 | When I take back something I've just done, but one of us has changed that same thing since (a payment recorded on it, a file moved again), I want to be told that it can't be taken back and why, with what's there now kept as it is, so that nothing either of us did is quietly lost. | Step 7 | open |
+| N14 | When I ask to remove or delete something and the planner can't finish it, I want to be told that nothing was changed and be able to try again, so that I never wonder whether it happened. | Step 7 | open |
