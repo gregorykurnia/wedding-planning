@@ -2,7 +2,7 @@
 
 What this wedding planner lets a couple do, written as user needs. It says nothing about how anything looks or where anything sits.
 
-Version 1.1 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
+Version 1.2 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
 
 The order of the groups, and of the details listed inside a story, is arbitrary. It implies nothing about how things are arranged, reached or sequenced.
 
@@ -34,16 +34,16 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **F9** When judging a vendor's reputation, I want to record their public review rating and how many people reviewed them, so that I can compare reputation fairly.
 - **F10** When a vendor moves forward or drops out, I want to record how far they have got, from first noted through inquiring and considering to chosen and done, or ruled out, with ruled-out vendors clearly distinguishable, so that I know who's still in play.
 - **F11** When a vendor stands out, I want to mark them as one I'm especially keen on and then see only those, so that I can get back to them fast.
-- **F12** When looking through vendors, I want to focus on any one vendor category (knowing how many vendors each has), search by name, notes or contact person, and order by name, category, stage, rating or number of reviewers, so that I can find and rank vendors quickly.
+- **F12** When looking through vendors, I want to focus on any one vendor category, search by name, notes or contact person, and order by name, category, stage, rating or number of reviewers, so that I can find and rank vendors quickly.
 - **F13** When a vendor sends a quote, contract or brochure, I want to attach files to that vendor and open them later, so that everything about them is in one place.
 - **F14** When our needs don't fit the standard vendor categories, I want to add our own categories that my partner sees too, so that every vendor has a sensible home. Categories have unique names (up to 40 characters), and "other" remains the catch-all.
 - **F15** When I want to work on vendor data elsewhere, I want to export the vendors I'm currently looking at to a spreadsheet file, so that I can share or analyse them.
 
 ### Narrow down to finalists
 - **F16** When I narrow a category down to finalists, I want to copy a vendor into a shortlist that brings across their chosen price, their other price options, contact, reviews, next action, notes and files, so that I can compare finalists in detail without changing the vendor's own record.
-- **F17** When a finalist offers several packages, I want to record each package with its own price, what's included, review counts, next action, notes and files, and choose whether to see a finalist on its own or together with its packages, so that I can compare offers within and across finalists.
+- **F17** When a finalist offers several packages, I want to record each package with its own price, what's included, review counts, next action, notes and files, so that I can compare offers within and across finalists.
 - **F18** When comparing finalists, I want to record their review count and Instagram follower count, so that I can weigh popularity.
-- **F19** When comparing finalists, I want to focus on the finalists of one vendor category (knowing how many each has) and order them by category, so that I compare like with like.
+- **F19** When comparing finalists, I want to focus on the finalists of one vendor category and order them by category, so that I compare like with like.
 - **F20** When a vendor gets new files, I want the matching finalist to pick them up automatically, so that I never chase documents in two places.
 - **F21** When I add a finalist from scratch, I want to do it without first creating a vendor, so that quick comparisons stay quick.
 
@@ -54,7 +54,7 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **B3** For each confirmed booking, I want to record what it is (name, booking category), the money (total price, amount actually paid so far, who is paying, the funder), what happens next (the date the next payment or step is due, and what that step is) and attached contracts or receipts, so that each commitment is fully documented.
 - **B4** When a booking is paid in instalments or has add-ons, I want to split it into parts, each with its own name, price, amount paid, funder, due date, next step and files, with the booking's totals worked out from its parts, so that staged payments add up correctly.
 - **B5** When reviewing money, I want to see the total committed, the real amount paid and what remains to pay, with overspending clearly flagged, so that I know our true position.
-- **B6** When payments are coming due, I want to see every unpaid amount that has a due date, in date order and distinguishing overdue, due today, due within 7 days and later, with how much remains and who pays, so that we never miss a payment.
+- **B6** When payments are coming due, I want to see every unpaid amount that has a due date, in date order, with anything overdue or due soon impossible to miss, and with how much remains and who pays, so that we never miss a payment.
 - **B7** When we split costs between funders (a fixed set of four people or families, plus "not yet assigned"), I want to see for each funder how much they've paid and how much they still have to pay, and how much paid spending has no funder yet, so that everyone knows their share.
 - **B8** When weighing an option we haven't committed to, I want to record what-if items (also splittable into parts) with their own totals kept apart from real bookings, plus a projected total of real and what-if combined, so that I can see the effect before deciding.
 - **B9** When reviewing bookings or what-if items, I want to order them by any field, with a booking's parts always staying with their booking, so that I can scan by price, date or funder.
@@ -78,9 +78,9 @@ One running record of every wedding item and who provides it, kept independently
 - **T2** For each item, I want to mark whether it's confirmed, which events it's for (any of reception, holy matrimony, sangjit, pre-wedding) and who it's for (general, groom, bride, or a specific family member: groom's father, mother, brother or sister, bride's father, mother or brothers), so that I can see the picture per event and per person.
 - **T3** When some items need attention soon, I want to mark them as the ones to work on next and have them stand out, so that I know where to focus.
 - **T4** When reviewing, I want to see how many items there are, how many are confirmed and how many are marked to work on next, so that I can gauge progress.
-- **T5** When looking for items, I want to search item and vendor names and narrow by confirmed, event, person and work-on-next (several events or people at once), see how many of the total match, and clear everything in one step, so that I can focus on one slice.
+- **T5** When looking for items, I want to search item and vendor names and narrow by confirmed, event, person and work-on-next (several events or people at once), and get back to everything easily, so that I can focus on one slice.
 - **T6** When reviewing, I want to order by any field and return to my own order, so that I can sort temporarily without losing my arrangement.
-- **T7** When organising, I want to arrange items in my own order, and insert one or several new items directly after any item, or many (1 to 50) at the end, so that related items sit together.
+- **T7** When organising, I want to arrange items in my own order and add new items exactly where they belong, one or many at a time, so that related items sit together.
 - **T8** When I remove an item, I want to confirm first and be able to undo for a few seconds, putting it back exactly where it was, so that a slip doesn't lose work.
 - **T9** When a change fails to save, I want to keep what I typed and retry, so that I don't retype it.
 - **T10** When the tracker is used for the first time, I want it to start with our known items already filled in, so that we don't enter them by hand.
@@ -89,10 +89,10 @@ One running record of every wedding item and who provides it, kept independently
 
 - **S1** When I arrange something, I want to record it with a title, kind (vendor or organiser call, appointment, payment, deadline, other), all-day or a start time, an optional end time, a related venue or vendor, a location or call link, and notes, so that I know when and where.
 - **S2** When something happens or is called off, I want to mark it completed, cancelled or back to scheduled, edit it, or delete it after confirming, so that the schedule stays truthful.
-- **S3** When I look ahead, I want one combined agenda of my own events, payments due from bookings and tasks with due dates, grouped as overdue, today, tomorrow, next 7 days and later, with completed and cancelled items available on demand, so that I see everything time-bound in one place.
+- **S3** When I look ahead, I want one combined agenda of my own events, payments due from bookings and tasks with due dates, in time order with anything overdue or imminent standing out, with completed and cancelled items available on demand, so that I see everything time-bound in one place.
 - **S4** When I want the bigger picture, I want a month-at-a-glance calendar, to move to earlier or later days or months, and to return to today, so that I can spot busy weeks.
 - **S5** When looking for something, I want to search everything with a date and narrow it to one kind (payments, tasks, calls, appointments, deadlines, my own events, other), so that I find it fast.
-- **S6** When glancing at what's coming, I want counts of overdue, today and next-7-days items, so that I know how urgent things are.
+- **S6** When glancing at what's coming, I want to grasp at once how much is overdue or imminent, so that I know how urgent things are.
 - **S7** When an agenda item comes from a booking or a task, I want to jump to where that booking or task lives, so that I can act on it.
 - **S8** When I need to do something, I want to record a task with a title, due date, notes and smaller steps (each with its own due date and done state), and see how many steps are done, so that big jobs become manageable.
 - **S9** When working through tasks, I want open tasks ordered by due date (undated last), finished tasks out of my way but recoverable, and to delete tasks, so that I focus on what remains.

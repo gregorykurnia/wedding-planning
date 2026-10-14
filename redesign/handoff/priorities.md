@@ -59,10 +59,10 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | T10 | Start pre-filled with known items | |
 | S1 | Record an appointment, call, payment or deadline | |
 | S2 | Complete, cancel, edit or delete an event | |
-| S3 | Combined agenda grouped by urgency | |
+| S3 | Combined agenda of everything dated | |
 | S4 | Month calendar and stepping through time | |
 | S5 | Search and narrow the schedule | |
-| S6 | Overdue, today and next-7-days counts | |
+| S6 | How much is overdue or imminent | |
 | S7 | Jump to the related booking or task | |
 | S8 | Tasks with steps and due dates | |
 | S9 | Open tasks by due date; finished tasks kept apart | |
