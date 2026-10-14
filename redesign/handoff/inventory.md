@@ -2,7 +2,7 @@
 
 What this wedding planner lets a couple do, written as user needs. It says nothing about how anything looks or where anything sits.
 
-Version 1.3 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
+Version 1.4 (2026-10-14). IDs are stable: new stories get new IDs, removed stories keep their ID marked *dropped*.
 
 The order of the groups, and of the details listed inside a story, is arbitrary. It implies nothing about how things are arranged, reached or sequenced.
 
@@ -56,21 +56,22 @@ Money is always Indonesian rupiah, shown without decimals. Dates are local to th
 - **B1** When I choose a vendor or book a venue, I want it to become a confirmed booking automatically, so that I never enter it twice.
 - **B2** When I've booked something that never went through comparison, I want to add a confirmed booking directly, so that every commitment is tracked.
 - **B3** For each confirmed booking, I want to record what it is (name, booking category), the money (total price, amount actually paid so far, who is paying, the funder), what happens next (the date the next payment or step is due, and what that step is) and attached contracts or receipts, so that each commitment is fully documented.
-- **B4** When a booking is paid in instalments or has add-ons, I want to split it into parts, each with its own name, price, amount paid, funder, due date, next step and files, with the booking's totals worked out from its parts, so that staged payments add up correctly.
+- **B4** When a booking is paid in instalments or has add-ons, I want to split it into parts, each with its own name, price, amount paid, funder, due date, next step and files, with the booking's totals worked out from its parts and its funders and due dates taken from its parts, so that staged payments add up correctly.
 - **B5** When reviewing money, I want to see the total committed, the real amount paid and what remains to pay, with overspending clearly flagged, so that I know our true position.
 - **B6** When payments are coming due, I want to see every unpaid amount that has a due date, in date order, with anything overdue or due soon impossible to miss, and with how much remains and who pays, so that we never miss a payment.
-- **B7** When we split costs between funders (the people or families who share them, plus "not yet assigned"), I want to see for each funder how much they've paid and how much they still have to pay, and how much paid spending has no funder yet, so that everyone knows their share.
+- **B7** When we split costs between funders (the people or families who share them, plus "not yet assigned"), I want to see for each funder how much they've paid and how much they still have to pay, and the same two figures for costs with no funder yet, with "still to pay" worked out the same way everywhere, so that everyone knows their share.
 - **B8** When weighing an option we haven't committed to, I want to record what-if items (also splittable into parts) with their own totals kept apart from real bookings, plus a projected total of real and what-if combined, so that I can see the effect before deciding.
 - **B9** When reviewing bookings or what-if items, I want to order them by any field, with a booking's parts always staying with their booking, so that I can scan by price, date or funder.
 - **B10** When weighing an option, I want to say who would pay for each what-if item or part, so that I can see who would carry the cost before deciding.
 - **B11** When the people or families who share our costs change, I want to add, rename or remove them, so that every payment is split the way it really is.
+- **B12** When a venue or vendor is booked, I want the agreed price kept separate from the estimate I noted while comparing, so that I can see how the estimate turned out.
 
 ## G. Guests
 
 - **G1** When building the guest roster, I want to record who each guest is (name, country, and how they're connected to us, in free text, for example "groom's uncle" or "bride's colleague"), their invitation (which event they're invited to, whether the invitation has been sent, and their RSVP: waiting, attending or not attending), and what to plan for them (how many plus-ones they bring and any food notes), so that I have everything needed for invites and catering.
 - **G2** When inviting, I want to choose from these event options for each guest: both events, the ceremony only, the reception only, "reception if space allows" and "unsure, living abroad", so that I can plan two differently sized events.
-- **G3** When working out numbers, I want to see the total headcount including plus-ones, how many guests are attending, the attending headcount including plus-ones, and headcounts for both events, the reception and the ceremony, so that I can brief venues and caterers.
-- **G4** When balancing the two sides among guests invited to both events, I want to see headcounts for the groom's family, the bride's family and the groom's business connections, worked out from how each guest is connected, so that I can balance the two sides.
+- **G3** When working out numbers, I want to see the total headcount including plus-ones, how many people are attending (plus-ones included), and headcounts for both events, the reception (including "reception if space allows") and the ceremony, with guests who are unsure counted on their own, so that I can brief venues and caterers.
+- **G4** When balancing the two sides among guests invited to both events, I want to see headcounts for the groom's family, the bride's family, and each side's business connections, worked out from how each guest is connected, with friends counted as family and every guest counted on one side only, so that I can balance the two sides.
 - **G5** When looking for guests, I want to search by name, connection, country or food notes, narrow by RSVP and by event, and order by any field, so that I can answer questions like "who hasn't replied?".
 - **G6** When I add guests, I want each one to keep a stable number based on when they were added, so that we can refer to guests unambiguously.
 - **G7** When I remove a guest, I want to confirm first (being reminded of their plus-ones) and be able to undo for a few seconds, so that a slip doesn't lose anyone.
@@ -143,11 +144,11 @@ One running record of every wedding item and who provides it, kept independently
 - **Failure:** data couldn't load, a change couldn't be saved (keep my input and offer a retry), an upload failed or was too large.
 - **Signing in:** in progress, wrong credentials, account not allowed.
 - **Not connected:** the backend isn't set up yet (a demonstration mode with no data and saving disabled).
-- **Offline:** things I've opened before can still be reached without a connection, but show no data.
+- **Offline:** the planner needs a connection, and says so plainly rather than looking empty.
 - **Live-synced:** a partner's change arrives while I'm looking.
 - **Saving:** document autosave states (unsaved, saving, saved, failed).
 - **Uploading:** progress per file, and compressing a large PDF.
-- **Confirming:** before destructive actions, and a short undo window after removing guests or tracker items.
+- **Confirming:** before destructive actions, and a short undo window after removing anything.
 - **Overdue / due soon:** payments, events and tasks past or near their date.
 - **Overspent:** paid more than the price, so remaining is negative.
 - **Busy:** an action in progress (adding, removing, restoring).

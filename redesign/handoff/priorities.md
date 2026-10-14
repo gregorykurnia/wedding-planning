@@ -56,6 +56,7 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | B9 | Order bookings by any field | weekly |
 | B10 | Who would pay for each what-if item | |
 | B11 | Add, rename or remove funders | |
+| B12 | Agreed price kept apart from the estimate | |
 | G1 | Guest details | rare |
 | G2 | Which event each guest is invited to | rare |
 | G3 | Headcounts | rare |

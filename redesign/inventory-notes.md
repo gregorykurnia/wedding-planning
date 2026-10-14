@@ -369,13 +369,13 @@ Result: no story rewrites needed. Step 1b is complete.
 
 ## §9 Decisions made in Step 2
 
-Recorded 2026-10-14. §4 is decided below and applied to `inventory.md` and `priorities.md`. §5 isn't decided yet, so the Step 2 checklist item in `redesign/redesign-plan.md` stays unticked.
+Recorded 2026-10-14. §4 and §5 are decided below and applied to `inventory.md` and `priorities.md`. The Step 2 checklist item stays unticked until the blank rows in `priorities.md` are tagged.
 
 **What the drops mean.** They shape the rebuilt app. The current app is unchanged, apart from item 18. Dropped features keep their Firestore data: nothing is deleted from the database.
 
 **Inventory version 1.3.** Added O6, B10, B11, F22, F23, F24, R12, R13, R14 and S10. Marked F2 dropped. B7 no longer says "a fixed set of four" funders. F16 and F17 now say "next step" where they said "next action", as B3 already does. Added a Notifications state, and removed "photos" from the empty states.
 
-**`priorities.md`.** The owner's pass set it to FILLED, but the ten new rows are still blank (O6, F22–F24, B10, B11, S10, R12–R14), so they need tags. F2 is tagged `drop`, because you decided it. The F11, B3 and B7 short names now use the inventory wording, because the old ones reused current labels.
+**`priorities.md`.** The owner's pass set it to FILLED, but the ten new rows are still blank (O6, F22–F24, B10, B11, S10, R12–R14), so they need tags, as does B12 from §5. F2 is tagged `drop`, because you decided it. The F11, B3 and B7 short names now use the inventory wording, because the old ones reused current labels.
 
 ### §4 decisions
 
@@ -400,19 +400,27 @@ Recorded 2026-10-14. §4 is decided below and applied to `inventory.md` and `pri
 | 17 | Funders are editable (you). "Not yet assigned" stays a fixed fallback (my call). | B11; B7 |
 | 18 | Delete `public/music/README.md` (you). It points at `music-player.tsx`, which isn't in the code any more, and nothing refers to the folder. | Deleted in this commit. |
 
-### §5: your calls
+### §5 decisions
 
-§5 is still open. 27 items are plain bugs. The proposed default is to fix them in the rebuild with no behaviour change, and #1 counts every booked venue, as its note suggests. Nine items need your call. My recommendation is in brackets.
+The owner took every recommendation (2026-10-14). Inventory is now version 1.4.
 
-- **#3** A booking with sub-entries: its own funder and date still look editable but are ignored. [Make them read-only, since the parts carry them.]
-- **#4** Pending and Remaining disagree. [One definition, shown the same way everywhere, with Unassigned included.]
-- **#5** Keep the agreed price apart from the original estimate? [Yes.]
-- **#7** Guest events. [Reception Shortlist counts as reception. Unsure stays out of both totals and shows on its own.]
-- **#8** Family rules. [Take "friend" and "partner" out of the business words, add Bride Business Connections, and count a guest who names both sides once.]
-- **#9** "Attending" counts records, but the totals include plus-ones. [Count people, with plus-ones.]
-- **#18** To Do archive order. [Keep due-date order, since no completion date is stored.]
-- **#29** No undo for most deletes. [Undo for every delete, as guests and tracker items already have. Confirm is already a need.]
-- **#35** Offline reading. [Not a need for now. The Offline state in `inventory.md` ("show no data") describes today's build, so it changes with your answer.]
+**Fixed in the rebuild, no behaviour change intended (Agent C):** #2, #6, #10–#17, #19–#28, #30–#32, #34, #36 and #37. #22 is moot, because venue photos are dropped. #1: every booked venue counts in totals and reminders (B1 already covers it). #6: the booking category follows the vendor category, with one shared reminder rule.
+
+**Owner calls, and where they land:**
+
+| # | Decision | Lands in |
+|---|---|---|
+| 3 | A booking split into parts takes its funder and due date from the parts. The parent's own values are read-only. | B4 |
+| 4 | One definition of "still to pay", used everywhere, and the unassigned bucket shows both paid and still to pay. | B7 |
+| 5 | Keep the agreed price apart from the comparison estimate. Today, editing a venue's total on Confirmed overwrites `budgetEstimate`. | B12 (new) |
+| 7 | Reception Shortlist counts towards the reception, not the matrimony. Unsure (Abroad) is counted on its own. | G3 |
+| 8 | Take "friend(s)" and "partner(s)" out of the business words, add Bride Business Connections, and count a guest who names both sides on one side only. Which side wins is Agent C's call: the first side named in the connection text. | G4 |
+| 9 | "Attending" counts people, including plus-ones. | G3 |
+| 18 | Keep the To Do archive in due-date order, since no completion date is stored. | No story changed. |
+| 29 | Every delete gets a confirm and the short undo, not only guests and tracker items. | Confirming state |
+| 35 | Offline reading is not a need. The planner says plainly that it needs a connection. Fix the service worker's caching (#35) in the rebuild. | Offline state |
+
+**#33 (security)** is decided as "fix outside the redesign", but the rules change itself still needs the owner's go-ahead (below).
 
 ### Security, outside the redesign
 
