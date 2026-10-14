@@ -1,6 +1,6 @@
 # Veil design guide
 
-**Draft, not frozen.** Stage 5 adds a version and date once the owner approves. This guide describes the prototype as it is. The owner answered the first 19 open questions on 2026-10-14; those answers are now built into the prototype and written into this guide (see [Decided](#decided-2026-10-14)). Anything still undecided is under [Open questions](#10-open-questions) and in `decisions.md`.
+**v1.0 (2026-10-14).** Frozen: approved by the owner on 2026-10-14. Later changes bump the version and are logged in `decisions.md`. This guide describes the prototype as it is. All 23 open questions are decided (see [Decided](#decided-2026-10-14) and [Decided at the freeze](#decided-2026-10-14-at-the-freeze)).
 
 - Tokens: `tokens.css`, beside this file.
 - Prototype: `prototype/`. Every URL below is relative to that folder. Open `index.html` for the list of screens. The dashed "Prototype" tab on each screen switches states (`?state=…`) and swaps in the stress data (`?stress`). The tab itself is not part of the design.
@@ -193,7 +193,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 |---|---|---|---|---|
 | Booking entry `.entry` | Bookings | Name; "Category, paid by Greg and Bella's family, Rp 2.000.000 over the estimate" | Price; status: "Rp X to pay" / "Rp X late" (rose) / "Paid in full" (sage) / "Overpaid by Rp X" (rose) / "No price yet" | Parts with leaders |
 | What-if entry | What-if | Name; "Category, would be paid by …" | Price in *italic* | Parts with *dashed* leaders; Edit · Remove |
-| Vendor row `.vrow` | Vendors, Venues | Keen heart + name; category and contact | Preferred price, or "No price yet"; "**4.8** from 120 reviews" or "No rating yet" | Stage thread · WhatsApp · "On the shortlist" · "3 price options" |
+| Vendor row `.vrow` | Vendors, Venues | Keen heart + name; category and contact | Preferred price, or "No price yet"; "**4,8** from 120 reviews" or "No rating yet" | Stage thread · WhatsApp · "On the shortlist" · "3 price options" |
 | Due row `.due` | Payments due | Date card | Amount; Record payment | Meta: "3 days late, paid by Greg. Pay the balance" |
 | Document row `.drow` | Documents | Title, one-line extract | "2 hours ago by Bella" | |
 | File row `.frow` | Files | 48px icon (thumbnail, file type in gold italic, or envelope) and name; category in gold, then description or path | Size and date, or a chevron for a folder | |
@@ -232,7 +232,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - **idle:** no border
   - **hover:** a blush wash
   - **focus:** white with an edge and a soft rose halo
-  - **placeholder:** muted ink at 80% ("What has to happen next", "No estimate", "Rp 0")
+  - **placeholder:** full muted ink, italic where it carries meaning ("What has to happen next", "No estimate", "Rp 0")
 - **Types:**
   - text
   - money (`.num`, numeric keyboard, reformatted to "Rp 12.500.000" on blur)
@@ -320,7 +320,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - The guest sheet (add or edit)
 - **Editing sheets** (save as you go, end with Done): an event, a guest, a what-if item, a venue, a price option, a package, a file's details. Status actions in the event sheet (Mark completed, Cancel it, Back to scheduled) still act at once and close the sheet with an undo toast.
 - **A change that didn't save** (`?state=savefail` on a screen with editing sheets): the save line turns rose and reads "Couldn't save. What you typed is kept. **Try again**". Everything typed stays in the fields; Try again applies it and runs "Saving → Saved".
-- **Still different:** the document's link sheet ("Edit link") keeps **Save** (open question 22).
+- **Still different:** the document's link sheet ("Edit link") keeps **Save** (decision 22).
 
 ### 4.15 Confirm (`Veil.confirm`)
 - A sheet with:
@@ -331,7 +331,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - The body always names the consequence:
   - "It leaves the budget, with its 3 parts, Rp 50.000.000 of recorded payments and 2 files. You can undo for a few seconds."
   - "Bella was bringing 2 plus-ones, so the headcount drops by 3. You can undo for a few seconds."
-  - "It's removed from storage for good, freeing 2.4 MB. It can't be brought back."
+  - "It's removed from storage for good, freeing 2,4 MB. It can't be brought back."
 - **Inline confirm** (inside the categories sheet): the row turns into "Remove **Florist**? Its 4 vendors move to Other." with "Keep it" and a rose "Remove category".
 - **Blocked** (a folder with contents): "Empty Catering first", "It still holds 4 files and 1 folder. Move or delete them, then delete the folder.", and **OK**.
 
@@ -368,16 +368,16 @@ Loading reproduces the hero's shape:
 All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader line, "Loading the budget". `main` gets `aria-busy="true"`.
 
 ### 4.20 File grid and upload queue
-- **File grid on a record** (`.files`, booking, vendor, finalist, venue): tiles 150px or wider. Each tile has a 96px thumbnail (an image cropped to fill, or the file type in gold italic), the name, and the size ("2.4 MB, from the vendor"). The last tile is a dashed drop tile: "**Add files** Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you." It opens the same **upload sheet** as Files, filing into a folder named after the record: "Into Files › Vendors › Kebun Bunga Atelier" (or Bookings, Venues, Shortlist).
-  - **Uploading tiles:** a thin champagne bar, and "Uploading, 1.3 of 2.1 MB" or "Shrinking from 14.2 MB to fit under 10 MB".
+- **File grid on a record** (`.files`, booking, vendor, finalist, venue): tiles 150px or wider. Each tile has a 96px thumbnail (an image cropped to fill, or the file type in gold italic), the name, and the size ("2,4 MB, from the vendor"). The last tile is a dashed drop tile: "**Add files** Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you." It opens the same **upload sheet** as Files, filing into a folder named after the record: "Into Files › Vendors › Kebun Bunga Atelier" (or Bookings, Venues, Shortlist).
+  - **Uploading tiles:** a thin champagne bar, and "Uploading, 1.3 of 2,1 MB" or "Shrinking from 14,2 MB to fit under 10 MB".
   - **Bad tiles** (`.file.bad`, rose): "Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk." or "Upload failed. **Try again**". The wording is the same here and in the upload sheet.
 - **Upload sheet** (Files and every record; shared in `assets/app.js`):
   - a dashed **drop zone** that turns rose-washed while dragging over it: "**Drop files here** or choose files"
   - a **queue** with one entry per file, holding the name, the size or status, a progress bar, and fields for Name, Category (with suggestions or your own) and Description
   - **Status per file:**
     - "Uploading, 62%"
-    - "Shrinking from 14.2 MB to fit under 10 MB"
-    - "Uploaded" (sage) or "Uploaded, shrunk to 7.8 MB"
+    - "Shrinking from 14,2 MB to fit under 10 MB"
+    - "Uploaded" (sage) or "Uploaded, shrunk to 7,8 MB"
     - "Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk." (rose)
     - "Upload failed. Try again" (rose)
     - "Not uploaded: demonstration mode"
@@ -624,7 +624,7 @@ The save line sits under the title.
 | Loading / Couldn't load / Offline | shared | |
 | Demonstration mode | `?state=demo` | "No bookings in demonstration mode" |
 | Bella's change arrives | `?state=sync` | figure updates, toast |
-| Stress | `booking.html?id=s-deep&stress` (and `&state=uploading`) | 85-character unbroken name wraps; 40 parts; 1 KB, 9.9 MB panorama and very tall images |
+| Stress | `booking.html?id=s-deep&stress` (and `&state=uploading`) | 85-character unbroken name wraps; 40 parts; 1 KB, 9,9 MB panorama and very tall images |
 | Split, remove part, remove booking | interaction | undo toasts; removing the booking shows "Villa Samaya Ubud was removed" in place, with undo |
 
 **Phone:** fields stack; parts open in place; file tiles go two across.
@@ -739,7 +739,7 @@ The save line sits under the title.
 ### 5.13 Shortlist: `shortlist.html` (F17–F19, F21)
 - "Shortlist", with "6 finalists in 4 categories", and the sub-navigation. Focus chips by category; Order by Category, Preferred price, Reviews, Instagram followers, with Ascending / Descending (price starts low to high, reviews and followers high to low).
 - **Finalist cards** in a grid, 280px or wider, grouped by category:
-  - name, then "120 reviews, 12.3k followers"
+  - name, then "120 reviews, 12,3k followers"
   - up to 4 packages with leaders, the one you're leaning towards in gold italic serif, as on the detail screens
   - "Next: …" at the foot
   - booked cards fade to 70% and carry a gold flag, "Now a booking"
@@ -751,7 +751,7 @@ The save line sits under the title.
 | Nothing on the shortlist | `?state=empty` | "Nothing on the shortlist yet", quiet **Go to Vendors** + **Add a finalist** |
 | Adding a finalist | `?state=adding` | sheet: Name, Category, First package, Its price |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
-| Stress | `?stress` | 83 finalists; 30 packages ("and 26 more packages"); 98.8M followers |
+| Stress | `?stress` | 83 finalists; 30 packages ("and 26 more packages"); 98,8M followers |
 
 **Phone:** one card per row.
 
@@ -829,7 +829,7 @@ The save line sits under the title.
 **Phone:** the toolbar is docked at the bottom; the table bar sits above it; the save state floats at the top; the page runs full-bleed; the add button is hidden.
 
 ### 5.18 Files: `files.html` (R8–R14)
-- **At the top level:** "Files", with "14 files, 33.1 MB in all", the sub-navigation, then **Upload files** and **New folder**.
+- **At the top level:** "Files", with "14 files, 33,1 MB in all", the sub-navigation, then **Upload files** and **New folder**.
 - **Inside a folder:** the path, the folder's name, "2 folders, 5 files", and Rename · Move · Delete folder (rose).
 - **Search:** "Find a file in any folder, by name or description". Then Folders, then Files (newest first).
 
@@ -845,7 +845,7 @@ The save line sits under the title.
 | Moving a folder | `?state=moving` | move sheet, "With everything inside it: 4 files and 1 folder." |
 | Three levels down | `files.html?folder=old` (and `&state=file`) | path "Files › … › …" |
 | Delete a folder with things in it | interaction | "Empty Catering first…" |
-| Delete a file | interaction | "…freeing 2.4 MB. It can't be brought back." **Delete for good**; toast without undo |
+| Delete a file | interaction | "…freeing 2,4 MB. It can't be brought back." **Delete for good**; toast without undo |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella uploads a file | `?state=sync` | "Bella uploaded Bella's dress fitting.jpg" |
 | Stress | `files.html?folder=big&stress`; `files.html?stress&state=deep` | 3.000 photos and 40 folders in one folder; 30 levels deep with the middle folded; long and non-Latin names; 1 KB, 10 MB, very wide and very tall images |
@@ -1040,7 +1040,7 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Due text:** "3 days late" · "due today" · "due tomorrow" · "due in 4 days" (up to 14) · "due Friday 30 October". In past sentences: "was due Monday 12 October".
 - **Agenda days:** "Today, Wednesday 14 October" · "Tomorrow, Thursday 15 October" · then the long date. Times are 24-hour ("10:00"). All-day events say "All day".
 - **Edited times:** "just now" · "12 min ago" · "2 hours ago" · "yesterday" · then the short date, plus "by Bella" when it was the partner.
-- **Counts** group thousands with dots, like money: "1.206 bookings", "Showing 60 of 1.507". Decimals still use a point ("4.8" ratings, "33.1 MB", "98.8M followers"); see open question 20.
+- **Counts** group thousands with dots, like money: "1.206 bookings", "Showing 60 of 1.507". Decimals take a comma, so a dot always means thousands: "4,8" ratings, "33,1 MB", "98,8M followers" (decision 20).
 - **The wedding date** drives every countdown (O5). "Time gone" runs from the day the planner was set up (decision, stage 2 session 8).
 
 ### 6.12 Notifications (S10)
@@ -1116,9 +1116,7 @@ Where a rule isn't obvious, a hint says it once, quietly:
 ### Contrast
 Every pair is listed with its ratio at the foot of `tokens.css`. Ink and muted ink pass AA everywhere, including the strongest point of the glow (4.76:1). Rose text uses `--accent-attention-text` (5.68:1 on white, 4.85:1 on its wash). Gold text uses `--accent-gold-text` on white (5.02:1) and `--accent-gold-text-on-tint` on champagne tints (4.97:1 or more). "Not attending" is white on muted ink (5.68:1). Idle controls use `--color-control-outline` (3.34:1) and payment dots gold ink (5.02:1).
 
-**Still below AA** (open question 21):
-- informative placeholders ("Vendor not known yet", "No estimate"): 3.70:1
-- the "Untitled" document title placeholder in decor ink: 2.77:1
+**Placeholders** use full muted ink (5,68:1), including the document's "*Untitled*" (decision 21).
 
 Threads and stage steps are below 3:1 too, but they always repeat their meaning in words.
 
@@ -1191,20 +1189,16 @@ How the prototype handles extremes (`?stress` on any screen).
 - **Huge numbers:**
   - a 13-digit price
   - "Rp 9.876.543.210.000.000" figures, which shrink on every screen and never wrap
-  - 98.765.432 followers shown as "98.8M"; 12.345 as "12.3k"
+  - 98.765.432 followers shown as "98,8M"; 12.345 as "12,3k"
   - "Up to 125.000 guests"
-- **Tiny and huge images:** a 2 × 2 px image, a 6000 × 400 panorama and a 300 × 5000 portrait. Tiles crop to fill (`object-fit: cover`); the file preview fits whole (`contain`). File sizes from 1 KB to 10.0 MB.
+- **Tiny and huge images:** a 2 × 2 px image, a 6000 × 400 panorama and a 300 × 5000 portrait. Tiles crop to fill (`object-fit: cover`); the file preview fits whole (`contain`). File sizes from 1 KB to 10,0 MB.
 - **Long account email** wraps in the menu and in settings.
 
 ---
 
 ## 10. Open questions
 
-Still undecided. Each is also logged in `decisions.md` under stage 3.
-
-20. **Decimals.** Thousands now use dots everywhere ("1.206 bookings"), but decimals still use a point: ratings ("4.8 from 96 reviews"), file sizes ("33.1 MB") and big counts ("98.8M followers"). With dots for thousands, the Indonesian habit is a comma for decimals ("4,8", "33,1 MB"), which document tables already accept ("2,5"). Suggestion: commas for decimals, so a dot always means thousands.
-21. **Faint placeholders.** Placeholders that carry meaning ("Vendor not known yet", "No estimate") are 3.70:1, and the document's "*Untitled*" placeholder 2.77:1, below AA. Suggestion: full muted ink for placeholders (5.68:1), keeping the italic.
-22. **The link sheet still has Save.** In a document, "Edit link" changes the link only when you press Save; every other sheet that edits now saves as you go. Suggestion: keep Save here, because a half-typed web address shouldn't replace a working link while you type. Or make it save as you go like the rest.
+None. Questions 1–23 are all decided; see below. New questions go here and in `decisions.md`, and a change to anything decided bumps the version.
 
 ### Decided (2026-10-14)
 The owner's answers to the first 19 questions. All are built into the prototype and described above.
@@ -1228,3 +1222,12 @@ The owner's answers to the first 19 questions. All are built into the prototype 
 17. **Undo on every rename.**
 18. The schedule's "Payments" filter **includes your own Payment events**.
 19. The shortlist's Order by has **Ascending / Descending**.
+
+### Decided (2026-10-14, at the freeze)
+The owner took the designer's suggestion on each of the last four.
+
+20. **Decimals take a comma** and a dot always means thousands: ratings "4,8", file sizes "33,1 MB" and "9,9 MB", big counts "98,8M followers" and "12,3k". Document tables already accepted "2,5".
+21. **Placeholders use full muted ink** (5,68:1), keeping the italic: "Vendor not known yet", "No estimate", the document's "*Untitled*" and the faint field placeholders.
+22. **The link sheet keeps Save.** "Edit link" changes the link only when you press Save, so a half-typed address never replaces a working link. It is the one editing sheet that does.
+23. **F16 and "next step".** A finalist has its own next step; a vendor has none, so copying to the shortlist starts the finalist's blank. The inventory's F16 wording ("next step") is the owner's to change on their side.
+

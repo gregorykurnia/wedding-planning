@@ -40,7 +40,7 @@ function row(v, showCat) {
     <span class="first"><button class="keen" aria-pressed="${v.keen}" aria-label="Keen on ${V.esc(v.name)}" data-keen="${v.id}">${V.HEART}</button><a class="name" dir="auto" href="${V.href("vendor.html", { id: v.id })}">${V.esc(v.name)}</a></span>
     ${p ? `<span class="price num">${V.rp(p.price)}</span>` : `<span class="price none">No price yet</span>`}
     <span class="meta">${[showCat ? V.esc(v.category) : "", v.contact ? V.esc(v.contact) : ""].filter(Boolean).join(", ") || "&nbsp;"}</span>
-    <span class="right">${v.rating != null ? `<span class="rating"><b>${v.rating.toFixed(1)}</b> from ${V.plural(v.reviewers || 0, "review")}</span>` : "No rating yet"}</span>
+    <span class="right">${v.rating != null ? `<span class="rating"><b>${V.dec(v.rating.toFixed(1))}</b> from ${V.plural(v.reviewers || 0, "review")}</span>` : "No rating yet"}</span>
     <div class="foot">${V.stageThread(v.stage, d.STAGES)}${V.waLink(v.phone)}${f ? `<a class="link" href="${V.href("finalist.html", { id: f.id })}">On the shortlist</a>` : ""}${p && v.prices.length > 1 ? `<span class="meta">${V.plural(v.prices.length, "price option")}</span>` : ""}</div>
   </div></li>`;
 }

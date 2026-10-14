@@ -214,7 +214,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
 .field input:hover, .field select:hover, .field textarea:hover { background: rgba(253,232,238,.35); }
 .field input:focus, .field select:focus, .field textarea:focus { background: #fff; box-shadow: inset 0 0 0 1px var(--line-2), 0 0 0 3px rgba(217,70,111,.12); }
-.field input::placeholder, .field textarea::placeholder { color: var(--ink-2); opacity: .8; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-2); opacity: 1; }
 .field .hint { grid-column: 2; font-size: 13.5px; color: var(--ink-2); margin-top: -4px; }
 .field .static { font-size: 16.5px; }
 .field.failed input, .field.failed select { box-shadow: inset 0 0 0 1px var(--rose); background: #fff; }

@@ -331,12 +331,14 @@
   /* ---------- shared pieces for records with files, stages and phone numbers ---------- */
   const FILE_EXT = { pdf: "pdf", doc: "doc", sheet: "xls" };
   const uploadTargets = [];
-  const mbText = (mb) => mb >= 1024 ? `${(Math.round(mb / 102.4) / 10)} GB` : mb < 1 ? `${Math.max(1, Math.round(mb * 1024))} KB` : `${(Math.round(mb * 10) / 10).toString()} MB`;
+  /* A dot always means thousands; decimals take a comma ("9,9 MB", "4,8"). */
+  const dec = (x) => String(x).replace(".", ",");
+  const mbText = (mb) => mb >= 1024 ? `${dec(Math.round(mb / 102.4) / 10)} GB` : mb < 1 ? `${Math.max(1, Math.round(mb * 1024))} KB` : `${dec(Math.round(mb * 10) / 10)} MB`;
   function filesGrid(files, uploading, where) {
     const key = uploadTargets.push({ files, where: where || "Files" }) - 1;
     const fl = files.map((f) => `<li><a class="file" href="#" data-later="1"><div class="thumb">${f.type === "image" ? `<img src="${f.src}" alt="">` : `<span class="ext">${FILE_EXT[f.type] || "file"}</span>`}</div><div class="fn" dir="auto">${esc(f.name)}</div><div class="fs">${f.size}${f.fromVendor ? ", from the vendor" : ""}</div></a></li>`).join("");
-    const up = uploading ? `<li><div class="file"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Signed contract scan.pdf</div><div class="fs">Shrinking from 14.2 MB to fit under 10 MB</div><div class="bar"><span style="width:35%"></span></div></div></li>
-      <li><div class="file"><div class="thumb"><span class="ext">jpg</span></div><div class="fn">Transfer receipt.jpg</div><div class="fs">Uploading, 1.3 of 2.1 MB</div><div class="bar"><span style="width:62%"></span></div></div></li>
+    const up = uploading ? `<li><div class="file"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Signed contract scan.pdf</div><div class="fs">Shrinking from 14,2 MB to fit under 10 MB</div><div class="bar"><span style="width:35%"></span></div></div></li>
+      <li><div class="file"><div class="thumb"><span class="ext">jpg</span></div><div class="fn">Transfer receipt.jpg</div><div class="fs">Uploading, 1.3 of 2,1 MB</div><div class="bar"><span style="width:62%"></span></div></div></li>
       <li><div class="file bad"><div class="thumb"><span class="ext">zip</span></div><div class="fn">All photos.zip</div><div class="fs">Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.</div></div></li>
       <li><div class="file bad"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Invoice.pdf</div><div class="fs">Upload failed. <button class="link rose">Try again</button></div></div></li>` : "";
     return `<ul class="files">${fl}${up}<li><button class="file drop" data-upload="${key}"><span><b>Add files</b>Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you.</span></button></li></ul>`;
@@ -406,7 +408,7 @@
   function linkify(text) {
     return esc(text).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (u) => `<a class="link" href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "")}</a>`).replace(/\n/g, "<br>");
   }
-  const compact = (n) => n == null ? "" : n >= 1e6 ? Math.round(n / 1e5) / 10 + "M" : n >= 1e4 ? Math.round(n / 100) / 10 + "k" : n.toLocaleString("id-ID");
+  const compact = (n) => n == null ? "" : n >= 1e6 ? dec(Math.round(n / 1e5) / 10) + "M" : n >= 1e4 ? dec(Math.round(n / 100) / 10) + "k" : n.toLocaleString("id-ID");
   const SUBNAVS = {
     vendors: ["Vendors, shortlist and venues", [["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]]],
     records: ["Documents and files", [["documents.html", "Documents"], ["files.html", "Files"]]],
@@ -430,5 +432,5 @@
 
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, longFig, n0, group, names, mbText, uploadSheet, sheetSaveLine, sheetSaver, demoLine, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
     funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
-    filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
+    dec, filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

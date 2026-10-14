@@ -80,7 +80,7 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
 - 3 new open questions (20–22: decimals, faint placeholders, the link sheet's Save).
 - Next: the owner answers 20–22 and reviews in the browser. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).
 
-## Stage 4: coverage (done, awaiting the owner's review)
+## Stage 4: coverage (done)
 - 2026-10-14, fresh session (Sonnet 5.5 High): `coverage.md` maps every story (O, F, B, G, T, S, R, A) and every inventory state to the screen and URL that covers it, plus the states that don't apply (dark, read-only, shared link, bulk selection) and the stress data per screen.
 - The audit read each screen's code against the inventory. Gaps found and fixed in the prototype and the guide:
   - what-if items can now be split into parts (B8, B10), with a category
@@ -91,3 +91,8 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - `index.html` lists every state of every screen; two stress details corrected
 - Nothing was seen rendered (the browser is blocked here), so the owner should click through `prototype/index.html`.
 - Next: the owner reviews `coverage.md`, answers questions 20–22 in decisions.md and the open point on F16, then stage 5 (freeze: version and date at the top of the guide).
+## Stage 5: freeze (done)
+- 2026-10-14: the owner approved the design guide. `design-guide.md` and `tokens.css` are **v1.0 (2026-10-14)**.
+- Questions 20–23 were decided with the designer's suggestions: decimal commas and full-ink placeholders (built into the prototype), the link sheet keeps Save, a finalist keeps its own next step.
+- From here on: a change to the guide bumps the version and is logged in `decisions.md`. New stories arrive through `needs.md` (open needs).
+

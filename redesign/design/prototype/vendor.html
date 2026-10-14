@@ -83,7 +83,7 @@ function render(main) {
       <div class="field"><label for="c-contact">Contact person</label><input id="c-contact" data-k="contact" dir="auto" value="${V.esc(v.contact)}" placeholder="Who you talk to"></div>
       <div class="field"><label for="c-phone">Phone</label><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><input id="c-phone" data-k="phone" type="tel" value="${V.esc(v.phone)}" placeholder="0812 3456 7890" style="flex:1;min-width:160px">${V.waLink(v.phone, "Message on WhatsApp")}</div></div>
       <div class="field"><label for="c-cat">Category</label><select id="c-cat" data-k="category">${d.vendorCats.map((c) => `<option ${c.name === v.category ? "selected" : ""}>${V.esc(c.name)}</option>`).join("")}</select></div>
-      <div class="field ${failed ? "failed" : ""}"><label for="c-rating">Review rating</label><input id="c-rating" data-k="rating" inputmode="decimal" value="${failed ? "4,9" : v.rating ?? ""}" placeholder="For example, 4.8">
+      <div class="field ${failed ? "failed" : ""}"><label for="c-rating">Review rating</label><input id="c-rating" data-k="rating" inputmode="decimal" value="${failed ? "4,9" : v.rating == null ? "" : V.dec(v.rating)}" placeholder="For example, 4,8">
         ${failed ? `<p class="err">Couldn't save this change. What you typed is kept. <button class="link rose" data-retry>Try again</button></p>` : `<p class="hint">Out of 5, from their public reviews</p>`}</div>
       <div class="field"><label for="c-rev">Number of reviewers</label><input id="c-rev" data-k="reviewers" inputmode="numeric" value="${v.reviewers ?? ""}" placeholder="How many people reviewed them"></div>
     </div>

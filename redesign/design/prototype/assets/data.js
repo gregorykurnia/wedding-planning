@@ -27,7 +27,7 @@
     bookings: [
       { id: "samaya", name: "Villa Samaya Ubud", category: "Venue", origin: { from: "venue", on: "2026-07-02" }, estimate: 380 * M,
         files: [
-          { name: "Villa Samaya contract.pdf", size: "2.4 MB", type: "pdf" },
+          { name: "Villa Samaya contract.pdf", size: "2,4 MB", type: "pdf" },
           { name: "Deposit receipt.jpg", size: "640 KB", type: "image", src: img(300, 200, "#f4ead7", "#fce6ec") },
           { name: "Second instalment receipt.jpg", size: "702 KB", type: "image", src: img(300, 200, "#fde8ee", "#efe2c9") },
         ],
@@ -37,14 +37,14 @@
           { id: "p3", name: "Final payment", price: 110 * M, paid: 0, funder: "bfam", due: "2027-01-15", step: "Final payment" },
         ] },
       { id: "lestari", name: "Dapur Lestari Catering", category: "Catering", origin: { from: "vendor", on: "2026-08-11" }, estimate: 150 * M,
-        files: [{ name: "Catering quote, 400 guests.pdf", size: "1.1 MB", type: "pdf" }],
+        files: [{ name: "Catering quote, 400 guests.pdf", size: "1,1 MB", type: "pdf" }],
         parts: [
           { id: "p1", name: "Deposit", price: 50 * M, paid: 50 * M, funder: "gfam", due: null, step: "" },
           { id: "p2", name: "Second instalment", price: 55.5 * M, paid: 0, funder: "gfam", due: "2026-10-18", step: "Second instalment" },
           { id: "p3", name: "Final payment", price: 55.5 * M, paid: 0, funder: "gfam", due: "2027-02-20", step: "Final payment and confirm the headcount" },
         ] },
       { id: "rana", name: "Studio Rana", category: "Photo and video", origin: { from: "vendor", on: "2026-06-20" }, estimate: 90 * M,
-        files: [{ name: "Studio Rana package B.pdf", size: "3.8 MB", type: "pdf" }],
+        files: [{ name: "Studio Rana package B.pdf", size: "3,8 MB", type: "pdf" }],
         parts: [
           { id: "p1", name: "Booking fee", price: 34 * M, paid: 34 * M, funder: "greg", due: null, step: "" },
           { id: "p2", name: "Final payment", price: 34 * M, paid: 0, funder: "greg", due: "2026-10-09", step: "Final payment" },
@@ -53,7 +53,7 @@
       { id: "ayu", name: "Maison Ayu Bridal", category: "Bride's attire", origin: { from: "vendor", on: "2026-07-28" }, estimate: 65 * M,
         price: 72 * M, paid: 36 * M, funder: "bella", due: "2026-10-30", step: "Pay the balance at the second fitting", files: [] },
       { id: "lumiere", name: "Lumière Décor", category: "Decoration", origin: { from: "vendor", on: "2026-09-02" }, estimate: 110 * M,
-        files: [{ name: "Moodboard.png", size: "4.2 MB", type: "image", src: img(300, 200, "#fce6ec", "#ffffff") }],
+        files: [{ name: "Moodboard.png", size: "4,2 MB", type: "image", src: img(300, 200, "#fce6ec", "#ffffff") }],
         parts: [
           { id: "p1", name: "Deposit", price: 30 * M, paid: 30 * M, funder: "bfam", due: null, step: "" },
           { id: "p2", name: "Balance", price: 68 * M, paid: 0, funder: "bfam", due: "2027-03-01", step: "Pay the balance and confirm the flower list" },
@@ -114,9 +114,9 @@
     { id: "s-deep", name: "PemberkatanNikahDanResepsiDiGerejaKatedralSantaPerawanMariaDiangkatKeSurgaJakartaPusat", category: "Venue", origin: { from: "venue", on: "2026-03-01" }, estimate: 480 * M,
       files: [
         { name: "tiny.png", size: "1 KB", type: "image", src: img(2, 2, "#d9466f", "#c6a466") },
-        { name: "panorama-of-the-whole-cathedral-nave-from-the-choir-loft.jpg", size: "9.9 MB", type: "image", src: img(6000, 400, "#f4ead7", "#d9466f") },
-        { name: "tall-portrait.jpg", size: "8.7 MB", type: "image", src: img(300, 5000, "#fce6ec", "#33262c") },
-        { name: "Kontrak_Final_Revisi_Ketiga_DITANDATANGANI_kedua_belah_pihak_2026.pdf", size: "10.0 MB", type: "pdf" },
+        { name: "panorama-of-the-whole-cathedral-nave-from-the-choir-loft.jpg", size: "9,9 MB", type: "image", src: img(6000, 400, "#f4ead7", "#d9466f") },
+        { name: "tall-portrait.jpg", size: "8,7 MB", type: "image", src: img(300, 5000, "#fce6ec", "#33262c") },
+        { name: "Kontrak_Final_Revisi_Ketiga_DITANDATANGANI_kedua_belah_pihak_2026.pdf", size: "10,0 MB", type: "pdf" },
         { name: "婚礼合同.docx", size: "88 KB", type: "doc" },
         { name: "budget.xlsx", size: "52 KB", type: "sheet" },
       ],

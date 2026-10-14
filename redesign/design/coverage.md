@@ -42,7 +42,7 @@ All 6 + 23 + 12 + 8 + 10 + 10 + 14 + 6 stories are covered. F2 is dropped in the
 | F14 | `vendors.html?state=categories` and `?state=taken`: new category, 40-character limit, "Other" stays | |
 | F15 | `vendors.html` "Export … to a spreadsheet": a real CSV of the vendors in view, with a toast | |
 | F23 | The categories sheet: Rename, Remove (vendors move to Other), both with undo | |
-| F16 | `vendor.html` **Copy to the shortlist** (prices, contact, reviews, notes, files); the card flips to "On the shortlist" | See "For the owner" 2 (question 23): vendors have no next-step field to copy. |
+| F16 | `vendor.html` **Copy to the shortlist** (prices, contact, reviews, notes, files); the card flips to "On the shortlist" | Decision 23: vendors have no next-step field, so the finalist starts with none. |
 | F17 | `finalist.html?id=f-kebun`: packages with price, what's included, reviews, next step, notes and files (files are now real, see §4) | |
 | F18 | `finalist.html` Contact and popularity (reviews, Instagram followers); shown on the cards | |
 | F19 | `shortlist.html` focus chips and Order by Category, with Ascending/Descending | |
@@ -121,7 +121,7 @@ All 6 + 23 + 12 + 8 + 10 + 10 + 14 + 6 stories are covered. F2 is dropped in the
 | R10 | Per file: a name, an optional category (suggestions or your own), a description | |
 | R11 | `files.html?state=file`: size, date, name, category, description, Move, Delete for good; **Open** and **Download** are buttons only | Opening a file is the device's job; the prototype says "The prototype stops here". |
 | R12 | `files.html?state=moving`: "With everything inside it: 4 files and 1 folder" | |
-| R13 | Delete for good: "freeing 2.4 MB. It can't be brought back." No undo | |
+| R13 | Delete for good: "freeing 2,4 MB. It can't be brought back." No undo | |
 | R14 | `files.html` search by name or description in every folder; `?state=noresults` | |
 
 ### A. Access and work anywhere
@@ -163,7 +163,7 @@ All 6 + 23 + 12 + 8 + 10 + 10 + 14 + 6 stories are covered. F2 is dropped in the
 | Offline | `?state=offline` on every screen, `signin.html?state=offline`, `doc.html?state=offline-edit` |
 | Live-synced | `?state=sync`, see below |
 | Saving | The document autosave states (R5); the save line on detail screens and sheets |
-| Uploading | Progress per file, "Shrinking from 14.2 MB to fit under 10 MB" |
+| Uploading | Progress per file, "Shrinking from 14,2 MB to fit under 10 MB" |
 | Confirming | Every remove asks first; undo toast for 6 seconds. Permanent: documents and files |
 | Overdue / due soon | Payments (late in rose, due soon in gold), events, tasks (`schedule.html`, `payments.html`, `tasks.html`, `booking.html?id=rana`) |
 | Overspent | `booking.html?id=kirana`, the budget and funders ("Overpaid by", rose) |
@@ -205,21 +205,21 @@ Each was found in the code and fixed in the prototype, then added to the design 
 - The CSV export and the file picker are real; the reminder itself is not sent.
 
 ## 6. For the owner
-1. **Questions 20, 21 and 22 in decisions.md are still open** (decimal commas, faint placeholders, the link sheet's Save). They don't change coverage, but answer them before the freeze.
-2. **F16 and next step.** The inventory says copying to the shortlist brings across "next step", but a vendor (F6) has no next-step field, so the finalist starts with none and has its own. Say if vendors should get a next step, or if F16's wording should drop it.
-3. **Screens I could not look at.** Please click through every state in `prototype/index.html` on a phone width and a desktop width before approving, since this audit read code and did not see pixels.
-4. **A vendor or finalist detail and settings have no "change arrives" state.** They follow the pattern. Say if you want one anyway.
+Questions 20–23 were decided at the freeze (2026-10-14): decimals take a comma, placeholders use full muted ink, the link sheet keeps Save, and a finalist keeps its own next step. Nothing is open.
+1. **Screens I could not look at.** This audit read code and did not see pixels. Click through `prototype/index.html` at a phone width and a desktop width.
+2. **Change F16 on your side.** The inventory's F16 still lists "next step" among the things copied from a vendor; a vendor has none (decision 23).
+3. **A vendor or finalist detail and settings have no "change arrives" state.** They follow the pattern. Say if you want one.
 
 ## 7. Stress data, by screen
 Every screen takes `?stress` except sign-in and the add-a-booking form (nothing to stress). Counts checked against the data files.
 | Screen | Stress |
 |---|---|
 | Overview, settings | Two long names (about 33 characters each), a very long email, thousands in the doors |
-| Budget, bookings, booking, payments | 1.206 bookings, 1.507 payments due, a 40-part booking, a 13-digit price, 1 KB and 9.9 MB images, an 85-character unbroken name, CJK and Arabic names |
+| Budget, bookings, booking, payments | 1.206 bookings, 1.507 payments due, a 40-part booking, a 13-digit price, 1 KB and 9,9 MB images, an 85-character unbroken name, CJK and Arabic names |
 | Who pays | 15 funders: a 90-character family name, an unbroken name, Chinese, Arabic, Thai and Japanese names |
 | What-if | 301 items, a 25-part item |
 | Vendors, a vendor | 2.004 vendors, 37 categories (some near the 40-character limit, some in other scripts), 30 price options, a 600-character note with links |
-| Shortlist, a finalist | 83 finalists, 30 packages, 98.8M followers |
+| Shortlist, a finalist | 83 finalists, 30 packages, 98,8M followers |
 | Venues | 302 venues, a 125.000-guest venue with a 13-digit cost |
 | Documents, a document | 1.504 documents, untitled and non-Latin titles, 40 long paragraphs, a 50 × 8 table with growing totals, lists four levels deep |
 | Files | 3.000 files and 40 folders in one folder, 30 folders deep, long and non-Latin names, 1 KB and 10 MB files |

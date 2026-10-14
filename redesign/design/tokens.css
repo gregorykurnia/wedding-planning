@@ -1,5 +1,5 @@
 /* =====================================================================
-   Veil design tokens
+   Veil design tokens, v1.0 (2026-10-14), frozen with design-guide.md
    Taken from the stage 2 prototype (prototype/assets/veil.css, editor.css,
    schedule.css and the per-screen <style> blocks). Light only: the brief
    says dark mode isn't needed (decisions.md, stage 2 session 1).
@@ -384,8 +384,8 @@
     5.77  --doc-ink-cornflower on white;  8.51  --doc-ink-plum on white
     3.49  --accent-attention on --glow-blush               decorative ♡ on the wedding day (desktop only; the cell label says it)
     5.68  white on --color-text-muted (RSVP "Not attending" pressed)
-    3.70  placeholder (--color-text-muted at 80%) on white  FAILS where the placeholder carries meaning ("Vendor not known yet"); open question 21
-    2.77  --color-decor on white                           never used for words, except the document title placeholder "Untitled" (open question 21)
+    5.68  placeholder (--color-text-muted, full strength, italic) on white  passes AA (decision 21)
+    2.77  --color-decor on white                           never used for words
     2.36  --accent-thread on white                         used for the "&" in the names (decorative)
 
    Non-text marks (need 3:1 when they carry meaning)

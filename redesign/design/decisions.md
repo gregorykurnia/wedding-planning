@@ -158,6 +158,16 @@ All 19 were answered in one message. Each one is carried into the prototype, `de
 - **Files on parts and packages use the shared upload sheet**, filing into a folder named after the record and the part or package, like every other record (question 16).
 - **Not changed:** the studio process asks for dark mode, read-only, shared-link and bulk-selection states. None applies (brief and inventory); they are listed as not applicable in `coverage.md`.
 
-### Open point for the owner (stage 4)
+### Open point for the owner (stage 4), decided at the freeze
 23. **F16 and "next step".** The inventory says copying a vendor to the shortlist brings across its next step, but a vendor (F6) has no next-step field, so the finalist starts with none and has its own. Suggest keeping it that way and dropping "next step" from F16's list. Or give vendors a next step too; say which.
+
+## Stage 5
+
+### Freeze (2026-10-14)
+- **The owner approved the design guide** and took the designer's suggestion on questions 20–23.
+- **20 Decimals take a comma.** Built into the prototype (`dec()` in `assets/app.js`): ratings "4,8", sizes "9,9 MB", "98,8M", "12,3k". Data strings changed too.
+- **21 Placeholders use full muted ink**, keeping the italic (field, item vendor and document title placeholders now at full strength; 5,68:1).
+- **22 The link sheet keeps Save**, so a half-typed address never replaces a working link. No change.
+- **23 A finalist keeps its own next step.** No change; the owner can drop "next step" from F16 in the inventory on their side.
+- **`design-guide.md` and `tokens.css` are v1.0 (2026-10-14).** Any later change bumps the version and is logged here. The open needs process (`needs.md`) is the way new stories arrive.
 

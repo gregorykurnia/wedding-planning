@@ -49,7 +49,7 @@ if (S === "emptyfolder" && !d.folders.find((x) => x.id === "newf")) d.folders.pu
 const ui = { q: S === "noresults" ? "passport" : "", hits: 200 };
 const FOLDER = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="3" y="7" width="20" height="14" rx="2"/><path d="M3 9l10 7 10-7"/></svg>';
 const EXT = { pdf: "pdf", doc: "doc", sheet: "xls", zip: "zip" };
-const size = (mb) => mb >= 1024 ? `${(Math.round(mb / 102.4) / 10)} GB` : mb < 1 ? `${Math.max(1, Math.round(mb * 1024))} KB` : `${(Math.round(mb * 10) / 10).toString()} MB`;
+const size = (mb) => V.mbText(mb);
 const fold = (id) => d.folders.find((x) => x.id === id);
 const kids = (id) => d.folders.filter((x) => x.parent === id).sort((a, z) => a.name.localeCompare(z.name));
 const filesIn = (id) => d.files.filter((x) => x.folder === id);
