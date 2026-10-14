@@ -1,11 +1,20 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Providers } from "@/veil/shell/providers";
 
-// Root layout of the new UI. Bare on purpose: no styles, fonts or providers
-// until Phase 2, so nothing from the old UI can leak in.
+export const metadata: Metadata = {
+  title: "Our wedding planner",
+};
+
+// Root layout of the new UI. Nothing from the old UI is imported here, so no
+// styles or providers leak across (a separate root layout means a full page
+// load between the two).
 export default function NewUiLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
