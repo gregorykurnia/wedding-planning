@@ -930,7 +930,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
-| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | | [ ] |
+| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost` | [x] |
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | | [ ] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | | [ ] |
@@ -1147,7 +1147,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** each state renders from a fake status in the gallery.
 
 #### Task 2.6: Sheets, confirm and toasts · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t1, commit in the change log · real cost to log from `/cost`). `useSheets().open(node)`, `useSheet()`, `Sheet`, `SheetActions`, `useConfirm()` and `useToast()` are live in `providers.tsx`. A sheet opened over a sheet stacks (the one underneath stays mounted, hidden). The confirm's `run` is the write: the action stays busy until it resolves, and a rejection keeps the sheet open with a provisional line (G14). A failed Undo goes back to Undo for another window (wording waits for N13). Create/edit sheet actions, the save line, inline confirm and blocked notice are Task 3.8. Demos at `/new/gallery/shell` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
 - **Read:** guide §4.14–§4.16, §6.2; prototype `assets/app.js` (`openSheet`, `closeSheet`, `confirm`, `toast`, `sheetSaver`, `demoLine`).
 - **Files:** `src/veil/shell/{sheet,confirm,toasts}.tsx` + module CSS.
 - **Do:** one sheet host, centred on desktop and a bottom sheet on a phone; focus in and back; Escape and scrim close; `confirm()` promise with the busy confirming button held until the write resolves; toasts stack, 6 s (9 s partner), Undo becomes "Restoring" until the restore resolves; layers per tokens.
@@ -1521,6 +1521,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G11 | **N11** | Owner decision §9.2 Q8. On Vercel Hobby the reminder job runs once a day, in the morning, within the hour. The event sheet offers "When it starts", "15 minutes", "1 hour", "1 day" and "1 week before" (guide §6.12); only the day-before and week-before ones can be delivered. Existing events may already store 60 minutes (the old default). | 4.20 (Remind us only), 6.2 | open |
 | G12 | **N12** | Owner decision §9.2 Q4. The report from migration 1.11 (run on production 2026-10-14) found 4 wedding items with more than one person in `persons[]`: "Make Up Artist Groom and Bride Moms" (Groom Mom, Bride Mom), "Groom Dad & Brothers Suit" (Groom Dad, Groom Brother), "Groom Mom & Sister Dress" (Groom Mom, Groom Sister) and "Bride Dad & Brothers Suit" (Bride Dad, Bride Brothers). The design gives each item one person, so these can't be shown or filtered as they are. | 4.23 | open |
 | G13 | **N13** | Raised by the Phase 1 review (B1, S1). Undo refuses with `WriteError` code `changed`, writing nothing, when the fields it would put back were changed since, by you or the partner (`patchWithUndo` and `removeAddedElement` in `src/lib/data/undo.ts`). Example: Split a booking, Bella records a payment on the Balance, then Undo. Guide §6.2 says what undo does when it works but not what the toast says when it can't. | 2.6 (toast host), 3.8 | open |
+| G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | open |
 
 ### 9.2 Questions for the owner: decided
 
