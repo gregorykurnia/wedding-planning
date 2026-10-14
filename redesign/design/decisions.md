@@ -89,3 +89,4 @@ What this means for the prototype: keep every screen to one main figure or job w
 
 ### Owner feedback (2026-10-14)
 - **No repeated page name in the top bar.** The owner pointed out that the small page name at the top repeats the big title ("Documents" above "Documents"). The top bar now shows only your names and Menu. The small label stays on the budget screen alone, because that screen has no big title: its one figure is what's still to pay.
+- **The budget screen gets a title too** (owner's choice, 2026-10-14). The lone "Budget" label in the top bar is gone, so the top bar is the same on every screen: your names and Menu. The budget screen now opens with a "Budget" title above "Still to pay", like every other screen.

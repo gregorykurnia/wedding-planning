@@ -17,14 +17,14 @@
 <script>
 const V = Veil;
 V.init({
-  where: "Budget", label: "Budget", noun: "the budget",
+  where: "Budget", noun: "the budget",
   states: [["empty", "Nothing booked yet"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
   render(main) {
     const d = V.data, B = V.budget(), dues = V.dues();
     const add = `<a class="btn add-fab" href="${V.href("booking-new.html")}">Add booking</a>`;
 
     if (!d.bookings.length) {
-      main.innerHTML = `<div class="message">${V.ICON.knot}<h1>Nothing booked yet</h1>
+      main.innerHTML = `<section class="hero"><h1>Budget</h1></section><div class="message inline">${V.ICON.knot}<h1>Nothing booked yet</h1>
         <p>When you choose a vendor or book a venue, it lands here as a booking with its price and payments. You can also add one yourself.</p>
         <div class="acts"><a class="btn" href="${V.href("booking-new.html")}">Add booking</a>${d.whatifs.length ? "" : `<a class="btn quiet" href="${V.href("whatif.html")}">Try a what-if item</a>`}</div></div>
         <p class="days"><b>${V.daysLeft()}</b> days until ${V.dateLong(d.wedding)}</p>`;
@@ -55,7 +55,8 @@ V.init({
     const wi = V.whatif();
 
     main.innerHTML = `<section class="hero">
-        <p class="kicker">${B.left < 0 ? "Paid beyond what's committed" : "Still to pay"}</p>
+        <h1>Budget</h1>
+        <p class="kicker" style="margin-top:30px">${B.left < 0 ? "Paid beyond what's committed" : "Still to pay"}</p>
         <p class="figure num ${B.left < 0 ? "late" : ""}" style="${String(B.left).length > 13 ? "font-size:clamp(40px,6vw,88px)" : ""}">${V.fig(B.left)}</p>
         <p class="context">of <b class="num">${V.rp(B.price)}</b> committed, with <b class="num">${V.rp(B.paid)}</b> already paid</p>
         <div class="thread" role="img" aria-label="${pct}% paid"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% paid</span><span>${100 - pct}% to go</span></span></div>
