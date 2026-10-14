@@ -495,9 +495,9 @@ You approve the plan before Step 7.
 - [x] Step 5b: design guide approved, versioned and imported (design-guide v1.0, 2026-10-14)
 
 **Implementation plan (sees repo and approved design)**
-- [ ] Step 6: `ui-implementation-plan.md` with component map, screen map and coverage matrix
-- [ ] Reverse coverage complete; gaps sent through the design-gap loop
-- [ ] §7.0 model per task, chosen from the global table; calibration trial planned
+- [x] Step 6: `ui-implementation-plan.md` with component map, screen map and coverage matrix (2026-10-14)
+- [ ] Reverse coverage complete; gaps sent through the design-gap loop (reverse coverage done 2026-10-14; gaps G1–G9 recorded in §9.1 and written as N1–N9 in `needs.md`, banned-word scan clean; `studio.sh enter`, designing and import still to do)
+- [x] §7.0 model per task, chosen from the global table; calibration trial planned (2026-10-14: 81 tasks, about $83; trial on Task 4.9)
 - [ ] Plan approved
 
 **Rebuild**

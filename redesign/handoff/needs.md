@@ -1,4 +1,13 @@
-Open needs: none
+Open needs: N1–N9
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
+| N1 | When I install the planner on my phone or computer, or have it open in a browser, I want it to carry its own name, mark and colours wherever the device shows it, so that I can tell it apart from everything else at a glance. | Step 6 | open |
+| N2 | When I follow an address in the planner that leads nowhere, or something goes wrong that the planner didn't expect, I want to be told plainly what happened and given a way back to somewhere familiar, so that I'm never stuck. | Step 6 | open |
+| N3 | When either of us signs in, I want the planner to know which of our two names belongs to whom, so that news of my partner's changes names the right person, and my own changes from my other phone or computer are never reported as theirs. | Step 6 | open |
+| N4 | When I start signing in with Google and the Google sign-in window is closed, blocked by the browser or fails before I finish, I want to be told what happened and be able to try again, so that I'm not left waiting with nothing happening. | Step 6 | open |
+| N5 | When I export our vendors to a spreadsheet file, I want the file to hold the details we keep about each vendor, named the way the planner names them, so that it's ready to share or analyse without tidying. | Step 6 | open |
+| N6 | When the phone or computer I'm using can't receive reminders, either until the planner is installed on it or not at all, I want to be told so and what would make reminders work, so that I never count on a reminder that won't arrive. | Step 6 | open |
+| N7 | When the wedding day arrives, and in the weeks after it while we settle the last payments, I want the countdown and the overall picture to make sense for that moment, so that the planner still feels right on the day and afterwards. | Step 6 | open |
+| N8 | When the planner doesn't know the day something happened, such as the day a booking was made or the day a task was finished, I want what it does know to read naturally, so that it never shows a wrong or made-up date. | Step 6 | open |
+| N9 | When I add or change something with a date and leave out what it needs (a title or a date), or give it an end before its start, I want to be told what to fix while keeping what I typed, so that nothing with a date goes missing. | Step 6 | open |
