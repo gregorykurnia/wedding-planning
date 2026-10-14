@@ -24,7 +24,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | Terminal 1 | Terminal 2 | Terminal 3 |
 |---|---|---|
 | **Phase 2: shell** | | |
-| [ ] 2.3 Auth and providers · Opus 5.5 Medium | [ ] 2.1 Tokens · Haiku 5.5 Max | [ ] Studio window: design gaps N1–N13 · Sonnet 5.5 High (the owner runs it) |
+| [ ] 2.3 Auth and providers · Opus 5.5 Medium | [ ] 2.1 Tokens · Haiku 5.5 Max | [ ] Studio window: design gaps N1–N13 · Opus 5.5 High, since N1 and N2 add new screens (the owner runs it) |
 | [ ] 2.6 Sheets and toasts · Sonnet 5.5 High | [ ] 2.2 Icons · Haiku 5.5 xHigh | [ ] 6.1 Service worker (after 2.3) · Opus 5.5 High |
 | [ ] 2.7 Partner changes · Sonnet 5.5 High | [ ] 2.4 Top bar · Haiku 5.5 Max | [ ] 6.3 Delete for good · Opus 5.5 High |
 | — | [ ] 2.5 Screen states · Haiku 5.5 Max | [ ] 6.7 Old-names check · Haiku 5.5 Max |
