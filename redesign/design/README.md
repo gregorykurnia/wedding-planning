@@ -13,7 +13,7 @@
 - Same mock budget as round 1.
 - 2026-10-14: the owner chose **D, Veil** (reasons in decisions.md).
 
-## Stage 2: full prototype (in progress)
+## Stage 2: full prototype (done)
 Open `prototype/index.html` in a browser: it lists every screen and state. The dashed "Prototype" tab on each screen switches states and the stress data (`?state=…`, `?stress`).
 
 - 2026-10-14, session 1: **budget group** (B1–B12, plus B6, S6 and the payment side of O2).
@@ -62,3 +62,11 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - `settings.html`: your two names (O6) and the wedding date (O5), who can open the planner and signing out (A5), reminders on this device in all three permission states (S10), and how to install on iPhone and Android (A3).
   - Live updates (A2) are shown on every screen with a "…'s change arrives" state. Phone and computer layouts (A4) and saving as you go (A6) run through every screen.
 - **Stage 2 now covers every group in the inventory.** Next, after the owner's review: stage 3, the design guide and tokens. The coverage audit (stage 4) should then check this in a fresh session.
+
+## Stage 3: design guide (draft written, awaiting the owner's review)
+- 2026-10-14: `tokens.css` and `design-guide.md` written from the prototype as it stands.
+  - `tokens.css`: colour, type families, scale and weights, spacing, layout widths, radii, shadows and rings, glows, motion, breakpoints and layers, named by role, with the prototype's names in brackets and a contrast table for every text/background pair used.
+  - `design-guide.md`: principles, how to use the tokens, the shell, 31 components with variants and states, every screen × state with its URL and phone/desktop differences, patterns (saving, undo, partner changes, demonstration mode, offline, loading, empty vs no results, ordering, money, formulas, dates), copy and tone, accessibility and stress data.
+  - 19 open questions where screens disagree or fall short (also in decisions.md, stage 3). Nothing in the prototype was changed.
+- Light only. Not frozen or versioned; that's stage 5, after the owner's approval.
+- Next: the owner answers the open questions. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).

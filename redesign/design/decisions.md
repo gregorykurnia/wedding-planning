@@ -90,3 +90,32 @@ What this means for the prototype: keep every screen to one main figure or job w
 ### Owner feedback (2026-10-14)
 - **No repeated page name in the top bar.** The owner pointed out that the small page name at the top repeats the big title ("Documents" above "Documents"). The top bar now shows only your names and Menu. The small label stays on the budget screen alone, because that screen has no big title: its one figure is what's still to pay.
 - **The budget screen gets a title too** (owner's choice, 2026-10-14). The lone "Budget" label in the top bar is gone, so the top bar is the same on every screen: your names and Menu. The budget screen now opens with a "Budget" title above "Still to pay", like every other screen.
+
+## Stage 3
+
+### Design guide and tokens (2026-10-14)
+- **The guide describes the prototype as it is.** Where screens disagree, nothing was changed; each disagreement is listed below and in `design-guide.md` §10, for the owner to decide.
+- **Light only**, as in stage 2. The guide and `tokens.css` have no dark tokens.
+- **Tokens are named by role** (`--color-text`, `--accent-attention`, `--text-row`…), with the prototype's names in brackets. Two values are marked PROPOSED and apply only if the owner agrees: `--accent-gold-text-on-tint` (question 6) and `--color-control-outline` (question 14).
+- **Not frozen.** No version or date yet; that's stage 5.
+
+### Open questions for the owner (stage 3)
+1. **Preferred package mark:** gold italic on vendor and finalist screens, a rose ♡ on shortlist cards. Suggest gold italic everywhere.
+2. **Save button in sheets:** screens save as you go, but the event, guest, what-if, venue, price-option and package sheets need Save, and Cancel/Close discards. Suggest those sheets save as you go and end with Done, as the file sheet does.
+3. **Demonstration mode:** some screens disable "add" up front, others disable only inside the sheet, and items' "Start with common items" still fills the list. Suggest one rule: open the sheet, disable only the final button.
+4. **"Show 100 more" vs "Show more":** suggest always giving the number.
+5. **"Not attending" colour** `#8d7b83` is off-palette and 3.97:1 with white. Suggest muted ink (5.68:1).
+6. **Gold text on champagne tints** (gold flags 4.21:1, demonstration banner 4.40:1) is below AA. Suggest `#7d5f27` on tints only.
+7. **Item column heads** say "Next" and "Done" for "Work on next" and "Confirmed". Suggest "Confirmed".
+8. **Who pays sub line** says "each family", but Greg and Bella are funders too (P2). Suggest "each of you and your families".
+9. **Overpaid:** a booking shows "Overpaid by" with a positive figure; the budget shows "Paid beyond what's committed" with a negative one, and puts the minus after "Rp". Suggest the booking's way, with the minus always first.
+10. **Very long figures:** the budget shrinks them, the other screens wrap them. Suggest shrinking everywhere.
+11. **Width jump:** Agenda and Month are wide, Tasks is narrow, though they share a sub-navigation. Suggest one width.
+12. **Number grouping:** money uses dots (Rp 1.206.000), counts use commas (1,206 bookings). Suggest dots for both, or confirm commas are fine.
+13. **Demonstration mode still shows "Greg & Bella" and the real countdown.** Suggest neutral placeholders.
+14. **Small or faint controls:** task tick (22px), step checkboxes (18px) and item event chips (~23px) are under 24px. Idle heart, handle and tick ring are 2.77:1, and payment dots 2.36:1. Month cells don't announce today, the selected day or the wedding day. Suggest the fixes listed in the guide.
+15. **Silent caps:** tasks stop at 200, file search at 200, with no "Show more". A long email in the menu doesn't wrap.
+16. **Files on a record** don't ask for name, category or description, unlike Files (R10), and word "too large" differently. Suggest the same upload sheet, filing into a folder named after the record.
+17. **Category rename and add have no undo,** unlike funder and folder renames. Suggest undo on all renames.
+18. **Schedule "Payments" filter** leaves out your own events of the kind "Payment". Suggest including them.
+19. **Shortlist ordering has no direction word,** unlike every other list. Add it, or confirm that's deliberate.
