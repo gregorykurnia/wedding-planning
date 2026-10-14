@@ -3,6 +3,7 @@
 import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
+import { registerServiceWorker } from "@/lib/register-sw";
 import { SheetHost } from "./sheet";
 import { ToastHost } from "./toasts";
 
@@ -32,13 +33,9 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 }
 
-/** Same `sw.js` as the old UI until Task 6.1 rewrites it. */
+/** The same worker serves both UIs. */
 function useServiceWorker() {
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
-  }, []);
+  useEffect(registerServiceWorker, []);
 }
 
 /** Only addresses inside the new UI are followed after sign-in. */

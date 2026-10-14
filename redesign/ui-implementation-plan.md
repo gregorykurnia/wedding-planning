@@ -858,7 +858,7 @@ Every place in the current code that produces something visible, from a full swe
 | `layout.tsx:15-30` title, description, apple web app title, icons; `viewport.themeColor` | **gap N1** | [ ] |
 | `src/app/favicon.ico`, `public/icon-192.png`, `icon-512.png`, `apple-icon.png` | **gap N1**; old files deleted in Phase 9 | [ ] |
 | leftover template SVGs in `public/` (`file`, `globe`, `next`, `vercel`, `window`) | delete in Phase 9 | [ ] |
-| `public/sw.js` network-first cache of every response | Task 6.1 (navigations network-only, push handlers) | [ ] |
+| `public/sw.js` network-first cache of every response | Task 6.1 (navigations network-only, push handlers) | [x] |
 | `sw-register.tsx` | kept as plumbing, moved to the new root layout | [x] |
 | no install prompt | `InstallCard`, settings steps, installed state (§4.30) | [ ] |
 | **Sync, offline, loading, empty, demo** | | |
@@ -925,7 +925,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | 4b33422; real cost to log from `/cost` | [x] |
 | 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | 24b1d15; ran on production 2026-10-14 after a backup and the owner's review of the dry run (492 writes, second run plans nothing, 615 existing records unchanged); report raised G12/N12; real cost to log from `/cost` | [x] |
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | 2026-10-14: first pass found 3 blockers (B1 in 1.10, B2 and B3 in 1.7) and 22 should-fix items. The blockers were fixed in the same session (Opus 5.5 High) and the re-review passed; see `redesign/reviews/phase-1-review.md`. The should-fix items are still open there. the owner compared the preview with production on 2026-10-14 (unchanged), so Phase 1 is done; Bella's sign-in check is still open; real cost to log from `/cost` | [x] |
-| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
+| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | 753f6c8; real cost to log from `/cost` | [x] |
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
@@ -981,9 +981,9 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
 | 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
 | 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | | [ ] |
+| 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | 054f9c7; checked in Chromium against `next start`. The installed-phone check waits for the first HTTPS deploy | [x] |
 | 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | was L ($3.64) before Q8 | [ ] |
-| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | | [ ] |
+| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | 47806c1, 14ef42e; the real-Cloudinary test passed once the server key had the Master Admin role (a Media Library User key can't delete). R13's screen comes with 4.19 | [x] |
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
@@ -1115,7 +1115,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 **Done when:** `/new` shows the top bar, the menu and a placeholder hero on the preview, styled only by tokens, at both widths; signing in, demo mode and an account that isn't allowed all route correctly; the review passes.
 
 #### Task 2.1: Tokens, base styles, fonts and style check · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 753f6c8 · real cost to log from `/cost`)
 - **Read:** §2.5, §2.6; guide §2, §8 (focus, reduced motion); `redesign/design/tokens.css`; prototype `assets/veil.css` (only `:root`, `html`, `body`, `a`, `button`, `input`, `.num`, `.sr`, `[tabindex]`, focus and reduced-motion rules).
 - **Files:** `src/veil/styles/{tokens.css,base.css,fonts.ts}`, `scripts/check-veil-styles.mjs`, `src/app/(veil)/new/layout.tsx` imports.
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
@@ -1389,7 +1389,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 **Done when:** the service worker, reminders, delete for good, manifest and icons, not-found and error screens, and the CSV export work on the preview; the old-names check exists and passes on `src/veil/**` and `src/app/(veil)/**`; the review passes.
 
 #### Task 6.1: Service worker · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 054f9c7 · real cost to log from `/cost`). 15 tests run `public/sw.js` in a fake worker scope. In Chromium against a production build on `localhost`: page loads never come from the worker (offline, a reload fails instead of showing an old page), only `/_next/static/` files are cached (fonts included), `wedding-planner-v2` is deleted, and a changed worker takes over on the next open. Pushes carry `{ title, body, url, tag }`; Task 6.2 sends the day's address as `url`. Still to check: an installed phone picking up a new deploy, which needs HTTPS (a phone on the Mac's Wi-Fi address can't run a worker), so on the first deploy that carries this worker.
 - **Risk:** a broken worker keeps serving a broken app to installed phones.
 - **Read:** §2.8; `progressive-web-apps.md`; `public/sw.js`; `inventory-notes.md` §5 #35.
 - **Do:** new `public/sw.js`: navigations network-only (offline shows the app's own offline state, never a cached page), cache only hashed `/_next/static/**` and the font files, delete `wedding-planner-v2` and older caches, `skipWaiting` with a versioned cache name, `push` (show the reminder) and `notificationclick` (focus or open the event's day). Same worker serves both UIs.
@@ -1404,7 +1404,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Done when:** on a preview with real keys, triggering the cron route by hand (`vercel crons` or a signed request) delivers a "1 day before" reminder once on a Mac and on an installed iPhone, and a second run sends nothing.
 
 #### Task 6.3: Delete for good · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 47806c1, 14ef42e · real cost to log from `/cost`). Emulator tests against a fake Cloudinary, plus a real run in the account's `wedding-planning-tests` folder: asset and document removed, a second call answers `already-gone`. The server key needs the Master Admin role. Cloudinary's API takes about 280 ms to connect from Jakarta, so `cloudinary.ts` raises Node's 250 ms per-address limit. R13 in §5 stays open until Task 4.19 puts the Delete for good sheet on Files. Production also needs `FIREBASE_SERVICE_ACCOUNT`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in Vercel (§9.2 Q9).
 - **Risk:** permanent data loss; a wrong id destroys the wrong file forever.
 - **Read:** §2.9; guide §6.2 (permanent); `src/lib/collections/wedding-files.ts`.
 - **Do:** `DELETE /api/files/[fileId]`: verify token and allowlist, read the `weddingFiles` doc server-side (never trust a client-sent public id), destroy that asset (legacy files: public id parsed from the URL, refuse if it can't be parsed), then delete the doc and remove the URL from any legacy `files[]` arrays; idempotent when the asset is already gone.

@@ -1,0 +1,398 @@
+/* =====================================================================
+   Veil design tokens, v1.0 (2026-10-14), frozen with design-guide.md
+   Taken from the stage 2 prototype (prototype/assets/veil.css, editor.css,
+   schedule.css and the per-screen <style> blocks). Light only: the brief
+   says dark mode isn't needed (decisions.md, stage 2 session 1).
+
+   Names describe the role, not the value. Where the prototype uses the
+   raw value, the old name or the selector is given in brackets so the
+   build can map one to the other.
+
+   Status: draft for the design guide (stage 3). Not frozen or versioned;
+   that happens at stage 5. The owner's answers to the stage 3 questions
+   (2026-10-14) are applied here and in the prototype.
+   ===================================================================== */
+
+:root {
+
+  /* ------------------------------------------------------------------
+     1. Colour: ink (text and lines)
+     ------------------------------------------------------------------ */
+  --color-text:              #33262c;  /* [--ink] all body text, titles, primary button and toast fill */
+  --color-text-strong-hover: #4a3740;  /* [.btn:hover] the primary button on hover */
+  --color-text-muted:        #74626a;  /* [--ink-2] meta lines, labels, hints, kickers */
+  --color-decor:             #a8979e;  /* [--ink-3] chevrons, dotted leaders, path separators. Never text, never a control's outline */
+  --color-rule:              #f0e2e6;  /* [--line] hairlines between rows and sections */
+  --color-edge:              #e6d3d9;  /* [--line-2] chip, quiet button, date card and input edges */
+  --color-card-edge:         #f3d9e0;  /* [.card, .paper] the blush edge of cards and the document page */
+  --color-card-edge-hover:   #ecc4cf;  /* [.dcard:hover] */
+  --color-alert-edge:        #f1b9c8;  /* late date card, wedding-day cell, pressed event chip, bad file tile */
+  --color-strike:            rgba(116,98,106,.45); /* ruled-out names (.ruled). Completed and cancelled use .5 */
+
+  /* ------------------------------------------------------------------
+     2. Colour: light (surfaces and glows)
+     ------------------------------------------------------------------ */
+  --surface-page:            #ffffff;
+  --glow-blush:              #fce6ec;  /* [--blush] the top-right glow; pressed event chip; wedding day */
+  --glow-champagne:          #f4ead7;  /* [--champagne-soft] the bottom-left glow; thread track; envelope folder */
+  --surface-card:            rgba(255,255,255,.84); /* [--paper] cards over the glow, with --blur-card */
+  --surface-sheet:           #ffffff;  /* sheets, dialogs, popovers, menus, file tiles, date cards */
+  --surface-petal:           #fdf6f8;  /* table title row, table bar, skeleton shine */
+  --surface-mist:            #fbf5f6;  /* file thumbnails, previews, code blocks */
+  --surface-warm:            #fffaf2;  /* worked-out totals, today in the month, a "work on next" row */
+  --surface-flag-calm:       #f6eef0;  /* [.flag.calm] a date flag that needs nothing yet */
+  --surface-banner:          rgba(244,234,215,.75); /* [.banner] demonstration mode, partner in the document */
+  --surface-note:            rgba(244,234,215,.6);  /* [.sorted-note] "Sorted for now" */
+  --surface-champagne-hover: #efe0c4;  /* [.nextcard a:hover] */
+  --surface-skeleton:        #f8eef1;  /* [.sk] skeleton base */
+  --surface-scrim:           rgba(51,38,44,.28);    /* behind sheets and dialogs */
+
+  /* Hover washes: blush at rising strength. Bigger targets get the lighter wash. */
+  --hover-row:    rgba(253,232,238,.30); /* list rows: ledger entry, document row, file row */
+  --hover-field:  rgba(253,232,238,.35); /* inline fields, doors */
+  --hover-input:  rgba(253,232,238,.40); /* item-row inputs and selects */
+  --hover-quiet:  rgba(253,232,238,.50); /* quiet buttons, the Google button */
+  --hover-tool:   rgba(253,232,238,.60); /* toolbar buttons, row menu, handles */
+
+  /* ------------------------------------------------------------------
+     3. Colour: accents. Each has one job.
+     ------------------------------------------------------------------ */
+  /* Rose: only for what needs you (late, overpaid, failed, destructive), plus the keen heart and focus. */
+  --accent-attention:        #d9466f;  /* [--rose] keen heart, late dots, overpaid thread, focus ring, drop line */
+  --accent-attention-text:   #b8355b;  /* [--rose-ink] rose as text; the danger button fill */
+  --accent-attention-wash:   #fde8ee;  /* [--rose-soft] late date card, failed save, partner flash */
+  --focus-halo:              rgba(217,70,111,.12); /* the soft ring around a focused field */
+
+  /* Champagne and gold: progress, worked-out values, the stationery thread. */
+  --accent-thread:           #c6a466;  /* [--champagne] thread fill, stage steps, progress bars, "&" in the names */
+  --accent-thread-track:     #f4ead7;  /* [--champagne-soft] the unfilled thread; same value as --glow-champagne */
+  --accent-gold-text:        #8a6a2e;  /* [--gold-ink] champagne as text: totals, guest numbers, "not saved yet", the preferred package, payment dots */
+  --accent-gold-text-on-tint: #7d5f27; /* [--gold-ink-tint] gold text on champagne tints: gold flags, banners, the sorted note, calm sign-in notes.
+                                          4.97:1 on --glow-champagne, 5.20:1 on --surface-banner (owner, stage 3) */
+
+  /* Sage: settled and done, used sparingly. */
+  --accent-settled-text:     #4f6b55;  /* [--sage-ink] "Paid in full", tasks, WhatsApp, saved tick, RSVP attending */
+  --accent-settled-wash:     #e3f0e6;  /* confirmed tick fill (items) */
+
+  /* Small one-offs */
+  --accent-toast-action:     #f0d9a8;  /* Undo / Open in a toast, on ink */
+  /* RSVP "Not attending" pressed uses --color-text-muted (owner, stage 3; was an off-palette #8d7b83). */
+
+  /* Idle outlines of controls you can press: keen heart, drag handle, idle star and tick, task tick ring. */
+  --color-control-outline:   #9a888f;  /* [--control-outline] 3.34:1 on white (owner, stage 3) */
+
+  /* ------------------------------------------------------------------
+     4. Colour: the document editor's own palette (R1)
+     ------------------------------------------------------------------ */
+  --doc-ink-ink:        #33262c;
+  --doc-ink-rose:       #b8355b;
+  --doc-ink-gold:       #8a6a2e;
+  --doc-ink-sage:       #4f6b55;
+  --doc-ink-cornflower: #4a63a8;
+  --doc-ink-plum:       #6e3b63;
+  --doc-mark-blush:     #fce6ec;
+  --doc-mark-champagne: #f4ead7;
+  --doc-mark-mint:      #e3f0e6;
+  --doc-mark-sky:       #e3ebfa;
+  --doc-mark-lilac:     #efe6f6;
+
+  /* ------------------------------------------------------------------
+     5. Type: families and weights
+     ------------------------------------------------------------------ */
+  --font-display: "Cormorant Garamond", Georgia, serif; /* [--serif] figures, titles, names in rows, amounts */
+  --font-text:    "Jost", system-ui, sans-serif;         /* [--sans] everything small: meta, labels, buttons */
+  --font-code:    ui-monospace, monospace;                /* formulas, code blocks, the "Mono" document font */
+  --font-doc-plain: Georgia, serif;                       /* the "Georgia" choice in documents only */
+  /* Google Fonts: Cormorant Garamond 300–700 roman and italic; Jost 300–600. */
+
+  --weight-figure:   300; /* the one big figure; days to go */
+  --weight-text:     340; /* body text (Jost is set a touch lighter than regular) */
+  --weight-display-light: 400; /* menu entries, sign-in title, names on the overview */
+  --weight-emphasis: 450; /* buttons, <b> in sentences, late and overpaid amounts */
+  --weight-display:  500; /* every serif heading, row name and amount */
+  --weight-mark:     600; /* the partner initial in a toast */
+
+  /* ------------------------------------------------------------------
+     6. Type: sizes by role (desktop; phone overrides under 760px below)
+     ------------------------------------------------------------------ */
+  --text-days:          clamp(96px, 16vw, 200px); /* overview: days to go. The largest number in the app */
+  --text-figure:        clamp(56px, 9vw, 124px);  /* [.figure] the budget's still to pay */
+  --text-figure-md:     clamp(48px, 7vw, 88px);   /* [.figure.md] the figure on every other screen */
+  --text-figure-long:   clamp(40px, 6vw, 88px);   /* budget only: a figure longer than 13 digits */
+  --text-figure-unit:   .38em;                    /* [.figure .rp] the small "Rp" before a figure */
+  --text-gate-title:    46px;  /* sign-in "Our wedding planner" */
+  --text-menu:          clamp(30px, 4.4vw, 44px); /* the full-page menu */
+  --text-names:         clamp(30px, 4vw, 44px);   /* overview: Greg & Bella in gold italic */
+  --text-doc-title:     42px;  /* document title (phone 34) */
+  --text-page-title:    40px;  /* [.hero h1] (phone 34) */
+  --text-big-input:     40px;  /* the amount in "Record a payment" */
+  --text-message-title: 36px;  /* full-screen message (inline message 28) */
+  --text-doc-h1:        34px;
+  --text-sheet-title:   30px;  /* sheets and dialogs; month name (phone 24) */
+  --text-card-title:    28px;  /* next card title and amount (phone 24); "Coming up"; tallies on both sides */
+  --text-doc-h2:        27px;
+  --text-section:       26px;  /* section, group and category headings; funder names (phone: group 23, funder 23) */
+  --text-row-xl:        25px;  /* finalist card name */
+  --text-row-lg:        24px;  /* booking entry name (phone 21); recent document cards; headcount cards */
+  --text-row-md:        23px;  /* doors, vendor and venue rows (phone 21) */
+  --text-amount:        22px;  /* booking entry price, funder still-to-pay (phone 19) */
+  --text-row:           21px;  /* most row names: dues, parts, agenda, tasks, documents, guests, menu-card lines, sub-navigation */
+  --text-row-sm:        20px;  /* file rows, item-name inputs, agenda times, month day numbers */
+  --text-doc-body:      17px;  /* document body (phone 16.5) */
+  --text-lead:          16.5px;/* [.context] the sentence under a figure; inline field values */
+  --text-body:          16px;
+  --text-reading:       15.5px;/* notes, search input, step titles */
+  --text-small:         15px;  /* notes under sections, tallies, tree rows */
+  --text-meta:          14.5px;/* buttons, toasts, part lines, next-card meta */
+  --text-label:         14px;  /* row meta, field labels, links, menu subtitles */
+  --text-caption:       13.5px;/* counts, flags, hints, errors, small buttons */
+  --text-tiny:          13px;  /* event kind labels, legend, table-bar buttons, item column heads */
+  --text-micro:         12.5px;/* thread ends, file sizes, weekday letters, event chips */
+  --text-nano:          11px;  /* "+3" overflow in a month cell (hidden on phones) */
+
+  --leading-days:    .95;
+  --leading-figure:  1;
+  --leading-gate:    1.05;
+  --leading-title:   1.1;
+  --leading-heading: 1.15;
+  --leading-row:     1.2;
+  --leading-row-loose: 1.25;
+  --leading-text:    1.55; /* body */
+  --leading-reading: 1.65; /* notes view */
+  --leading-doc:     1.7;  /* document body */
+
+  --tracking-days:   -.02em;
+  --tracking-figure: -.015em;
+  --tracking-title:  -.005em;
+  --tracking-names:  .01em;  /* the couple's names in the top bar */
+  --tracking-label:  .02em;  /* buttons, menu button, back link, next-card label */
+  --tracking-kicker: .03em;  /* the line above a figure; "days until" */
+
+  /* Numbers: lining figures everywhere; tabular in amounts and tables. */
+  --numeric-default: lining-nums;
+  --numeric-amount:  lining-nums tabular-nums; /* [.num] */
+
+  /* ------------------------------------------------------------------
+     7. Spacing
+     A loose 2px grid, not a strict scale. The roles below are the ones
+     that repeat; one-off values stay in the components.
+     ------------------------------------------------------------------ */
+  --space-hair: 2px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  36px;
+  --space-9:  48px;
+  --space-10: 56px;
+  --space-11: 64px;
+
+  --space-top-y:        30px;  /* top bar (phone 20) */
+  --space-top-x:        48px;  /* top bar (phone 20) */
+  --space-page-x:       24px;  /* main column side padding (phone 20) */
+  --space-page-top:     18px;
+  --space-page-bottom:  120px; /* leaves room for the floating add button (phone 140) */
+  --space-row-y:        16px;  /* typical list row padding; entries use 20/18, funders 22 */
+  --space-row-x:        4px;   /* rows sit almost flush, so hover washes reach the edge */
+  --space-hero-figure:  30px;  /* page title to the kicker above the figure */
+  --space-next:         48px;  /* figure to the next card (phone 44) */
+  --space-doors:        36px;  /* to the doors and the "tools" row (tools use 40) */
+  --space-group:        44px;  /* before a group heading in a list (payments, agenda) */
+  --space-section:      52px;  /* before a section heading on a detail screen */
+  --space-days:         56px;  /* to the "days until" line at the foot (phone 36) */
+  --space-danger:       64px;  /* to the "Remove this booking" link */
+  --space-card-y:       24px;
+  --space-card-x:       28px;  /* (phone 20 all round) */
+  --gap-actions:        18px;  /* between inline text actions: Edit · Remove */
+  --gap-buttons:        12px;  /* between buttons in a row */
+  --gap-chips:          8px;
+
+  /* ------------------------------------------------------------------
+     8. Layout widths
+     ------------------------------------------------------------------ */
+  --measure:          680px;  /* [--col] the default column: budget, detail screens, tasks, settings */
+  --measure-wide:     920px;  /* [--col-wide] lists: bookings, vendors, documents, files, schedule, guests */
+  --measure-doc:      860px;  /* the document editor */
+  --measure-table:    1120px; /* wedding items, the one table-like screen */
+  --measure-sheet:    560px;
+  --measure-gate:     440px;  /* sign-in */
+  --measure-message:  460px;  /* empty, failure and offline messages */
+  --measure-thread:   460px;  /* the big gold thread */
+  --measure-banner:   760px;
+  --label-column:     180px;  /* field labels on a detail screen (130 inside a sheet; stacked on phones) */
+  --date-card-width:  64px;   /* (phone 56) */
+  --agenda-time-width: 76px;  /* (phone 58) */
+
+  /* ------------------------------------------------------------------
+     9. Radii
+     ------------------------------------------------------------------ */
+  --radius-hair:   2px;   /* thread fill, progress bars, stage steps */
+  --radius-mark:   3px;   /* search highlight in documents */
+  --radius-cell:   4px;   /* table size grid */
+  --radius-tag:    6px;   /* the cell address in the formula bar */
+  --radius-input-sm: 8px; /* small inputs, row selects, handles */
+  --radius-input:  10px;  /* inline field inputs, toolbar buttons, skeleton lines */
+  --radius-tile-sm: 12px; /* code block, notes box, file icon, failed save note */
+  --radius-field:  14px;  /* [--r-field] date cards, month cells (phone 10), dropdown and row menus */
+  --radius-tile:   16px;  /* file tiles, popovers, sign-in problem box, inline banners */
+  --radius-panel:  18px;  /* file preview, drop zone, skeleton figure */
+  --radius-card:   24px;  /* [--r-card] cards */
+  --radius-sheet:  28px;  /* sheets (phone: top corners only), the document page */
+  --radius-pill:   999px; /* [--r-pill] buttons, chips, flags, toasts, banners, switches */
+
+  /* ------------------------------------------------------------------
+     10. Shadows, rings and blur. All shadows are tinted with ink, never grey.
+     ------------------------------------------------------------------ */
+  --shadow-fab:     0 10px 30px -10px rgba(51,38,44,.45);
+  --shadow-sheet:   0 30px 80px -30px rgba(51,38,44,.5);
+  --shadow-toast:   0 16px 40px -16px rgba(51,38,44,.6);
+  --shadow-popover: 0 20px 50px -20px rgba(51,38,44,.4); /* popovers, dropdowns, row menu */
+  --shadow-paper:   0 30px 60px -50px rgba(51,38,44,.35); /* the document page */
+
+  --ring-focus:        2px solid var(--accent-attention); /* outline, offset 3px, on every focusable thing */
+  --ring-focus-offset: 3px;
+  --ring-field:        inset 0 0 0 1px var(--color-edge), 0 0 0 3px var(--focus-halo); /* a focused inline field */
+  --ring-field-failed: inset 0 0 0 1px var(--accent-attention);
+  --ring-cell:         inset 0 0 0 2px var(--accent-attention); /* the cell holding the cursor in a table */
+  --ring-selected:     inset 0 0 0 2px var(--color-text);       /* the chosen day in the month */
+  --edge-next-row:     inset 3px 0 0 var(--accent-thread);      /* a wedding item marked "work on next" */
+  --edge-drop-above:   inset 0 2px 0 var(--accent-attention);   /* drag-and-drop target line */
+  --edge-drop-below:   inset 0 -2px 0 var(--accent-attention);
+
+  --blur-card: 8px;   /* backdrop blur behind --surface-card */
+  --blur-bar:  10px;  /* the document toolbar */
+
+  /* ------------------------------------------------------------------
+     11. Glows and fills. The light that makes Veil.
+     ------------------------------------------------------------------ */
+  --glow-page:
+    radial-gradient(55% 60% at 88% -5%, var(--glow-blush) 0, rgba(252,230,236,0) 70%),
+    radial-gradient(45% 50% at -5% 105%, var(--glow-champagne) 0, rgba(244,234,215,0) 70%),
+    var(--surface-page);      /* body, fixed to the viewport */
+  --glow-menu:
+    radial-gradient(60% 50% at 80% 0%, var(--glow-blush) 0, rgba(252,230,236,0) 70%),
+    radial-gradient(50% 50% at 0% 100%, var(--glow-champagne) 0, rgba(244,234,215,0) 70%),
+    var(--surface-page);      /* the full-page menu */
+  --glow-sheet:
+    radial-gradient(70% 40% at 100% 0%, var(--glow-blush) 0, rgba(252,230,236,0) 70%); /* top-right of every sheet */
+  --fill-skeleton:
+    linear-gradient(90deg, var(--surface-skeleton) 0%, var(--surface-petal) 40%, var(--surface-skeleton) 80%); /* 200% wide */
+
+  /* ------------------------------------------------------------------
+     12. Motion
+     ------------------------------------------------------------------ */
+  --motion-spin:      .9s linear infinite;  /* busy buttons, "Saving" */
+  --motion-shimmer:   1.6s linear infinite; /* skeletons */
+  --motion-flash:     2.4s ease-out;        /* a row that just changed (yours or your partner's) */
+  --motion-disclose:  .2s;                  /* chevron turning as a part or task opens */
+  --motion-progress:  .3s;                  /* upload bar growing */
+  /* Timings used by the prototype's scripts (not CSS, listed so the build matches them): */
+  --time-toast:          6000ms; /* toast, and so the undo window */
+  --time-toast-partner:  9000ms; /* "Bella recorded…" toasts */
+  --time-autosave-pause: 900ms;  /* document: pause in typing before saving starts */
+  /* prefers-reduced-motion: every animation and transition drops to near zero (see veil.css). */
+
+  /* ------------------------------------------------------------------
+     13. Breakpoints. Custom properties can't drive @media, so these are
+     for scripts and for reference. Phone is the main switch.
+     ------------------------------------------------------------------ */
+  --bp-phone:      760px; /* everything: top bar, figures, fields stack, sheets become bottom sheets, editor toolbar docks */
+  --bp-table:      860px; /* wedding items: the table becomes stacked rows */
+  --bp-doc-cards:  900px; /* documents: the three recent cards become one column */
+
+  /* ------------------------------------------------------------------
+     14. Layers
+     ------------------------------------------------------------------ */
+  --z-fab:            5;  /* the floating add button */
+  --z-table-bar:      9;  /* editor table tools */
+  --z-toolbar:        10; /* editor toolbar */
+  --z-toolbar-status: 11; /* the save state when it floats at the top on a phone */
+  --z-row-menu:       15; /* "⋯" menu on a wedding item */
+  --z-dropdown:       20; /* "Anyone" people filter */
+  --z-menu:           30; /* the full-page menu */
+  --z-sheet:          40; /* scrim, sheets and dialogs */
+  --z-popover:        45; /* editor colour, table size and link bubble */
+  --z-toast:          50;
+  /* 60 is taken by the prototype's state switcher, which is not part of the design. */
+}
+
+/* Phone overrides: the values that change under --bp-phone. */
+@media (max-width: 760px) {
+  :root {
+    --text-figure:     56px;
+    --text-figure-md:  46px;
+    --text-page-title: 34px;
+    --text-doc-title:  34px;
+    --text-card-title: 24px;
+    --text-row-lg:     21px;
+    --text-row-md:     21px;
+    --text-amount:     19px;
+    --text-doc-body:   16.5px;
+    --text-lead:       15px;
+    --space-top-y:     20px;
+    --space-top-x:     20px;
+    --space-page-x:    20px;
+    --space-page-bottom: 140px;
+    --space-next:      44px;
+    --space-days:      36px;
+    --space-card-x:    20px;
+    --space-card-y:    20px;
+    --date-card-width: 56px;
+    --agenda-time-width: 58px;
+  }
+}
+
+/* =====================================================================
+   Contrast: every text/background pair the prototype uses (WCAG 2.x).
+   "Glow peak" is the strongest point of the page glow, the worst case
+   for anything that scrolls over it. AA needs 4.5:1 for text under 24px
+   (19px bold) and 3:1 for larger text and for non-text marks.
+
+   Text
+   14.44  --color-text on white (and white on --color-text: buttons, toast, pressed chip)
+   12.15  --color-text on --glow-blush (glow peak, pressed event chip, wedding day)
+   12.10  --color-text on --glow-champagne ("To work on next" chips, search highlight)
+   11.09  --color-text on --surface-champagne-hover
+   13.56  --color-text on --surface-petal (table title row)
+   13.40  --color-text on --surface-mist (code block)
+   12.05 / 11.91 / 12.29  --color-text on the sky / lilac / mint highlights
+   10.99  white on --color-text-strong-hover
+   10.45  --accent-toast-action on --color-text (Undo, Open)
+    5.68  --color-text-muted on white
+    5.53  --color-text-muted on a card over the glow peak
+    5.46  --color-text-muted on --surface-warm
+    5.33  --color-text-muted on --surface-petal (table bar)
+    4.98  --color-text-muted on --surface-flag-calm
+    4.78  --color-text-muted on --glow-blush (glow peak)
+    4.76  --color-text-muted on --glow-champagne (glow peak)
+    5.68  --accent-attention-text on white; white on it (danger button)
+    5.46  --accent-attention-text on --surface-warm
+    4.85  --accent-attention-text on --accent-attention-wash (flags, failed save, problem box, bad file tile)
+    4.78  --accent-attention-text on --glow-blush
+    5.89  --accent-settled-text on white; white on it (RSVP attending)
+    5.01  --accent-settled-text on --accent-settled-wash
+    5.02  --accent-gold-text on white
+    4.83  --accent-gold-text on --surface-warm (totals, today)
+    4.66  --accent-gold-text on --surface-mist (file type on a tile)
+    4.51  --accent-gold-text on --surface-note ("Sorted for now"), just passes
+    5.20  --accent-gold-text-on-tint on --surface-banner (demonstration banner, calm sign-in notes)
+    4.97  --accent-gold-text-on-tint on --glow-champagne (gold flags: "due in 4 days", "Now a booking")
+    4.23  --accent-gold-text on --glow-blush               passes only as large text (overview names, 30px+)
+    5.77  --doc-ink-cornflower on white;  8.51  --doc-ink-plum on white
+    3.49  --accent-attention on --glow-blush               decorative ♡ on the wedding day (desktop only; the cell label says it)
+    5.68  white on --color-text-muted (RSVP "Not attending" pressed)
+    5.68  placeholder (--color-text-muted, full strength, italic) on white  passes AA (decision 21)
+    2.77  --color-decor on white                           never used for words
+    2.36  --accent-thread on white                         used for the "&" in the names (decorative)
+
+   Non-text marks (need 3:1 when they carry meaning)
+    4.15  focus ring (--accent-attention) on white; 3.48 against the ink button it surrounds
+    3.34  idle keen heart, drag handle, star, tick and tick-box ring (--color-control-outline)
+    5.02  payment dots in the month (--accent-gold-text); every cell's label also names what's on that day
+    2.36  thread fill, stage steps (--accent-thread)       below 3:1, but both repeat their meaning in words ("54% paid", the stage name)
+    1.43  --color-edge (chip, field and quiet-button edges)            identification relies on the text inside
+    1.19  --accent-thread-track (thread track)                         decorative
+   ===================================================================== */
