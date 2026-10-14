@@ -33,4 +33,10 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - Totals: `=SUM(B2:B6)`, `=SUM(B2, C4)` and growing `=SUM(B2:B)`. A formula bar shows the cell's address and formula, and mistakes are named in plain words ("Bad reference", "Includes itself", "Not a total") with the reason.
   - States: saved, not saved yet, saving, couldn't save (with retry, text kept), went offline while writing, the partner is in the same document, deleted by the partner, delete warning, nothing yet, no results, loading, couldn't load, offline, demonstration mode, partner starts a document.
   - Stress data: 1,504 documents, one with 40 long paragraphs, a 50 × 8 table with growing totals, lists four levels deep and an 85-character unbroken title; CJK, Arabic and untitled documents.
-- Next groups: files (R8–R14), schedule (S), wedding items (T), guests (G), overview, sign-in and settings (O, A).
+- 2026-10-14, session 4 (same conversation): **files group** (R8–R14) in `files.html`, under Documents with a Documents/Files sub-navigation.
+  - Folders: a path above the title (the middle folds away when deep), new folder, rename, move with everything inside, delete only when empty.
+  - Uploading: drop or choose several files. Each gets a name, an optional category (suggestions or your own) and a description, and shows its progress. PDFs over 10 MB are shrunk; other big files are refused, with the reason.
+  - A file's details: preview, name, category, description, size and date, open, download, move, and delete for good (freeing storage). Search finds files in any folder by name or description.
+  - States: nothing yet, an empty folder, no results, uploading (done, in progress, shrinking, too large, failed), a file's details, moving a folder, loading, couldn't load, offline, demonstration mode, Bella uploads a file.
+  - Stress data: 30 nested folders, 3,000 files and 40 folders in one folder, long and non-Latin names, 1 KB and 10 MB files, very wide and very tall images.
+- Next groups: schedule (S), wedding items (T), guests (G), overview, sign-in and settings (O, A).

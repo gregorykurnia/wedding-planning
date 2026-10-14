@@ -51,3 +51,11 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Totals:** columns are A, B, C… and rows count from the title row, as in a spreadsheet. A growing range like `B2:B` runs to the last row and stops above the total itself, so a total at the bottom never counts itself. Totals show in gold so they read as worked out, not typed. Rupiah formatting carries over when the cells added up are in rupiah.
 - **Sorting** leaves the title row and any row holding a total where they are, so "Total" stays at the bottom.
 - **Fonts in documents:** Jost (default), Cormorant, Georgia and a monospace. They match the app's own type, plus a plain serif and a code face.
+
+### Session 4, files group (2026-10-14)
+- **Files live beside Documents** under the menu's "Documents", with a Documents/Files sub-navigation, the same pattern as Vendors/Shortlist/Venues.
+- **Folders look like envelopes**, a small stationery cue. The path above the title always says where you are; past four levels the middle folds into "…", which you can tap to open.
+- **Delete folder only when empty** (R8). A folder with things in it says what's inside and asks you to move or delete them first.
+- **Deleting a file is for good** (R13). The warning says how much storage it frees and that it can't be brought back, so there's no undo. Moves, renames and folder deletes do have undo.
+- **Uploads ask for name, category and description per file while they upload** (R10). Nothing waits on them, so a quick upload is still quick.
+- **No storage meter.** The inventory mentions free storage limits but not their size, so the screen only shows how much is used ("14 files, 33.1 MB in all"). Tell me the limit if you want a meter.

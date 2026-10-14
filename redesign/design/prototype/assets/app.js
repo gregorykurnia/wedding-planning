@@ -309,7 +309,7 @@
     vendors: ["Vendors, shortlist and venues", [["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]]],
     records: ["Documents and files", [["documents.html", "Documents"], ["files.html", "Files"]]],
   };
-  const subnav = (here, set) => { const [label, items] = SUBNAVS[set || "vendors"]; return `<nav class="subnav" aria-label="${label}">${items.map(([h, t]) => `<a href="${h === "files.html" && !window.VEIL_FILES ? "#" : href(h)}" ${h === "files.html" && !window.VEIL_FILES ? 'data-later="1"' : ""} ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`; };
+  const subnav = (here, set) => { const [label, items] = SUBNAVS[set || "vendors"]; return `<nav class="subnav" aria-label="${label}">${items.map(([h, t]) => `<a href="${href(h)}" ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`; };
   /* "Now" for relative times: 11:30 on the fixed today */
   const NOW = new Date(D.TODAY + "T11:30:00");
   const ago = (iso) => {
