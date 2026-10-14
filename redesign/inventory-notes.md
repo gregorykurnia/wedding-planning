@@ -369,7 +369,9 @@ Result: no story rewrites needed. Step 1b is complete.
 
 ## §9 Decisions made in Step 2
 
-Recorded 2026-10-14. §4 and §5 are decided below and applied to `inventory.md` and `priorities.md`. The Step 2 checklist item stays unticked until the blank rows in `priorities.md` are tagged.
+Recorded 2026-10-14. §4 and §5 are decided below and applied to `inventory.md` and `priorities.md`. Step 2 is complete and ticked in the plan.
+
+**Inferred frequencies.** The owner didn't tag the 11 rows added in Step 2. Claude tagged them from the owner's ranking at the top of `priorities.md`. Venues are done, and set-up or tidy-up jobs are rare: O6, F22, F23, B11, R12 and R13. Jobs that happen when something gets booked or weighed up are weekly: F24, B10 and B12. Finding a file (R14) is weekly, like R11. Reminders (S10) are daily, because knowing the next payment is in the top five and the schedule jobs are daily. Change any of these freely.
 
 **What the drops mean.** They shape the rebuilt app. The current app is unchanged, apart from item 18. Dropped features keep their Firestore data: nothing is deleted from the database.
 

@@ -20,13 +20,13 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | O3 | Pulse check: paid vs committed, tasks, guests | weekly |
 | O4 | From summary to detail in one step | weekly |
 | O5 | Record the wedding date once | rare |
-| O6 | Our two names, used across the planner | |
+| O6 | Our two names, used across the planner | rare |
 | F1 | Capture a venue | rare |
 | F2 | Venue photos | drop |
 | F3 | Venue stage | rare |
 | F4 | Narrow venues by text, stage, cost, capacity | rare |
 | F5 | Order venues by cost or capacity | rare |
-| F22 | Files on a venue | |
+| F22 | Files on a venue | rare |
 | F6 | Capture a vendor | daily |
 | F7 | WhatsApp a vendor in one step | weekly |
 | F8 | Several price options per vendor, one preferred | daily |
@@ -37,14 +37,14 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | F13 | Files on a vendor | weekly |
 | F14 | Our own vendor categories | rare |
 | F15 | Export vendors to a spreadsheet | rare |
-| F23 | Rename or remove our own vendor categories | |
+| F23 | Rename or remove our own vendor categories | rare |
 | F16 | Copy a vendor into the shortlist | daily |
 | F17 | Packages per finalist | daily |
 | F18 | Finalist review and follower counts | weekly |
 | F19 | Finalists by category | daily |
 | F20 | Finalists pick up vendor files automatically | weekly |
 | F21 | Add a finalist from scratch | daily |
-| F24 | Move a finalist into vendors or confirmed | |
+| F24 | Move a finalist into vendors or confirmed | weekly |
 | B1 | Chosen vendor or booked venue becomes a booking | daily |
 | B2 | Add a booking directly | daily |
 | B3 | Booking details: price, paid, funder, due date, next step, files | daily |
@@ -54,9 +54,9 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | B7 | Paid and still to pay per funder | daily |
 | B8 | What-if items and projected total | weekly |
 | B9 | Order bookings by any field | weekly |
-| B10 | Who would pay for each what-if item | |
-| B11 | Add, rename or remove funders | |
-| B12 | Agreed price kept apart from the estimate | |
+| B10 | Who would pay for each what-if item | weekly |
+| B11 | Add, rename or remove funders | rare |
+| B12 | Agreed price kept apart from the estimate | weekly |
 | G1 | Guest details | rare |
 | G2 | Which event each guest is invited to | rare |
 | G3 | Headcounts | rare |
@@ -84,7 +84,7 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | S7 | Jump to the related booking or task | weekly |
 | S8 | Tasks with steps and due dates | daily |
 | S9 | Open tasks by due date; finished tasks kept apart | daily |
-| S10 | Reminders before arranged events, on phone or computer | |
+| S10 | Reminders before arranged events, on phone or computer | daily |
 | R1 | Rich text documents | daily |
 | R2 | Tables in documents | daily |
 | R3 | Sort a table | weekly |
@@ -96,9 +96,9 @@ How often each job happens. Tag every story **daily**, **weekly**, **rare** or *
 | R9 | Upload files with progress and PDF shrinking | daily |
 | R10 | Name, category and description per file | daily |
 | R11 | Open, move, edit and delete files | weekly |
-| R12 | Move a folder with its contents | |
-| R13 | Delete a file for real | |
-| R14 | Find a file by name or description | |
+| R12 | Move a folder with its contents | rare |
+| R13 | Delete a file for real | rare |
+| R14 | Find a file by name or description | weekly |
 | A1 | Sign in; only the two of us | rare |
 | A2 | Live updates from my partner | daily |
 | A3 | Install on the phone | rare |

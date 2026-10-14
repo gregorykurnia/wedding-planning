@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Tagged the 11 untagged rows in `redesign/handoff/priorities.md` from the owner's ranking (reasoning in `redesign/inventory-notes.md` §9), and ticked Step 2 in `redesign/redesign-plan.md`.
 - 2026-10-14: Recorded the §5 decisions (owner took every recommendation) in `redesign/inventory-notes.md` §9. The inventory is now version 1.4: B4, B7, G3 and G4 and the Confirming and Offline states follow the decisions, and B12 (agreed price kept apart from the estimate) is new, with a blank row in `priorities.md`. The banned-word scan of `redesign/handoff/` is clean.
 - 2026-10-14: Set `redesign/handoff/priorities.md` to FILLED after the owner's answers: venue jobs stay rare, wedding item jobs (T1–T5, T7) and the main schedule and to-do jobs (S1–S3, S8, S9) are now daily, and T6 is weekly. The banned-word scan is clean.
 - 2026-10-14: Recorded the Step 2 decisions on the 18 placeholders in `redesign/inventory-notes.md` §9. The inventory is now version 1.3: added O6, B10, B11, F22–F24, R12–R14 and S10, marked F2 dropped, and B7 no longer lists four funders. F16 and F17 now say "next step" where they said "next action". In `redesign/handoff/priorities.md`, added the ten new rows with blank frequencies for the owner to tag, tagged F2 as drop, and aligned the F11, B3 and B7 short names with the inventory wording. Deleted the stale `public/music/README.md`. §5 is still open, and the banned-word scan of `redesign/handoff/` is clean.
