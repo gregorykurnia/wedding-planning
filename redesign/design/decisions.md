@@ -119,3 +119,25 @@ What this means for the prototype: keep every screen to one main figure or job w
 17. **Category rename and add have no undo,** unlike funder and folder renames. Suggest undo on all renames.
 18. **Schedule "Payments" filter** leaves out your own events of the kind "Payment". Suggest including them.
 19. **Shortlist ordering has no direction word,** unlike every other list. Add it, or confirm that's deliberate.
+
+### Owner's answers to the stage 3 questions (2026-10-14)
+All 19 were answered in one message. Each one is carried into the prototype, `design-guide.md` and `tokens.css`.
+1. Preferred package: **gold italic everywhere**, so the rose ♡ on shortlist cards goes.
+2. Sheets that edit an existing record **save as you go and end with Done** (event, guest, what-if item, venue, price option, package). Sheets that create something keep their Add button.
+3. Demonstration mode: **actions stay enabled and open their sheet; only the final button is disabled**, with the line "Demonstration mode: adding is turned off." One-tap actions with no sheet ("Start with common items", "Copy to the shortlist", "Save the date") count as final buttons.
+4. Paging always gives the number: **"Show 60 more"**.
+5. "Not attending" uses **muted ink**.
+6. Gold text on champagne tints uses **`#7d5f27`**.
+7. The items column is headed **"Confirmed"**.
+8. Who pays sub line: **"What each of you and your families have paid, and what's still to pay."**
+9. Overpaid budget follows the booking: **"Overpaid by" with a positive rose figure**, and the minus always comes first ("−Rp").
+10. Very long figures **shrink** on every screen.
+11. **Tasks uses the wide column** like Agenda and Month.
+12. **Dots** group thousands in counts too ("1.206 bookings").
+13. Owner: "whatever", so the suggestion stands: demonstration mode shows **"Our wedding planner"**, no names, no countdown and nobody signed in.
+14. The accessibility suggestions stand: targets at least 24px, idle outlines in `#9a888f`, payment dots in gold ink, fuller month-cell labels.
+15. Tasks and file search page with **"Show N more"** and a count; the menu's email wraps.
+16. "Add files" on a booking, vendor, finalist or venue **opens the same upload sheet as Files**, with name, category and description per file. It files into a folder named after the record, and the "too large" wording is the same everywhere.
+17. **Undo on all renames** (vendor categories and file names gain it).
+18. The schedule's "Payments" filter **includes your own events of the kind Payment**.
+19. The shortlist's Order by gets the **Ascending / Descending** word.
