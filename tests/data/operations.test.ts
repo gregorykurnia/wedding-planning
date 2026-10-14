@@ -23,6 +23,7 @@ import {
 import { removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
 import { removeCategory, renameCategory } from "@/lib/data/categories";
 import { bookFinalist, copyToShortlist, moveFinalistToVendors, removeFinalist } from "@/lib/data/shortlist";
+import { moveFile, moveFolder } from "@/lib/data/files";
 import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
 
 let gregory: Partner;
@@ -477,5 +478,49 @@ describe("shortlist", () => {
     expect(await exists("shortlist", "s1")).toBe(false);
     await removed.undo();
     expect(await exists("shortlist", "s1")).toBe(true);
+  });
+});
+
+describe("moving files and folders", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "a"), { name: "Vendors", parentId: null });
+    await setDoc(doc(gregory.db, "fileFolders", "b"), { name: "Kebun", parentId: "a" });
+    await setDoc(doc(gregory.db, "fileFolders", "c"), { name: "Quotes", parentId: "b" });
+    await setDoc(doc(gregory.db, "weddingFiles", "f1"), { name: "Quote.pdf", folderId: "c" });
+  });
+
+  it("moves a folder with undo, but never inside itself", async () => {
+    const moved = await moveFolder("c", null, g());
+    expect((await read("fileFolders", "c"))?.parentId).toBeNull();
+    await moved.undo();
+    expect((await read("fileFolders", "c"))?.parentId).toBe("b");
+
+    await expect(moveFolder("a", "c", g())).rejects.toMatchObject({ code: "failed" });
+    await expect(moveFolder("a", "a", g())).rejects.toMatchObject({ code: "failed" });
+    await expect(moveFolder("b", "gone", g())).rejects.toMatchObject({ code: "missing" });
+    expect((await read("fileFolders", "a"))?.parentId).toBeNull();
+  });
+
+  it("never makes a loop when both partners move folders into each other at once", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "x"), { name: "Venues", parentId: null });
+    await Promise.allSettled([moveFolder("a", "x", g()), moveFolder("x", "c", b())]);
+    const parentOf = async (id: string) => (await read("fileFolders", id))?.parentId ?? null;
+    // Walk up from each folder: the top is always reached.
+    for (const start of ["a", "b", "c", "x"]) {
+      const seen = new Set<string>();
+      let at: string | null = start;
+      while (at !== null) {
+        expect(seen.has(at)).toBe(false);
+        seen.add(at);
+        at = await parentOf(at);
+      }
+    }
+  });
+
+  it("moves a file with undo", async () => {
+    const moved = await moveFile("f1", "a", b());
+    expect((await read("weddingFiles", "f1"))?.folderId).toBe("a");
+    await moved.undo();
+    expect((await read("weddingFiles", "f1"))?.folderId).toBe("c");
   });
 });
