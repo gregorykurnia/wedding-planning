@@ -102,14 +102,14 @@ export function recordFolderPath(ref: RecordRef, recordName: string, partName?: 
 }
 
 /**
- * Where a Cloudinary delivery URL keeps the asset's type and public id, for
- * files saved before either was stored. For raw files the extension is part
- * of the public id; for images and videos it isn't.
+ * Where a Cloudinary delivery URL keeps the asset's cloud, type and public id,
+ * for files saved before the type or id was stored. For raw files the
+ * extension is part of the public id; for images and videos it isn't.
  */
-export function cloudinaryAsset(url: string): { resourceType: string; publicId: string } | null {
-  const match = /res\.cloudinary\.com\/[^/]+\/(image|video|raw)\/upload\/(?:[^/]+\/)*?(?:v\d+\/)(.+)$/.exec(url);
+export function cloudinaryAsset(url: string): { cloudName: string; resourceType: string; publicId: string } | null {
+  const match = /res\.cloudinary\.com\/([^/]+)\/(image|video|raw)\/upload\/(?:[^/]+\/)*?(?:v\d+\/)(.+)$/.exec(url);
   if (!match) return null;
-  const [, resourceType, rest] = match;
+  const [, cloudName, resourceType, rest] = match;
   const path = decodeURIComponent(rest.split(/[?#]/)[0]);
-  return { resourceType, publicId: resourceType === "raw" ? path : path.replace(/\.[^./]+$/, "") };
+  return { cloudName, resourceType, publicId: resourceType === "raw" ? path : path.replace(/\.[^./]+$/, "") };
 }

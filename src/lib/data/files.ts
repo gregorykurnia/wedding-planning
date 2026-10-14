@@ -1,10 +1,13 @@
+import { getAuth } from "firebase/auth";
 import { doc } from "firebase/firestore";
+import { requireDb } from "./db";
 import { patchWithUndo, type Undoable } from "./undo";
-import { stamp, transact, type WriteOptions } from "./write";
+import { guarded, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
- * Moving files and folders in Files (R8, R12), each with undo (guide §6.2).
+ * Moving files and folders in Files (R8, R12), each with undo (guide §6.2),
+ * and deleting a file for good (R13), which has none.
  */
 const FOLDERS = "fileFolders";
 const FILES = "weddingFiles";
@@ -61,4 +64,40 @@ export function moveFile(fileId: string, folderId: string | null, opts: WriteOpt
     (data) => ((data.folderId ?? null) === folderId ? null : { patch: { folderId } }),
     opts,
   );
+}
+
+/**
+ * Deletes a file for good (R13, guide §6.2 "Permanent"): the server destroys
+ * its stored copy and removes it from Files and from any record it was on
+ * (`DELETE /api/files/[fileId]`, Task 6.3). There's no undo. Only the id is
+ * sent; the server reads everything else itself. Calling it again for a file
+ * that's already gone does nothing, so `retry()` after a timeout is safe.
+ */
+export function deleteFileForGood(
+  fileId: string,
+  opts: WriteOptions & { fetch?: typeof fetch } = {},
+): Promise<void> {
+  const database = requireDb(opts.db);
+  const send = opts.fetch ?? fetch;
+  return guarded(async () => {
+    const user = getAuth(database.app).currentUser;
+    if (!user) throw new WriteError("denied", "Not signed in");
+    const token = await user.getIdToken();
+    let res: Response;
+    try {
+      res = await send(`/api/files/${encodeURIComponent(fileId)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+      throw new WriteError(offline ? "offline" : "failed", "The delete didn't reach the server", { cause: err });
+    }
+    if (res.ok) return;
+    const body = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new WriteError(
+      res.status === 401 || res.status === 403 ? "denied" : "failed",
+      body?.message ?? `The server refused the delete (${res.status})`,
+    );
+  });
 }
