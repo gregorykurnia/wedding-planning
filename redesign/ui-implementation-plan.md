@@ -1012,7 +1012,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
 5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's **Done** box in the §7.0 table and under its heading below (date, commit, real `/cost`), tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
+6. Tick the task's **Done** box in the §7.0 table and under its heading below (date, commit, real `/cost`), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
