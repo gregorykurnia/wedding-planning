@@ -3,12 +3,17 @@ import {
   browserLocalPersistence,
   browserPopupRedirectResolver,
   browserSessionPersistence,
+  connectAuthEmulator,
   getAuth,
   inMemoryPersistence,
   initializeAuth,
   type Auth,
 } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import {
+  connectFirestoreEmulator,
+  getFirestore,
+  type Firestore,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -63,6 +68,16 @@ if (isFirebaseConfigured) {
       auth = getAuth(app);
     }
     db = getFirestore(app);
+    // Tests only: NEXT_PUBLIC_USE_EMULATORS=1 points Auth and Firestore at the
+    // local Firebase emulators (ports in firebase.json). Never set in production.
+    if (process.env.NEXT_PUBLIC_USE_EMULATORS === "1") {
+      try {
+        connectAuthEmulator(auth!, "http://127.0.0.1:9099", { disableWarnings: true });
+        connectFirestoreEmulator(db, "127.0.0.1", 8080);
+      } catch {
+        // Already connected (dev-mode fast refresh re-running this module).
+      }
+    }
   } catch (err) {
     // Never let a bad/partial config crash the app at import time.
     console.error("Failed to initialize Firebase:", err);

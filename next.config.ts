@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The test runs start two dev servers from this folder; each needs its own
+  // build folder (tests set NEXT_DIST_DIR). Normal runs use .next.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [
       {

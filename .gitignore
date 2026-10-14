@@ -40,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test runs
+/.next-e2e/
+/.next-demo/
+/test-results/
+/playwright-report/
+/tests/e2e/.auth/
+*-debug.log
+firestore-debug.log
+ui-debug.log
