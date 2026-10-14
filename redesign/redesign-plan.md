@@ -470,7 +470,7 @@ You approve the plan before Step 7.
 
 **Brief (you, without opening the app)**
 - [x] Step 2: §4–§5 decided; `priorities.md` status `FILLED` (2026-10-14)
-- [ ] Step 3: `brief.md` status `FILLED`, including the branding decision
+- [x] Step 3: `brief.md` status `FILLED`, including the branding decision (2026-10-14)
 
 **Design (studio, never sees the old app)**
 - [ ] Step 4a: 3 directions as screenshots; familiarity check done; choice recorded in `decisions.md`
