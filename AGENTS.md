@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Change log
 
+- 2026-10-14: Filled in a first pass of `redesign/handoff/priorities.md` from the owner's own ranking: six most important jobs in order (bookings and budget first, guests last), and a frequency for every story. The status stays DRAFT until the owner confirms the guessed rows for venues, wedding items and the schedule. The banned-word scan is clean.
 - 2026-10-14: Logged the second guess-the-layout test (inventory v1.2) in `redesign/inventory-notes.md` §8. It passed: the earlier tells were gone and the remaining matches follow from the features. Ticked both Step 1b items in `redesign/redesign-plan.md`.
 - 2026-10-14: Ran the first guess-the-layout test (Step 1b). The guess missed the real navigation, fonts and venue layout, but matched five areas that the inventory wording gave away. Rewrote F12, F17, F19, B6, S3, S6, T5 and T7 in `redesign/handoff/inventory.md` (now version 1.2), updated the S3 and S6 short names in `priorities.md`, and logged the comparison in `redesign/inventory-notes.md` §8. The banned-word scan is clean.
 - 2026-10-14: Completed the Step 1 second leak review of the blank-slate redesign: rewrote the stories in `redesign/handoff/inventory.md` that implied the current layout, order or wording (now version 1.1), and logged every removed detail in `redesign/inventory-notes.md` §7. A whole-word banned-word check of `redesign/handoff/` is clean; the formal Step 1b scan is still to do.
