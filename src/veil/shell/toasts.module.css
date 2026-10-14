@@ -1,0 +1,76 @@
+/* Guide §4.16. Ported from the prototype's .toasts, .toast and .ava. */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  /* The box itself never catches a tap; only the toasts do. */
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  background: var(--color-text);
+  color: var(--surface-page);
+  border-radius: var(--radius-pill);
+  padding: 11px 14px 11px 22px;
+  font-size: var(--text-meta);
+  display: flex;
+  gap: var(--gap-actions);
+  align-items: center;
+  box-shadow: var(--shadow-toast);
+  max-width: 100%;
+}
+
+.message {
+  overflow-wrap: anywhere;
+}
+
+.action {
+  font: inherit;
+  background: none;
+  border: 0;
+  color: var(--accent-toast-action);
+  font-weight: var(--weight-emphasis);
+  cursor: pointer;
+  /* 34px tall: the guide's touch target for pills and small controls. */
+  min-height: 34px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.action:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.ava {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--glow-blush);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: var(--weight-mark);
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-left: -10px;
+}
+
+@media (max-width: 760px) /* --bp-phone */ {
+  .toasts {
+    bottom: 90px;
+  }
+
+  .toasts[data-placement="editor"] {
+    bottom: 120px;
+  }
+}

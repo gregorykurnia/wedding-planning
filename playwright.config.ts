@@ -31,6 +31,8 @@ const emulatorAppEnv = {
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: EMULATOR_PROJECT_ID,
   NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:test",
   NEXT_DIST_DIR: ".next-e2e",
+  // Shows the new UI's dev-only gallery pages.
+  NEXT_PUBLIC_VEIL_GALLERY: "1",
   // Fake Cloudinary config so the upload controls are enabled. The specs
   // stub every request to api.cloudinary.com, so nothing leaves the machine.
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",
@@ -45,6 +47,7 @@ const demoAppEnv = {
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: "",
   NEXT_PUBLIC_FIREBASE_APP_ID: "",
   NEXT_DIST_DIR: ".next-demo",
+  NEXT_PUBLIC_VEIL_GALLERY: "1",
 };
 
 export default defineConfig({
