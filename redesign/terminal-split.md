@@ -7,12 +7,13 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 - **The studio is separate.** It runs in its own window with `./start` in `../wedding-planning-studio`, as always.
 - **Two terminals also work:** spread Terminal 3's column across the other two.
 
-## Before the first wave (one-time setup, not done yet)
+## Setup (done 2026-10-14)
 
-1. **A separate copy of the repo per terminal** (git worktrees), so the terminals don't overwrite each other's files, e.g. `git worktree add ../wp-t2 -b lane/t2 redesign`.
-2. **Different test ports per copy.** `playwright.config.ts` hard-codes 3100 and 3101, and `firebase.json` hard-codes 8080 and 9099, so two test runs at once collide. Until the ports are configurable, run e2e in one terminal at a time.
-3. **A line in `CLAUDE.md`** allowing short task branches that merge back into `redesign` (today it says to work only on `redesign`).
+1. **A separate copy of the repo per terminal.** Three git worktrees: `../wedding-planning-lanes/t1`, `t2` and `t3`, on branches `lane/t1`, `lane/t2` and `lane/t3`, each with its own `node_modules` and a copy of `.env.local`. Open each terminal in its folder. The main folder stays on `redesign` and is only for merging. To add a lane later: `git worktree add ../wedding-planning-lanes/t4 -b lane/t4 redesign`, then `npm ci`, copy `.env.local` and write an unused offset into `.test-port-offset`. Keep lanes inside `../wedding-planning-lanes/`: the studio's settings block that folder (refreshed on the next `redesign/studio.sh enter`), and a copy anywhere else would be readable from the studio.
+2. **Different test ports per copy.** Each lane's git-ignored `.test-port-offset` (10, 20, 30) moves every test port by that much (e2e servers 3100/3101, Auth 9099, Firestore 8080 and its websocket 9150, emulator hub 4400 and logging 4500). The main folder has no file and uses 0. `TEST_PORT_OFFSET=n` overrides it for one run. All lanes can run `npm test`, `npm run test:emulator` and `npm run test:e2e` at once.
+3. **The `CLAUDE.md` rule** for lane branches is in, with the merge steps: `git merge redesign` into the lane, fix conflicts, rerun the checks, then `git -C ../../wedding-planning merge --ff-only lane/tN` and push `redesign`. Lane branches stay local, so they don't make Vercel previews.
 4. **Merge one task at a time.** Expect small conflicts in the shared bookkeeping: the `AGENTS.md` change log, the ticks in `ui-implementation-plan.md` (§5, §6, §7.0, §10) and the gallery index.
+5. **Before starting a lane's next task,** bring it up to date: `git merge --ff-only redesign` (or `git merge redesign`).
 
 ## Phase 2: shell
 
