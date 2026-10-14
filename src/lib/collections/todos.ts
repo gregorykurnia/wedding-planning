@@ -8,6 +8,13 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
+import {
+  addElement,
+  removeElement,
+  updateElement,
+  withElementIds,
+  type Element,
+} from "@/lib/data/array-ops";
 import type { TodoItem, TodoSubtask } from "@/lib/types";
 
 const COLLECTION = "todos";
@@ -19,7 +26,7 @@ function fromDoc(id: string, data: DocumentData): TodoItem {
     notes: data.notes ?? "",
     dueDate: data.dueDate ?? null,
     done: data.done === true,
-    subtasks: Array.isArray(data.subtasks) ? (data.subtasks as TodoSubtask[]) : [],
+    subtasks: withElementIds<TodoSubtask>(data.subtasks),
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
   };
@@ -55,6 +62,10 @@ function newSubtaskId() {
     : `subtask-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+// Steps change through transactions on the latest stored array, so a partner's
+// edit to another step is never overwritten (src/lib/data/array-ops.ts).
+type StoredSubtask = TodoSubtask & Element;
+
 export function addSubtask(todo: TodoItem) {
   const subtask: TodoSubtask = {
     id: newSubtaskId(),
@@ -63,7 +74,7 @@ export function addSubtask(todo: TodoItem) {
     dueDate: null,
     done: false,
   };
-  return updateTodo(todo.id, { subtasks: [...todo.subtasks, subtask] });
+  return addElement(COLLECTION, todo.id, "subtasks", subtask as StoredSubtask);
 }
 
 export function updateSubtask(
@@ -71,13 +82,9 @@ export function updateSubtask(
   subtaskId: string,
   data: Partial<TodoSubtask>,
 ) {
-  return updateTodo(todo.id, {
-    subtasks: todo.subtasks.map((s) => (s.id === subtaskId ? { ...s, ...data } : s)),
-  });
+  return updateElement<StoredSubtask>(COLLECTION, todo.id, "subtasks", subtaskId, data);
 }
 
 export function deleteSubtask(todo: TodoItem, subtaskId: string) {
-  return updateTodo(todo.id, {
-    subtasks: todo.subtasks.filter((s) => s.id !== subtaskId),
-  });
+  return removeElement(COLLECTION, todo.id, "subtasks", subtaskId);
 }

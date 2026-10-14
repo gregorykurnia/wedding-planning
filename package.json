@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test": "vitest run --project model",
+    "test:watch": "vitest --project model",
+    "test:e2e": "playwright test",
+    "test:emulator": "node scripts/test-emulator.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

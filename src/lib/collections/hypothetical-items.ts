@@ -32,7 +32,7 @@ function fromDoc(id: string, data: DocumentData): HypotheticalItem {
     files: Array.isArray(data.files) ? data.files : [],
     subEntries: Array.isArray(data.subEntries)
       ? data.subEntries
-          .map((entry) => fromDocSubEntry(entry))
+          .map((entry, index) => fromDocSubEntry(entry, null, index))
           .filter((s): s is NonNullable<typeof s> => s !== null)
       : [],
     createdAt: timestampToMillis(data.createdAt),

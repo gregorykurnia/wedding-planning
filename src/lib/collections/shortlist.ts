@@ -9,6 +9,13 @@ import {
   updateDocument,
   useCollection,
 } from "@/lib/use-collection";
+import {
+  addElement,
+  legacyElementId,
+  removeElement,
+  updateElement,
+  type Element,
+} from "@/lib/data/array-ops";
 import type {
   ShortlistItem,
   ShortlistSubEntry,
@@ -30,11 +37,11 @@ function fromDocFiles(raw: unknown): VendorFile[] {
   );
 }
 
-function fromDocSubEntry(raw: unknown): ShortlistSubEntry | null {
+function fromDocSubEntry(raw: unknown, index: number): ShortlistSubEntry | null {
   if (typeof raw !== "object" || raw === null) return null;
   const data = raw as DocumentData;
   return {
-    id: typeof data.id === "string" ? data.id : crypto.randomUUID(),
+    id: typeof data.id === "string" && data.id ? data.id : legacyElementId(index),
     name: data.name ?? "",
     type: (data.type as VendorCategory) ?? "Other",
     price: typeof data.price === "number" ? data.price : 0,
@@ -64,7 +71,7 @@ function fromDoc(id: string, data: DocumentData): ShortlistItem {
     notes: data.notes ?? "",
     files: fromDocFiles(data.files),
     subEntries: Array.isArray(data.subEntries)
-      ? data.subEntries.map(fromDocSubEntry).filter((s): s is ShortlistSubEntry => s !== null)
+      ? data.subEntries.map((entry, index) => fromDocSubEntry(entry, index)).filter((s): s is ShortlistSubEntry => s !== null)
       : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
@@ -205,6 +212,10 @@ export function syncShortlistFilesFromVendors(items: ShortlistItem[], vendors: V
   );
 }
 
+// Packages change through transactions on the latest stored array, so a
+// partner's edit to another package is never overwritten (src/lib/data/array-ops.ts).
+type StoredSubEntry = ShortlistSubEntry & Element;
+
 export function addShortlistSubEntry(item: ShortlistItem) {
   const entry: ShortlistSubEntry = {
     id: crypto.randomUUID(),
@@ -218,9 +229,7 @@ export function addShortlistSubEntry(item: ShortlistItem) {
     notes: "",
     files: [],
   };
-  return updateDocument(COLLECTION, item.id, {
-    subEntries: [...item.subEntries, entry],
-  });
+  return addElement(COLLECTION, item.id, "subEntries", entry as StoredSubEntry);
 }
 
 export function updateShortlistSubEntry(
@@ -228,13 +237,9 @@ export function updateShortlistSubEntry(
   subId: string,
   data: Partial<Omit<ShortlistSubEntry, "id">>,
 ) {
-  return updateDocument(COLLECTION, item.id, {
-    subEntries: item.subEntries.map((s) => (s.id === subId ? { ...s, ...data } : s)),
-  });
+  return updateElement<StoredSubEntry>(COLLECTION, item.id, "subEntries", subId, data);
 }
 
 export function removeShortlistSubEntry(item: ShortlistItem, subId: string) {
-  return updateDocument(COLLECTION, item.id, {
-    subEntries: item.subEntries.filter((s) => s.id !== subId),
-  });
+  return removeElement(COLLECTION, item.id, "subEntries", subId);
 }

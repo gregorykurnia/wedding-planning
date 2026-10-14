@@ -39,7 +39,7 @@ function fromDoc(id: string, data: DocumentData): Venue {
     nextAction: data.nextAction ?? "",
     subEntries: Array.isArray(data.subEntries)
       ? data.subEntries
-          .map((entry) => fromDocSubEntry(entry, (data.funder as Funder) ?? null))
+          .map((entry, index) => fromDocSubEntry(entry, (data.funder as Funder) ?? null, index))
           .filter((s): s is NonNullable<typeof s> => s !== null)
       : [],
     createdAt: timestampToMillis(data.createdAt),

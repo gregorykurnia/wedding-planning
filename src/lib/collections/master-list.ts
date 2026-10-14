@@ -9,7 +9,9 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   Timestamp,
+  writeBatch,
 } from "firebase/firestore";
 import {
   deleteDocument,
@@ -173,6 +175,70 @@ export async function ensureMasterListInitialized() {
   return true;
 }
 
+/**
+ * Inserting below a row halves the gap to the next row each time, so after
+ * enough inserts the positions run out of precision. Below this gap the list
+ * is renumbered first (inventory-notes §5 #27).
+ */
+export const MIN_SORT_GAP = 1e-6;
+
+/** Up to this many rows are renumbered in one transaction (Firestore allows 500 writes). */
+const RENUMBER_IN_ONE_TRANSACTION = 490;
+
+/**
+ * Gives every row a whole-number position (0, 1, 2 …) in its current order and
+ * moves the next-row marker after them. Order is unchanged. Rows are re-read
+ * inside the transaction, so a row moved or added meanwhile makes Firestore
+ * retry rather than write a stale order.
+ */
+export async function renumberMasterList() {
+  const database = db;
+  if (!isFirebaseConfigured || !database) {
+    throw new Error("Firebase is not configured.");
+  }
+  const listed = await getDocs(query(collection(database, COLLECTION), orderBy("sortOrder", "asc")));
+  const refs = listed.docs.map((snapshot) => snapshot.ref);
+  const metaRef = doc(database, META_COLLECTION, META_ID);
+
+  if (refs.length > RENUMBER_IN_ONE_TRANSACTION) {
+    // Too many for one transaction: write in batches of positions that start
+    // above every current one, so rows already renumbered stay after the rest
+    // only until the last batch lands, and the final order is the same.
+    const start =
+      Math.ceil(
+        listed.docs.reduce((maximum, snapshot) => {
+          const value = snapshot.data().sortOrder;
+          return typeof value === "number" && Number.isFinite(value) ? Math.max(maximum, value) : maximum;
+        }, 0),
+      ) + 1;
+    for (let from = 0; from < refs.length; from += RENUMBER_IN_ONE_TRANSACTION) {
+      const batch = writeBatch(database);
+      refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION).forEach((ref, offset) => {
+        batch.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
+      });
+      await batch.commit();
+    }
+    await setDoc(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
+    return;
+  }
+
+  await runTransaction(database, async (transaction) => {
+    const rows = await Promise.all(refs.map((ref) => transaction.get(ref)));
+    const present = rows
+      .filter((snapshot) => snapshot.exists())
+      .map((snapshot) => ({
+        ref: snapshot.ref,
+        sortOrder:
+          typeof snapshot.data()?.sortOrder === "number" ? (snapshot.data()!.sortOrder as number) : Number.MAX_SAFE_INTEGER,
+      }))
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+    present.forEach((row, index) => {
+      transaction.update(row.ref, { sortOrder: index, updatedAt: serverTimestamp() });
+    });
+    transaction.set(metaRef, { nextSortOrder: present.length, updatedAt: serverTimestamp() }, { merge: true });
+  });
+}
+
 function newRowIds(count: number) {
   const database = db;
   if (!database) throw new Error("Firebase is not configured.");
@@ -185,7 +251,11 @@ function newRowIds(count: number) {
  * placed in the sort-order gap immediately after that row. Firestore retries
  * the transaction if a second client changes the list at the same time.
  */
-export async function addMasterListItems(count = 1, afterId?: string) {
+export async function addMasterListItems(
+  count = 1,
+  afterId?: string,
+  renumbered = false,
+): Promise<string[]> {
   if (!Number.isInteger(count) || count < 1 || count > 50) {
     throw new Error("Add between 1 and 50 rows.");
   }
@@ -218,6 +288,14 @@ export async function addMasterListItems(count = 1, afterId?: string) {
     }
 
     const nextRow = rows.find((row) => row.sortOrder > anchor.sortOrder);
+    if (
+      nextRow &&
+      !renumbered &&
+      (nextRow.sortOrder - anchor.sortOrder) / (count + 1) < MIN_SORT_GAP
+    ) {
+      await renumberMasterList();
+      return addMasterListItems(count, afterId, true);
+    }
     const maxSortOrder = rows.reduce(
       (maximum, row) => Math.max(maximum, row.sortOrder),
       anchor.sortOrder,
@@ -334,7 +412,11 @@ export async function moveMasterListItem(
       transaction.get(itemRef),
       transaction.get(neighborRef),
     ]);
-    if (!itemSnapshot.exists() || !neighborSnapshot.exists()) return;
+    // Fail loudly: a silent no-op left the row where it was with no sign why
+    // (inventory-notes §5 #27).
+    if (!itemSnapshot.exists() || !neighborSnapshot.exists()) {
+      throw new Error("A row in this move was removed. Refresh the list and try again.");
+    }
 
     const currentSortOrder = itemSnapshot.data().sortOrder;
     const neighborSortOrder = neighborSnapshot.data().sortOrder;

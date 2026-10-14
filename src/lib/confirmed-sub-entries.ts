@@ -1,18 +1,26 @@
 "use client";
 
 import type { DocumentData } from "firebase/firestore";
-import { updateDocument } from "@/lib/use-collection";
+import {
+  addElement,
+  legacyElementId,
+  removeElement,
+  updateElement,
+  type Element,
+} from "@/lib/data/array-ops";
 import type { ConfirmedSubEntry, Funder, VendorFile } from "@/lib/types";
 
 export function fromDocSubEntry(
   raw: unknown,
   fallbackFunder: Funder | null = null,
+  index = 0,
 ): ConfirmedSubEntry | null {
   if (typeof raw !== "object" || raw === null) return null;
   const data = raw as DocumentData;
   const hasFunder = Object.prototype.hasOwnProperty.call(data, "funder");
   return {
-    id: typeof data.id === "string" ? data.id : crypto.randomUUID(),
+    // Old parts saved without an id get the same id on every read (§5 #20).
+    id: typeof data.id === "string" && data.id ? data.id : legacyElementId(index),
     name: data.name ?? "",
     funder:
       typeof data.funder === "string"
@@ -34,6 +42,11 @@ interface HasSubEntries {
   funder?: Funder | null;
 }
 
+// Each change goes through a transaction that edits only the named part of the
+// latest stored array, so two people editing different parts at once both keep
+// their change (src/lib/data/array-ops.ts).
+type StoredSubEntry = ConfirmedSubEntry & Element;
+
 export function addSubEntry(collection: string, parent: HasSubEntries) {
   const entry: ConfirmedSubEntry = {
     id: crypto.randomUUID(),
@@ -45,9 +58,7 @@ export function addSubEntry(collection: string, parent: HasSubEntries) {
     nextAction: "",
     files: [],
   };
-  return updateDocument(collection, parent.id, {
-    subEntries: [...parent.subEntries, entry],
-  });
+  return addElement(collection, parent.id, "subEntries", entry as StoredSubEntry);
 }
 
 export function updateSubEntry(
@@ -56,15 +67,11 @@ export function updateSubEntry(
   subId: string,
   data: Partial<Omit<ConfirmedSubEntry, "id">>,
 ) {
-  return updateDocument(collection, parent.id, {
-    subEntries: parent.subEntries.map((s) => (s.id === subId ? { ...s, ...data } : s)),
-  });
+  return updateElement<StoredSubEntry>(collection, parent.id, "subEntries", subId, data);
 }
 
 export function removeSubEntry(collection: string, parent: HasSubEntries, subId: string) {
-  return updateDocument(collection, parent.id, {
-    subEntries: parent.subEntries.filter((s) => s.id !== subId),
-  });
+  return removeElement(collection, parent.id, "subEntries", subId);
 }
 
 export function addSubEntryFile(
@@ -73,11 +80,10 @@ export function addSubEntryFile(
   subId: string,
   file: VendorFile,
 ) {
-  return updateDocument(collection, parent.id, {
-    subEntries: parent.subEntries.map((s) =>
-      s.id === subId ? { ...s, files: [...s.files, file] } : s,
-    ),
-  });
+  return updateElement<StoredSubEntry>(collection, parent.id, "subEntries", subId, (s) => ({
+    ...s,
+    files: [...(Array.isArray(s.files) ? s.files : []), file],
+  }));
 }
 
 export function removeSubEntryFile(
@@ -86,9 +92,8 @@ export function removeSubEntryFile(
   subId: string,
   url: string,
 ) {
-  return updateDocument(collection, parent.id, {
-    subEntries: parent.subEntries.map((s) =>
-      s.id === subId ? { ...s, files: s.files.filter((f) => f.url !== url) } : s,
-    ),
-  });
+  return updateElement<StoredSubEntry>(collection, parent.id, "subEntries", subId, (s) => ({
+    ...s,
+    files: (Array.isArray(s.files) ? s.files : []).filter((f) => f.url !== url),
+  }));
 }
