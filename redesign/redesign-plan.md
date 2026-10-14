@@ -465,8 +465,8 @@ You approve the plan before Step 7.
 **Discovery (sees the old app)**
 - [x] Step 1: `inventory.md` as job stories grouped by jobs; owner-only `inventory-notes.md`; starter `priorities.md`, `brief.md`, `needs.md` (2026-10-14)
 - [x] Step 1: second leak review; removed details logged in §7 (2026-10-14)
-- [ ] Step 1b: banned-word scan clean
-- [ ] Step 1b: guess-the-layout test passed (§8)
+- [x] Step 1b: banned-word scan clean (2026-10-14)
+- [x] Step 1b: guess-the-layout test passed (§8; run 2 on inventory v1.2, 2026-10-14)
 
 **Brief (you, without opening the app)**
 - [ ] Step 2: §4–§5 decided; `priorities.md` status `FILLED`

@@ -355,7 +355,17 @@ A fresh studio session read only `handoff/inventory.md` and guessed the current 
 
 **Kept, because the feature implies them (judged not leaks):** a countdown with progress and the summary figures (O1–O3), the undo after removing a guest and phone-friendly guest entries (G7, G8), four funder summaries (B7: the four funders are data), parts kept with their booking (B9), title plus extract for documents and a two-part list-and-editor arrangement for notes (R6: the standard answer for any document app), a "where am I" trail for folders (R8), upload progress and PDF compression (R9), the demonstration-mode notice (states), and work-on-next items standing out (T3; the yellow highlight matches the real accent tint, but highlighting is the obvious answer).
 
-**Next:** run the test again on v1.2 in a new `./start` session.
+### Run 2 (2026-10-14, inventory v1.2): passed
+
+The pasted guess was partly garbled by the terminal copy, but each area's gist was readable.
+
+**The run 1 tells are gone:** there's no "Show packages" label, no exact urgency buckets, no "Showing X of Y" with Clear filters, and no "Add N rows" control.
+
+**Still wrong:** venues as a photo-card grid (real: a table), a drag handle to reorder tracker items (real: up/down controls), insert above *or* below (real: below only), and Agenda | Calendar | Tasks in one place (real: Schedule and To Do are separate).
+
+**Matches judged generic or implied by the features:** Inter or system font and a blush accent (shadcn defaults plus "it's a wedding app"; the real palette does have blush), packages nested under finalists and instalments under bookings (the data hierarchy, F17 and B4), spreadsheet-like inline-edited tables and stacked cards on phone (A4, A6, G8), the two-part notes arrangement and Word-like formatting (R1, R6), and the folder trail with upload progress (R8, R9). It also guessed tracker counts like "87 items · 52 confirmed · 9 next", which matches the real items / confirmed / next counts. Those three figures are the T4 need itself, so T4 stays as written. Revisit only if the designer copies the exact format.
+
+Result: no story rewrites needed. Step 1b is complete.
 
 ## §9 Decisions made in Step 2
 
