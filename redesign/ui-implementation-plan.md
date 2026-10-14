@@ -926,7 +926,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | 24b1d15; ran on production 2026-10-14 after a backup and the owner's review of the dry run (492 writes, second run plans nothing, 615 existing records unchanged); report raised G12/N12; real cost to log from `/cost` | [x] |
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | 2026-10-14: first pass found 3 blockers (B1 in 1.10, B2 and B3 in 1.7) and 22 should-fix items. The blockers were fixed in the same session (Opus 5.5 High) and the re-review passed; see `redesign/reviews/phase-1-review.md`. The should-fix items are still open there. the owner compared the preview with production on 2026-10-14 (unchanged), so Phase 1 is done; Bella's sign-in check is still open; real cost to log from `/cost` | [x] |
 | 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | 753f6c8; real cost to log from `/cost` | [x] |
-| 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
+| 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | af96e25; real cost to log from `/cost` | [x] |
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
@@ -1121,7 +1121,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
 
 #### Task 2.2: Icon set · Haiku 5.5 xHigh
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · af96e25 · real cost to log from `/cost`). The gallery check in Done when waits for Task 3.0; `tests/model/icons.test.tsx` renders every icon now. `FileTypeTag` is a span, since the prototype writes the extension as text. The Google mark keeps its four brand colours, the one colour exception in the style check (`scripts/check-veil-styles.mjs`).
 - **Read:** §2.6; prototype `assets/app.js` (`ICON`, `WA_ICON`, `HEART`), `files.html` (envelope), `items.html` (handle, star, tick), `signin.html` (Google mark).
 - **Files:** `src/veil/icons/*.tsx`.
 - **Done when:** each icon renders in the gallery (3.0), `aria-hidden`, with `currentColor`.
