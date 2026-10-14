@@ -71,6 +71,8 @@ In this copy, `<base>` is filled in as `main` and `<project>` as `wedding-planni
 
 ## Choosing the model for each step
 
+**Principle: the cheapest model that does the step well.** Quality comes first: a step's output has to pass the check that follows it (a leak review, scan, test, audit or review). Among the models that would pass, use the cheapest. The picks below are the current best guess at that point.
+
 **The model table lives in `~/.claude/CLAUDE.md`, under "Model choice for coding implementation".** This playbook doesn't copy it, so updating that table updates every project. Each step below says what *kind* of work it is and gives the current pick. If the table has changed since this was written, choose again by the kind of work. The table wins over the picks written here.
 
 | Kind of work | What to optimise | Current pick |
@@ -91,6 +93,8 @@ Never pick **Opus 5.5 Low** or **Sonnet 5.5 Medium**: Haiku 5.5 Max beats both o
 - Every Opus 5.5 High pick names the specific risk that justifies it.
 
 **Model check:** at the start of every session, compare the current model and effort with the step's pick. If the current one is lower, say so before starting and suggest switching (`/model`, plus the effort setting). If it's much higher for a mechanical step, suggest the cheaper one.
+
+**Move up after a failed check (every step):** when a step's output fails the check that follows it, redo the fix one row stronger in the global table and update that step's pick in the project's copy. For example, a leak review lets through wording that the scan or the guess-the-layout test catches, or an end-of-phase review rejects the work. Don't run one-off steps twice just to compare models; that costs more than it saves. Calibration trials belong in the rebuild (§7.0), where many similar tasks repeat.
 
 ### Picks per step
 
