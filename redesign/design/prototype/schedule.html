@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<link rel="stylesheet" href="assets/schedule.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/data-schedule.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/schedule.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data, A = window.Agenda;
+const view = new URLSearchParams(location.search).get("view") === "month" ? "month" : "agenda";
+if (S === "notif-default") d.notif = "default";
+if (S === "notif-denied") d.notif = "denied";
+const ui = { q: S === "noresults" ? "florist" : "", kind: "", done: S === "done", month: new Date(2026, 9, 1), day: "2026-10-14", shown: 80 };
+const FILTERS = [["", "Everything"], ["payment", "Payments"], ["task", "Tasks"], ["call", "Calls"], ["appointment", "Appointments"], ["deadline", "Deadlines"], ["own", "Our events"], ["other", "Other"]];
+
+function filtered() {
+  const s = ui.q.toLocaleLowerCase();
+  return A.items().filter((it) => (ui.done || it.status === "scheduled") &&
+    (!ui.kind || (ui.kind === "own" ? it.type === "event" : ui.kind === "call" ? /call/.test(it.kind) : ui.kind === "payment" || ui.kind === "task" ? it.type === ui.kind : it.kind === ui.kind)) &&
+    (!s || (it.title + " " + (it.sub || "") + " " + (it.notes || "")).toLocaleLowerCase().includes(s)));
+}
+
+function hero() {
+  const all = A.items().filter((i) => i.status === "scheduled");
+  const late = all.filter((i) => i.late).length, today = all.filter((i) => !i.late && i.date === "2026-10-14").length, tom = all.filter((i) => i.date === "2026-10-15").length;
+  const n = late + today;
+  const soon = all.filter((i) => !i.late && V.daysFrom(i.date) > 1 && V.daysFrom(i.date) <= 14).length;
+  return `<section class="hero"><h1>Schedule</h1><p class="sub">Appointments, calls, payments and tasks, in one line of time</p>${V.subnav(view === "month" ? "schedule.html?view=month" : "schedule.html", "schedule")}
+    ${all.length ? `<p class="kicker" style="margin-top:34px">${n ? "Late or due today" : tom ? "Nothing late or due today. Tomorrow:" : "Nothing late or due today"}</p>
+    <p class="figure md ${late ? "late" : ""}">${n || tom}</p>
+    <p class="context">${n ? [late ? `<b style="color:var(--rose-ink)">${late} late</b>` : "", today ? `<b>${today} today</b>` : ""].filter(Boolean).join(" and ") + (tom ? `, then ${tom} tomorrow` : "") + "." : tom ? `${V.plural(tom, "thing")} tomorrow.` : ""} ${soon ? `${V.plural(soon, "more thing")} in the next 14 days.` : ""}</p>` : ""}</section>`;
+}
+
+function controls() {
+  return `<div class="focus" role="group" aria-label="Show">${FILTERS.map(([k, l]) => `<button class="chip" data-kind="${k}" aria-pressed="${ui.kind === k}">${l}</button>`).join("")}</div>
+    <div class="tools" style="margin-top:12px"><label class="search">${V.ICON.search}<span class="sr">Search the schedule</span><input id="q" type="search" placeholder="Search everything with a date" value="${V.esc(ui.q)}"></label>
+    <label class="check" style="font-size:14px"><input type="checkbox" id="done" ${ui.done ? "checked" : ""}>Show completed and cancelled</label></div>`;
+}
+
+function agenda(box) {
+  const items = filtered();
+  if (!items.length) {
+    box.innerHTML = `<div class="message inline"><h1>${ui.q ? `Nothing matches “${V.esc(ui.q)}”` : "Nothing here"}</h1><p>${ui.q ? "Search looks through titles, places and notes of everything with a date." : "Nothing of this kind is coming up."}</p><div class="acts"><button class="btn quiet" id="reset">Show everything</button></div></div>`;
+    V.$("#reset").onclick = () => { ui.q = ""; ui.kind = ""; V.rerender(); }; return;
+  }
+  const late = items.filter((i) => i.late && i.status === "scheduled"), rest = items.filter((i) => !(i.late && i.status === "scheduled"));
+  const groups = []; let budget = ui.shown;
+  if (late.length) groups.push([`Late`, late, "late"]);
+  const byDay = {}; rest.forEach((i) => (byDay[i.date] = byDay[i.date] || []).push(i));
+  Object.keys(byDay).sort().forEach((k) => groups.push([A.dayTitle(k), byDay[k], k === "2026-10-14" ? "today" : ""]));
+  box.innerHTML = groups.map(([h, its, cls]) => { if (budget <= 0) return ""; const show = its.slice(0, budget); budget -= show.length;
+    return `<h2 class="group-h ${cls === "late" ? "late" : ""}">${h}${cls === "today" ? `<small>Today</small>` : cls === "late" ? `<small>${V.plural(its.length, "thing")}</small>` : ""}</h2><ul class="agenda">${show.map(A.row).join("")}</ul>`; }).join("")
+    + (items.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show more</button></p>` : "");
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 80; V.rerender(); };
+  A.wireRows(box);
+}
+
+function month(box) {
+  const y = ui.month.getFullYear(), mo = ui.month.getMonth();
+  const first = new Date(y, mo, 1), start = (first.getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate();
+  const items = filtered(), byDay = {};
+  items.forEach((i) => (byDay[i.date] = byDay[i.date] || []).push(i));
+  const iso = (dd) => `${y}-${String(mo + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+  let cells = Array.from({ length: start }, () => `<span class="mc empty"></span>`).join("");
+  for (let dd = 1; dd <= days; dd++) {
+    const k = iso(dd), its = byDay[k] || [];
+    const dots = its.slice(0, 3).map((i) => `<i class="${i.late && i.status === "scheduled" ? "late" : i.type}"></i>`).join("") + (its.length > 3 ? `<em>+${its.length - 3}</em>` : "");
+    cells += `<button class="mc ${k === "2026-10-14" ? "today" : ""} ${k === ui.day ? "sel" : ""} ${k === d.wedding ? "wed" : ""}" data-day="${k}" aria-label="${V.dateLong(k)}, ${its.length ? V.plural(its.length, "thing") : "nothing"}"><b>${dd}</b><span class="dots">${dots}</span></button>`;
+  }
+  const sel = (byDay[ui.day] || []);
+  box.innerHTML = `<div class="month-head"><button class="btn quiet small" id="prev" aria-label="Previous month">Earlier</button><h2 class="serif">${["January","February","March","April","May","June","July","August","September","October","November","December"][mo]} ${y}</h2><button class="btn quiet small" id="next" aria-label="Next month">Later</button></div>
+    <p style="text-align:center;margin-top:6px"><button class="link" id="today">Back to today</button></p>
+    <div class="cal" role="grid"><span class="wd">Mon</span><span class="wd">Tue</span><span class="wd">Wed</span><span class="wd">Thu</span><span class="wd">Fri</span><span class="wd">Sat</span><span class="wd">Sun</span>${cells}</div>
+    <p class="legend"><span><i class="event"></i>Our events</span><span><i class="payment"></i>Payments</span><span><i class="task"></i>Tasks</span><span><i class="late"></i>Late</span></p>
+    <h2 class="group-h">${A.dayTitle(ui.day)}</h2>${sel.length ? `<ul class="agenda">${sel.map(A.row).join("")}</ul>` : `<p class="note">Nothing on this day. <button class="link" id="add-here">Add something</button></p>`}`;
+  V.$("#prev").onclick = () => { ui.month = new Date(y, mo - 1, 1); V.rerender(); };
+  V.$("#next").onclick = () => { ui.month = new Date(y, mo + 1, 1); V.rerender(); };
+  V.$("#today").onclick = () => { ui.month = new Date(2026, 9, 1); ui.day = "2026-10-14"; V.rerender(); };
+  V.$$("[data-day]", box).forEach((b) => b.onclick = () => { ui.day = b.dataset.day; V.rerender(); });
+  const ah = V.$("#add-here"); if (ah) ah.onclick = () => A.eventSheet(null, ui.day);
+  A.wireRows(box);
+}
+
+V.init({
+  where: "Schedule", section: "schedule.html", noun: "your schedule", wide: true,
+  states: [["empty", "Nothing scheduled"], ["noresults", "No results"], ["done", "Showing completed and cancelled"], ["event", "An event's details"], ["new", "Adding an event"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an appointment"]],
+  render(main) {
+    if (!A.items().length && !d.events.length) {
+      main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing scheduled yet</h1><p>Add appointments, vendor calls and deadlines. Payments due on bookings and tasks with dates appear here by themselves.</p><div class="acts"><button class="btn" id="add">Add to the schedule</button></div></div>`;
+      V.$("#add").onclick = () => A.eventSheet(null); return;
+    }
+    const focused = document.activeElement && document.activeElement.id === "q";
+    main.innerHTML = hero() + controls() + `<div id="list"></div><button class="btn add-fab" id="add">Add to the schedule</button>`;
+    (view === "month" ? month : agenda)(V.$("#list"));
+    const q = V.$("#q"); q.oninput = () => { ui.q = q.value; (view === "month" ? month : agenda)(V.$("#list")); };
+    if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    V.$$("[data-kind]").forEach((b) => b.onclick = () => { ui.kind = b.dataset.kind; V.rerender(); });
+    V.$("#done").onchange = (e) => { ui.done = e.target.checked; V.rerender(); };
+    V.$("#add").onclick = () => A.eventSheet(null, view === "month" ? ui.day : null);
+  },
+  sync() {
+    setTimeout(() => {
+      const e = { id: "sync1", title: "Makeup trial with Kirana", kind: "appointment", date: "2026-10-15", start: "10:00", end: "12:00", allDay: false, related: "kirana", where: "Kirana Makeup, Sanur", notes: "", remind: "60", status: "scheduled" };
+      d.events.push(e); V.rerender(); V.$$('[data-ev="sync1"]').forEach((x) => x.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added “${V.esc(e.title)}” tomorrow at 10:00`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
+});
+if (S === "event" || S === "notif-default" || S === "notif-denied") A.eventSheet(d.events.find((e) => e.id === "e2"));
+if (S === "new") A.eventSheet(null);
+</script>
+</body>
+</html>

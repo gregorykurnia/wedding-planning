@@ -82,11 +82,13 @@
 
   /* ---------- links keep the data set and demo mode ---------- */
   const href = (path, extra) => {
-    const p = new URLSearchParams(extra || {});
+    const [base, qs] = path.split("?");
+    const p = new URLSearchParams(qs || "");
+    Object.entries(extra || {}).forEach(([k, v]) => p.set(k, v));
     if (STRESS) p.set("stress", "");
     if (DEMO) p.set("state", "demo");
     const s = p.toString().replace(/=(&|$)/g, "$1");
-    return path + (s ? "?" + s : "");
+    return base + (s ? "?" + s : "");
   };
 
   /* ---------- icons ---------- */
@@ -105,7 +107,7 @@
     ["Budget", "Bookings, payments and who pays", "budget.html"],
     ["Vendors", "Everyone we're considering, the shortlist and venues", "vendors.html"],
     ["Wedding items", "Every piece and who provides it", "#"],
-    ["Schedule", "Appointments, tasks and deadlines", "#"],
+    ["Schedule", "Appointments, tasks and deadlines", "schedule.html"],
     ["Documents", "Notes, plans and files", "documents.html"],
     ["Guests", "Who's coming to what", "#"],
   ];
@@ -308,6 +310,7 @@
   const SUBNAVS = {
     vendors: ["Vendors, shortlist and venues", [["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]]],
     records: ["Documents and files", [["documents.html", "Documents"], ["files.html", "Files"]]],
+    schedule: ["Agenda, month and tasks", [["schedule.html", "Agenda"], ["schedule.html?view=month", "Month"], ["tasks.html", "Tasks"]]],
   };
   const subnav = (here, set) => { const [label, items] = SUBNAVS[set || "vendors"]; return `<nav class="subnav" aria-label="${label}">${items.map(([h, t]) => `<a href="${href(h)}" ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`; };
   /* "Now" for relative times: 11:30 on the fixed today */

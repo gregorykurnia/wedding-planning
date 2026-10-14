@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<link rel="stylesheet" href="assets/schedule.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-schedule.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const opened = new Set([new URLSearchParams(location.search).get("open") || (S === "open" ? "t1" : "")]);
+if (S === "alldone") d.tasks.forEach((t) => { t.done = true; t.doneOn = "2026-10-14"; });
+let showDone = S === "alldone";
+
+function dueText(t) {
+  if (!t.due) return `<span class="td">No date</span>`;
+  const n = V.daysFrom(t.due);
+  return `<span class="td ${n < 0 && !t.done ? "late" : ""}">${t.done ? "Done " + V.dateShort(t.doneOn || t.due) : n < 0 ? V.plural(-n, "day") + " late" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + V.dateShort(t.due)}</span>`;
+}
+function task(t) {
+  const n = t.steps.length, k = t.steps.filter((s) => s.done).length, pct = n ? Math.round(k / n * 100) : 0;
+  return `<li><details class="tk ${t.done ? "done" : ""}" data-t="${t.id}" ${opened.has(t.id) ? "open" : ""}>
+    <summary><button class="tick-box" role="checkbox" aria-checked="${t.done}" aria-label="${t.done ? "Reopen" : "Finish"} ${V.esc(t.title)}" data-tick="${t.id}"></button><span class="tt" dir="auto">${V.esc(t.title)}</span>${dueText(t)}${V.ICON.chev}
+      <span class="tm">${n ? `${k} of ${V.plural(n, "step")} done` : t.notes ? V.esc(t.notes.slice(0, 80)) : ""}${n ? `<div class="thread small" role="img" aria-label="${pct}% of steps done"><span class="done" style="width:${pct}%"></span></div>` : ""}</span></summary>
+    <div class="inner">
+      <ul class="steps-list">${t.steps.map((s) => `<li class="${s.done ? "done" : ""}" data-s="${s.id}"><input type="checkbox" class="sbox" ${s.done ? "checked" : ""} aria-label="Step done"><input type="text" value="${V.esc(s.title)}" aria-label="Step" dir="auto"><input type="date" value="${s.due || ""}" aria-label="Step due date"><button class="x" aria-label="Remove step" title="Remove step">×</button></li>`).join("")}</ul>
+      <p style="margin-top:10px"><button class="link" data-add-step>Add a step</button></p>
+      <div class="fields" style="margin-top:14px"><div class="field"><label for="due-${t.id}">Due date</label><input id="due-${t.id}" type="date" data-due value="${t.due || ""}"></div></div>
+      <label class="sr" for="n-${t.id}">Notes</label><textarea class="notes" id="n-${t.id}" data-notes placeholder="Notes" dir="auto">${V.esc(t.notes)}</textarea>
+      <div class="tacts"><button class="link rose" data-del>Delete task</button></div>
+    </div></details></li>`;
+}
+const order = (list) => list.slice().sort((a, z) => !a.due && !z.due ? 0 : !a.due ? 1 : !z.due ? -1 : a.due.localeCompare(z.due));
+
+function addSheet() {
+  V.openSheet(`<h2>Add a task</h2><div class="fields"><div class="field"><label for="nt">What needs doing</label><input id="nt" dir="auto" autofocus placeholder="For example, Choose the caterer"></div><div class="field"><label for="nd">Due date</label><input id="nd" type="date"></div></div>
+    <p class="sub" style="margin-top:12px">Break it into steps once it's added.</p><div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add task</button></div>`, (el) => {
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-ok]", el).onclick = () => {
+      const tt = V.$("#nt", el).value.trim(); if (!tt) { V.$("#nt", el).focus(); return; }
+      const t = { id: "t" + Date.now(), title: tt, due: V.$("#nd", el).value || null, notes: "", done: false, steps: [] };
+      d.tasks.push(t); opened.add(t.id); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(tt)}`);
+    };
+  });
+}
+
+V.init({
+  where: "Schedule", section: "schedule.html", noun: "your tasks",
+  states: [["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  render(main) {
+    const open = order(d.tasks.filter((t) => !t.done)), done = d.tasks.filter((t) => t.done).sort((a, z) => (z.doneOn || "").localeCompare(a.doneOn || ""));
+    const head = `<section class="hero"><h1>Tasks</h1><p class="sub">${d.tasks.length ? `${open.length.toLocaleString("en-GB")} open${done.length ? `, ${done.length.toLocaleString("en-GB")} done` : ""}` : "Big jobs, broken into steps"}</p>${V.subnav("tasks.html", "schedule")}</section>`;
+    if (!d.tasks.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No tasks yet</h1><p>Add the big jobs, like choosing the caterer, and break them into steps with their own dates. Tasks with a due date also show in the agenda.</p><div class="acts"><button class="btn" id="add">Add a task</button></div></div>`;
+      V.$("#add").onclick = addSheet; return;
+    }
+    main.innerHTML = head + (open.length ? `<h2 class="section-h">Open <small>by due date, undated last</small></h2><ul class="task-list">${open.slice(0, 200).map(task).join("")}</ul>`
+        : `<div class="message inline">${V.ICON.knot}<h1>Everything's done</h1><p>Finished tasks are kept below in case you need one back.</p></div>`)
+      + (done.length ? `<details class="done-wrap" ${showDone ? "open" : ""} style="margin-top:40px"><summary class="link" style="cursor:pointer;font-size:15px">${showDone ? "Hide" : "Show"} ${V.plural(done.length, "finished task")}</summary><ul class="task-list" style="margin-top:14px">${done.slice(0, 200).map(task).join("")}</ul></details>` : "")
+      + `<button class="btn add-fab" id="add">Add a task</button>`;
+    wire(main);
+  },
+});
+
+function wire(main) {
+  V.$("#add", main).onclick = addSheet;
+  const dw = V.$(".done-wrap", main); if (dw) dw.ontoggle = () => { showDone = dw.open; V.$("summary", dw).textContent = `${dw.open ? "Hide" : "Show"} ${V.plural(d.tasks.filter((t) => t.done).length, "finished task")}`; };
+  V.$$("details.tk", main).forEach((dt) => dt.addEventListener("toggle", () => dt.open ? opened.add(dt.dataset.t) : opened.delete(dt.dataset.t)));
+  V.$$("[data-tick]", main).forEach((b) => b.onclick = (e) => {
+    e.preventDefault();
+    const t = d.tasks.find((x) => x.id === b.dataset.tick), was = t.done;
+    t.done = !t.done; t.doneOn = t.done ? "2026-10-14" : null; V.rerender();
+    V.saved(t.done ? `Finished ${V.esc(t.title)}` : `Reopened ${V.esc(t.title)}`, () => { t.done = was; V.rerender(); });
+  });
+  V.$$("details.tk", main).forEach((dt) => {
+    const t = d.tasks.find((x) => x.id === dt.dataset.t);
+    V.$$(".steps-list li", dt).forEach((li) => {
+      const s = t.steps.find((x) => x.id === li.dataset.s);
+      V.$(".sbox", li).onchange = (e) => { s.done = e.target.checked; V.rerender(); };
+      V.$("input[type=text]", li).onchange = (e) => { s.title = e.target.value; V.saved("Saved"); };
+      V.$("input[type=date]", li).onchange = (e) => { s.due = e.target.value || null; V.saved("Saved"); };
+      V.$(".x", li).onclick = () => { const i = t.steps.indexOf(s); t.steps.splice(i, 1); V.rerender(); V.saved(`Removed a step`, () => { t.steps.splice(i, 0, s); V.rerender(); }); };
+    });
+    V.$("[data-add-step]", dt).onclick = () => { const s = { id: "s" + Date.now(), title: "", due: null, done: false }; t.steps.push(s); V.rerender(); const inp = V.$(`[data-s="${s.id}"] input[type=text]`); if (inp) inp.focus(); };
+    V.$("[data-due]", dt).onchange = (e) => { t.due = e.target.value || null; V.rerender(); V.saved("Saved"); };
+    V.$("[data-notes]", dt).onchange = (e) => { t.notes = e.target.value; V.saved("Saved"); };
+    V.$("[data-del]", dt).onclick = async () => {
+      if (!await V.confirm({ title: `Delete ${t.title}?`, body: `${t.steps.length ? `Its ${V.plural(t.steps.length, "step")} go with it. ` : ""}You can undo for a few seconds.`, action: "Delete task", danger: true })) return;
+      const i = d.tasks.indexOf(t); d.tasks.splice(i, 1); V.rerender(); V.saved(`Deleted ${V.esc(t.title)}`, () => { d.tasks.splice(i, 0, t); V.rerender(); });
+    };
+  });
+}
+</script>
+</body>
+</html>

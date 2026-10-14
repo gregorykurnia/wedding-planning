@@ -59,3 +59,11 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Deleting a file is for good** (R13). The warning says how much storage it frees and that it can't be brought back, so there's no undo. Moves, renames and folder deletes do have undo.
 - **Uploads ask for name, category and description per file while they upload** (R10). Nothing waits on them, so a quick upload is still quick.
 - **No storage meter.** The inventory mentions free storage limits but not their size, so the screen only shows how much is used ("14 files, 33.1 MB in all"). Tell me the limit if you want a meter.
+
+### Session 5, schedule group (2026-10-14)
+- **One figure for urgency** (S6): the number of things late or due today, in rose when anything is late, with a sentence naming tomorrow and the next 14 days.
+- **"Late" heads the agenda** as its own group, so nothing overdue hides inside a past day. Late payments keep the dark "Record payment" button; the others are quiet.
+- **Payments and tasks in the agenda are read-only reflections.** Tapping one opens its booking or task (S7), so it's only ever edited in one place.
+- **Event kinds** are colour-quiet: payments in gold and tasks in sage, as small labels; everything else in ink. The month dots use the same colours plus rose for late.
+- **Notification state lives where you set a reminder** (S10). It also belongs in settings, which comes with the sign-in group.
+- **Tasks sit with the schedule** (Agenda, Month, Tasks), because tasks with dates already appear in the agenda.

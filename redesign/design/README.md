@@ -39,4 +39,10 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - A file's details: preview, name, category, description, size and date, open, download, move, and delete for good (freeing storage). Search finds files in any folder by name or description.
   - States: nothing yet, an empty folder, no results, uploading (done, in progress, shrinking, too large, failed), a file's details, moving a folder, loading, couldn't load, offline, demonstration mode, Bella uploads a file.
   - Stress data: 30 nested folders, 3,000 files and 40 folders in one folder, long and non-Latin names, 1 KB and 10 MB files, very wide and very tall images.
-- Next groups: schedule (S), wedding items (T), guests (G), overview, sign-in and settings (O, A).
+- 2026-10-14, session 5 (same conversation): **schedule group** (S1–S10) in `schedule.html` (agenda and month) and `tasks.html`, sharing `assets/schedule.js` and `assets/schedule.css`.
+  - Agenda: your events, payments due from bookings and tasks with dates, in time order. Late items come first in rose, then each day; "Today" and "Tomorrow" are named. Done and cancelled items appear on demand. You can narrow by kind and search.
+  - The one figure says how many things are late or due today (S6). Payments can be recorded straight from the agenda, and each item links to its booking, task or vendor (S7).
+  - Month: a calendar with coloured dots (events, payments, tasks, late), earlier and later months, back to today, and the chosen day's list underneath. The wedding day is marked.
+  - Event sheet: title, kind, date, all day or times, who it's with, place or call link, notes, reminder, mark completed, cancel, back to scheduled, and delete with undo. Reminders explain the device's notification state: allowed, not yet allowed (with a button), or turned off.
+  - Tasks: open tasks by due date with undated ones last, steps with their own dates, a little thread showing steps done, finished tasks kept apart but recoverable, and delete with undo.
+- Next groups: wedding items (T), guests (G), overview, sign-in and settings (O, A).
