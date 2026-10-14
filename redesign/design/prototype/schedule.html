@@ -98,7 +98,7 @@ function month(box) {
 
 V.init({
   where: "Schedule", section: "schedule.html", noun: "your schedule", wide: true,
-  states: [["empty", "Nothing scheduled"], ["noresults", "No results"], ["done", "Showing completed and cancelled"], ["event", "An event's details"], ["new", "Adding an event"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an appointment"]],
+  states: [["empty", "Nothing scheduled"], ["noresults", "No results"], ["done", "Showing completed and cancelled"], ["event", "An event's details"], ["savefail", "A change didn't save"], ["new", "Adding an event"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an appointment"]],
   render(main) {
     if (!A.items().length && !d.events.length) {
       main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing scheduled yet</h1><p>Add appointments, vendor calls and deadlines. Payments due on bookings and tasks with dates appear here by themselves.</p><div class="acts"><button class="btn" id="add">Add to the schedule</button></div></div>`;
@@ -121,7 +121,7 @@ V.init({
     }, 1600);
   },
 });
-if (S === "event" || S === "notif-default" || S === "notif-denied") A.eventSheet(d.events.find((e) => e.id === "e2"));
+if (S === "event" || S === "savefail" || S === "notif-default" || S === "notif-denied") A.eventSheet(d.events.find((e) => e.id === "e2"));
 if (S === "new") A.eventSheet(null);
 </script>
 </body>

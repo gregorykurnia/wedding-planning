@@ -195,11 +195,16 @@
   }
   function closeSheet() { const s = $(".scrim"); if (!s || s.hidden) return; s.hidden = true; s.innerHTML = ""; if (lastFocus) lastFocus.focus(); }
 
+  /* Busy: the confirm button says what it is doing ("Removing", "Deleting") for a moment before the change lands. */
+  const gerund = (a) => /^remove\b/i.test(a) ? "Removing" : /^delete\b/i.test(a) ? "Deleting" : /^empty\b/i.test(a) ? "Emptying" : "Working";
   function confirm({ title, body, action, danger }) {
     return new Promise((res) => {
       openSheet(`<h2>${esc(title)}</h2><p class="sub">${body}</p><div class="acts"><button class="btn quiet" data-no>Keep it</button><button class="btn ${danger ? "danger" : ""}" data-yes>${esc(action)}</button></div>`, (el) => {
         $("[data-no]", el).onclick = () => { closeSheet(); res(false); };
-        $("[data-yes]", el).onclick = () => { closeSheet(); res(true); };
+        $("[data-yes]", el).onclick = (e) => {
+          const b = e.currentTarget; b.classList.add("busy"); b.textContent = gerund(action); $("[data-no]", el).disabled = true;
+          setTimeout(() => { closeSheet(); res(true); }, 450);
+        };
       });
     });
   }
@@ -210,7 +215,13 @@
     t.className = "toast";
     t.innerHTML = `${opts.from ? `<span class="ava" aria-hidden="true">${esc(opts.from[0])}</span>` : ""}<span>${msg}</span>${opts.action ? `<button>${esc(opts.action)}</button>` : ""}`;
     box.appendChild(t);
-    if (opts.action) $("button", t).onclick = () => { opts.onAction && opts.onAction(); t.remove(); };
+    /* Undo is busy ("Restoring") while the item goes back to where it was. */
+    if (opts.action) $("button", t).onclick = (e) => {
+      const b = e.currentTarget;
+      if (opts.action !== "Undo") { opts.onAction && opts.onAction(); t.remove(); return; }
+      b.disabled = true; b.textContent = "Restoring"; b.classList.add("busy");
+      setTimeout(() => { opts.onAction && opts.onAction(); t.remove(); }, 450);
+    };
     setTimeout(() => t.remove(), opts.ms || 6000);
   }
 
@@ -218,8 +229,22 @@
   const sheetSaveLine = () => `<p class="save-state sheet-save" role="status">${DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>`;
   function sheetSaver(el) {
     const line = $(".sheet-save", el); let t = null;
+    /* ?state=savefail: the change didn't save. What was typed stays in the sheet and Try again applies it. */
+    let failing = STATE === "savefail", pending = null;
+    const fail = () => {
+      if (!line) return;
+      line.classList.add("failed");
+      line.innerHTML = `Couldn't save. What you typed is kept. <button type="button" class="link rose" data-retry>Try again</button>`;
+      $("[data-retry]", line).onclick = () => {
+        failing = false; line.classList.remove("failed"); line.textContent = "Saving";
+        if (pending) { pending(); pending = null; rerender(); }
+        t = setTimeout(() => (line.textContent = "Saved"), 450);
+      };
+    };
+    if (failing) fail();
     return (apply) => {
       if (DEMO) { if (line) line.textContent = "Demonstration mode: changes aren't saved"; return false; }
+      if (failing) { pending = apply; fail(); return false; }
       apply(); rerender();
       if (line) { line.textContent = "Saving"; clearTimeout(t); t = setTimeout(() => (line.textContent = "Saved"), 450); }
       return true;

@@ -222,7 +222,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - "Rp 5.000.000, no date"
 - **Parts on a booking** (`.part`, a disclosure):
   - **Summary:** name, price, chevron, funder, and the status ("Rp X due 30 Oct", "Rp X 3 days late", "paid in full", "Rp X to pay, no date", "overpaid by …").
-  - **Open:** the part's fields, indented behind a champagne hairline. Below them: "Attach a file to this part", then "Record a payment" and "Remove this part" (rose).
+  - **Open:** the part's fields, indented behind a champagne hairline. Below them: **Files**, the same tiles and **Add files** tile as on the booking (the shared upload sheet, filing into a folder named after the booking and the part), then "Record a payment" and "Remove this part" (rose).
 - **Menu card** (price options, packages, categories): serif name … leader … serif price. "What's included" sits under it. Then the actions: "*The one we're leaning towards*" (gold italic, for the preferred option) or "Lean towards this one", plus Edit and Remove (rose).
 - **Tally** (guest headcounts): label … leader … serif number. "Of which, if space allows" is an indented muted sub-line, and "Unsure, living abroad" is muted.
 
@@ -266,7 +266,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Small** (`.btn.small`): tighter padding, 13.5px. Used in rows and cards.
 - **Danger** (`.btn.danger`): a rose-ink fill. Only as the confirming button inside a confirm dialog.
 - **Disabled:** 45% opacity, a not-allowed cursor. Used in demonstration mode and before a choice is made ("Move here").
-- **Busy** (`.btn.busy`): a spinner before the label, which changes to the gerund ("Adding", "Recording", "Copying", "Booking", "Moving", "Signing in").
+- **Busy** (`.btn.busy`): a spinner before the label, which changes to the gerund ("Adding", "Recording", "Copying", "Booking", "Moving", "Signing in"). The confirming button of a confirm is busy too for a moment ("Removing", "Deleting"), and the **Undo** in a toast reads "Restoring" until the item is back.
 - **Floating** (`.add-fab`): primary with `--shadow-fab`.
 - **Google** (sign-in only): white with an edge and the Google mark.
 - **Text link** (`.link`): ink, with a champagne underline offset 3px. **Rose link** (`.link.rose`) for destructive or failed actions: "Remove this booking", "Delete for good", "Try again".
@@ -308,7 +308,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - Add or edit a package
   - Book it / Move into Vendors
   - Venue (add or edit, with stage chips and files)
-  - Add or edit a what-if item
+  - Add or edit a what-if item (name, category, price, who would pay; **Split into parts**, then each part's name, price and who would pay, with **Add a part** and Remove; removing down to one part merges it back into a single item)
   - Upload files
   - A file's details
   - New or rename a folder
@@ -319,6 +319,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - Add items (one per line)
   - The guest sheet (add or edit)
 - **Editing sheets** (save as you go, end with Done): an event, a guest, a what-if item, a venue, a price option, a package, a file's details. Status actions in the event sheet (Mark completed, Cancel it, Back to scheduled) still act at once and close the sheet with an undo toast.
+- **A change that didn't save** (`?state=savefail` on a screen with editing sheets): the save line turns rose and reads "Couldn't save. What you typed is kept. **Try again**". Everything typed stays in the fields; Try again applies it and runs "Saving → Saved".
 - **Still different:** the document's link sheet ("Edit link") keeps **Save** (open question 22).
 
 ### 4.15 Confirm (`Veil.confirm`)
@@ -326,7 +327,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - a question title: "Remove Villa Samaya Ubud?"
   - a body that says exactly what goes and whether it can be undone
   - **Keep it** (quiet)
-  - the action (danger): "Remove booking", "Remove part", "Remove funder", "Remove option", "Remove package", "Remove item", "Remove guest", "Delete task", "Delete", "Delete folder", "Delete for good"
+  - the action (danger), which turns busy ("Removing", "Deleting") for a moment before the change lands: "Remove booking", "Remove part", "Remove funder", "Remove option", "Remove package", "Remove item", "Remove guest", "Delete task", "Delete", "Delete folder", "Delete for good"
 - The body always names the consequence:
   - "It leaves the budget, with its 3 parts, Rp 50.000.000 of recorded payments and 2 files. You can undo for a few seconds."
   - "Bella was bringing 2 plus-ones, so the headcount drops by 3. You can undo for a few seconds."
@@ -342,7 +343,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - **with a next step**: "Kebun Bunga Atelier is now a booking · **Open**"
   - **partner**: a blush circle with the partner's initial, then "Bella recorded Rp 55.500.000 for Dapur Lestari Catering"; stays 9 seconds
   - **demonstration**: "Not saved: demonstration mode"
-- **Timing:** 6 seconds by default, and the undo lasts as long as the toast. Toasts stack upward; the box is `role="status"`, `aria-live="polite"`.
+- **Timing:** 6 seconds by default, and the undo lasts as long as the toast. Tapping **Undo** turns it into "Restoring" (disabled) for a moment, then the item is back in its place. Toasts stack upward; the box is `role="status"`, `aria-live="polite"`.
 
 ### 4.17 Banners (`.banner`)
 - A centred pill under the top bar or the toolbar.
@@ -580,7 +581,7 @@ The save line sits under the title.
 | Demonstration mode | `?state=demo` | Banner + the empty layout, without the days line |
 | Bella's change arrives | `?state=sync` | Figure and next card update; the card flashes; partner toast |
 | Overpaid | (data: paid more than committed) | kicker "Overpaid by", the amount over in rose, context "Rp X paid against Rp Y committed. Check the overpaid bookings.", a rose thread ending "overpaid" |
-| Stress | `?stress` | 1.206 bookings; the figure shrinks when it passes 13 digits; "14 funders" in the Who pays door |
+| Stress | `?stress` | 1.206 bookings; the figure shrinks when it passes 13 digits; "15 funders" in the Who pays door |
 | Record a payment | interaction (**Record payment**) | Sheet: big amount pre-filled with what's left, "Pays this in full" / "Rp X still to pay after this" / rose "This is Rp X more than what's left. It will show as overpaid.", Paid on, Paid by chips, Attach a receipt; **Record payment** busy "Recording"; undo toast |
 | Menu | interaction (**Menu**) | the full-page menu |
 
@@ -630,7 +631,7 @@ The save line sits under the title.
 
 ### 5.7 Add a booking: `booking-new.html` (B2)
 - Back to Budget; "Add a booking", with "For something you've booked that didn't go through Vendors or Venues. Those become bookings by themselves."
-- **Fields:** What it is, Category, Agreed price, Paid so far, Funder chips, Next due date, Next step, Files.
+- **Fields:** What it is, Category, Agreed price, Paid so far, Funder chips, Next due date, Next step, **Attach a contract or receipt** (the shared upload sheet; each file attached is listed under the link and goes with the booking when it is added).
 - Then the note "Paying in instalments? Add the booking first, then split it into parts.", and **Cancel** · **Add booking**.
 
 | State | URL | What changes |
@@ -672,7 +673,7 @@ The save line sits under the title.
 | Overpaid funder | (data) | "Rp X overpaid" in rose, rose thread |
 | Remove | interaction | "Remove Greg? N costs (Rp X) will move to Not assigned. Payments already recorded stay as they are. You can undo for a few seconds." |
 | Loading / Couldn't load / Offline / Bella's change arrives | shared | |
-| Stress | `?stress` | 14 funders: very long, unbroken, Chinese, Arabic, Thai and Japanese names |
+| Stress | `?stress` | 15 funders: very long, unbroken, Chinese, Arabic, Thai and Japanese names |
 
 ### 5.10 What-if items: `whatif.html` (B8–B10)
 - Back to Budget. Kicker "If you went ahead with everything here", the projected total, then "**Rp X** already committed, plus **Rp Y** in what-if items", and a thread solid to "Committed", then dashed to "What-if".
@@ -685,8 +686,11 @@ The save line sits under the title.
 | No what-if items | `?state=empty` | "Try an idea before you commit", "…It stays apart from your real bookings.", **Add a what-if item** |
 | Loading / Couldn't load / Offline / Demonstration | shared | (in demonstration mode, Add opens the sheet; its **Add item** is disabled) |
 | Stress | `?stress` | 301 items in pages of 50; a 25-part item |
-| Add | interaction | sheet "Add a what-if item", "Kept apart from your bookings until you decide.", Cancel · **Add item** |
+| A change didn't save | `?state=savefail` | the first item's sheet opens with the rose save line "Couldn't save. What you typed is kept. Try again" |
+| Bella adds an idea | `?state=sync` | "Bella added “Live band for the reception”"; the row flashes and the projected total updates |
+| Add | interaction | sheet "Add a what-if item" with What it is, Category, Price, Who would pay; "Paying in stages? Add the item first, then split it into parts."; Cancel · **Add item** |
 | Edit | interaction | the same sheet titled "Edit …"; every change saves as you go; **Done** |
+| Split into parts | interaction | **Split into parts** makes "Part 1" (the item's price and funder) and "Part 2" (Rp 0); each part has a name, a price and a who-would-pay select; **Add a part**, Remove; the total updates as you type; removing down to one part merges it back into a single item |
 
 ### 5.11 Vendors: `vendors.html` (F6, F7, F9–F15, F23)
 - "Vendors", with "16 vendors, 7 you're keen on", and the sub-navigation.
@@ -704,7 +708,7 @@ The save line sits under the title.
 | Category name taken | `?state=taken` | "There's already a category called Catering." |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella adds a vendor | `?state=sync` | the new row flashes; "Bella added Bunga Melati Florist" |
-| Stress | `?stress` | 2.004 vendors, 37 categories (40-character, CJK), paged by 100 |
+| Stress | `?stress` | 2.004 vendors, 37 categories (some near the 40-character limit, CJK), paged by 100 |
 | Export | interaction | downloads `vendors-greg-bella.csv`; toast "Exported 16 vendors to vendors-greg-bella.csv" |
 
 **Phone:** focus chips scroll sideways; rows keep price and rating on the right.
@@ -743,6 +747,7 @@ The save line sits under the title.
 | State | URL | What changes |
 |---|---|---|
 | Normal | `shortlist.html` | |
+| Bella adds a finalist | `?state=sync` | "Bella added Lumina Wedding Photography to the shortlist"; the card flashes |
 | Nothing on the shortlist | `?state=empty` | "Nothing on the shortlist yet", quiet **Go to Vendors** + **Add a finalist** |
 | Adding a finalist | `?state=adding` | sheet: Name, Category, First package, Its price |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
@@ -763,7 +768,8 @@ The save line sits under the title.
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `finalist.html?id=sf-deep&stress` | 30 packages, huge counts |
 | Booked | interaction | gold flag "Now a booking" + "Open the booking"; the card disappears |
-| Package | interaction | Add: Cancel · **Add package**. Edit: saves as you go, **Done** |
+| A change didn't save | `?state=savefail` | the first package's sheet opens with the rose save line |
+| Package | interaction | Add: Cancel · **Add package** ("Add the package first, then attach its files."). Edit: saves as you go, with the package's own **Files** (tiles and **Add files**), **Done** |
 
 ### 5.15 Venues: `venues.html` (F1, F3–F5, F22, B1)
 - "Venues", led by "Booked: Villa Samaya Ubud" (a link to its booking), and the sub-navigation.
@@ -775,6 +781,8 @@ The save line sits under the title.
 | Normal | `venues.html` | "4 venues, 2 ruled out hidden" |
 | No venues yet | `?state=empty` | "No venues yet" + **Add a venue** |
 | No results | `?state=noresults` | "No venues match", "Nothing fits “beach”, at most Rp 200.000.000.", **Show every venue** |
+| A change didn't save | `?state=savefail` | the second venue's sheet opens with the rose save line |
+| Bella adds a venue | `?state=sync` | "Bella added Bukit Jimbaran Lawn"; the row flashes |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `?stress` | 302 venues; a 125.000-guest, 13-digit venue with a long address |
 | Venue sheet | interaction | stage chips, Name, Location, Estimated cost, Most guests, Notes, Files. Add: Cancel · **Add venue** (with undo). Edit: saves as you go, **Done**. Marking Booked creates a booking ("… is now a booking · Open") |
@@ -859,6 +867,7 @@ The save line sits under the title.
 | Adding an event | `?state=new` | "Add to the schedule", "For example, Tasting at Sendok Emas" |
 | Notifications not yet allowed / turned off | `?state=notif-default` / `notif-denied` | the note under Remind us |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
+| A change didn't save | `?state=savefail` | the event sheet opens with the rose save line |
 | Bella adds an appointment | `?state=sync` | "Bella added “Makeup trial with Kirana” tomorrow at 10:00" |
 | Stress | `?stress` | 1.204 events, 80 at a time, **Show 80 more** |
 | Payments filter | interaction | shows payments due on bookings and your own events of the kind Payment |
@@ -879,6 +888,8 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 | Normal | `tasks.html` | |
 | A task opened | `?state=open` (or `?open=<id>` from the agenda) | steps, due date, notes, Delete task |
 | No tasks yet | `?state=empty` | "No tasks yet", "Add the big jobs, like choosing the caterer…" |
+| A step didn't save | `?state=savefail` | the first task opens; its second step is ringed rose with "Couldn't save this step. What you typed is kept. Try again" |
+| Bella finishes a step | `?state=sync` | "Bella finished “Tasting at Sendok Emas”"; the task flashes and its thread moves |
 | Everything done | `?state=alldone` | "Everything's done", "Finished tasks are kept below in case you need one back.", disclosure open |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `?stress` | 401 tasks, one with 60 steps, 100 at a time with "Showing 100 of 400" and **Show 100 more** |
@@ -918,6 +929,7 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 | Normal | `guests.html` | |
 | No guests yet | `?state=empty` | "No guests yet", "…Headcounts for each event work themselves out.", **Add a guest** |
 | No results | `?state=noresults` | "No guests match “Surabaya”", **Show everyone** |
+| A reply didn't save | `?state=savefail` | the first attending guest's row is ringed rose: "Couldn't save the reply for …. Your choice is kept. Try again" |
 | Who hasn't replied | `?state=waiting` | RSVP filter set to Waiting |
 | A guest's details | `?state=guest` | guest sheet: "Guest number 3", Name, How they're connected (hint "Mention groom's or bride's so the two sides add up."), Country, Invited to chips, Invitation Sent, RSVP switch, Plus-ones stepper, Food notes; every change saves as you go; **Done**; Remove guest |
 | Removing a guest with plus-ones | `?state=remove` | confirm naming the plus-ones and the headcount drop |
@@ -935,6 +947,8 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 ### 6.1 Saving as you go
 - **On screens**, every field saves when it changes (blur or select) (A6). Detail screens show the save line: "Every change saves as you go" → "Saving" → "Saved". List rows (items, tasks, guests' RSVP) save on the spot, sometimes with a toast.
 - **Failure keeps the input.** The field stays as typed, gets a rose ring and the line "Couldn't save this change. What you typed is kept. **Try again**", and the save line says "1 change not saved". Try again clears the ring and runs "Saving → Saved" (T9, and the stated rule for every screen).
+  - **A row that saves on one tap** (an RSVP, a task step, an item's star or tick) keeps the choice, rings the row in rose and puts a line under it: "Couldn't save the reply for Maria Goretti. Your choice is kept. **Try again**" (`guests.html?state=savefail`), "Couldn't save this step. What you typed is kept. **Try again**" (`tasks.html?state=savefail`).
+  - **A sheet** shows the same words in its save line (see 4.14).
 - **Documents** autosave after a 0.9-second pause in typing: Not saved yet (gold) → Saving → Saved just now (sage). On failure the text stays and the note offers Try again. Offline says to keep the page open (R5).
 - **Forms that create** (Add a booking) save on a button press, because there's nothing to save into until the record exists. On failure they keep every field and turn the button into **Try again**.
 - **Sheets that edit** an existing record save as you go too, with the same save line, and close with **Done**. If a name is cleared, the old one comes back rather than saving an empty name.
@@ -951,12 +965,13 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
   - changing an RSVP
   - copying to the shortlist
   - adding a vendor, funder, what-if item, items, or the starter items
+- **Busy:** the confirming button reads "Removing" or "Deleting" for a moment, and **Undo** reads "Restoring", so an action never lands without a sign that it is happening.
 - **Confirm first** before anything that removes. The body names what goes with it and ends "You can undo for a few seconds."
 - **Permanent:** deleting a **document** (R7) and deleting a **file** (R13). The confirm says it can't be undone (and for files, how much storage it frees); the action reads **Delete for good**; there's no undo toast.
 - **Blocked:** a folder with anything in it can't be deleted until it's emptied (R8).
 
 ### 6.3 Live partner changes (A2)
-- A change from the partner arrives without refreshing. The changed row or card **flashes** (2.4s rose-wash fade), the numbers update in place, and a **partner toast** with the partner's initial says what happened, for 9 seconds: "Bella recorded Rp 55.500.000 for Dapur Lestari Catering", "Bella added Bunga Melati Florist", "Bella started “First dance shortlist”", "Bella uploaded …", "Bella added “Makeup trial with Kirana” tomorrow at 10:00", "Bella confirmed Wedding cake", "Bella marked 王小明 as attending".
+- A change from the partner arrives without refreshing. The changed row or card **flashes** (2.4s rose-wash fade), the numbers update in place, and a **partner toast** with the partner's initial says what happened, for 9 seconds: "Bella recorded Rp 55.500.000 for Dapur Lestari Catering", "Bella added Bunga Melati Florist", "Bella started “First dance shortlist”", "Bella uploaded …", "Bella added “Makeup trial with Kirana” tomorrow at 10:00", "Bella confirmed Wedding cake", "Bella marked 王小明 as attending", "Bella finished “Tasting at Sendok Emas”", "Bella added “Live band for the reception”" (what-if), "Bella added Lumina Wedding Photography to the shortlist", "Bella added Bukit Jimbaran Lawn" (venue).
 - **If the partner removes what you're looking at:** a full message ("This booking was removed", "Bella removed it on another device a moment ago.", or "This document was deleted… It can't be brought back.") with a way back to the list.
 - **If you're both in the same document:** a gold banner, "Bella is also in this document. Their changes appear as they type."
 
@@ -1061,7 +1076,7 @@ A reminder is chosen per event (No reminder, When it starts, 15 minutes, 1 hour,
 | Reset filters | **Clear the search**, **Show everything**, **Show everyone**, **Show every venue** | Reset |
 | Page | **Show 100 more**, always with the number | Show more, Load more |
 
-Busy labels are the gerund of the verb: Adding, Recording, Copying, Booking, Moving, Signing in, Saving.
+Busy labels are the gerund of the verb: Adding, Recording, Copying, Booking, Moving, Signing in, Saving, Removing, Deleting, Restoring.
 
 ### Error wording
 Say what happened, that nothing is lost, and what to do:
@@ -1172,7 +1187,7 @@ How the prototype handles extremes (`?stress` on any screen).
   - a 600-character vendor note with links reads as a paragraph
   - a 40-paragraph document scrolls normally
   - a 50 × 8 table scrolls sideways inside the page, with a 720px minimum
-- **Many people or roles:** 14 funders, among them a 90-character family name and four non-Latin ones, wrap in the funder list, the chips and the selects. "paid by 3 funders" replaces lists longer than two.
+- **Many people or roles:** 15 funders, among them a 90-character family name and four non-Latin ones, wrap in the funder list, the chips and the selects. "paid by 3 funders" replaces lists longer than two.
 - **Huge numbers:**
   - a 13-digit price
   - "Rp 9.876.543.210.000.000" figures, which shrink on every screen and never wrap

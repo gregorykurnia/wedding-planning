@@ -78,7 +78,7 @@ function partBlock(p) {
       ${field("funder", "Funder", p.funder, { part: p.id, type: "funder" })}
       ${field("due", "Due date", p.due, { part: p.id, type: "date", hint: left > 0 ? "" : "Paid parts don't need a due date." })}
       ${field("step", "Next step", p.step, { part: p.id, ph: "What has to happen next" })}
-      <div class="field"><span class="lab">Files</span><div><button class="link" data-later="1">Attach a file to this part</button></div></div>
+      <div class="field"><span class="lab">Files</span><div>${V.filesGrid(p.files || (p.files = []), false, `Files › Bookings › ${b.name} › ${p.name}`)}</div></div>
       <div class="field"><span class="lab"></span><div style="display:flex;gap:20px;flex-wrap:wrap">${left > 0 ? `<button class="link" data-pay-part="${p.id}">Record a payment</button>` : ""}<button class="link rose" data-remove-part="${p.id}">Remove this part</button></div></div>
     </div></details></li>`;
 }

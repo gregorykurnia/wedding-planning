@@ -57,7 +57,14 @@ function addSheet() {
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "your shortlist", wide: true,
-  states: [["empty", "Nothing on the shortlist"], ["adding", "Adding a finalist"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["empty", "Nothing on the shortlist"], ["adding", "Adding a finalist"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a finalist"]],
+  sync() {
+    setTimeout(() => {
+      const f = { id: "fsync", vendor: null, name: "Lumina Wedding Photography", category: "Photography", contact: "", phone: "", reviews: 64, followers: 8200, step: "Ask for the full-day price", notes: "", packages: [{ id: "k1", name: "Full day", price: 24000000, includes: "", reviews: null, step: "", notes: "", files: [], preferred: true }], files: [] };
+      d.finalists.push(f); V.rerender(); V.$$('[data-id="fsync"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added ${V.esc(f.name)} to the shortlist`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
   render(main) {
     const cats = [...new Set(d.finalists.map((f) => f.category))];
     const head = `<section class="hero"><h1>Shortlist</h1><p class="sub">${d.finalists.length ? `${V.plural(d.finalists.length, "finalist")} in ${V.plural(cats.length, "category", "categories")}` : "Finalists, side by side"}</p>${V.subnav("shortlist.html")}</section>`;

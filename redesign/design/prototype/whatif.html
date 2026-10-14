@@ -17,6 +17,10 @@
   .carry .lead { flex: 1; border-bottom: 1px dashed var(--ink-3); transform: translateY(-4px); min-width: 24px; }
   .carry .pn { overflow-wrap: anywhere; }
   .carry .pv { white-space: nowrap; font-style: italic; }
+  .pe { list-style: none; margin-top: 10px; display: grid; gap: 14px; }
+  .pe li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .pe input, .pe select { width: 100%; min-width: 0; }
+  @media (max-width: 760px) { .pe li { grid-template-columns: 1fr 1fr; } .pe li input:first-of-type { grid-column: 1 / -1; } .pe li button { justify-self: start; } }
   .entry .acts { grid-column: 1 / -1; display: flex; gap: 18px; font-size: 14px; margin-top: 10px; }
 </style>
 </head>
@@ -53,38 +57,86 @@ function item(w) {
     <div class="acts"><button class="link" data-edit>Edit</button><button class="link rose" data-remove>Remove</button></div></div></li>`;
 }
 
+const catOptions = (cur) => `<option value="">No category</option>` + V.data.categories.map((c) => `<option ${c === cur ? "selected" : ""}>${V.esc(c)}</option>`).join("");
+const funderSel = (cur, attrs) => `<select ${attrs}>${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<option value="${f.id}" ${(cur ?? "") === f.id ? "selected" : ""}>${V.esc(f.name)}</option>`).join("")}</select>`;
+
+/* B8, B10: a what-if item can be split into parts, each with its own price and who would pay */
+function partsEditor(w) {
+  return `<h3 class="section-h" style="font-size:22px;margin-top:26px">Parts <small>${V.plural(w.parts.length, "part")}; the price comes from them</small></h3>
+    <p class="sub" style="text-align:left;margin-top:0"><span class="num" id="wtotal">${V.rp(V.wiTotal(w))}</span> in all</p>
+    <ul class="pe">${w.parts.map((x) => `<li data-part="${x.id}">
+      <label class="sr" for="pn-${x.id}">Part name</label><input id="pn-${x.id}" data-pk="name" dir="auto" value="${V.esc(x.name)}">
+      <label class="sr" for="pp-${x.id}">Price</label><input id="pp-${x.id}" data-pk="price" class="num" inputmode="numeric" value="${V.rp(x.price)}">
+      <label class="sr" for="pf-${x.id}">Who would pay</label>${funderSel(x.funder, `id="pf-${x.id}" data-pk="funder"`)}
+      <button type="button" class="link rose" data-rm="${x.id}" aria-label="Remove ${V.esc(x.name)}">Remove</button></li>`).join("")}</ul>
+    <p style="margin-top:10px"><button type="button" class="link" id="add-part">Add a part</button></p>`;
+}
+
 function sheet(w) {
   const isNew = !w;
   const p = w && !w.parts ? w : null;
   V.openSheet(`<h2>${isNew ? "Add a what-if item" : "Edit " + V.esc(w.name)}</h2><p class="sub">Kept apart from your bookings until you decide.</p>
     <div class="fields">
       <div class="field"><label for="wn">What it is</label><input id="wn" dir="auto" value="${V.esc(w ? w.name : "")}" placeholder="For example, a photo booth" autofocus></div>
-      ${w && w.parts ? `<div class="field"><span class="lab">Price</span><span class="static num">${V.rp(V.wiTotal(w))} from ${V.plural(w.parts.length, "part")}</span></div>`
+      <div class="field"><label for="wc">Category</label><select id="wc">${catOptions(w ? w.category : "")}</select></div>
+      ${w && w.parts ? ""
         : `<div class="field"><label for="wp">Price</label><input id="wp" class="num" inputmode="numeric" value="${p ? V.rp(p.price) : ""}" placeholder="Rp 0"></div>
            <div class="field"><span class="lab">Who would pay</span><div class="chips" role="group" aria-label="Who would pay">${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<button type="button" class="chip" data-f="${f.id}" aria-pressed="${(p ? (p.funder ?? "") : "") === f.id}">${V.esc(f.name)}</button>`).join("")}</div></div>`}
     </div>
-    ${w && w.parts ? `<p class="sub" style="margin-top:14px">Each part has its own price and funder.</p>` : `<p class="sub" style="margin-top:14px">Splitting into parts comes after adding, as with bookings.</p>`}
+    ${w && w.parts ? partsEditor(w)
+      : isNew ? `<p class="sub" style="margin-top:14px">Paying in stages? Add the item first, then split it into parts.</p>`
+      : `<p class="sub" style="margin-top:14px">Paying in stages? <button type="button" class="link" id="split">Split into parts</button>, each with its own price and who would pay.</p>`}
     ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add item</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
     const save = isNew ? null : V.sheetSaver(el);
     const chipsNow = () => V.$(".chip[aria-pressed=true]", el);
     V.$$(".chip", el).forEach((c) => c.onclick = () => { V.$$(".chip", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) save(() => { w.funder = c.dataset.f || null; }); });
     V.$("[data-x]", el).onclick = V.closeSheet;
     if (save) {
+      const again = (ok, focus) => { if (!ok) return; sheet(w); const f = focus && V.$(focus); if (f) { f.focus(); if (f.select) f.select(); } };
       V.$("#wn", el).onchange = (e) => { const v = e.target.value.trim(); if (!v) { e.target.value = w.name; return; } save(() => { w.name = v; }); };
+      V.$("#wc", el).onchange = (e) => save(() => { w.category = e.target.value; });
       const wp = V.$("#wp", el); if (wp) wp.onchange = (e) => { const v = num(e.target.value); e.target.value = V.rp(v); save(() => { w.price = v; }); };
+      const sp = V.$("#split", el);
+      if (sp) sp.onclick = () => again(save(() => {
+        const t = Date.now(), f = w.funder ?? null;
+        w.parts = [{ id: "wp" + t + "a", name: "Part 1", price: w.price || 0, funder: f }, { id: "wp" + t + "b", name: "Part 2", price: 0, funder: f }];
+        delete w.price; delete w.funder;
+      }), ".pe li:first-child [data-pk=name]");
+      V.$$(".pe li", el).forEach((li) => {
+        const x = w.parts.find((q) => q.id === li.dataset.part);
+        V.$$("[data-pk]", li).forEach((inp) => inp.onchange = () => {
+          const k = inp.dataset.pk; let v = inp.value;
+          if (k === "price") { v = num(v); inp.value = V.rp(v); } else if (k === "funder") v = v || null; else { v = v.trim() || x.name; inp.value = v; }
+          if (save(() => { x[k] = v; })) { const t = V.$("#wtotal", el); if (t) t.textContent = V.rp(V.wiTotal(w)); }
+        });
+        V.$("[data-rm]", li).onclick = () => again(save(() => {
+          w.parts.splice(w.parts.indexOf(x), 1);
+          if (w.parts.length === 1) { const o = w.parts[0]; w.price = o.price; w.funder = o.funder; delete w.parts; }
+        }));
+      });
+      const ap = V.$("#add-part", el);
+      if (ap) ap.onclick = () => again(save(() => { const n = w.parts.length + 1; w.parts.push({ id: "wp" + Date.now(), name: "Part " + n, price: 0, funder: w.parts[w.parts.length - 1].funder ?? null }); }), ".pe li:last-child [data-pk=name]");
       return;
     }
     V.$("[data-ok]", el).onclick = () => {
       const name = V.$("#wn", el).value.trim(); if (!name) { V.$("#wn", el).focus(); return; }
       const chip = chipsNow();
-      const n = { id: "w" + Date.now(), name, category: "", price: num(V.$("#wp", el).value), funder: chip && chip.dataset.f || null }; V.data.whatifs.unshift(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(name)}`, () => { V.data.whatifs.shift(); V.rerender(); });
+      const n = { id: "w" + Date.now(), name, category: V.$("#wc", el).value, price: num(V.$("#wp", el).value), funder: chip && chip.dataset.f || null }; V.data.whatifs.unshift(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(name)}`, () => { V.data.whatifs.shift(); V.rerender(); });
     };
   });
 }
 
 V.init({
   where: "Budget", noun: "your what-if items",
-  states: [["empty", "No what-if items"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["empty", "No what-if items"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an idea"]],
+  sync() {
+    setTimeout(() => {
+      const d = V.data, n = { id: "wsync", name: "Live band for the reception", category: "Music", price: 18000000, funder: d.funders.length ? d.funders[Math.min(1, d.funders.length - 1)].id : null };
+      d.whatifs.unshift(n); V.rerender();
+      V.$$('[data-w="wsync"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added “${V.esc(n.name)}”`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
   render(main) {
     const d = V.data, B = V.budget(), wi = V.whatif();
     const back = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>`;
@@ -126,6 +178,7 @@ V.init({
     });
   },
 });
+if (V.STATE === "savefail" && V.data.whatifs.length) sheet(V.data.whatifs[0]);
 </script>
 </body>
 </html>

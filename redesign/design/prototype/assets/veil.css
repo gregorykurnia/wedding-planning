@@ -226,6 +226,8 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .chip.dashed { border-style: dashed; color: var(--ink-2); }
 .save-state { font-size: 13.5px; color: var(--ink-2); text-align: center; margin-top: 10px; min-height: 20px; }
 .save-state.failed { color: var(--rose-ink); }
+.row-err { font-size: 13.5px; color: var(--rose-ink); grid-column: 1 / -1; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; padding: 2px 4px 0; }
+.failed-row .seg { box-shadow: 0 0 0 1px var(--rose); }
 
 /* parts on a booking */
 .part-list { list-style: none; border-top: 1px solid var(--line); }
@@ -315,6 +317,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .toast { background: var(--ink); color: #fff; border-radius: var(--r-pill); padding: 11px 14px 11px 22px; font-size: 14.5px; display: flex; gap: 18px; align-items: center; box-shadow: 0 16px 40px -16px rgba(51,38,44,.6); max-width: 100%; }
 .toast span { overflow-wrap: anywhere; }
 .toast button { background: none; border: 0; color: #f0d9a8; font-weight: 450; cursor: pointer; padding: 4px 8px; white-space: nowrap; }
+.toast button:disabled { opacity: .7; cursor: progress; }
 .toast .ava { width: 26px; height: 26px; border-radius: 50%; background: var(--blush); color: var(--ink); font-family: var(--serif); font-weight: 600; display: grid; place-items: center; flex: none; margin-left: -10px; }
 
 /* ---------- prototype switcher (not part of the design) ---------- */

@@ -57,7 +57,9 @@
 <script src="assets/app.js"></script>
 <script>
 const V = Veil, S = V.STATE, d = V.data;
-const ui = { q: S === "noresults" ? "Surabaya" : "", rsvp: S === "waiting" ? "waiting" : "", invite: "", order: "no", asc: true, shown: 100 };
+const ui = { q: S === "noresults" ? "Surabaya" : "", rsvp: S === "waiting" ? "waiting" : "", invite: "", order: "no", asc: true, shown: 100, failed: null };
+/* G8: a quick RSVP tap that didn't save keeps the choice and offers a retry */
+if (S === "savefail") { const f = d.guests.find((g) => g.rsvp === "yes") || d.guests[0]; ui.failed = f ? f.no : null; }
 const ORDERS = [["no", "Number"], ["name", "Name"], ["conn", "Connection"], ["country", "Country"], ["invite", "Invited to"], ["sent", "Invitation sent"], ["rsvp", "RSVP"], ["plus", "Plus-ones"], ["food", "Food notes"]];
 const inviteName = (k) => d.INVITE.find((x) => x[0] === k)[1];
 const heads = (g) => 1 + (g.plus || 0);
@@ -84,11 +86,13 @@ function visible() {
 }
 
 function row(g) {
-  return `<li class="grow" data-no="${g.no}"><span class="no" aria-label="Guest number ${g.no}">${g.no}</span>
+  const bad = ui.failed === g.no;
+  return `<li class="grow ${bad ? "failed-row" : ""}" data-no="${g.no}"><span class="no" aria-label="Guest number ${g.no}">${g.no}</span>
     <button class="gname" data-open="${g.no}" dir="auto">${V.esc(g.name)}${g.plus ? `<small>+${g.plus}</small>` : ""}</button>
     <div class="right"><span class="inv">${inviteName(g.invite)}${g.sent ? "" : ", invitation not sent"}</span>
       <span class="seg" role="radiogroup" aria-label="RSVP for ${V.esc(g.name)}">${d.RSVP.map(([k, l]) => `<button role="radio" data-r="${k}" aria-checked="${g.rsvp === k}" aria-pressed="${g.rsvp === k}">${l}</button>`).join("")}</span></div>
-    <span class="gmeta" dir="auto">${[V.esc(g.conn), V.esc(g.country), g.food ? `<span class="food">${V.esc(g.food.length > 90 ? g.food.slice(0, 88) + "…" : g.food)}</span>` : ""].filter(Boolean).join(", ") || "&nbsp;"}</span></li>`;
+    <span class="gmeta" dir="auto">${[V.esc(g.conn), V.esc(g.country), g.food ? `<span class="food">${V.esc(g.food.length > 90 ? g.food.slice(0, 88) + "…" : g.food)}</span>` : ""].filter(Boolean).join(", ") || "&nbsp;"}</span>
+    ${bad ? `<p class="row-err" role="alert">Couldn't save the reply for ${V.esc(g.name)}. Your choice is kept. <button class="link rose" data-retry>Try again</button></p>` : ""}</li>`;
 }
 
 function render(main) {
@@ -135,6 +139,7 @@ function list() {
   box.innerHTML = `<p class="count">${ui.q || ui.rsvp || ui.invite ? `${V.plural(rows.length, "guest")} of ${d.guests.length.toLocaleString("id-ID")}` : V.plural(rows.length, "guest")}</p><ul class="ledger" style="margin-top:10px">${rows.slice(0, ui.shown).map(row).join("")}</ul>
     ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown).toLocaleString("id-ID")} more</button></p>` : ""}`;
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
+  V.$$("[data-retry]", box).forEach((b) => b.onclick = () => { ui.failed = null; V.rerender(); V.saved("Saved"); });
   V.$$(".grow", box).forEach((li) => {
     const g = d.guests.find((x) => x.no === +li.dataset.no);
     V.$("[data-open]", li).onclick = () => guestSheet(g);
@@ -193,7 +198,7 @@ function guestSheet(g) {
 
 V.init({
   where: "Guests", section: "guests.html", noun: "your guests", wide: true,
-  states: [["empty", "No guests yet"], ["noresults", "No results"], ["waiting", "Who hasn't replied"], ["guest", "A guest's details"], ["remove", "Removing a guest"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella records an RSVP"]],
+  states: [["empty", "No guests yet"], ["noresults", "No results"], ["waiting", "Who hasn't replied"], ["guest", "A guest's details"], ["remove", "Removing a guest"], ["savefail", "A reply didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella records an RSVP"]],
   render,
   sync() { setTimeout(() => { const g = d.guests.find((x) => x.rsvp === "waiting"); if (!g) return; g.rsvp = "yes"; V.rerender(); const li = V.$(`.grow[data-no="${g.no}"]`); if (li) li.classList.add("flash"); V.toast(`${V.esc(d.partner)} marked ${V.esc(g.name)} as attending`, { from: d.partner, ms: 9000 }); }, 1600); },
 });

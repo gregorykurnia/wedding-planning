@@ -82,7 +82,14 @@ function venueSheet(v) {
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "your venues", wide: true,
-  states: [["empty", "No venues yet"], ["noresults", "No results"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["empty", "No venues yet"], ["noresults", "No results"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a venue"]],
+  sync() {
+    setTimeout(() => {
+      const v = { id: "vsync", name: "Bukit Jimbaran Lawn", location: "Jimbaran, Bali", cost: 295000000, capacity: 350, stage: "noted", notes: "Found by Bella; ask about the rain plan.", files: [] };
+      d.venues.push(v); V.rerender(); V.$$('[data-id="vsync"]').forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} added ${V.esc(v.name)}`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
   render(main) {
     const booked = d.venues.find((v) => v.stage === "booked");
     const head = `<section class="hero"><h1>Venues</h1><p class="sub">${booked ? `Booked: <a class="link" href="${V.href("booking.html", { id: booked.id })}">${V.esc(booked.name)}</a>` : d.venues.length ? V.plural(d.venues.length, "venue") : "Places you're weighing up"}</p>${V.subnav("venues.html")}</section>`;
@@ -129,6 +136,7 @@ function list() {
   V.$$("[data-open]", box).forEach((a) => a.onclick = (e) => { e.preventDefault(); venueSheet(d.venues.find((v) => v.id === a.dataset.open)); });
   const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; list(); };
 }
+if (S === "savefail" && d.venues.length) venueSheet(d.venues[1] || d.venues[0]);
 </script>
 </body>
 </html>

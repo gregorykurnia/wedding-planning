@@ -36,7 +36,7 @@ function packageSheet(p) {
       <div class="field"><label for="pr">Reviews</label><input id="pr" inputmode="numeric" value="${p && p.reviews != null ? p.reviews : ""}" placeholder="How many reviews mention it"></div>
       <div class="field"><label for="ps">Next step</label><input id="ps" dir="auto" value="${V.esc(p ? p.step : "")}" placeholder="What has to happen next"></div>
       <div class="field"><label for="po">Notes</label><textarea id="po" dir="auto">${V.esc(p ? p.notes : "")}</textarea></div>
-      <div class="field"><span class="lab">Files</span><div><button class="link" data-later="1">Attach a file to this package</button></div></div>
+      <div class="field"><span class="lab">Files</span><div>${isNew ? `<p class="hint" style="margin:0">Add the package first, then attach its files.</p>` : V.filesGrid(p.files || (p.files = []), false, `Files › Shortlist › ${f.name} › ${p.name}`)}</div></div>
     </div>
     ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add package</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
     V.$("#pp", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
@@ -151,10 +151,11 @@ function render(main) {
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "this finalist",
-  states: [["booking", "Booking it"], ["uploading", "Uploading files"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["booking", "Booking it"], ["uploading", "Uploading files"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render,
 });
 if (S === "booking" && f) moveSheet("booking");
+if (S === "savefail" && f && f.packages.length) packageSheet(f.packages[0]);
 </script>
 </body>
 </html>

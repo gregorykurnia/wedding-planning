@@ -18,6 +18,7 @@
 const V = Veil, S = V.STATE;
 const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
 const prefill = S === "failed" || S === "busy";
+const pending = [];
 
 V.init({
   where: "Budget", noun: "the budget",
@@ -35,7 +36,7 @@ V.init({
           <div class="field"><span class="lab">Funder</span><div class="chips" role="group" aria-label="Funder">${V.data.funders.concat([{ id: "", name: "Not assigned" }]).map((f) => `<button type="button" class="chip" data-f="${f.id}" aria-pressed="${prefill ? f.id === "greg" : f.id === ""}">${V.esc(f.name)}</button>`).join("")}</div></div>
           <div class="field"><label for="d">Next due date</label><input id="d" type="date" value="${v("2026-12-10", "")}"></div>
           <div class="field"><label for="s">Next step</label><input id="s" placeholder="What has to happen next" value="${v("Send the song list and pay the balance", "")}"></div>
-          <div class="field"><span class="lab">Files</span><div><button type="button" class="link" data-later="1">Attach a contract or receipt</button></div></div>
+          <div class="field"><span class="lab">Files</span><div><ul class="pending" id="pending" style="list-style:none"></ul><button type="button" class="link" id="attach">Attach a contract or receipt</button></div></div>
         </div>
         <p class="note">Paying in instalments? Add the booking first, then split it into parts.</p>
         ${S === "failed" ? `<p class="banner rose" style="margin-top:24px;border-radius:16px">The booking wasn't added: the planner lost its connection. Everything you entered is still here.</p>` : ""}
@@ -44,6 +45,9 @@ V.init({
           <button class="btn ${S === "busy" ? "busy" : ""}" id="go" ${V.DEMO ? "disabled" : ""}>${S === "busy" ? "Adding" : S === "failed" ? "Try again" : "Add booking"}</button></p>
         ${V.DEMO ? `<p class="save-state">Demonstration mode: adding is turned off.</p>` : ""}
       </form>`;
+    /* B3: contracts and receipts can be attached while adding; they go with the booking */
+    const showPending = () => { V.$("#pending").innerHTML = pending.map((f) => `<li class="hint" style="margin:0 0 6px" dir="auto">${V.esc(f.name)}, ${f.size}</li>`).join(""); };
+    V.$("#attach").onclick = () => V.uploadSheet({ where: `Files › Bookings › ${V.$("#n").value.trim() || "this booking"}`, onDone: (f) => { pending.push({ name: f.name, size: V.mbText(f.mb), type: f.type, src: f.src }); showPending(); } });
     V.$$(".chip", main).forEach((c) => c.onclick = () => V.$$(".chip", main).forEach((x) => x.setAttribute("aria-pressed", String(x === c))));
     ["p", "pd"].forEach((k) => V.$("#" + k).addEventListener("blur", (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); }));
     V.$("#form").onsubmit = (e) => {
@@ -57,7 +61,7 @@ V.init({
       setTimeout(() => {
         const f = V.$(".chip[aria-pressed=true]").dataset.f || null;
         const b = { id: "new" + Date.now(), name: n.value.trim(), category: V.$("#c").value, origin: { from: "direct", on: "2026-10-14" }, estimate: null,
-          price: num(V.$("#p").value), paid: num(V.$("#pd").value), funder: f, due: V.$("#d").value || null, step: V.$("#s").value, files: [] };
+          price: num(V.$("#p").value), paid: num(V.$("#pd").value), funder: f, due: V.$("#d").value || null, step: V.$("#s").value, files: pending.slice() };
         sessionStorage.setItem("veil-added", JSON.stringify(b));
         sessionStorage.setItem("veil-added-new", "1");
         location.href = V.href("bookings.html");

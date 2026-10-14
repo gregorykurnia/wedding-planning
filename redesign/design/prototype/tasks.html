@@ -17,7 +17,9 @@
 <script src="assets/app.js"></script>
 <script>
 const V = Veil, S = V.STATE, d = V.data;
-const opened = new Set([new URLSearchParams(location.search).get("open") || (S === "open" ? "t1" : "")]);
+const opened = new Set([new URLSearchParams(location.search).get("open") || (S === "open" || S === "savefail" ? "t1" : "")]);
+/* S8: a step change that didn't save keeps what was typed and offers a retry */
+let failedStep = S === "savefail" ? "t1:s2" : null;
 if (S === "alldone") d.tasks.forEach((t) => { t.done = true; t.doneOn = "2026-10-14"; });
 let showDone = S === "alldone";
 const ui = { open: 100, done: 100 };
@@ -33,7 +35,7 @@ function task(t) {
     <summary><button class="tick-box" role="checkbox" aria-checked="${t.done}" aria-label="${t.done ? "Reopen" : "Finish"} ${V.esc(t.title)}" data-tick="${t.id}"></button><span class="tt" dir="auto">${V.esc(t.title)}</span>${dueText(t)}${V.ICON.chev}
       <span class="tm">${n ? `${k} of ${V.plural(n, "step")} done` : t.notes ? V.esc(t.notes.slice(0, 80)) : ""}${n ? `<div class="thread small" role="img" aria-label="${pct}% of steps done"><span class="done" style="width:${pct}%"></span></div>` : ""}</span></summary>
     <div class="inner">
-      <ul class="steps-list">${t.steps.map((s) => `<li class="${s.done ? "done" : ""}" data-s="${s.id}"><input type="checkbox" class="sbox" ${s.done ? "checked" : ""} aria-label="Step done"><input type="text" value="${V.esc(s.title)}" aria-label="Step" dir="auto"><input type="date" value="${s.due || ""}" aria-label="Step due date"><button class="x" aria-label="Remove step" title="Remove step">×</button></li>`).join("")}</ul>
+      <ul class="steps-list">${t.steps.map((s) => `<li class="${s.done ? "done" : ""} ${failedStep === t.id + ":" + s.id ? "failed-row" : ""}" data-s="${s.id}"><input type="checkbox" class="sbox" ${s.done ? "checked" : ""} aria-label="Step done"><input type="text" value="${V.esc(s.title)}" aria-label="Step" dir="auto"><input type="date" value="${s.due || ""}" aria-label="Step due date"><button class="x" aria-label="Remove step" title="Remove step">×</button>${failedStep === t.id + ":" + s.id ? `<p class="row-err" role="alert">Couldn't save this step. What you typed is kept. <button class="link rose" data-retry>Try again</button></p>` : ""}</li>`).join("")}</ul>
       <p style="margin-top:10px"><button class="link" data-add-step>Add a step</button></p>
       <div class="fields" style="margin-top:14px"><div class="field"><label for="due-${t.id}">Due date</label><input id="due-${t.id}" type="date" data-due value="${t.due || ""}"></div></div>
       <label class="sr" for="n-${t.id}">Notes</label><textarea class="notes" id="n-${t.id}" data-notes placeholder="Notes" dir="auto">${V.esc(t.notes)}</textarea>
@@ -56,7 +58,15 @@ function addSheet() {
 
 V.init({
   where: "Schedule", section: "schedule.html", noun: "your tasks", wide: true,
-  states: [["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["savefail", "A step didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella finishes a step"]],
+  sync() {
+    setTimeout(() => {
+      const t = d.tasks.find((x) => x.id === "t2") || d.tasks.find((x) => !x.done && x.steps.some((y) => !y.done)); if (!t) return;
+      const st = t.steps.find((y) => !y.done); if (!st) return;
+      st.done = true; opened.add(t.id); V.rerender(); V.$$(`[data-t="${t.id}"]`).forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.partner)} finished “${V.esc(st.title)}”`, { from: d.partner, ms: 9000 });
+    }, 1600);
+  },
   render(main) {
     const open = order(d.tasks.filter((t) => !t.done)), done = d.tasks.filter((t) => t.done).sort((a, z) => (z.doneOn || "").localeCompare(a.doneOn || ""));
     const head = `<section class="hero"><h1>Tasks</h1><p class="sub">${d.tasks.length ? `${open.length.toLocaleString("id-ID")} open${done.length ? `, ${done.length.toLocaleString("id-ID")} done` : ""}` : "Big jobs, broken into steps"}</p>${V.subnav("tasks.html", "schedule")}</section>`;
@@ -76,6 +86,7 @@ V.init({
 function more(n, k) { return n > ui[k] ? `<p class="count" style="text-align:center">Showing ${ui[k].toLocaleString("id-ID")} of ${n.toLocaleString("id-ID")}</p><p style="text-align:center;margin-top:12px"><button class="btn quiet" data-more="${k}">Show ${Math.min(100, n - ui[k]).toLocaleString("id-ID")} more</button></p>` : ""; }
 function wire(main) {
   V.$("#add", main).onclick = addSheet;
+  V.$$("[data-retry]", main).forEach((b) => b.onclick = () => { failedStep = null; V.rerender(); V.saved("Saved"); });
   V.$$("[data-more]", main).forEach((b) => b.onclick = () => { ui[b.dataset.more] += 100; V.rerender(); });
   const dw = V.$(".done-wrap", main); if (dw) dw.ontoggle = () => { showDone = dw.open; V.$("summary", dw).textContent = `${dw.open ? "Hide" : "Show"} ${V.plural(d.tasks.filter((t) => t.done).length, "finished task")}`; };
   V.$$("details.tk", main).forEach((dt) => dt.addEventListener("toggle", () => dt.open ? opened.add(dt.dataset.t) : opened.delete(dt.dataset.t)));
