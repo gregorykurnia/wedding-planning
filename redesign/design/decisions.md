@@ -147,3 +147,17 @@ All 19 were answered in one message. Each one is carried into the prototype, `de
 20. **Decimals:** thousands now use dots, but decimals still use a point ("4.8" ratings, "33.1 MB", "98.8M followers"). Suggest commas for decimals ("4,8"), so a dot always means thousands. Document tables already accept "2,5".
 21. **Faint placeholders:** meaningful placeholders ("Vendor not known yet") are 3.70:1 and the document's "Untitled" is 2.77:1, below AA. Suggest full muted ink, keeping the italic.
 22. **The link sheet still has Save:** in a document, "Edit link" applies only on Save, unlike every other editing sheet now. Suggest keeping Save there, so a half-typed address doesn't break a working link; or make it save as you go.
+
+## Stage 4
+
+### Coverage audit (2026-10-14)
+- **The audit read the prototype's code, not the guide.** `coverage.md` is the result. It maps all stories and states, and lists what was fixed.
+- **What-if parts (B8, B10).** The inventory says what-if items are splittable, with who would pay per part. The prototype only displayed parts. Now a what-if item splits into two parts, parts can be added and removed, and removing down to one part merges it back into a single item. The Add sheet gained Category.
+- **One failure pattern for sheets.** A change that didn't save keeps what was typed and shows "Couldn't save. What you typed is kept. Try again" in the sheet's save line. Rows that save on one tap (an RSVP, a task step) do the same under the row.
+- **Busy has removing and restoring.** The confirm button reads "Removing" or "Deleting" for a moment, and Undo reads "Restoring".
+- **Files on parts and packages use the shared upload sheet**, filing into a folder named after the record and the part or package, like every other record (question 16).
+- **Not changed:** the studio process asks for dark mode, read-only, shared-link and bulk-selection states. None applies (brief and inventory); they are listed as not applicable in `coverage.md`.
+
+### Open point for the owner (stage 4)
+23. **F16 and "next step".** The inventory says copying a vendor to the shortlist brings across its next step, but a vendor (F6) has no next-step field, so the finalist starts with none and has its own. Suggest keeping it that way and dropping "next step" from F16's list. Or give vendors a next step too; say which.
+

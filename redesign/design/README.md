@@ -19,13 +19,13 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
 - 2026-10-14, session 1: **budget group** (B1–B12, plus B6, S6 and the payment side of O2).
   - Screens: `budget.html` (overview), `bookings.html`, `booking.html` (in parts, single, overpaid, late), `booking-new.html`, `payments.html`, `funders.html`, `whatif.html`, plus the full-page menu, the record-payment sheet, confirm dialogs and undo toasts, all in shared `assets/`.
   - States covered: nothing yet, no results, loading, couldn't load, offline, demonstration mode, partner's change arrives, booking removed by the partner, a change didn't save (input kept, retry), adding (busy), couldn't add, uploading (progress, PDF shrinking, too large, failed), confirm and undo, late and due soon, overpaid.
-  - Stress data: 1,206 bookings, 1,507 payments due, a 40-part booking, 14 funders with long and non-Latin names, RTL and CJK names, empty optional fields, a 13-digit price, 1 KB and 9.9 MB images, and the longest realistic next step.
+  - Stress data: 1,206 bookings, 1,507 payments due, a 40-part booking, 15 funders with long and non-Latin names, RTL and CJK names, empty optional fields, a 13-digit price, 1 KB and 9.9 MB images, and the longest realistic next step.
   - Not yet: the rest of O2 (appointments and tasks coming up) belongs to the Overview group.
 - 2026-10-14: the owner declined P1 and adopted P2 (Greg and Bella pay as separate funders).
 - 2026-10-14, session 2: **vendors group** (F1–F24, plus B1 from vendors and venues).
   - Screens: `vendors.html` (with the add-a-vendor and categories sheets, and CSV export), `vendor.html`, `shortlist.html` (with add a finalist), `finalist.html` (packages, book it, move into Vendors), `venues.html` (with the venue sheet). Vendors, Shortlist and Venues share one sub-navigation; the menu's "Vendors" leads there.
   - States: nothing yet, no results, adding, category name taken, a change didn't save, uploading, busy (copying, booking, moving), loading, couldn't load, offline, demonstration mode, Bella adds a vendor.
-  - Stress data: 2,004 vendors, 37 categories (some 40 characters long, some in other scripts), a vendor with 30 price options and a 600-character note with links, a finalist with 30 packages and 98.8M followers, and 302 venues.
+  - Stress data: 2,004 vendors, 37 categories (some near the 40-character limit, some in other scripts), a vendor with 30 price options and a 600-character note with links, a finalist with 30 packages and 98.8M followers, and 302 venues.
 - 2026-10-14, session 3 (same conversation, at the owner's request): **documents group** (R1–R7).
   - Screens: `documents.html` (recent three as cards, the rest as a list, search inside documents, "Meeting notes" and "New document" starts) and `doc.html` (the editor). Shared code is in `assets/editor.css` and `assets/formulas.js`.
   - Editor: text styles (body, title, heading, subheading, quote, code), four fonts, four sizes, bold, italic, underline, strikethrough, colours and highlights, bullet points and numbered steps, links (Cmd/Ctrl+K, plus a bubble to open or edit), undo and redo, clear formatting.
@@ -60,7 +60,7 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - `overview.html` is the home: tapping your names opens it. It shows your names in gold italic, the days to go as the biggest figure in the app, and a thread for how much of the preparation time has passed since you started (O1). "Coming up" lists the next five dated things of any kind (O2). Four rows each lead straight into the detail: budget, tasks, guests and wedding items (O3, O4). With no wedding date yet, the date is asked for here (O5).
   - `signin.html`: Google or email and password, with signing in, wrong email or password (the email is kept), an account that isn't allowed, just signed out, offline, and not connected (enter demonstration mode) (A1).
   - `settings.html`: your two names (O6) and the wedding date (O5), who can open the planner and signing out (A5), reminders on this device in all three permission states (S10), and how to install on iPhone and Android (A3).
-  - Live updates (A2) are shown on every screen with a "…'s change arrives" state. Phone and computer layouts (A4) and saving as you go (A6) run through every screen.
+  - Live updates (A2) are shown with a "…'s change arrives" state on every list screen and on the budget, bookings and documents screens (corrected in stage 4: tasks, what-if, shortlist and venues were added). A vendor or finalist detail and settings follow the same pattern without a state of their own. Phone and computer layouts (A4) and saving as you go (A6) run through every screen.
 - **Stage 2 now covers every group in the inventory.** Next, after the owner's review: stage 3, the design guide and tokens. The coverage audit (stage 4) should then check this in a fresh session.
 
 ## Stage 3: design guide (draft written, awaiting the owner's review)
@@ -79,3 +79,15 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - "Add files" on records opens the shared upload sheet (now in `assets/app.js`); renames of categories and files get undo; the "Payments" filter includes your own Payment events
 - 3 new open questions (20–22: decimals, faint placeholders, the link sheet's Save).
 - Next: the owner answers 20–22 and reviews in the browser. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).
+
+## Stage 4: coverage (done, awaiting the owner's review)
+- 2026-10-14, fresh session (Sonnet 5.5 High): `coverage.md` maps every story (O, F, B, G, T, S, R, A) and every inventory state to the screen and URL that covers it, plus the states that don't apply (dark, read-only, shared link, bulk selection) and the stress data per screen.
+- The audit read each screen's code against the inventory. Gaps found and fixed in the prototype and the guide:
+  - what-if items can now be split into parts (B8, B10), with a category
+  - files on a booking part and on a package now work (B4, F17), and a new booking can take a contract (B3)
+  - a failed save is now shown on every editing sheet, on an RSVP tap and on a task step (`?state=savefail`)
+  - a partner's change now arrives on tasks, what-if, shortlist and venues too (A2)
+  - busy "Removing", "Deleting" and "Restoring" (the inventory's Busy state)
+  - `index.html` lists every state of every screen; two stress details corrected
+- Nothing was seen rendered (the browser is blocked here), so the owner should click through `prototype/index.html`.
+- Next: the owner reviews `coverage.md`, answers questions 20–22 in decisions.md and the open point on F16, then stage 5 (freeze: version and date at the top of the guide).
