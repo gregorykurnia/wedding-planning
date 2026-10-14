@@ -1,8 +1,10 @@
 // Runs the Vitest "emulator" project inside a fresh Firebase emulator
 // (Auth + Firestore, with firestore.rules). The emulators need Java; Homebrew's
 // openjdk is keg-only, so its bin folder is added to PATH when present.
+// Ports follow this copy's test port offset (tests/e2e/emulator-config.ts).
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { writeEmulatorConfig } from "../tests/e2e/emulator-config.ts";
 
 const BREW_JAVA_BIN = "/opt/homebrew/opt/openjdk/bin";
 const env = { ...process.env };
@@ -14,6 +16,8 @@ const result = spawnSync(
   [
     "firebase",
     "emulators:exec",
+    "--config",
+    writeEmulatorConfig(),
     "--only",
     "auth,firestore",
     "--project",

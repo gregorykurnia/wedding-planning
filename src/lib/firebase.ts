@@ -69,11 +69,16 @@ if (isFirebaseConfigured) {
     }
     db = getFirestore(app);
     // Tests only: NEXT_PUBLIC_USE_EMULATORS=1 points Auth and Firestore at the
-    // local Firebase emulators (ports in firebase.json). Never set in production.
+    // local Firebase emulators (ports in firebase.json, or the ones the test
+    // config passes for this copy of the repo). Never set in production.
     if (process.env.NEXT_PUBLIC_USE_EMULATORS === "1") {
+      const authHost = process.env.NEXT_PUBLIC_AUTH_EMULATOR || "127.0.0.1:9099";
+      const [firestoreHost, firestorePort] = (
+        process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR || "127.0.0.1:8080"
+      ).split(":");
       try {
-        connectAuthEmulator(auth!, "http://127.0.0.1:9099", { disableWarnings: true });
-        connectFirestoreEmulator(db, "127.0.0.1", 8080);
+        connectAuthEmulator(auth!, `http://${authHost}`, { disableWarnings: true });
+        connectFirestoreEmulator(db, firestoreHost, Number(firestorePort));
       } catch {
         // Already connected (dev-mode fast refresh re-running this module).
       }

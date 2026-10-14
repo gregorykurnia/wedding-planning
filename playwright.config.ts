@@ -1,12 +1,17 @@
 import { existsSync } from "node:fs";
 import { defineConfig } from "@playwright/test";
 import {
+  AUTH_EMULATOR,
   EMULATOR_PROJECT_ID,
   FIRESTORE_EMULATOR,
+  TEST_PORTS,
+  writeEmulatorConfig,
 } from "./tests/e2e/emulator-config";
 
-const EMULATOR_APP_PORT = 3100;
-const DEMO_APP_PORT = 3101;
+// Ports move by this copy's offset (see tests/e2e/emulator-config.ts).
+const EMULATOR_APP_PORT = TEST_PORTS.emulatorApp;
+const DEMO_APP_PORT = TEST_PORTS.demoApp;
+const emulatorConfigFile = writeEmulatorConfig();
 
 // The Firebase emulators need Java. Homebrew's openjdk is keg-only, so it is
 // not on PATH unless the owner linked it.
@@ -19,6 +24,8 @@ const emulatorPath = existsSync(BREW_JAVA_BIN)
 // .env.local are overridden here so the tests can never reach production.
 const emulatorAppEnv = {
   NEXT_PUBLIC_USE_EMULATORS: "1",
+  NEXT_PUBLIC_AUTH_EMULATOR: AUTH_EMULATOR,
+  NEXT_PUBLIC_FIRESTORE_EMULATOR: FIRESTORE_EMULATOR,
   NEXT_PUBLIC_FIREBASE_API_KEY: "fake-api-key",
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "localhost",
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: EMULATOR_PROJECT_ID,
@@ -63,7 +70,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: `npx firebase emulators:start --only auth,firestore --project ${EMULATOR_PROJECT_ID}`,
+      command: `npx firebase emulators:start --config ${emulatorConfigFile} --only auth,firestore --project ${EMULATOR_PROJECT_ID}`,
       url: `http://${FIRESTORE_EMULATOR}`,
       env: { PATH: emulatorPath ?? "" },
       // Without a graceful stop, the emulator's Java process outlives the run.
