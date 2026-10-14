@@ -916,9 +916,9 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | see Task 1.2 heading; real cost to log from `/cost` | [x] |
 | 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | real cost to log from `/cost` | [x] |
 | 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | real cost to log from `/cost` | [x] |
-| 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | | [ ] |
-| 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | | [ ] |
-| 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | | [ ] |
+| 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | real cost to log from `/cost` | [x] |
+| 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | real cost to log from `/cost` | [x] |
+| 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | real cost to log from `/cost` | [x] |
 | 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | | [ ] |
 | 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | | [ ] |
 | 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | | [ ] |
@@ -1045,21 +1045,21 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** tests cover each rule in guide §6.9 and decisions #1–#5, overpaid at booking, part and funder level, and the stress numbers (13-digit prices).
 
 #### Task 1.5: Guests, items, labels, formats, search and order · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 56573ee · real cost to log from `/cost`)
 - **Read:** §2.7 value table; guide §6.7, §6.8, §6.11 (counts), §5.22, §5.23, §4.23; prototype `assets/app.js` (`n0`, `dec`, `compact`, `waHref`, `linkify`), `guests.html`, `items.html` scripts; `inventory-notes.md` §9 decisions #7–#9.
 - **Files:** `src/lib/model/{guests,items,labels,format,search,order,whatsapp,categories,csv}.ts` and tests.
 - **Do:** headcounts and sides (decided rules: reception includes "if space allows", unsure apart, attending counts people, friends are family, the first side named wins, no side → counted apart); item counts, filters (any-of), own order; every stored-value ↔ label map; `rp`, `figure` parts, counts with dots, decimal comma, `compact`; search across the fields each screen names; ordering (numbers descending first, text ascending, blanks last, ties by name or guest number); category list (built-ins, ours, Other last); CSV escaping (columns wait for N5).
 - **Done when:** tests pass for each rule, including the stress cases (non-Latin text, 40-character categories).
 
 #### Task 1.6: Dates, agenda, month, tasks, reminders due · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · d4994a1 · real cost to log from `/cost`)
 - **Read:** guide §6.11, §4.25–§4.27, §5.19–§5.21, §6.12; prototype `assets/schedule.js`, `tasks.html` script.
 - **Files:** `src/lib/model/{dates,agenda,tasks,reminders}.ts` and tests.
 - **Do:** long and short dates, due text, agenda day names, edited times ("12 min ago", "by Bella"); `daysUntil`, `timeGone`; `agendaItems(events, dues, tasks, today)` with Late first, real today (§5 #11), completed and cancelled on demand, the Payments filter including Payment events; `lateOrToday` figure and context sentence; `monthCells` (Monday first, dots, today, selected, wedding day, labels); task order (due, undated last), finished order, steps done; `remindersDue(events, now)`.
 - **Done when:** tests pass, including month edges, all-day events and time zones in the local zone.
 
 #### Task 1.7: SUM engine and table sort · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · d11bf16 · real cost to log from `/cost`)
 - **Read:** guide §6.10; prototype `assets/formulas.js`, `doc.html` script.
 - **Files:** `src/lib/model/formulas.ts` and tests (the old `components/notes/formulas.ts` stays with the old UI).
 - **Do:** parse and evaluate `=SUM` over a table matrix (ranges, lists, growing ranges stopping above the total, case and spaces ignored), number reading ("Rp 12.500.000", "2,5"), Rp carried into totals, the three named errors with their reasons, and `sortTableRows` (one column, numeric when every non-blank is a number, natural text order ignoring accents, blanks last, title row and total rows fixed). Must accept every formula the old engine accepted (§5 #17 edge cases decided as in the guide).
