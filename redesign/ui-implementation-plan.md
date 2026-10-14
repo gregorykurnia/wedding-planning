@@ -908,102 +908,102 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 
-**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the last column.
+**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the "Real cost / changes" column and tick **Done** when the task is finished.
 
-| Phase | Task | Model · effort | Est. cost | Why | Real cost / changes |
-|---|---|---|---|---|---|
-| 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | |
-| 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | |
-| 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | |
-| 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | |
-| 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | |
-| 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | |
-| 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | |
-| 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | |
-| 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | |
-| 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | |
-| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | |
-| 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | |
-| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | |
-| 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | |
-| 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | |
-| 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | |
-| 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | |
-| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | |
-| 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | |
-| 2 | Review | Opus 5.5 Medium | $1.34 | | |
-| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | |
-| 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | |
-| 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | |
-| 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | |
-| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | |
-| 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | |
-| 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | |
-| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | |
-| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | |
-| 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | |
-| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | |
-| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | |
-| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | |
-| 3 | Review | Opus 5.5 Medium | $1.34 | | |
-| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | |
-| 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | |
-| 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | |
-| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | |
-| 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | |
-| 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | |
-| 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | |
-| 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | |
-| 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | |
-| 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | |
-| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | |
-| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | |
-| 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | |
-| 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | |
-| 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | |
-| 4 | 4.16 Documents | Haiku 5.5 Max | $0.21 | Displays data; reference `documents.html` | |
-| 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | |
-| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | |
-| 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | |
-| 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | |
-| 4 | 4.21 Month | Haiku 5.5 Max | $0.21 | The calendar from 3.11 on a screen | |
-| 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | |
-| 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | |
-| 4 | 4.24 Guests | Sonnet 5.5 High | $0.88 | Guest sheet, RSVP switch, headcounts | |
-| 4 | 4.25 Wedding settings | Sonnet 5.5 High | $0.88 | Settings fields, accounts, notifications | |
-| 4 | Review | Opus 5.5 Medium | $1.34 | | |
-| 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | |
-| 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | |
-| 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | |
-| 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | |
-| 5 | 5.5 Schedule and tasks states | Haiku 5.5 Max | $0.21 | Same as 5.3 | |
-| 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | |
-| 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | |
-| 5 | Review | Opus 5.5 Medium | $1.34 | | |
-| 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | |
-| 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | was L ($3.64) before Q8 |
-| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | |
-| 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | |
-| 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | |
-| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | |
-| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | |
-| 6 | Review | Opus 5.5 Medium | $1.34 | | |
-| 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | |
-| 7 | 7.2 Rollback rehearsal on a preview | Sonnet 5.5 High | $0.88 | A written procedure to run and record | |
-| 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | |
-| 7 | Review | **Opus 5.5 High** | $1.82 | Phase 7 rule: a missed bug breaks production | |
-| 8 | 8.1 Behaviour tests on the new UI (L) | Sonnet 5.5 High | $1.76 | One test per story group, against the emulator | |
-| 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | |
-| 8 | 8.3 Fix passes from the screenshots (4 sessions) | Haiku 5.5 Max | $0.84 | Each diff points at an exact prototype rule | |
-| 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | |
-| 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | |
-| 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | |
-| 8 | Review | Opus 5.5 Medium | $1.34 | | |
-| 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | |
-| 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | |
-| 9 | Review | Opus 5.5 Medium | $1.34 | | |
-| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | |
-| any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | |
+| Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
+|---|---|---|---|---|---|---|
+| 1 | 1.1 Test harness | Sonnet 5.5 High | $0.88 | Tooling with good docs; a mistake shows at once and loses nothing | | [ ] |
+| 1 | 1.2 Behaviour smoke tests (old UI) | Sonnet 5.5 High | $0.88 | Written flows to cover; failures are visible | | [ ] |
+| 1 | 1.3 Route groups and `legacyHref` | Sonnet 5.5 High | $0.88 | Mechanical moves, but every link must keep working; the smoke tests from 1.2 catch slips | | [ ] |
+| 1 | 1.4 Money model | Opus 5.5 Medium | $1.34 | No prototype code to copy for the decided rules (all booked venues, parts, overpaid, funders); needs careful reading of the guide §6.9 and the decisions | | [ ] |
+| 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | | [ ] |
+| 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | | [ ] |
+| 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | | [ ] |
+| 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | | [ ] |
+| 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | | [ ] |
+| 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | | [ ] |
+| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | | [ ] |
+| 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | | [ ] |
+| 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
+| 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
+| 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | | [ ] |
+| 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
+| 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
+| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | | [ ] |
+| 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | | [ ] |
+| 2 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | | [ ] |
+| 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
+| 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | | [ ] |
+| 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
+| 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
+| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
+| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | | [ ] |
+| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
+| 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
+| 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
+| 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
+| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | | [ ] |
+| 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
+| 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
+| 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | | [ ] |
+| 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | | [ ] |
+| 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | | [ ] |
+| 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
+| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | | [ ] |
+| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
+| 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | | [ ] |
+| 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
+| 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
+| 4 | 4.16 Documents | Haiku 5.5 Max | $0.21 | Displays data; reference `documents.html` | | [ ] |
+| 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | | [ ] |
+| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | | [ ] |
+| 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
+| 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | | [ ] |
+| 4 | 4.21 Month | Haiku 5.5 Max | $0.21 | The calendar from 3.11 on a screen | | [ ] |
+| 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | | [ ] |
+| 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | | [ ] |
+| 4 | 4.24 Guests | Sonnet 5.5 High | $0.88 | Guest sheet, RSVP switch, headcounts | | [ ] |
+| 4 | 4.25 Wedding settings | Sonnet 5.5 High | $0.88 | Settings fields, accounts, notifications | | [ ] |
+| 4 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | | [ ] |
+| 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | | [ ] |
+| 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
+| 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | | [ ] |
+| 5 | 5.5 Schedule and tasks states | Haiku 5.5 Max | $0.21 | Same as 5.3 | | [ ] |
+| 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
+| 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
+| 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | | [ ] |
+| 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | was L ($3.64) before Q8 | [ ] |
+| 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | | [ ] |
+| 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
+| 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
+| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
+| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | | [ ] |
+| 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
+| 7 | 7.2 Rollback rehearsal on a preview | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
+| 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
+| 7 | Review | **Opus 5.5 High** | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
+| 8 | 8.1 Behaviour tests on the new UI (L) | Sonnet 5.5 High | $1.76 | One test per story group, against the emulator | | [ ] |
+| 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | | [ ] |
+| 8 | 8.3 Fix passes from the screenshots (4 sessions) | Haiku 5.5 Max | $0.84 | Each diff points at an exact prototype rule | | [ ] |
+| 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | | [ ] |
+| 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | | [ ] |
+| 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | | [ ] |
+| 8 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
+| 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
+| 9 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | | [ ] |
+| any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
 ### How every task session runs
 1. Model check (above). Check out `redesign` and pull.
@@ -1011,7 +1011,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
 5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's rows in §5 and §6, add the `AGENTS.md` entry, commit, push to `redesign`, and log `/cost` in §7.0.
+6. Tick the task's **Done** box in the §7.0 table and under its heading below (date, commit, real `/cost`), tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
@@ -1020,45 +1020,53 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 **Done when:** smoke tests pass before and after, the old UI on the preview matches production screen for screen, the model has unit tests for every rule in guide §6.8–§6.11, the rules are deployed, the migrations have run with a backup taken, and the Phase 1 review (Opus 5.5 High) passes.
 
 #### Task 1.1: Test harness · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** this task; `node_modules/next/dist/docs/01-app/02-guides/testing/` (Vitest and Playwright pages).
 - **Do:** add Vitest (`npm test`) for `tests/model/**`, Playwright (`npm run test:e2e`) for `tests/e2e/**`, and the Firebase Local Emulator Suite (Auth + Firestore) through `firebase-tools` as a dev dependency, with `firebase.json` emulator ports and a seed script (`tests/e2e/seed.ts`) that signs in two emulator accounts with the allowlisted emails. Playwright starts the emulators and `next dev` with emulator env vars (`NEXT_PUBLIC_USE_EMULATORS=1`, read in `src/lib/firebase.ts` to call `connectFirestoreEmulator` and `connectAuthEmulator`). A second Playwright project runs with no Firebase env (demo mode).
 - **Done when:** `npm test` and `npm run test:e2e` run green with one trivial test each. Needs Java for the emulator (§9.2 Q11).
 
 #### Task 1.2: Behaviour smoke tests for the old UI · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** this task; `redesign/inventory-notes.md` §2.
 - **Do:** Playwright tests, by behaviour not markup, against the emulator: sign in; add a venue and mark it Booked; add a vendor, set Chosen and see it among confirmed bookings; split into sub-entries and change a payment; add a guest, delete it, undo; add a master-list row, reorder, delete, undo; add a schedule item; add a to-do with a subtask; write a note with a `=SUM` table and see the total; create a folder and upload a small file (Cloudinary calls stubbed with `page.route`). Plus one demo-mode test.
 - **Done when:** all pass on today's code. These tests are the "no visual change" guard for the rest of the phase.
 
 #### Task 1.3: Route groups and `legacyHref` · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.2; `route-groups.md`, `layout.md` in the Next docs.
 - **Files:** move `src/app/layout.tsx`, `page.tsx`, `globals.css` and every page folder into `src/app/(legacy)/`; keep `manifest.ts` and `favicon.ico` at `src/app/`. Add `src/lib/legacy-href.ts` (`LEGACY_BASE = ''`) and route every `href`, `router.push/replace` and redirect in old code through it (sweep list in the reverse-coverage sweep: `app-shell.tsx`, `login/page.tsx`, dashboard cards, Confirmed links, `lib/schedule.ts:87`). Add `src/app/(veil)/new/layout.tsx` and `page.tsx` as a bare placeholder (no styles, "New UI placeholder" text) so the group builds.
 - **Done when:** every URL works as before, smoke tests pass, `/new` renders the placeholder.
 
 #### Task 1.4: Money model · Opus 5.5 Medium
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.7; guide §6.9, §4.4, §4.5, §4.8, §5.4–§5.10; prototype `assets/app.js` (money model block, `recordPayment`); `inventory-notes.md` §3 (data model) and §9 (§5 decisions #1–#5).
 - **Files:** `src/lib/model/money.ts`, `bookings.ts`, `tests/model/money.test.ts`.
 - **Do:** pure functions over plain objects: `bookingsFrom(vendors, venues)` (every booked venue counts; membership by the `booking` field, with the legacy status rule as a fallback until migration 1.11 has run; direct bookings), `partsOf`, `totals` (price, paid, still to pay, next due, funders, overpaid), `budget`, `dues` (undated never included, `SOON = 14`, `urgency`), `byFunder` (Not assigned row), `whatIfTotals`, `projected`, `collapseParts` (first 4 still owing + "and N more"), `splitPlan` (Deposit/Balance/First payment, guide §6.9), `estimateDifference`, `recordPaymentPreview` (pays in full / still to pay after / more than what's left). Money is integer rupiah.
 - **Done when:** tests cover each rule in guide §6.9 and decisions #1–#5, overpaid at booking, part and funder level, and the stress numbers (13-digit prices).
 
 #### Task 1.5: Guests, items, labels, formats, search and order · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.7 value table; guide §6.7, §6.8, §6.11 (counts), §5.22, §5.23, §4.23; prototype `assets/app.js` (`n0`, `dec`, `compact`, `waHref`, `linkify`), `guests.html`, `items.html` scripts; `inventory-notes.md` §9 decisions #7–#9.
 - **Files:** `src/lib/model/{guests,items,labels,format,search,order,whatsapp,categories,csv}.ts` and tests.
 - **Do:** headcounts and sides (decided rules: reception includes "if space allows", unsure apart, attending counts people, friends are family, the first side named wins, no side → counted apart); item counts, filters (any-of), own order; every stored-value ↔ label map; `rp`, `figure` parts, counts with dots, decimal comma, `compact`; search across the fields each screen names; ordering (numbers descending first, text ascending, blanks last, ties by name or guest number); category list (built-ins, ours, Other last); CSV escaping (columns wait for N5).
 - **Done when:** tests pass for each rule, including the stress cases (non-Latin text, 40-character categories).
 
 #### Task 1.6: Dates, agenda, month, tasks, reminders due · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §6.11, §4.25–§4.27, §5.19–§5.21, §6.12; prototype `assets/schedule.js`, `tasks.html` script.
 - **Files:** `src/lib/model/{dates,agenda,tasks,reminders}.ts` and tests.
 - **Do:** long and short dates, due text, agenda day names, edited times ("12 min ago", "by Bella"); `daysUntil`, `timeGone`; `agendaItems(events, dues, tasks, today)` with Late first, real today (§5 #11), completed and cancelled on demand, the Payments filter including Payment events; `lateOrToday` figure and context sentence; `monthCells` (Monday first, dots, today, selected, wedding day, labels); task order (due, undated last), finished order, steps done; `remindersDue(events, now)`.
 - **Done when:** tests pass, including month edges, all-day events and time zones in the local zone.
 
 #### Task 1.7: SUM engine and table sort · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §6.10; prototype `assets/formulas.js`, `doc.html` script.
 - **Files:** `src/lib/model/formulas.ts` and tests (the old `components/notes/formulas.ts` stays with the old UI).
 - **Do:** parse and evaluate `=SUM` over a table matrix (ranges, lists, growing ranges stopping above the total, case and spaces ignored), number reading ("Rp 12.500.000", "2,5"), Rp carried into totals, the three named errors with their reasons, and `sortTableRows` (one column, numeric when every non-blank is a number, natural text order ignoring accents, blanks last, title row and total rows fixed). Must accept every formula the old engine accepted (§5 #17 edge cases decided as in the guide).
 - **Done when:** tests pass, including the stress 50 × 8 table and the `doc.html?id=scratch` cases.
 
 #### Task 1.8: Write layer · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** data loss under concurrent edits, undo or offline retries.
 - **Read:** §2.7; guide §6.1–§6.3; `src/lib/use-collection.ts`, `src/lib/confirmed-sub-entries.ts`, `src/lib/collections/{vendors,shortlist,todos,guests,master-list,vendor-categories,wedding-files}.ts`; `inventory-notes.md` §5 #19, #20, #27, #32.
 - **Files:** `src/lib/data/write.ts`, `activity.ts`, `members.ts`, `undo.ts`, `array-ops.ts`; small changes inside `src/lib/collections/*.ts` so old callers use the transactional helpers (no visible change).
@@ -1071,6 +1079,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** unit tests with the emulator cover two writers editing the same array at once, undo after a partner's edit, a timed-out write retried, and smoke tests still pass.
 
 #### Task 1.9: New collections, adapters and Firestore rules · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** a rules mistake locks both of you out of production data, or opens it.
 - **Read:** §2.7 (new fields), §2.9; `firestore.rules`; `inventory-notes.md` §3.
 - **Files:** `firestore.rules`, `tests/rules/*.test.ts` (with `@firebase/rules-unit-testing`), `src/lib/collections/{funders,members,activity,presence,push-subscriptions,guest-meta}.ts`, adapters in `src/lib/data/adapters/*.ts`.
@@ -1078,6 +1087,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** rules tests prove both accounts can read and write every collection and a third account can't; the old UI still works on production after the deploy.
 
 #### Task 1.10: Booking and money write operations · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** data loss in prices and payments.
 - **Read:** §2.7; guide §6.9, §5.6, §5.10, §5.12, §5.14, §5.15; prototype `booking.html`, `vendor.html`, `finalist.html`, `venues.html` scripts (what each action does).
 - **Files:** `src/lib/data/bookings.ts`, `funders.ts`, `shortlist.ts`, `categories.ts`, and tests against the emulator.
@@ -1085,6 +1095,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** emulator tests cover every operation and its undo, including a split booking that is then removed and restored.
 
 #### Task 1.11: One-time migrations · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** writes to live production data.
 - **Read:** §2.7; `inventory-notes.md` §3, §6.
 - **Files:** `scripts/migrate/*.ts` run with the Firebase Admin SDK from the owner's machine, `appMeta/migrations` to record each run.
@@ -1103,39 +1114,46 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 **Done when:** `/new` shows the top bar, the menu and a placeholder hero on the preview, styled only by tokens, at both widths; signing in, demo mode and an account that isn't allowed all route correctly; the review passes.
 
 #### Task 2.1: Tokens, base styles, fonts and style check · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.5, §2.6; guide §2, §8 (focus, reduced motion); `redesign/design/tokens.css`; prototype `assets/veil.css` (only `:root`, `html`, `body`, `a`, `button`, `input`, `.num`, `.sr`, `[tabindex]`, focus and reduced-motion rules).
 - **Files:** `src/veil/styles/{tokens.css,base.css,fonts.ts}`, `scripts/check-veil-styles.mjs`, `src/app/(veil)/new/layout.tsx` imports.
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
 
 #### Task 2.2: Icon set · Haiku 5.5 xHigh
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.6; prototype `assets/app.js` (`ICON`, `WA_ICON`, `HEART`), `files.html` (envelope), `items.html` (handle, star, tick), `signin.html` (Google mark).
 - **Files:** `src/veil/icons/*.tsx`.
 - **Done when:** each icon renders in the gallery (3.0), `aria-hidden`, with `currentColor`.
 
 #### Task 2.3: Root layout, providers, auth gate, demo and not-allowed probe · Opus 5.5 Medium
+- [ ] **Done** (date · commit · real cost)
 - **Read:** §2.2, §2.7; guide §5.1 (states), §6.4, §6.5; `src/lib/auth-context.tsx`, `src/lib/firebase.ts` (calls only).
 - **Files:** `src/app/(veil)/new/layout.tsx`, `src/veil/shell/providers.tsx`, `src/lib/data/session.ts`.
 - **Do:** providers for auth, data status (`online`, `demo`), toasts and sheets; the gate sends signed-out visitors to `/new/sign-in` and keeps `main` `aria-busy` while auth resolves; after sign-in, a probe read of `settings/wedding` that fails with permission-denied signs the account out and shows Account not allowed with its email; demo mode when `isFirebaseConfigured` is false; `members` write on sign-in; the service worker registration moves here (same `sw.js` until 6.1); metadata `title` and `lang="en"`.
 - **Done when:** e2e tests cover signed out → sign-in, allowed account → `/new`, third account → not allowed, no env → demo.
 
 #### Task 2.4: Top bar, menu, sub-navigation, back link, add button · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §3, §4.1–§4.3; prototype `assets/app.js` (`header`, `indexPage`, `mount`, `subnav`), `veil.css` (`.top`, `.index`, `.subnav`, `.back`, `.add-fab`).
 - **Files:** `src/veil/shell/{top-bar,menu-index,sub-nav,back-link,add-button}.tsx` + module CSS, `src/veil/href.ts`.
 - **Do:** every link in the new UI goes through `veilHref(path)`, which adds the `/new` prefix until Task 7.1 sets it to empty.
 - **Done when:** matches the prototype at both widths; focus moves to Close and back; Escape closes; the current section is marked.
 
 #### Task 2.5: Whole-screen states, message, banner · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.17–§4.19, §5 (shared states copy), §6.5–§6.7; prototype `assets/app.js` (`stateView`, demo banner).
 - **Files:** `src/veil/parts/{message,shimmer}/`, `src/veil/shell/banner.tsx`, `src/veil/shell/screen-state.tsx` (renders loading, error, offline and demo from a hook's `status`).
 - **Done when:** each state renders from a fake status in the gallery.
 
 #### Task 2.6: Sheets, confirm and toasts · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.14–§4.16, §6.2; prototype `assets/app.js` (`openSheet`, `closeSheet`, `confirm`, `toast`, `sheetSaver`, `demoLine`).
 - **Files:** `src/veil/shell/{sheet,confirm,toasts}.tsx` + module CSS.
 - **Do:** one sheet host, centred on desktop and a bottom sheet on a phone; focus in and back; Escape and scrim close; `confirm()` promise with the busy confirming button held until the write resolves; toasts stack, 6 s (9 s partner), Undo becomes "Restoring" until the restore resolves; layers per tokens.
 - **Done when:** gallery demos plus an e2e test of confirm → remove → undo on a fake record.
 
 #### Task 2.7: Partner changes and presence · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §6.3; §2.7 (`activity`, `presence`).
 - **Files:** `src/lib/data/partner.ts`, `src/veil/shell/partner-news.tsx`, `src/lib/data/presence.ts`.
 - **Do:** (documents follow §9.2 Q7.) Listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
@@ -1146,55 +1164,68 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 Built in a dev-only gallery so every variant can be seen and screenshotted before any screen exists. **Done when:** every component in §3 renders in every listed state at both widths in the gallery and matches the prototype; the review passes.
 
 #### Task 3.0: Component gallery · Haiku 5.5 xHigh
+- [ ] **Done** (date · commit · real cost)
 - **Files:** `src/app/(veil)/new/gallery/page.tsx` (returns `notFound()` unless `NEXT_PUBLIC_VEIL_GALLERY=1`), `src/veil/gallery/`.
 - **Done when:** the route lists sections for each later task and is absent in production builds.
 
 #### Task 3.1: Hero, kicker, figure, context, thread · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §3 (hero order), §4.4, §6.9 (figures); prototype `budget.html`, `booking.html?id=kirana`, `whatif.html`, `veil.css` (`.hero`, `.kicker`, `.figure*`, `.rp`, `.context`, `.thread*`).
 - **Done when:** late, overpaid, settled, long and what-if variants match the prototype; threads carry `role="img"` labels.
 
 #### Task 3.2: Next card, after line, doors · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.5, §4.6; prototype `budget.html`, `overview.html`, `veil.css` (`.card.next`, `.flag*`, `.after`, `.doors`).
 
 #### Task 3.3: Buttons, links, chips and focus chips · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.10, §4.11, §4.13; prototype `veil.css` (`.btn*`, `.link*`, `.chip*`, `.focus`, `.dir`), `vendors.html`.
 - **Done when:** busy, disabled, danger, quiet, small, pressed, radiogroup and dashed variants all render.
 
 #### Task 3.4: Fields and save-as-you-go · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.9, §6.1; prototype `booking.html` (fields and save line), `settings.html?state=savefail`, `veil.css` (`.fields`, `.field*`, `.hint`, `.save-state*`, `.big-input`, `.notes-view`).
 - **Files:** `src/veil/parts/fields/*`, `src/lib/data/use-autosave-field.ts`.
 - **Do:** every field type; `useAutosaveField(save)` saves on blur or change, shows Saving → Saved on the screen's `SaveLine`, keeps the typed value on failure with Try again, restores the old name if a name is cleared, and is disabled in demo with the demo save line; money reformat on blur; inline rename (Enter, Escape).
 - **Done when:** a gallery form saves to the emulator, and a forced failure (5.1's harness, or a stubbed save in the gallery) keeps the input.
 
 #### Task 3.5: Ledger rows and row states (L) · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.7; prototype `bookings.html`, `whatif.html`, `vendors.html`, `payments.html`, `documents.html`, `files.html`, `guests.html` (row markup only), `veil.css` (`.ledger`, `.entry`, `.vrow`, `.due`, `.date-card`, `.flash`, `.ruled`), the screens' `<style>` blocks (`.drow`, `.frow`, `.grow`).
 - **Done when:** each row type and each row state (flash, ruled, completed, cancelled, done, next, failed, empty meta) renders with stress names.
 
 #### Task 3.6: Parts, menu cards, tally · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.8; prototype `booking.html`, `vendor.html`, `finalist.html`, `guests.html` (tally), `whatif.html` (`.carry`), `veil.css` (`.parts`, `.part*`, `.menu-card`).
 
 #### Task 3.7: Search, ordering, filters, count line and paging · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.12, §6.8; prototype `vendors.html`, `venues.html`, `items.html` (`.sorted-note`, `.filters`), `veil.css` (`.tools`, `.search`, `.order`, `.count`, `.range`).
 - **Done when:** components take the model's ordering and filter functions as props; focus stays in search while results change.
 
 #### Task 3.8: Sheet patterns, confirm variants, banners and problem boxes · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.14 (create vs edit), §4.15 (inline confirm, blocked), §4.17; prototype `vendors.html?state=categories`, `files.html` (blocked folder), `booking-new.html?state=failed`, `signin.html` (`.problem`).
 - **Done when:** create and edit sheet frames, inline confirm, blocked notice, gold, rose and calm boxes render.
 
 #### Task 3.9: Stage thread, keen heart, WhatsApp, install card, notification state · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.21–§4.23, §4.30; prototype `assets/app.js` (`stageThread`, `waLink`, `HEART`), `overview.html?state=install`, `settings.html` (all notification states).
 
 #### Task 3.10: File tiles, upload sheet and upload pipeline · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.20, §6.2 (files); prototype `assets/app.js` (`filesGrid`, `uploadSheet`, `mbText`, `FILE_CATS`), `files.html?state=uploading`, `booking.html?state=uploading`; `src/lib/compress-pdf.ts` and the Cloudinary call in `src/components/cloudinary-upload-button.tsx` (the request only).
 - **Files:** `src/veil/parts/files/*`, `src/lib/data/uploads.ts`.
 - **Do:** queue several files in parallel with progress per file; PDFs over 10 MB go through `compress-pdf` with the "Shrinking from … to fit under 10 MB" status; other big files are refused with the designed wording; failures offer Try again per file; a finished upload creates the `weddingFiles` document (name, category, description, `recordRef`, folder named after the record, created on first use) and appends to the legacy `files[]` array on the record (§2.7); demo shows "Not uploaded".
 - **Done when:** e2e with Cloudinary stubbed covers success, shrinking, too large and failure-then-retry.
 
 #### Task 3.11: Agenda rows and month calendar · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.25, §4.26; prototype `assets/schedule.js`, `assets/schedule.css`, `schedule.html?view=month`.
 - **Done when:** groups, late flags, kind labels, completed and cancelled rows, and the month grid with dots, today, selected, wedding day and full cell labels render from model data.
 
 #### Task 3.12: Task, item and guest rows · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Read:** guide §4.27–§4.29; prototype `tasks.html`, `items.html`, `guests.html` (scripts and `<style>` blocks).
 - **Do:** task disclosure with steps and the failed-step line; item row with drag and drop (rose line, 40% fade), Alt+↑/↓ with focus kept, row menu, star and tick, failed vendor field; guest row with the RSVP switch and failed-reply line.
 - **Done when:** keyboard and pointer moves work in the gallery; one-tap saves show the failed state when forced.
@@ -1206,60 +1237,77 @@ Each screen is built in its **normal** state with real data from the emulator an
 Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sections of the components it uses, and its prototype file. Each task also adds the screen's `page.tsx` under `src/app/(veil)/new/…` and the screen component in `src/veil/screens/<screen>/`.
 
 #### Task 4.1: Sign in · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.1, §6.4, §6.5. **Prototype:** `signin.html`.
 - **Do:** Google sign-in (popup, as today), email and password, and no registration (§9.2 Q2); Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
 
 #### Task 4.2: Overview · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.2. **Prototype:** `overview.html`.
 - **Do:** names, days figure, time-gone thread, coming up (5), doors, no-date form (saves `weddingDate`), install card (6.4 completes the install logic). The day itself and after wait for N7.
 
 #### Task 4.3: Budget · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.4. **Prototype:** `budget.html`. Uses `useBudget`, `useDues`; the record-payment sheet comes from 4.4.
 
 #### Task 4.4: Record a payment sheet · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.4 (Record a payment row), §6.9. **Prototype:** `assets/app.js` `recordPayment`.
 - **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast.
 
 #### Task 4.5: Bookings · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.5. **Prototype:** `bookings.html`. Search, nine orders, 100 at a time, parts collapsed.
 
 #### Task 4.6: A booking (L) · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.6, §6.9. **Prototype:** `booking.html` (`?id=samaya`, `ayu`, `kirana`, `rana`).
 - **Do:** hero with save line, next card, origin line, details (price static from parts, or agreed price; estimate with its sentence; single-booking money fields), parts with their own fields, files and actions, Split into parts, Add a part, files, Remove this booking with the in-place removed message and undo. Booking date unknown waits for N8.
 
 #### Task 4.7: Add a booking · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.7. **Prototype:** `booking-new.html`. Uses `addDirectBooking` (one id per form, so Try again never duplicates); attached files are uploaded first and linked when the booking is added.
 
 #### Task 4.8: Payments due · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.8. **Prototype:** `payments.html`. Groups Late, next 14 days, then months; 60 at a time.
 
 #### Task 4.9: Who pays · Sonnet 5.5 High (calibration trial)
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.9, §6.9. **Prototype:** `funders.html`. Add, rename (Enter, Escape, undo), remove (confirm naming costs, undo), Not assigned row linking to Bookings searched for "Not assigned". Build twice per §7.0.
 
 #### Task 4.10: What-if items · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.10. **Prototype:** `whatif.html`. Projected total, who would pay (8 + more), ordering, add and edit sheet with split into parts and merge back.
 
 #### Task 4.11: Vendors · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.11. **Prototype:** `vendors.html`. Focus chips with counts, search, keen filter, six orders, category headings, 100 at a time, add-vendor sheet (Add and start another), categories sheet (add, rename, remove with inline confirm and undo, 40 characters), export link (columns wait for N5; build with a placeholder set marked TODO N5).
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.12. **Prototype:** `vendor.html` (`?id=kebun`, `ara`, `nusantara`, `sv-long`).
 - **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist). Removing the vendor waits for N10.
 
 #### Task 4.13: Shortlist · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.13. **Prototype:** `shortlist.html`. Cards grouped by category, up to 4 packages, booked cards faded with the flag, four orders with direction, add-finalist sheet.
 
 #### Task 4.14: A finalist · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.14. **Prototype:** `finalist.html` (`?id=f-kebun`, `f-arka`, `sf-deep`).
 - **Do:** origin line, figure, packages menu card and package sheet (with its own files), contact and popularity, notes, files including the vendor's, Book it sheet with package choice, Move into Vendors (from scratch only), booked state. Removing the finalist waits for N10.
 
 #### Task 4.15: Venues · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.15. **Prototype:** `venues.html`. Booked venue line, search, stage filter, cost and capacity limits, Hide ruled out on by default, three orders, rows with stage thread and notes cut at 140, venue sheet (add with undo, edit saves as you go, Booked → `markBooked`, files). Removing a venue waits for N10.
 
 #### Task 4.16: Documents · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.16. **Prototype:** `documents.html`. Meeting notes and New document starts, three newest as cards, the rest as rows, search through titles and text (tables included) with highlights, 60 at a time.
 
 #### Task 4.17: Document editor core (L) · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** lost writing or corrupted stored documents.
 - **Guide:** §4.24, §5.17, §6.1 (documents), §6.13 (meeting notes). **Prototype:** `doc.html`, `assets/editor.css`. **Also read:** `src/components/notes/rich-text-editor.tsx` and `src/lib/collections/notes.ts` for the stored JSON shape and save calls only.
 - **Files:** `src/veil/editor/*`, `src/lib/data/documents.ts`.
@@ -1267,31 +1315,39 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Done when:** existing production documents open on the preview and look complete (owner spot-check of five documents), a document typed offline is never lost, and e2e covers save, fail, retry and leave.
 
 #### Task 4.18: Document tables and formulas (L) · Opus 5.5 Medium
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §4.24 (table bar, formula bar, cells), §6.10. **Prototype:** `doc.html?state=table`, `?state=formula`, `doc.html?id=scratch&state=formula-error`.
 - **Do:** 8 × 8 size picker, table bar shown only in a table, rows and columns either side, add 1–50, remove, title row, narrower and wider (stored `colwidth`), sort (`sortTableRows` from 1.7, totals and title row fixed), remove table with undo; total cells drawn in gold with errors named; the formula bar with the cell address; Tab between cells; tables scroll sideways (720px minimum).
 
 #### Task 4.19: Files (L) · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.18, §4.20. **Prototype:** `files.html` (`?folder=old`, `?state=file`, `?state=moving`).
 - **Do:** top level and inside a folder, path folding, folders then files, search everywhere (200 at a time), new and rename folder (Enter, undo), move file or folder (no cycles, disabled targets, undo), blocked folder delete, file details sheet (preview, fields saving as you go, Open, Download, Move), Delete for good wired to 6.3 (until then the button calls a stub that throws, so it can't silently half-delete).
 
 #### Task 4.20: Schedule agenda and event sheet · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.19, §6.12. **Prototype:** `schedule.html` (`?state=event`, `?state=new`).
 - **Do:** figure and context, kind chips, search, completed and cancelled toggle, groups, 80 at a time, Record payment on payment rows, links to bookings and tasks; event sheet (kind, title, date, all day or times, with, where or call link shown as Join the call, notes, Remind us, Mark completed, Cancel it, Back to scheduled, Delete) saving as you go. Event validation waits for N9, and the Remind us choices wait for N11.
 
 #### Task 4.21: Month · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.20. **Prototype:** `schedule.html?view=month`. Earlier, Later, Back to today, the chosen day's list, Add something for an empty day.
 
 #### Task 4.22: Tasks · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.21. **Prototype:** `tasks.html`. Open tasks by due date, steps (add, tick, date, remove), due date, notes, finish and reopen (records `doneOn`), finished disclosure, Delete task with undo, 100 at a time, `?open=` from the agenda.
 
 #### Task 4.23: Wedding items (L) · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.22, §6.8. **Prototype:** `items.html`.
 - **Do:** figure, work-on-next card (jump, flash, focus), search, filters (confirmed, events any-of, people any-of, work on next), seven orders with the sorted note and Back to our order, own order by drag and Alt+arrows, row menu (add below, add several below, move up, move down, remove), add-items sheet (one per line, copying the events and person of the row above), first use and Start with common items (the existing 44-item seed list, §9.2 Q12), 150 at a time. Waits for the Q4 report from Task 1.11: if any item lists several people, this task waits for that need.
 
 #### Task 4.24: Guests · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.23. **Prototype:** `guests.html`. Figure, headcounts and both-sides cards, search, nine orders, RSVP and invited-to filters, guest rows with the RSVP switch (one tap, undo toast), guest sheet (Will be guest number N, Add and start another), remove with plus-ones named.
 
 #### Task 4.25: Wedding settings · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.3. **Prototype:** `settings.html`. Names and date saving as you go (no whole-document overwrite, §5 #26), who can open the planner from `members`, sign out, the notification block (wired in 6.2), install steps and installed state, doors to Who pays and Vendor categories.
 
 ### Phase 5: Every state on every screen
@@ -1299,25 +1355,32 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 Uses the shared state components from Phases 2–3; most work is wiring each screen's hook status and data cases. **Done when:** every row in §5.1 that doesn't wait for a need can be reached on the preview with the state harness and matches the prototype; the review passes.
 
 #### Task 5.1: State harness and emulator data sets · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Files:** `src/lib/data/dev-faults.ts` (only when `NEXT_PUBLIC_VEIL_DEV=1`: `?fault=save|load|offline|upload` makes the write layer or hooks fail), `tests/fixtures/{normal,empty,stress}.ts` built from the prototype's `assets/data*.js` sets and loaded into the emulator by `npm run seed:emulator -- <set>`.
 - **Done when:** each fixture loads; each fault produces the designed state on one screen.
 
 #### Task 5.2: Budget group states (L) · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Budget, Bookings, A booking, Add a booking, Payments due, Who pays, What-if. **Prototype:** each file's `?state=` list. Includes overpaid, paid in full, late, removed by Bella (`status: 'gone'`), just added, stress.
 
 #### Task 5.3: Vendors group states · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Vendors, A vendor, Shortlist, A finalist, Venues.
 
 #### Task 5.4: Documents and files states · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Documents, A document, Files. Includes the editor's not saved yet, saving, couldn't save, offline while writing, partner in the document, deleted by the partner, demo (not editable), stress tables.
 
 #### Task 5.5: Schedule and tasks states · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Agenda, Month, Tasks.
 
 #### Task 5.6: Items and guests states · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Wedding items, Guests.
 
 #### Task 5.7: Overview, sign-in and settings states · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Screens:** Overview, Sign in, Wedding settings.
 
 ### Phase 6: Edge surfaces
@@ -1325,12 +1388,14 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 **Done when:** the service worker, reminders, delete for good, manifest and icons, not-found and error screens, and the CSV export work on the preview; the old-names check exists and passes on `src/veil/**` and `src/app/(veil)/**`; the review passes.
 
 #### Task 6.1: Service worker · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** a broken worker keeps serving a broken app to installed phones.
 - **Read:** §2.8; `progressive-web-apps.md`; `public/sw.js`; `inventory-notes.md` §5 #35.
 - **Do:** new `public/sw.js`: navigations network-only (offline shows the app's own offline state, never a cached page), cache only hashed `/_next/static/**` and the font files, delete `wedding-planner-v2` and older caches, `skipWaiting` with a versioned cache name, `push` (show the reminder) and `notificationclick` (focus or open the event's day). Same worker serves both UIs.
 - **Done when:** on a preview, an installed phone picks up a new deploy on the next open, and errors or redirects are never cached.
 
 #### Task 6.2: Push reminders · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** production secrets and server routes; reminders missed, repeated or sent to the wrong device.
 - **Read:** §2.9; guide §6.12, §4.30, §5.3, §5.19; `progressive-web-apps.md` (web push); §9.2 Q8 and Q9; need N11's design.
 - **Files:** `src/app/api/push/{subscribe,unsubscribe,test}/route.ts`, `src/app/api/cron/reminders/route.ts`, `src/lib/server/*`, cron schedule in `vercel.ts` or `vercel.json`, `src/lib/data/push.ts`.
@@ -1338,22 +1403,27 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Done when:** on a preview with real keys, triggering the cron route by hand (`vercel crons` or a signed request) delivers a "1 day before" reminder once on a Mac and on an installed iPhone, and a second run sends nothing.
 
 #### Task 6.3: Delete for good · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** permanent data loss; a wrong id destroys the wrong file forever.
 - **Read:** §2.9; guide §6.2 (permanent); `src/lib/collections/wedding-files.ts`.
 - **Do:** `DELETE /api/files/[fileId]`: verify token and allowlist, read the `weddingFiles` doc server-side (never trust a client-sent public id), destroy that asset (legacy files: public id parsed from the URL, refuse if it can't be parsed), then delete the doc and remove the URL from any legacy `files[]` arrays; idempotent when the asset is already gone.
 - **Done when:** emulator plus a test Cloudinary folder show the asset and doc removed, and a second call is harmless.
 
 #### Task 6.4: Manifest, icons and install · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Waits for:** need N1 designed and imported.
 - **Do:** `src/app/manifest.ts` (name, short name, colours, icons including a real maskable icon, `start_url` `/`), `src/app/icon.*`, `apple-icon.*`, favicon per the design; `viewport.themeColor`; install card logic (`beforeinstallprompt` on Android, steps on iPhone, hidden when `display-mode: standalone`, dismissed once per device).
 
 #### Task 6.5: Not found and error screens · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Waits for:** need N2. **Files:** `src/app/(veil)/new/not-found.tsx`, `error.tsx` (and `global-error.tsx` if the design covers it); read `not-found.md`, `error.md` in the Next docs.
 
 #### Task 6.6: Vendor CSV columns · Haiku 5.5 xHigh
+- [ ] **Done** (date · commit · real cost)
 - **Waits for:** need N5. **Files:** `src/lib/model/csv.ts` columns; filename `vendors-<first>-<second>.csv` from settings (guide §5.11).
 
 #### Task 6.7: Old-names check · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - **Files:** `scripts/check-old-names.mjs`, `scripts/old-names.txt`.
 - **Do:** the list holds distinctive old identifiers and wording only: old component and file names (`AppShell`, `VendorsTable`, `VenuesTable`, `ShortlistTable`, `EditableText`, `EditableNumber`, `EditableDate`, `FunderSelect`, `ConfirmedTypePill`, `VendorCategoryPill`, `VendorCategoryTabs`, `VendorContractPill`, `VenueStatusPill`, `VenueGalleryDialog`, `VenueNotesCell`, `FilesCell`, `ContactCell`, `MasterListEditableCell`, `MasterListMultiSelect`, `CloudinaryUploadButton`, `RichTextEditor`, the `components/ui/*` names), old style names (`bg-background`, `text-foreground`, `data-slot`, `--terracotta`, `--cream`, `tw-animate`), and old wording from `inventory-notes.md` §2 ("Words used by the current UI") and the reverse-coverage sweep ("Welcome back", "Our Wedding", "Track RSVPs", "Next up", "Real budget spent", "Pending spending", "to track", "Starred only", "Hide rejected", "Add to budget", "Sub-entry", "Start writing", "Skip for now", "Clear filters", "Firebase isn't connected"). Words the new design also uses (Vendors, Shortlist, Guests, Schedule, Budget, Files) aren't listed. Stored field names are data, not UI, and aren't listed. `--exclude <glob>` for the frozen fallback.
 - **Done when:** it passes on `src/veil/**`, `src/app/(veil)/**`, `src/lib/model/**` and `src/lib/data/**`, and fails when an old word is planted.
@@ -1363,14 +1433,17 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 **Done when:** on the `redesign` preview, the new UI is the default; the old UI answers at `/old/…`, frozen; the one-commit rollback (§9.3) was tested once on a preview; old rendering code the fallback doesn't need is deleted; the old-names check passes with only the fallback excluded; the review (Opus 5.5 High) passes. The switch reaches production only when the owner merges `redesign` into `main` after Phase 8, and the two-week launch window starts then.
 
 #### Task 7.1: Switch-over commit · Opus 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Risk:** breaks production for both of you at once.
 - **Do, in one commit titled "Switch to the new UI":** move `src/app/(veil)/new/*` to `src/app/(veil)/*`; move `src/app/(legacy)/*` (except the root layout) into `src/app/(legacy)/old/*`; set `LEGACY_BASE = '/old'`; replace every `/new` prefix in the new UI's links (they all go through one `veilHref()` helper from Task 2.4, so this is one constant); add permanent redirects in `next.config.ts` for old addresses with no new page (`/login` → `/sign-in`, `/confirmed` → `/budget/bookings`, `/master-list` → `/items`, `/todo` → `/schedule/tasks`, `/notes` → `/documents`, `/checklist` → `/schedule/tasks`); `/new/:path*` redirects to `/:path*`; bump the service-worker cache version.
 - **Done when:** the preview passes every e2e test at the new paths, and the old UI works at `/old`.
 
 #### Task 7.2: Rollback rehearsal · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Do:** on a throwaway branch from the switched commit, `git revert` the switch commit, push, open the preview: the old UI is at `/`, the new at `/new`, installed apps load the old UI on next open. Record the steps, time taken and the switch commit's hash in §9.3. Delete the throwaway branch.
 
 #### Task 7.3: Delete old rendering code the fallback doesn't need · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - **Do:** delete `(legacy)/old/budget`, `(legacy)/old/checklist`, the Wedding Organizer import, `components/ui/calendar.tsx`, `lib/collections/{budget-items,checklist-items}.ts` (data stays in Firestore), the template SVGs in `public/`. Run the old-names check with `--exclude 'src/app/(legacy)/**' --exclude 'src/components/**'`.
 
 ### Phase 8: QA and polish
@@ -1378,29 +1451,37 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 **Done when:** behaviour tests cover every story and pass, screenshots match the prototype for every §5.1 row (including stress data), the accessibility check passes, the owner has run the real-device checklist, and the review passes. Then the owner decides when to merge (Task 7.1's commit lands on `main` with the merge).
 
 #### Task 8.1: Behaviour tests on the new UI (L) · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - Rewrite the Task 1.2 smoke tests and add one Playwright spec per story group (O, F, B, G, T, S, R, A) using roles and labels from the guide §8, never old selectors. Two-context tests for A2.
 
 #### Task 8.2: Screenshot comparison · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - Playwright serves `redesign/design/prototype/` statically and the build with the matching emulator fixture, captures each §5.1 row at 390px and 1440px (light), with fonts loaded and motion reduced, and writes side-by-side images plus a pixel-difference score to `tests/screenshots/report/`. The prototype's fixed "today" (14 October 2026, 11:30) is set in the browser clock for both.
 
 #### Task 8.3: Fix passes from the screenshots · Haiku 5.5 Max (four sessions: budget and vendors; documents and files; schedule, items and guests; shell, overview, sign-in, settings)
+- [ ] **Done** (date · commit · real cost)
 - Each session fixes the differences in its group, using only tokens and the prototype's CSS. Differences that come from real data rather than the design are noted, not "fixed".
 
 #### Task 8.4: Accessibility check · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - `@axe-core/playwright` on every screen and state; plus the guide §8 checklist: focus order and return, Escape, Alt+arrows, Tab in tables, labels on icon controls, live regions, `aria-busy`, `dir="auto"`, 24px and 34px targets, reduced motion, contrast pairs from `tokens.css`.
 
 #### Task 8.5: Real-device checklist · Haiku 5.5 xHigh
+- [ ] **Done** (date · commit · real cost)
 - Write `redesign/device-checklist.md` for the owner: iPhone (installed and in Safari), Android Chrome, Mac Safari and Chrome; sign in, add and edit with the keyboard open, editor docking, uploads from the camera roll, reminders, offline, the partner's change arriving on the other device.
 
 #### Task 8.6: Merge preparation and `CLAUDE.md` · Haiku 5.5 Max
+- [ ] **Done** (date · commit · real cost)
 - Update `CLAUDE.md` and `AGENTS.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
 
 ### Phase 9: After launch (on `main`)
 
 #### Task 9.1: After-launch check · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - About a week after launch: Vercel runtime logs and errors, failed cron runs, Firestore usage, Cloudinary usage; ask the owner what anyone stumbled on. Anything new goes through the design-gap loop as a need.
 
 #### Task 9.2: Remove the fallback · Sonnet 5.5 High
+- [ ] **Done** (date · commit · real cost)
 - At the end of the launch window: delete `src/app/(legacy)/`, `src/components/`, `src/app/(legacy)` CSS and `globals.css`, `legacyHref`, the `/old` redirects stay as redirects to `/`; remove dependencies only the old UI used (`@base-ui/react`, `shadcn`, `lucide-react`, `@tanstack/react-table`, `react-day-picker`, `class-variance-authority`, `tailwind-merge`, `tw-animate-css`, Tailwind if nothing else uses it); delete the dual write to legacy `files[]` arrays; run the old-names check over `src` with **no exclusions**.
 
 ---
