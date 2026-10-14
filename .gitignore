@@ -50,3 +50,6 @@ next-env.d.ts
 *-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Firestore backups taken before migrations (scripts/migrate/backup.ts)
+/backups/
