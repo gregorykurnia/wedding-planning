@@ -1,14 +1,23 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@/veil/styles/tokens.css";
 import "@/veil/styles/base.css";
 import { cormorant, jost } from "@/veil/styles/fonts";
+import { Providers } from "@/veil/shell/providers";
 
-// Root layout of the new UI: tokens, base styles and fonts. Providers come in
-// Task 2.3, so nothing from the old UI can leak in.
+export const metadata: Metadata = {
+  title: "Our wedding planner",
+};
+
+// Root layout of the new UI. Nothing from the old UI is imported here, so no
+// styles or providers leak across (a separate root layout means a full page
+// load between the two).
 export default function NewUiLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { COMPILE_TIMEOUT } from "../helpers";
 
 // Guards the route-group move (Task 1.3): every old address keeps working.
 const OLD_PATHS = [
@@ -27,8 +28,10 @@ for (const path of OLD_PATHS) {
   });
 }
 
-test("/new renders the placeholder", async ({ page }) => {
+test("/new renders (the demo gate sends it to sign-in)", async ({ page }) => {
   const response = await page.goto("/new");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("New UI placeholder")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Look around" })).toBeVisible({
+    timeout: COMPILE_TIMEOUT,
+  });
 });
