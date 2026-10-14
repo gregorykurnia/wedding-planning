@@ -103,7 +103,7 @@
 
   /* ---------- shell ---------- */
   const SECTIONS = [
-    ["Overview", "Days to go and what's next", "#"],
+    ["Overview", "Days to go and what's next", "overview.html"],
     ["Budget", "Bookings, payments and who pays", "budget.html"],
     ["Vendors", "Everyone we're considering, the shortlist and venues", "vendors.html"],
     ["Wedding items", "Every piece and who provides it", "items.html"],
@@ -118,7 +118,7 @@
   function header() {
     const [a, b] = data.couple;
     return `<header class="top">
-      <a class="couple" href="${href("budget.html")}">${esc(a)} <span>&amp;</span> ${esc(b)}</a>
+      <a class="couple" href="${href("overview.html")}">${esc(a)} <span>&amp;</span> ${esc(b)}</a>
       <div class="where">${esc(cfg.where || "Budget")}</div>
       <button class="menu-btn" aria-expanded="false" aria-controls="index"><i></i>Menu</button>
     </header>`;
@@ -127,7 +127,7 @@
     return `<div class="index" id="index" hidden role="dialog" aria-modal="true" aria-label="Menu">
       <header class="top"><span class="couple">${esc(data.couple[0])} <span>&amp;</span> ${esc(data.couple[1])}</span><span></span><button class="menu-btn close-index"><i style="border-bottom:0;height:0"></i>Close</button></header>
       <nav><ol>${SECTIONS.map(([t, s, h]) => `<li><a href="${h === "#" ? "#" : href(h)}" ${h === (cfg.section || "budget.html") ? 'aria-current="page"' : ""} ${h === "#" ? 'data-later="1"' : ""}>${t}<small>${s}</small></a></li>`).join("")}</ol>
-      <div class="account"><span>Signed in as ${esc(data.me.email)}</span><span><a class="link" href="#" data-later="1">Wedding settings</a>&emsp;<a class="link" href="#" data-later="1">Sign out</a></span></div></nav>
+      <div class="account"><span>Signed in as ${esc(data.me.email)}</span><span><a class="link" href="${href("settings.html")}">Wedding settings</a>&emsp;<a class="link" href="signin.html?state=signedout">Sign out</a></span></div></nav>
     </div>`;
   }
   function switcher() {
@@ -149,7 +149,7 @@
     btn.addEventListener("click", () => { idx.hidden = false; btn.setAttribute("aria-expanded", "true"); $(".close-index").focus(); });
     $(".close-index").addEventListener("click", () => { idx.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!idx.hidden) $(".close-index").click(); else closeSheet(); } });
-    document.addEventListener("click", (e) => { const a = e.target.closest("[data-later]"); if (a) { e.preventDefault(); toast("That part of the planner comes in a later prototype session."); } });
+    document.addEventListener("click", (e) => { const a = e.target.closest("[data-later]"); if (a) { e.preventDefault(); toast("The prototype stops here. In the app, this opens the file or the file picker."); } });
     if (DEMO) $(".top").insertAdjacentHTML("afterend", `<div class="banner-wrap"><p class="banner">Demonstration mode. The planner isn't connected to its database yet, so there's nothing to show and changes aren't saved.</p></div>`);
   }
 

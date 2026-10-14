@@ -79,3 +79,10 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Both sides** read "groom" or "bride" in the connection text (G4). Friends count as family; colleagues, clients, business and partners count as business. Anyone whose connection names neither side (a neighbour, the parish priest) is counted apart, with a note, so every guest is counted on one side at most. The guest form hints to mention groom's or bride's.
 - **Guest numbers are shown in gold italic** and never reused after a removal (G6).
 - **RSVP is a three-way switch on every row**, big enough for a thumb, because RSVPs come in while you're out (G8).
+
+### Session 8, overview, sign-in and settings (2026-10-14)
+- **The overview is home**, and your names at the top lead there. Its one figure is the days to go, the largest number in the app, under your names in gold italic, like the top of an invitation.
+- **"Time gone" needs a start date.** O1 asks how much of the preparation time has passed, so the planner needs to know when you started. The prototype uses the day the planner was set up (1 March 2026 in the mock data). Tell me if you'd rather enter a date yourselves, such as the engagement.
+- **Sign-in shows nothing about the wedding** until you're in, because the brief requires signing in before anything is shown. It's called "Our wedding planner" for now, since the name is still open.
+- **Not connected**: the sign-in screen offers demonstration mode instead of a sign-in form, and every screen in demonstration mode carries the same gold banner.
+- **Installing** is a short how-to in settings, plus a one-time, dismissible suggestion on the overview on a phone. There's no pop-up asking straight away.

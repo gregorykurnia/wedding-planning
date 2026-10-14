@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<link rel="stylesheet" href="assets/schedule.css">
+<style>
+  .names { font-family: var(--serif); font-size: clamp(30px, 4vw, 44px); font-weight: 400; font-style: italic; color: var(--gold-ink); }
+  .days-fig { font-family: var(--serif); font-weight: 300; font-size: clamp(96px, 16vw, 200px); line-height: .95; letter-spacing: -.02em; margin-top: 8px; }
+  .coming { margin-top: 48px; }
+  .coming h2 { font-family: var(--serif); font-size: 28px; font-weight: 500; text-align: center; }
+  .coming .agenda { margin-top: 14px; }
+  .coming .all { text-align: center; margin-top: 18px; font-size: 14.5px; }
+  .install { margin-top: 26px; display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 16px 20px; }
+  .install p { font-size: 14.5px; }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/data-schedule.js"></script>
+<script src="assets/data-guests.js"></script>
+<script src="assets/data-items.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/schedule.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data, A = window.Agenda;
+if (S === "nodate") d.wedding = null;
+
+V.init({
+  where: "Overview", section: "overview.html", noun: "your overview",
+  states: [["nodate", "No wedding date yet"], ["empty", "Just started, nothing yet"], ["install", "Install suggestion on a phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  render(main) {
+    const [a, b] = d.couple;
+    /* O1: days to go, and how much of the preparation time has passed */
+    let top;
+    if (!d.wedding) {
+      top = `<section class="hero"><p class="names">${V.esc(a)} &amp; ${V.esc(b)}</p><h1 style="margin-top:28px">When is the wedding?</h1><p class="sub">Set the date once and every countdown and due date works from it.</p>
+        <div class="fields" style="max-width:420px;margin:24px auto 0;text-align:left"><div class="field"><label for="wd">Wedding date</label><input id="wd" type="date"></div></div>
+        <p style="margin-top:18px"><button class="btn" id="setd" ${V.DEMO ? "disabled" : ""}>Save the date</button></p></section>`;
+    } else {
+      const total = (new Date(d.wedding) - new Date(d.since)) / 864e5, gone = (V.TODAY - new Date(d.since + "T00:00:00")) / 864e5;
+      const pct = Math.max(0, Math.min(100, Math.round(gone / total * 100)));
+      top = `<section class="hero"><p class="names">${V.esc(a)} &amp; ${V.esc(b)}</p>
+        <p class="days-fig num">${V.daysLeft().toLocaleString("en-GB")}</p>
+        <p class="context">days until ${V.dateLong(d.wedding)}</p>
+        <div class="thread" role="img" aria-label="${pct}% of the preparation time has passed"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>Started ${V.dateShort(d.since)}</span><span>${pct}% of the time gone</span></span></div></section>`;
+    }
+    const install = S === "install" ? `<section class="card install"><p>Add the planner to your home screen to open it like an app.</p><span style="display:flex;gap:12px"><a class="btn small" href="${V.href("settings.html")}#install">Show me how</a><button class="btn quiet small" id="noinst">Not now</button></span></section>` : "";
+
+    /* O2: the next few things, whatever kind */
+    const next = A.items().filter((i) => i.status === "scheduled").slice(0, 5);
+    const coming = next.length ? `<section class="coming"><h2>Coming up</h2><ul class="agenda">${next.map(A.row).join("")}</ul><p class="all"><a class="link" href="${V.href("schedule.html")}">See the whole schedule</a></p></section>`
+      : `<section class="coming"><h2>Coming up</h2><p class="note" style="text-align:center">Nothing dated yet. Appointments, payments due and tasks with dates will show here.</p></section>`;
+
+    /* O3, O4: a pulse check, each a step into the detail */
+    const B = V.budget(), tasks = d.tasks || [], done = tasks.filter((t) => t.done).length;
+    const guests = d.guests || [], going = guests.filter((g) => g.rsvp === "yes").reduce((s, g) => s + 1 + (g.plus || 0), 0);
+    const items = d.items || [], conf = items.filter((i) => i.confirmed).length;
+    const doors = `<ul class="doors" style="margin-top:44px">
+      <li><a href="${V.href("budget.html")}"><span class="t">Budget</span><span class="v">${B.price ? `<span class="num">${V.rp(B.paid)}</span> paid of <span class="num">${V.rp(B.price)}</span>` : "Nothing booked yet"}</span>${V.ICON.chev}</a></li>
+      <li><a href="${V.href("tasks.html")}"><span class="t">Tasks</span><span class="v">${tasks.length ? `${done} of ${V.plural(tasks.length, "task")} done` : "No tasks yet"}</span>${V.ICON.chev}</a></li>
+      <li><a href="${V.href("guests.html")}"><span class="t">Guests</span><span class="v">${guests.length ? `${going.toLocaleString("en-GB")} attending of ${V.plural(guests.length, "guest")} invited` : "No guests yet"}</span>${V.ICON.chev}</a></li>
+      <li><a href="${V.href("items.html")}"><span class="t">Wedding items</span><span class="v">${items.length ? `${conf} of ${items.length} confirmed` : "Nothing tracked yet"}</span>${V.ICON.chev}</a></li>
+    </ul>`;
+    main.innerHTML = top + install + coming + doors;
+    A.wireRows(main);
+    const sd = V.$("#setd"); if (sd) sd.onclick = () => { const v = V.$("#wd").value; if (!v) { V.$("#wd").focus(); return; } d.wedding = v; V.rerender(); V.saved(`Wedding date set to ${V.dateLong(v)}`); };
+    const ni = V.$("#noinst"); if (ni) ni.onclick = () => V.$(".install").remove();
+  },
+});
+</script>
+</body>
+</html>

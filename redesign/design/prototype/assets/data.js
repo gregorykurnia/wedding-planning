@@ -15,6 +15,8 @@
     me: { name: "Greg", email: "greg@example.com" },
     partner: "Bella",
     wedding: "2027-03-20",
+    since: "2026-03-01",
+    partnerEmail: "bella@example.com",
     funders: [
       { id: "greg", name: "Greg" },
       { id: "bella", name: "Bella" },

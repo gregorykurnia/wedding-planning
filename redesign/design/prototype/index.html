@@ -19,13 +19,16 @@
 </style>
 </head>
 <body>
-<header class="top"><span class="couple">Veil <span>&amp;</span> prototype</span><span class="where">Stage 2</span><span></span></header>
+<header class="top"><span class="couple">Veil <span>&amp;</span> prototype</span><span class="where">Stage 2, every group</span><span></span></header>
 <main>
   <section class="hero"><h1>Screens and states</h1><p class="sub">Open any screen on a phone or computer. The dashed “Prototype” tab in the corner switches states and the stress data.</p></section>
   <ul class="toc" id="toc"></ul>
 </main>
 <script>
 const S = [
+  ["signin.html", "Sign in", "A1: only the two of you; Google or email", [["", "Normal"], ["state=busy", "Signing in"], ["state=wrong", "Wrong email or password"], ["state=notallowed", "Account not allowed"], ["state=signedout", "Just signed out"], ["state=offline", "Offline"], ["state=demo", "Not connected (demonstration)"]]],
+  ["overview.html", "Overview", "O1–O4: days to go, time gone, what's coming up, a pulse check one step from the detail", [["", "Normal"], ["state=nodate", "No wedding date yet"], ["state=empty", "Just started"], ["state=install", "Install suggestion"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data"]]],
+  ["settings.html", "Wedding settings", "O5, O6, A3, A5, S10: names, date, who can open it, reminders, installing", [["", "Normal"], ["state=savefail", "A change didn't save"], ["state=notif-default", "Notifications not yet allowed"], ["state=notif-denied", "Notifications turned off"], ["state=installed", "Installed on this phone"], ["state=demo", "Demonstration mode"]]],
   ["budget.html", "Budget", "B5, B6, B7, B8, O2, S6: still to pay, the next payment and the doors into the detail", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data"]]],
   ["bookings.html", "Bookings", "B1, B3, B5, B9, B12: every booking with its parts, ordered by any field", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=noresults", "No results"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data (1,206 bookings)"]]],
   ["booking.html?id=samaya", "A booking in parts", "B3, B4, B12, B1: Villa Samaya, three instalments", [["", "Normal"], ["state=savefail", "A change didn't save"], ["state=uploading", "Uploading files"], ["state=gone", "Removed by Bella"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"]]],
