@@ -503,7 +503,7 @@ You approve the plan before Step 7.
 
 **Rebuild**
 - [x] `redesign` branch created (2026-10-14)
-- [ ] Phase 1: data separated from rendering, no visual change, tests green
+- [x] Phase 1: data separated from rendering, no visual change, tests green (2026-10-14: review passed after the blocker fixes in b345d83; owner compared the old UI on the preview with production and found it unchanged; report in `redesign/reviews/phase-1-review.md`)
 - [ ] Phases 2–6
 - [ ] Phase 7: new UI is the default; frozen fallback and one-commit rollback in place and tested; old-names check passes (fallback excluded)
 - [ ] Phase 8: tests rewritten and passing; screenshots match; accessibility passes

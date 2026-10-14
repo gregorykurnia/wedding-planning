@@ -1,7 +1,7 @@
 # Phase 1 review
 
 **Date:** 2026-10-14 · **Model:** Opus 5.5 High (the §7.0 pick) · **Diff:** `3fb86f3..43176da` on `redesign` (127 files, about 12,000 lines).
-**Result: passed after fixes.** The first pass found three blockers (one in Task 1.10, two in Task 1.7). They were fixed the same day and a fresh re-review of the fixes confirmed all three (see "Fixes" at the end). The should-fix items below are still open and are tracked here. Phase 1 is ticked in `redesign-plan.md` once the owner checks below are done.
+**Result: passed after fixes.** The first pass found three blockers (one in Task 1.10, two in Task 1.7). They were fixed the same day and a fresh re-review of the fixes confirmed all three (see "Fixes" at the end). The should-fix items below are still open and are tracked here. Phase 1 was ticked in `redesign-plan.md` on 2026-10-14 after the owner's preview comparison.
 
 Seven parallel reviewers each read one area against `ui-implementation-plan.md`, the design guide and the prototype. The blockers were then checked again by hand in this session.
 
@@ -82,8 +82,8 @@ Rules (Task 1.9):
 ## Owner checks
 
 1. **Bella's sign-in.** The rules now require a verified address. Google sign-in is verified; an email/password account is not, and nothing sends a verification email. Only the owner's account has been confirmed on production. Bella should load and save once on production; if she uses a password, she should sign in with Google once.
-2. Compare the old UI on the `redesign` preview with production, screen by screen (Phase 1 Done-when).
-3. B3: is "45,000" 45000 or 45?
+2. ~~Compare the old UI on the `redesign` preview with production, screen by screen (Phase 1 Done-when).~~ Done 2026-10-14: the owner found it unchanged. The preview's branch address was added to Firebase Auth's authorized domains to allow sign-in there.
+3. ~~B3: is "45,000" 45000 or 45?~~ Settled by the fix: 45000, as the old engine read it.
 
 ## Done-when per task
 
