@@ -67,3 +67,9 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Event kinds** are colour-quiet: payments in gold and tasks in sage, as small labels; everything else in ink. The month dots use the same colours plus rose for late.
 - **Notification state lives where you set a reminder** (S10). It also belongs in settings, which comes with the sign-in group.
 - **Tasks sit with the schedule** (Agenda, Month, Tasks), because tasks with dates already appear in the agenda.
+
+### Session 6, wedding items group (2026-10-14)
+- **A denser screen, still Veil.** This is the one screen that works like a table, because people edit many rows quickly. It keeps the Veil frame anyway: one confirmed figure with the thread, a "To work on next" card, and rows that read as text until touched.
+- **Work on next is a gold star; confirmed is a sage tick.** A marked row also gets a champagne wash and a gold edge, so it stands out in a long list (T3).
+- **Sorting is temporary** (T6). While a sort or filter is on, drag handles are hidden so nobody reorders a sorted view by mistake, and a gold note offers "Back to our order".
+- **Adding several items** takes one per line in a sheet. New items copy the events and person of the row they're added under, since related items sit together.

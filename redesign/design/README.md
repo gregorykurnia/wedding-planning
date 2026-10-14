@@ -45,4 +45,10 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - Month: a calendar with coloured dots (events, payments, tasks, late), earlier and later months, back to today, and the chosen day's list underneath. The wedding day is marked.
   - Event sheet: title, kind, date, all day or times, who it's with, place or call link, notes, reminder, mark completed, cancel, back to scheduled, and delete with undo. Reminders explain the device's notification state: allowed, not yet allowed (with a button), or turned off.
   - Tasks: open tasks by due date with undated ones last, steps with their own dates, a little thread showing steps done, finished tasks kept apart but recoverable, and delete with undo.
-- Next groups: wedding items (T), guests (G), overview, sign-in and settings (O, A).
+- 2026-10-14, session 6 (same conversation): **wedding items group** (T1–T10) in `items.html`.
+  - One figure: how many items are confirmed out of all of them, with the gold thread. A "To work on next" card lists the marked items, and tapping one jumps to its row (T3, T4).
+  - Each row edits in place: item, vendor ("Vendor not known yet" when empty), events (several), who it's for, work on next (a gold star) and confirmed (a sage tick).
+  - Narrowing: search items and vendors; confirmed or not; any of several events; any of several people (T5).
+  - Order by any field, with a note and "Back to our order" (T6). Your own order: drag the handle, use Alt and the arrow keys, or "Move up/down" in the row menu. "Add an item below" and "Add several below" (one per line) put new items exactly where they belong (T7).
+  - Remove with confirm and undo, back to the exact place (T8). A failed save keeps the typed text with "Try again" (T9). First use starts with 14 common items, with a note to change or remove them (T10).
+- Next groups: guests (G), then overview, sign-in and settings (O, A).

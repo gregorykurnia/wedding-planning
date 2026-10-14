@@ -106,7 +106,7 @@
     ["Overview", "Days to go and what's next", "#"],
     ["Budget", "Bookings, payments and who pays", "budget.html"],
     ["Vendors", "Everyone we're considering, the shortlist and venues", "vendors.html"],
-    ["Wedding items", "Every piece and who provides it", "#"],
+    ["Wedding items", "Every piece and who provides it", "items.html"],
     ["Schedule", "Appointments, tasks and deadlines", "schedule.html"],
     ["Documents", "Notes, plans and files", "documents.html"],
     ["Guests", "Who's coming to what", "#"],

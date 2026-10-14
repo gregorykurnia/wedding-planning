@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wedding items</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  main { max-width: 1120px; }
+  .nextcard { margin-top: 36px; text-align: center; }
+  .nextcard h2 { font-family: var(--serif); font-size: 24px; font-weight: 500; }
+  .nextcard ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+  .nextcard a { display: inline-block; padding: 6px 14px; border-radius: var(--r-pill); background: var(--champagne-soft); color: var(--ink); text-decoration: none; font-size: 14.5px; overflow-wrap: anywhere; }
+  .nextcard a:hover { background: #efe0c4; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-top: 14px; font-size: 14px; }
+  .filters .chips { gap: 6px; }
+  .filters .chip { padding: 4px 12px; font-size: 13.5px; }
+  .dd { position: relative; }
+  .dd > summary { list-style: none; cursor: pointer; text-decoration: underline; text-decoration-color: var(--champagne); text-underline-offset: 4px; }
+  .dd > summary::-webkit-details-marker { display: none; }
+  .dd .menu { position: absolute; z-index: 20; top: 28px; left: 0; background: #fff; border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 14px; box-shadow: 0 20px 50px -20px rgba(51,38,44,.4); min-width: 210px; display: grid; gap: 6px; }
+  .sorted-note { margin-top: 16px; font-size: 14px; color: var(--gold-ink); background: rgba(244,234,215,.6); border-radius: var(--r-pill); padding: 7px 16px; display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .ihead, .irow { display: grid; grid-template-columns: 26px minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.5fr) minmax(0,.95fr) 44px 44px 34px; gap: 10px; align-items: center; }
+  .ihead { font-size: 13px; color: var(--ink-2); padding: 0 6px 8px; margin-top: 22px; border-bottom: 1px solid var(--line); }
+  .ilist { list-style: none; }
+  .irow { padding: 6px 6px; border-bottom: 1px solid var(--line); position: relative; background: #fff0; }
+  .irow.next { background: #fffaf2; box-shadow: inset 3px 0 0 var(--champagne); }
+  .irow.drag-over-top { box-shadow: inset 0 2px 0 var(--rose); } .irow.drag-over-bottom { box-shadow: inset 0 -2px 0 var(--rose); }
+  .irow.dragging { opacity: .4; }
+  .handle { width: 26px; height: 34px; border: 0; background: none; cursor: grab; color: var(--ink-3); display: grid; place-items: center; border-radius: 8px; }
+  .handle:hover, .handle:focus-visible { color: var(--ink); background: rgba(253,232,238,.6); }
+  .handle svg { width: 12px; height: 18px; }
+  .irow input.nm, .irow input.vd { width: 100%; border: 0; background: none; padding: 7px 8px; border-radius: 10px; outline: none; min-width: 0; }
+  .irow input.nm { font-family: var(--serif); font-size: 20px; font-weight: 500; }
+  .irow input.vd { font-size: 15px; }
+  .irow input.vd::placeholder { color: var(--ink-2); font-style: italic; opacity: .85; }
+  .irow input:hover { background: rgba(253,232,238,.4); }
+  .irow input:focus { background: #fff; box-shadow: inset 0 0 0 1px var(--line-2), 0 0 0 3px rgba(217,70,111,.12); }
+  .irow.failed input.vd { box-shadow: inset 0 0 0 1px var(--rose); background: #fff; }
+  .irow .err { grid-column: 2 / -1; font-size: 13.5px; color: var(--rose-ink); padding: 0 8px 6px; }
+  .evs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ev { border: 1px solid var(--line-2); background: #fff; border-radius: var(--r-pill); padding: 2px 9px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
+  .ev[aria-pressed="true"] { background: var(--blush); border-color: #f1b9c8; color: var(--ink); }
+  .irow select { border: 0; background: none; font-size: 14px; padding: 6px 4px; border-radius: 8px; cursor: pointer; width: 100%; min-width: 0; color: var(--ink); }
+  .irow select:hover { background: rgba(253,232,238,.4); }
+  .tog { width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; cursor: pointer; display: grid; place-items: center; justify-self: center; color: var(--ink-3); }
+  .tog svg { width: 20px; height: 20px; }
+  .tog:hover { background: rgba(253,232,238,.6); }
+  .tog.conf[aria-pressed="true"] { color: var(--sage-ink); }
+  .tog.conf[aria-pressed="true"] circle { fill: #e3f0e6; }
+  .tog.star[aria-pressed="true"] { color: var(--gold-ink); }
+  .tog.star[aria-pressed="true"] path { fill: var(--champagne); }
+  .more-btn { width: 34px; height: 34px; border: 0; background: none; border-radius: 8px; cursor: pointer; font-size: 18px; color: var(--ink-2); }
+  .more-btn:hover { background: rgba(253,232,238,.6); }
+  .rowmenu { position: absolute; right: 6px; top: 42px; z-index: 15; background: #fff; border: 1px solid var(--line-2); border-radius: 14px; padding: 6px; box-shadow: 0 20px 50px -20px rgba(51,38,44,.4); display: grid; min-width: 200px; }
+  .rowmenu button { text-align: left; border: 0; background: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 14.5px; }
+  .rowmenu button:hover { background: rgba(253,232,238,.6); }
+  .rowmenu .rose { color: var(--rose-ink); }
+  @media (max-width: 860px) {
+    .ihead { display: none; }
+    .irow { grid-template-columns: 26px 1fr 40px 40px 34px; grid-template-areas: "h n s c m" ". v v v v" ". e e e e" ". p p p p"; gap: 2px 6px; padding: 10px 4px; }
+    .irow .handle { grid-area: h; } .irow .nm { grid-area: n; } .irow .vd { grid-area: v; } .irow .evs { grid-area: e; padding-left: 8px; }
+    .irow select { grid-area: p; width: auto; justify-self: start; } .irow .star { grid-area: s; } .irow .conf { grid-area: c; } .irow .more-btn { grid-area: m; }
+    .irow input.nm { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+if (S === "first") d.items = JSON.parse(JSON.stringify(window.VEIL_DATA.NORMAL.starter));
+const evName = (k) => d.EVENTS.find((e) => e[0] === k)[1];
+const personName = (k) => d.PEOPLE.find((p) => p[0] === k)[1];
+const ORDERS = [["own", "Our order"], ["name", "Item"], ["vendor", "Vendor"], ["confirmed", "Confirmed"], ["events", "Events"], ["person", "Who it's for"], ["next", "Work on next"]];
+const ui = { q: S === "noresults" ? "photo booth" : "", conf: "", events: [], people: [], next: false, order: S === "sorted" ? "vendor" : "own", asc: true, shown: 150, menu: null, failed: S === "savefail" ? "i10" : null };
+
+const ICO = {
+  handle: '<svg viewBox="0 0 12 18" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.3"/><circle cx="9" cy="3" r="1.3"/><circle cx="3" cy="9" r="1.3"/><circle cx="9" cy="9" r="1.3"/><circle cx="3" cy="15" r="1.3"/><circle cx="9" cy="15" r="1.3"/></svg>',
+  conf: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M6.6 10.2l2.3 2.3 4.6-4.8"/></svg>',
+  star: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.8l2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5L2.8 8l5-.6z"/></svg>',
+};
+
+function visible() {
+  const s = ui.q.toLocaleLowerCase();
+  let list = d.items.filter((i) => (!s || (i.name + " " + (i.vendor || "")).toLocaleLowerCase().includes(s)) &&
+    (!ui.conf || (ui.conf === "yes") === i.confirmed) && (!ui.next || i.next) &&
+    (!ui.events.length || ui.events.some((e) => i.events.includes(e))) && (!ui.people.length || ui.people.includes(i.person)));
+  if (ui.order !== "own") {
+    const key = { name: (i) => i.name.toLocaleLowerCase(), vendor: (i) => i.vendor ? i.vendor.toLocaleLowerCase() : null, confirmed: (i) => i.confirmed ? 0 : 1, events: (i) => i.events.length ? d.EVENTS.findIndex((e) => e[0] === i.events[0]) : null, person: (i) => d.PEOPLE.findIndex((p) => p[0] === i.person), next: (i) => i.next ? 0 : 1 }[ui.order];
+    list = list.map((i, ix) => ({ i, k: key(i), ix })).sort((a, z) => a.k == null && z.k == null ? a.ix - z.ix : a.k == null ? 1 : z.k == null ? -1 : ((typeof a.k === "number" ? a.k - z.k : a.k.localeCompare(z.k)) * (ui.asc ? 1 : -1)) || a.ix - z.ix).map((r) => r.i);
+  }
+  return list;
+}
+const filtering = () => ui.q || ui.conf || ui.next || ui.events.length || ui.people.length;
+
+function row(i) {
+  const own = ui.order === "own" && !filtering();
+  return `<li class="irow ${i.next ? "next" : ""} ${ui.failed === i.id ? "failed" : ""}" data-id="${i.id}" ${own ? 'draggable="true"' : ""}>
+    ${own ? `<button class="handle" aria-label="Move ${V.esc(i.name)}. Use Alt with the up and down arrows." title="Drag, or Alt and arrow keys">${ICO.handle}</button>` : `<span></span>`}
+    <input class="nm" data-k="name" value="${V.esc(i.name)}" aria-label="Item" dir="auto">
+    <input class="vd" data-k="vendor" value="${ui.failed === i.id ? "Bespoke Tailor Bali" : V.esc(i.vendor || "")}" placeholder="Vendor not known yet" aria-label="Vendor for ${V.esc(i.name)}" dir="auto">
+    <div class="evs" role="group" aria-label="Events">${d.EVENTS.map(([k, l]) => `<button class="ev" data-ev="${k}" aria-pressed="${i.events.includes(k)}">${l}</button>`).join("")}</div>
+    <select data-k="person" aria-label="Who it's for">${d.PEOPLE.map(([k, l]) => `<option value="${k}" ${k === i.person ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <button class="tog star" aria-pressed="${i.next}" aria-label="Work on next" title="Work on next">${ICO.star}</button>
+    <button class="tog conf" aria-pressed="${i.confirmed}" aria-label="Confirmed" title="Confirmed">${ICO.conf}</button>
+    <button class="more-btn" aria-label="More for ${V.esc(i.name)}" aria-haspopup="true">⋯</button>
+    ${ui.failed === i.id ? `<p class="err">Couldn't save “Bespoke Tailor Bali”. What you typed is kept. <button class="link rose" data-retry>Try again</button></p>` : ""}
+    ${ui.menu === i.id ? `<div class="rowmenu" role="menu"><button role="menuitem" data-m="below">Add an item below</button><button role="menuitem" data-m="several">Add several below</button>${own ? `<button role="menuitem" data-m="up">Move up</button><button role="menuitem" data-m="down">Move down</button>` : ""}<button role="menuitem" class="rose" data-m="remove">Remove</button></div>` : ""}
+  </li>`;
+}
+
+function hero() {
+  const n = d.items.length, c = d.items.filter((i) => i.confirmed).length, nx = d.items.filter((i) => i.next).length;
+  const pct = n ? Math.round(c / n * 100) : 0;
+  return `<section class="hero"><h1>Wedding items</h1><p class="sub">Every piece of the day, and who provides it</p>
+    ${n ? `<p class="kicker" style="margin-top:30px">Confirmed</p><p class="figure md num">${c.toLocaleString("en-GB")}<span class="rp" style="vertical-align:0;margin-left:.25em">of ${n.toLocaleString("en-GB")}</span></p>
+    <p class="context">${nx ? `<b>${nx.toLocaleString("en-GB")}</b> marked to work on next` : "Nothing marked to work on next"}</p>
+    <div class="thread" role="img" aria-label="${pct}% confirmed"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>${pct}% confirmed</span><span>${(n - c).toLocaleString("en-GB")} to go</span></span></div>` : ""}</section>`;
+}
+
+function render(main) {
+  if (!d.items.length) {
+    main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing tracked yet</h1><p>List every piece the wedding needs, from the venue to the bride's mother's makeup, and who provides it.</p><div class="acts"><button class="btn quiet" id="starter">Start with common items</button><button class="btn" id="add">Add items</button></div></div>`;
+    V.$("#add").onclick = () => severalSheet(null);
+    V.$("#starter").onclick = () => { d.items = JSON.parse(JSON.stringify(window.VEIL_DATA.NORMAL.starter)); V.rerender(); V.saved(`Added ${V.plural(d.items.length, "common item")}`, () => { d.items = []; V.rerender(); }); };
+    return;
+  }
+  const nexts = d.items.filter((i) => i.next);
+  const focusId = document.activeElement && document.activeElement.id;
+  main.innerHTML = hero()
+    + (S === "first" ? `<p class="banner" style="margin-top:28px;border-radius:16px">The tracker starts with ${V.plural(d.items.length, "common item")}. Rename, fill in or remove any of them.</p>` : "")
+    + (nexts.length && !filtering() ? `<section class="card nextcard"><h2>To work on next</h2><ul>${nexts.slice(0, 12).map((i) => `<li><a href="#" data-jump="${i.id}" dir="auto">${V.esc(i.name)}</a></li>`).join("")}${nexts.length > 12 ? `<li style="align-self:center;color:var(--ink-2);font-size:14px">and ${nexts.length - 12} more</li>` : ""}</ul></section>` : "")
+    + `<div class="tools"><label class="search">${V.ICON.search}<span class="sr">Search items and vendors</span><input id="q" type="search" placeholder="Search items and vendors" value="${V.esc(ui.q)}"></label>
+        <span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select>${ui.order !== "own" ? `<button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button>` : ""}</span></div>
+      <div class="filters">
+        <span class="order"><label for="cf">Show</label><select id="cf"><option value="">Confirmed or not</option><option value="yes" ${ui.conf === "yes" ? "selected" : ""}>Confirmed</option><option value="no" ${ui.conf === "no" ? "selected" : ""}>Not confirmed yet</option></select></span>
+        <div class="chips" role="group" aria-label="Events">${d.EVENTS.map(([k, l]) => `<button class="chip" data-fev="${k}" aria-pressed="${ui.events.includes(k)}">${l}</button>`).join("")}</div>
+        <details class="dd"><summary>${ui.people.length ? V.esc(ui.people.map(personName).join(", ")) : "Anyone"}</summary><div class="menu">${d.PEOPLE.map(([k, l]) => `<label class="check"><input type="checkbox" data-fp="${k}" ${ui.people.includes(k) ? "checked" : ""}>${l}</label>`).join("")}</div></details>
+        <label class="check"><input type="checkbox" id="fn" ${ui.next ? "checked" : ""}>Work on next only</label>
+        ${filtering() ? `<button class="link" id="reset">Show everything</button>` : ""}
+      </div>
+      ${ui.order !== "own" ? `<p class="sorted-note">Sorted by ${ORDERS.find((o) => o[0] === ui.order)[1].toLowerCase()} for now. Your own order is kept. <button class="link" id="own">Back to our order</button></p>` : ""}
+      <div class="ihead" aria-hidden="true"><span></span><span>Item</span><span>Vendor</span><span>Events</span><span>Who it's for</span><span style="text-align:center">Next</span><span style="text-align:center">Done</span><span></span></div>
+      <div id="list"></div>
+      <button class="btn add-fab" id="add">Add items</button>`;
+  list();
+  wireTop(main);
+  if (focusId === "q") { const q = V.$("#q"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+}
+
+function list() {
+  const box = V.$("#list"), rows = visible();
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>${ui.q ? `Nothing matches “${V.esc(ui.q)}”` : "No items fit"}</h1><p>Search looks at item and vendor names. Narrowing by events or people shows items with any of the ones you pick.</p><div class="acts"><button class="btn quiet" id="reset2">Show everything</button></div></div>`;
+    V.$("#reset2").onclick = reset; return;
+  }
+  box.innerHTML = `${filtering() ? `<p class="count">${V.plural(rows.length, "item")} of ${d.items.length.toLocaleString("en-GB")}</p>` : ""}<ul class="ilist">${rows.slice(0, ui.shown).map(row).join("")}</ul>
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:24px"><button class="btn quiet" id="more">Show ${Math.min(150, rows.length - ui.shown)} more</button></p>` : ""}`;
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 150; list(); };
+  wireRows(box);
+}
+function reset() { Object.assign(ui, { q: "", conf: "", events: [], people: [], next: false }); V.rerender(); }
+
+function wireTop(main) {
+  const q = V.$("#q"); q.oninput = () => { ui.q = q.value; list(); const r = V.$("#reset"); if (!r && filtering()) {} };
+  V.$("#ord").onchange = (e) => { ui.order = e.target.value; ui.asc = true; V.rerender(); };
+  const dir = V.$("#dir"); if (dir) dir.onclick = () => { ui.asc = !ui.asc; V.rerender(); };
+  const own = V.$("#own"); if (own) own.onclick = () => { ui.order = "own"; V.rerender(); };
+  V.$("#cf").onchange = (e) => { ui.conf = e.target.value; V.rerender(); };
+  V.$$("[data-fev]").forEach((b) => b.onclick = () => { const k = b.dataset.fev; ui.events = ui.events.includes(k) ? ui.events.filter((x) => x !== k) : ui.events.concat(k); V.rerender(); });
+  V.$$("[data-fp]").forEach((c) => c.onchange = () => { ui.people = V.$$("[data-fp]:checked").map((x) => x.dataset.fp); list(); V.$(".dd summary").textContent = ui.people.length ? ui.people.map(personName).join(", ") : "Anyone"; });
+  V.$("#fn").onchange = (e) => { ui.next = e.target.checked; V.rerender(); };
+  const r = V.$("#reset"); if (r) r.onclick = reset;
+  V.$("#add").onclick = () => severalSheet(null);
+  V.$$("[data-jump]").forEach((a) => a.onclick = (e) => { e.preventDefault(); const li = V.$(`.irow[data-id="${a.dataset.jump}"]`); if (li) { li.scrollIntoView({ block: "center", behavior: "smooth" }); li.classList.remove("flash"); void li.offsetWidth; li.classList.add("flash"); V.$("input.nm", li).focus({ preventScroll: true }); } });
+}
+
+/* T9: every change saves at once; a failed save keeps the text */
+function change(i, apply, msg) { if (V.DEMO) { V.toast("Not saved: demonstration mode"); return; } apply(); if (msg) V.saved(msg); }
+
+function wireRows(box) {
+  V.$$(".irow", box).forEach((li) => {
+    const i = d.items.find((x) => x.id === li.dataset.id);
+    V.$$("[data-k]", li).forEach((el) => el.onchange = () => change(i, () => { i[el.dataset.k] = el.value.trim() || (el.dataset.k === "vendor" ? null : i.name); }));
+    V.$$("[data-ev]", li).forEach((b) => b.onclick = () => change(i, () => { const k = b.dataset.ev; i.events = i.events.includes(k) ? i.events.filter((x) => x !== k) : i.events.concat(k); b.setAttribute("aria-pressed", String(i.events.includes(k))); }));
+    V.$(".star", li).onclick = () => change(i, () => { i.next = !i.next; V.rerender(); });
+    V.$(".conf", li).onclick = () => change(i, () => { i.confirmed = !i.confirmed; V.rerender(); }, null);
+    V.$(".more-btn", li).onclick = () => { ui.menu = ui.menu === i.id ? null : i.id; list(); const f = V.$(".rowmenu button"); if (f) f.focus(); };
+    V.$$("[data-m]", li).forEach((b) => b.onclick = () => { ui.menu = null; menuAction(b.dataset.m, i); });
+    const rt = V.$("[data-retry]", li); if (rt) rt.onclick = () => { i.vendor = "Bespoke Tailor Bali"; ui.failed = null; list(); V.saved("Saved"); };
+    const h = V.$(".handle", li);
+    if (h) {
+      h.onkeydown = (e) => { if (e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); move(i, e.key === "ArrowUp" ? -1 : 1); V.$(`.irow[data-id="${i.id}"] .handle`).focus(); } };
+      li.ondragstart = (e) => { e.dataTransfer.setData("text/plain", i.id); li.classList.add("dragging"); };
+      li.ondragend = () => li.classList.remove("dragging");
+      li.ondragover = (e) => { e.preventDefault(); const r = li.getBoundingClientRect(), top = e.clientY < r.top + r.height / 2; li.classList.toggle("drag-over-top", top); li.classList.toggle("drag-over-bottom", !top); };
+      li.ondragleave = () => li.classList.remove("drag-over-top", "drag-over-bottom");
+      li.ondrop = (e) => {
+        e.preventDefault(); const top = li.classList.contains("drag-over-top"); li.classList.remove("drag-over-top", "drag-over-bottom");
+        const from = d.items.find((x) => x.id === e.dataTransfer.getData("text/plain")); if (!from || from === i) return;
+        d.items.splice(d.items.indexOf(from), 1); d.items.splice(d.items.indexOf(i) + (top ? 0 : 1), 0, from); list();
+      };
+    }
+  });
+}
+function move(i, dir) { const ix = d.items.indexOf(i), to = ix + dir; if (to < 0 || to >= d.items.length) return; d.items.splice(ix, 1); d.items.splice(to, 0, i); list(); }
+
+async function menuAction(m, i) {
+  if (m === "up" || m === "down") return move(i, m === "up" ? -1 : 1);
+  if (m === "below") { const n = { id: "n" + Date.now(), name: "", vendor: null, events: i.events.slice(), person: i.person, confirmed: false, next: false }; d.items.splice(d.items.indexOf(i) + 1, 0, n); if (ui.order !== "own") ui.order = "own"; V.rerender(); const inp = V.$(`.irow[data-id="${n.id}"] input.nm`); if (inp) inp.focus(); return; }
+  if (m === "several") return severalSheet(i);
+  if (m === "remove") {
+    if (!await V.confirm({ title: `Remove ${i.name || "this item"}?`, body: "You can undo for a few seconds, and it goes back exactly where it was.", action: "Remove item", danger: true })) return;
+    const ix = d.items.indexOf(i); d.items.splice(ix, 1); V.rerender();
+    V.saved(`Removed ${V.esc(i.name)}`, () => { d.items.splice(ix, 0, i); V.rerender(); const li = V.$(`.irow[data-id="${i.id}"]`); if (li) li.classList.add("flash"); });
+  }
+}
+
+/* T7: add one or many, exactly where they belong */
+function severalSheet(after) {
+  V.openSheet(`<h2>Add items</h2><p class="sub">${after ? `Below “${V.esc(after.name)}”` : "At the end of the list"}. One item per line.</p>
+    <div class="fields"><div class="field" style="grid-template-columns:1fr"><label class="sr" for="lines">Items, one per line</label><textarea id="lines" autofocus style="min-height:160px" placeholder="Bride's mother's makeup&#10;Groom's father's suit&#10;Ring bearer's pillow"></textarea></div></div>
+    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add</button></div>`, (el) => {
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-ok]", el).onclick = () => {
+      const names = V.$("#lines", el).value.split("\n").map((x) => x.trim()).filter(Boolean); if (!names.length) { V.$("#lines", el).focus(); return; }
+      const made = names.map((name, k) => ({ id: "n" + Date.now() + k, name, vendor: null, events: after ? after.events.slice() : [], person: after ? after.person : "general", confirmed: false, next: false }));
+      const at = after ? d.items.indexOf(after) + 1 : d.items.length;
+      d.items.splice(at, 0, ...made); ui.order = "own"; V.closeSheet(); V.rerender();
+      V.saved(`Added ${V.plural(made.length, "item")}`, () => { d.items.splice(at, made.length); V.rerender(); });
+      made.forEach((n) => { const li = V.$(`.irow[data-id="${n.id}"]`); if (li) li.classList.add("flash"); });
+      const first = V.$(`.irow[data-id="${made[0].id}"]`); if (first) first.scrollIntoView({ block: "center" });
+    };
+  });
+}
+
+V.init({
+  where: "Wedding items", section: "items.html", noun: "your wedding items",
+  states: [["first", "First use, pre-filled"], ["empty", "Nothing tracked yet"], ["noresults", "No results"], ["sorted", "Sorted for now"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella confirms an item"]],
+  render,
+  sync() { setTimeout(() => { const i = d.items.find((x) => x.name === "Wedding cake"); if (!i) return; i.confirmed = true; i.next = false; V.rerender(); const li = V.$(`.irow[data-id="${i.id}"]`); if (li) li.classList.add("flash"); V.toast(`${V.esc(d.partner)} confirmed Wedding cake`, { from: d.partner, ms: 9000 }); }, 1600); },
+});
+</script>
+</body>
+</html>
