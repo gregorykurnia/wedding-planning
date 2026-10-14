@@ -66,7 +66,7 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
 ## Stage 3: design guide (draft written, awaiting the owner's review)
 - 2026-10-14: `tokens.css` and `design-guide.md` written from the prototype as it stands.
   - `tokens.css`: colour, type families, scale and weights, spacing, layout widths, radii, shadows and rings, glows, motion, breakpoints and layers, named by role, with the prototype's names in brackets and a contrast table for every text/background pair used.
-  - `design-guide.md`: principles, how to use the tokens, the shell, 31 components with variants and states, every screen × state with its URL and phone/desktop differences, patterns (saving, undo, partner changes, demonstration mode, offline, loading, empty vs no results, ordering, money, formulas, dates), copy and tone, accessibility and stress data.
+  - `design-guide.md`: principles, how to use the tokens, the shell, 30 components with variants and states, every screen × state with its URL and phone/desktop differences, patterns (saving, undo, partner changes, demonstration mode, offline, loading, empty vs no results, ordering, money, formulas, dates), copy and tone, accessibility and stress data.
   - 19 open questions where screens disagree or fall short (also in decisions.md, stage 3). Nothing in the prototype was changed.
 - Light only. Not frozen or versioned; that's stage 5, after the owner's approval.
 - Next: the owner answers the open questions. Then stage 4, the coverage audit, in a fresh `./start` session (Sonnet 5.5 High).
