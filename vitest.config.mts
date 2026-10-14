@@ -10,7 +10,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "model",
-          include: ["tests/model/**/*.test.ts"],
+          include: ["tests/model/**/*.test.{ts,tsx}"],
         },
       },
       {
