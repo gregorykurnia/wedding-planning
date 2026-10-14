@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "@/veil/styles/tokens.css";
+import "@/veil/styles/base.css";
+import { cormorant, jost } from "@/veil/styles/fonts";
 import { Providers } from "@/veil/shell/providers";
 
 export const metadata: Metadata = {
@@ -11,7 +14,7 @@ export const metadata: Metadata = {
 // load between the two).
 export default function NewUiLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

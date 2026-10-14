@@ -1,0 +1,85 @@
+/* Veil base styles (design guide §2 and §8). Every value comes from tokens.css.
+   The two font names come from fonts.ts. The layout imports this file after
+   tokens.css, so the --font-* lines here win over the fallbacks there. */
+
+:root {
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-text: var(--font-jost), system-ui, sans-serif;
+}
+
+/* Ports rely on zero margins and border-box sizing. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+/* The page glow is fixed to the viewport, so it stays put while content scrolls. */
+body {
+  min-height: 100vh;
+  font-family: var(--font-text);
+  font-weight: var(--weight-text);
+  font-size: var(--text-body);
+  line-height: var(--leading-text);
+  font-variant-numeric: var(--numeric-default);
+  color: var(--color-text);
+  background: var(--glow-page);
+  background-attachment: fixed;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Every focusable thing gets the same 2px rose ring, offset 3px (guide §8). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--ring-focus);
+  outline-offset: var(--ring-focus-offset);
+}
+
+.num {
+  font-variant-numeric: var(--numeric-amount);
+  white-space: nowrap;
+}
+
+/* Hidden from sight, still read by screen readers. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Under reduced motion, every animation and transition runs in 0.001ms (guide §8). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
