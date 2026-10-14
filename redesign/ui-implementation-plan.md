@@ -800,7 +800,7 @@ Every place in the current code that produces something visible, from a full swe
 | `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [ ] |
 | `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [ ] |
 | `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [ ] |
-| account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [ ] |
+| account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
 | `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [ ] |
 | **Native dialogs** | | |
@@ -859,7 +859,7 @@ Every place in the current code that produces something visible, from a full swe
 | `src/app/favicon.ico`, `public/icon-192.png`, `icon-512.png`, `apple-icon.png` | **gap N1**; old files deleted in Phase 9 | [ ] |
 | leftover template SVGs in `public/` (`file`, `globe`, `next`, `vercel`, `window`) | delete in Phase 9 | [ ] |
 | `public/sw.js` network-first cache of every response | Task 6.1 (navigations network-only, push handlers) | [ ] |
-| `sw-register.tsx` | kept as plumbing, moved to the new root layout | [ ] |
+| `sw-register.tsx` | kept as plumbing, moved to the new root layout | [x] |
 | no install prompt | `InstallCard`, settings steps, installed state (§4.30) | [ ] |
 | **Sync, offline, loading, empty, demo** | | |
 | no sync or offline indicator | Offline message, flash and partner toasts, document offline note (§6.3, §6.5) | [ ] |
@@ -927,7 +927,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | 2026-10-14: first pass found 3 blockers (B1 in 1.10, B2 and B3 in 1.7) and 22 should-fix items. The blockers were fixed in the same session (Opus 5.5 High) and the re-review passed; see `redesign/reviews/phase-1-review.md`. The should-fix items are still open there. the owner compared the preview with production on 2026-10-14 (unchanged), so Phase 1 is done; Bella's sign-in check is still open; real cost to log from `/cost` | [x] |
 | 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
-| 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | | [ ] |
+| 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | | [ ] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
 | 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | | [ ] |
@@ -1127,7 +1127,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** each icon renders in the gallery (3.0), `aria-hidden`, with `currentColor`.
 
 #### Task 2.3: Root layout, providers, auth gate, demo and not-allowed probe · Opus 5.5 Medium
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · facd347 · real cost to log from `/cost`). The toast and sheet providers are a marked slot in `providers.tsx`, filled by Task 2.6, which owns their files and API. `/new/sign-in` is a bare stand-in for Task 4.1. The gate's links use `/new` constants until Task 2.4 adds `veilHref`.
 - **Read:** §2.2, §2.7; guide §5.1 (states), §6.4, §6.5; `src/lib/auth-context.tsx`, `src/lib/firebase.ts` (calls only).
 - **Files:** `src/app/(veil)/new/layout.tsx`, `src/veil/shell/providers.tsx`, `src/lib/data/session.ts`.
 - **Do:** providers for auth, data status (`online`, `demo`), toasts and sheets; the gate sends signed-out visitors to `/new/sign-in` and keeps `main` `aria-busy` while auth resolves; after sign-in, a probe read of `settings/wedding` that fails with permission-denied signs the account out and shows Account not allowed with its email; demo mode when `isFirebaseConfigured` is false; `members` write on sign-in; the service worker registration moves here (same `sw.js` until 6.1); metadata `title` and `lang="en"`.
