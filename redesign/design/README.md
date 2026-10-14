@@ -13,5 +13,12 @@
 - Same mock budget as round 1.
 - 2026-10-14: the owner chose **D, Veil** (reasons in decisions.md).
 
-## Stage 2: full prototype (next)
-- Expand Veil into `prototype/`, one group of jobs per session. Start with the budget (B1–B12) and payments due (B6, S6, O2).
+## Stage 2: full prototype (in progress)
+Open `prototype/index.html` in a browser: it lists every screen and state. The dashed "Prototype" tab on each screen switches states and the stress data (`?state=…`, `?stress`).
+
+- 2026-10-14, session 1: **budget group** (B1–B12, plus B6, S6 and the payment side of O2).
+  - Screens: `budget.html` (overview), `bookings.html`, `booking.html` (in parts, single, overpaid, late), `booking-new.html`, `payments.html`, `funders.html`, `whatif.html`, plus the full-page menu, the record-payment sheet, confirm dialogs and undo toasts, all in shared `assets/`.
+  - States covered: nothing yet, no results, loading, couldn't load, offline, demonstration mode, partner's change arrives, booking removed by the partner, a change didn't save (input kept, retry), adding (busy), couldn't add, uploading (progress, PDF shrinking, too large, failed), confirm and undo, late and due soon, overpaid.
+  - Stress data: 1,206 bookings, 1,507 payments due, a 40-part booking, 14 funders with long and non-Latin names, RTL and CJK names, empty optional fields, a 13-digit price, 1 KB and 9.9 MB images, and the longest realistic next step.
+  - Not yet: the rest of O2 (appointments and tasks coming up) belongs to the Overview group.
+- Next groups, one per session: vendors and shortlist (F), documents (R1–R7), files (R8–R14), schedule (S), wedding items (T), guests (G), overview, sign-in and settings (O, A).

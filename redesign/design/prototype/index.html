@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veil prototype: screens and states</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  .toc { list-style: none; margin-top: 36px; border-top: 1px solid var(--line); }
+  .toc > li { padding: 20px 4px; border-bottom: 1px solid var(--line); }
+  .toc h2 { font-family: var(--serif); font-size: 26px; font-weight: 500; }
+  .toc h2 a { text-decoration: none; }
+  .toc p { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .toc .st { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 14px; }
+  .toc .st a { text-decoration: underline; text-decoration-color: var(--champagne); text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+<header class="top"><span class="couple">Veil <span>&amp;</span> prototype</span><span class="where">Stage 2, budget group</span><span></span></header>
+<main>
+  <section class="hero"><h1>Screens and states</h1><p class="sub">Open any screen on a phone or computer. The dashed “Prototype” tab in the corner switches states and the stress data.</p></section>
+  <ul class="toc" id="toc"></ul>
+</main>
+<script>
+const S = [
+  ["budget.html", "Budget", "B5, B6, B7, B8, O2, S6: still to pay, the next payment and the doors into the detail", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data"]]],
+  ["bookings.html", "Bookings", "B1, B3, B5, B9, B12: every booking with its parts, ordered by any field", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=noresults", "No results"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data (1,206 bookings)"]]],
+  ["booking.html?id=samaya", "A booking in parts", "B3, B4, B12, B1: Villa Samaya, three instalments", [["", "Normal"], ["state=savefail", "A change didn't save"], ["state=uploading", "Uploading files"], ["state=gone", "Removed by Bella"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"]]],
+  ["booking.html?id=ayu", "A single booking", "B3, B4: one price, ready to split into parts", [["", "Normal"], ["state=savefail", "A change didn't save"]]],
+  ["booking.html?id=kirana", "An overpaid booking", "B5: paid more than the price", [["", "Normal"]]],
+  ["booking.html?id=rana", "A late booking", "B6: one part is late, one add-on", [["", "Normal"]]],
+  ["booking.html?id=s-deep", "A booking with 40 parts", "Stress: deep nesting, long unbroken name, tiny and huge images", [["stress", "Stress data"], ["stress&state=uploading", "Stress data, uploading"]]],
+  ["booking-new.html", "Add a booking", "B2: something booked outside Vendors and Venues", [["", "Normal"], ["state=busy", "Adding"], ["state=failed", "Couldn't add"], ["state=demo", "Demonstration mode"], ["state=offline", "Offline"]]],
+  ["payments.html", "Payments due", "B6, S6, O2: every unpaid amount with a date, late first", [["", "Normal"], ["state=empty", "Nothing due"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data"]]],
+  ["funders.html", "Who pays", "B7, B11: paid and still to pay per funder; add, rename, remove", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=rename", "Renaming"], ["state=adding", "Adding"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data (14 funders)"]]],
+  ["whatif.html", "What-if items", "B8, B9, B10: ideas kept apart, the projected total and who would pay", [["", "Normal"], ["state=empty", "No what-if items"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["stress", "Stress data (301 items)"]]],
+];
+const url = (p, q) => q ? p + (p.includes("?") ? "&" : "?") + q : p;
+document.getElementById("toc").innerHTML = S.map(([p, t, d, st]) => `<li><h2><a href="${p}">${t}</a></h2><p>${d}</p><div class="st">${st.map(([q, l]) => `<a href="${url(p, q)}">${l}</a>`).join("")}</div></li>`).join("");
+</script>
+</body>
+</html>

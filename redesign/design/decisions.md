@@ -13,3 +13,20 @@ For round 2: "bright" now means light and luminous (lots of white, with wedding 
 The owner picked **Veil** with no mix. Their reasons: it's calm with one thing at a time; they like the colours and the glow (white lit by blush and champagne, with rose and gold accents); and it feels like a wedding (invitation-like, centred, stationery).
 They didn't single out the fonts (Cormorant Garamond + Jost). Keep them for now, but treat them as the part most open to change.
 What this means for the prototype: keep every screen to one main figure or job with details one tap away; keep the colour and glow; keep the stationery feel even on dense screens (vendors, documents, guests).
+
+## Stage 2
+
+### Session 1, budget group (2026-10-14)
+- **Light only.** The studio process asks for light and dark, but the brief says "Dark mode isn't needed" and the app should not look dark. I followed the brief. Say if you want dark mode anyway.
+- **States that don't exist for this app:** read-only, shared-link visitor and role restrictions (the brief: two people, identical full access, no shared links). "Restricted" only means "account not allowed" at sign-in, which comes with the sign-in group. Bulk selection: no budget story acts on several bookings at once, so there's none here.
+- **One figure per screen** carries over from Veil: the budget shows what's still to pay, payments due shows what's late (or, if nothing is, what's due soon), a booking shows its own "still to pay", and what-if shows the projected total. Details sit one tap away.
+- **Stationery cues on the dense screens:** booking parts are listed like a printed menu, with dotted leaders. Payments due use small date cards like place cards. What-if amounts are in italic with dashed leaders and a dashed thread, because they aren't real money yet.
+- **B1** shows on each booking as "Booked from Vendors / Venues on …". The automatic creation itself happens in the vendor and venue screens (a later session).
+- **B12:** a booking keeps its estimate as a separate field, and a sentence under the details compares it with the agreed price. Bookings can also be ordered by "Difference from estimate".
+- **Search on bookings.** No B story asks for it, but with hundreds of bookings it's the quickest way in, and it gives "no results" a home. It's an addition, not a change of concept.
+- **Splitting a booking:** what's already paid becomes a "Deposit" part, and the rest becomes "Balance" with the old due date and next step. Undo is available.
+- **Removing a funder** moves their costs to "Not assigned". Payments already recorded stay as they are, with undo.
+
+### Proposals for the owner (not adopted)
+- **P1: book a what-if item.** A "Book it" action on a what-if item would turn it into a real booking with its parts and funders carried across. Today, B8 only keeps them apart. Adopt?
+- **P2: the "us" funder.** The mock data has a funder called "Us" alongside both families. If the two of you always pay as one, keep it. If you each pay separately, it could become "Greg" and "Bella". This is only a data question, but it changes how "Who pays" reads.
