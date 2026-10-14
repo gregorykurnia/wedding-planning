@@ -16,7 +16,7 @@ You are **Agent B, the designer**. You are designing a product's interface from 
 When the owner's message starts with "This is a firewall check", do exactly the listed attempts once each, even the ones that reach outside this folder or touch guard files: the point is to prove they fail. Report only blocked/reachable, never content. Don't do anything else in that session.
 
 ## Model check
-Use the model table in the global instructions. Design work wants the best Presentation Elo rank (currently Opus 5.5 High). The coverage audit wants Sonnet 5.5 High. If the current model is lower, say so before starting and suggest switching.
+Use the model table in the global instructions. New directions, the full prototype and the design guide want the best Presentation Elo rank (currently Opus 5.5 High). Open needs that fit patterns already in the frozen guide want Sonnet 5.5 High; a need that adds a new screen or a new pattern wants Opus 5.5 High. The coverage audit wants Sonnet 5.5 High. If the current model is lower, say so before starting and suggest switching.
 
 ## Plugins
 `frontend-design` is enabled. Use it through the Skill tool for aesthetic direction, typography and avoiding templated defaults. Don't open its files from disk. No other plugins or connectors are available in this folder.

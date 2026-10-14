@@ -83,6 +83,13 @@ In this copy, `<base>` is filled in as `main` and `<project>` as `wedding-planni
 
 Never pick **Opus 5.5 Low** or **Sonnet 5.5 Medium**: Haiku 5.5 Max beats both on both ranks at under half the cost (see the global table notes).
 
+**Minimum viable model (owner's rule, 2026-10-14).** For every step and task, pick the *cheapest* row that will reliably do that job well, not the strongest one. Being complex is not enough reason to use Opus 5.5 High, the most expensive row. Use it only when a mistake would be costly *and* hard to catch: work that can lose data or break production, or design work with nothing to copy from. Rules of thumb from the global table:
+- **A clear reference beats a stronger model.** When there's an exact prototype, spec or pattern to follow, go down a tier: Haiku 5.5 Max for straight porting, Sonnet 5.5 High when it needs judgment.
+- **Sonnet 5.5 High is the default for UI work with a reference.** Its Presentation rank (22) is almost the same as Opus 5.5 Medium's (20), for about two thirds of the cost.
+- **Opus 5.5 Medium is the default for careful reading and planning.** It has the second-best Terminal Bench rank (13) and costs about 25% less than High.
+- **Escalate on evidence, not in advance.** Move a task up one row after a cheaper model gets it wrong twice. When a tier keeps passing, try the next cheaper row on similar tasks.
+- Every Opus 5.5 High pick names the specific risk that justifies it.
+
 **Model check:** at the start of every session, compare the current model and effort with the step's pick. If the current one is lower, say so before starting and suggest switching (`/model`, plus the effort setting). If it's much higher for a mechanical step, suggest the cheaper one.
 
 ### Picks per step
@@ -102,9 +109,11 @@ Never pick **Opus 5.5 Low** or **Sonnet 5.5 Medium**: Haiku 5.5 Max beats both o
 | 4c Design guide | Agent B (studio) | Opus 5.5 High |
 | 5 Coverage audit | fresh studio session | Sonnet 5.5 High |
 | 5b Import | Claude on `main` | Haiku 5.5 High |
-| 6 Implementation plan | Agent C | Opus 5.5 High |
-| 7 Rebuild tasks | one session per task | set per task in the implementation plan §7.0 |
-| 7 End-of-phase review | fresh session | Opus 5.5 High |
+| 6 Implementation plan | Agent C | Opus 5.5 Medium (careful reading and mapping, no visual design; the owner approves the plan before any code) |
+| Design-gap loop: design the needs | fresh studio session | Sonnet 5.5 High when the needs fit patterns in the frozen guide; Opus 5.5 High only for a new screen or a new pattern |
+| Design-gap loop: banned-word scan | Claude on `main` | Haiku 5.5 High |
+| 7 Rebuild tasks | one session per task | set per task in the implementation plan §7.0, by the minimum viable rule |
+| 7 End-of-phase review | fresh session | Opus 5.5 Medium; Opus 5.5 High only for Phase 1 (data separation) and Phase 7 (switch-over), where a missed bug can lose data or break production |
 
 ---
 
@@ -319,14 +328,14 @@ Step 6 and Step 7 will find things the design doesn't answer. They get **designe
 1. **Record it** in the implementation plan §9.1, with whatever code context Agent C or the implementer needs. This stays on `main`.
 2. **Translate it** into a need in `redesign/handoff/needs.md`: a new ID (N1, N2, …), a job story by the Step 1 rules, the step that raised it, and status `open`. Leave out code, old behaviour and old wording.
 3. **Banned-word scan** on `needs.md` (Haiku 5.5 High), then commit.
-4. `redesign/studio.sh enter` → `./start` → *"Design the open needs in needs.md"* (Opus 5.5 High). The designer updates the prototype and guide, bumps the guide version, and logs each answer in `decisions.md`.
+4. `redesign/studio.sh enter` → `./start` → *"Design the open needs in needs.md"* (Sonnet 5.5 High when the needs fit patterns in the frozen guide; Opus 5.5 High for a new screen or a new pattern). The designer updates the prototype and guide, bumps the guide version, and logs each answer in `decisions.md`.
 5. **"Import the approved design"** on `main`. Mark the need `designed` in `needs.md` and close its row in §9.1.
 
 The rebuild task that needs the answer waits until the need is designed. Other tasks continue.
 
 ---
 
-## Step 6: Technical implementation plan (Agent C, Opus 5.5 High)
+## Step 6: Technical implementation plan (Agent C, Opus 5.5 Medium)
 
 Agent C sees the repo and the approved design. Before any code changes, it writes **`redesign/ui-implementation-plan.md`**. Agent C maps **design → code**; it doesn't make design decisions, and every gap it finds goes to §9.1 and then through the design-gap loop.
 
@@ -385,12 +394,14 @@ Anything without a design counterpart goes to §9.1. It is **never** restyled fr
    - At the end of the launch window, delete the fallback entry point and every remaining old file.
    - Run the old-names check with **no exclusions**.
 
-**§7.0 Who builds it: model and effort per task (required).** Agent C reads the **model table in `~/.claude/CLAUDE.md`** and uses only the rows listed there:
-- **A tier list** that maps each kind of work in this project to a row of the global table, using the "Choosing the model" rules above. Risky or data-losing work → best Terminal Bench rank. Visual work with no exact reference → best Presentation rank. Mechanical porting from the prototype → the cheapest reliable Haiku row. Never Opus Low or Sonnet Medium.
-- **A table with one row per task:** `Phase | Task | Model · effort | Why`. The "why" names the risk or the reference that justifies the tier.
+**§7.0 Who builds it: model and effort per task (required).** Agent C reads the **model table in `~/.claude/CLAUDE.md`** and uses only the rows listed there. Every pick follows the **minimum viable model** rule above: the cheapest row that will reliably do the task well.
+- **Shown up front:** a short "Who builds what" summary sits right after §1 (above the architecture), with the tier list, the number of tasks per model and an estimated total cost. The full §7.0 stays in §7.
+- **A tier list** that maps each kind of work in this project to a row of the global table. Risky or data-losing work (data layer, sync, auth, the switch-over) → Opus 5.5 High. Planning-grade judgment with no exact reference → Opus 5.5 Medium. UI built from a prototype screen that needs judgment → Sonnet 5.5 High. Straight porting of prototype markup or styles, tokens, scripts and scans → Haiku 5.5 Max, or xHigh/High for the simplest. Never Opus Low or Sonnet Medium.
+- **A table with one row per task:** `Phase | Task | Model · effort | Est. cost | Why`. The "why" names the reference that lets a cheaper row do the task, or the specific risk that rules the cheaper row out. Every Opus 5.5 High row must name a risk.
+- **Every task heading in §7 repeats its pick** (for example `Task 3.4: Booking card · Haiku 5.5 Max`), so the implementer sees it without going back to the table.
 - **A calibration trial:** build one middle-tier task twice, with the picked model and the next cheaper row. Run `/cost` after each and check both against the prototype. Keep the cheaper one if it's just as good.
-- **An escalation rule:** move a task up one row the first time a cheaper model gets it wrong twice.
-- **End-of-phase review:** a fresh Opus 5.5 High session reviews the phase's diff against the plan and the prototype before the phase counts as done.
+- **An escalation rule:** move a task up one row the first time a cheaper model gets it wrong twice. **A de-escalation rule:** when a row passes three similar tasks in a row, try the next cheaper row on the next similar task. Log every change in the §7.0 table.
+- **End-of-phase review:** a fresh session reviews the phase's diff against the plan and the prototype before the phase counts as done. Use Opus 5.5 Medium, or Opus 5.5 High for Phase 1 and Phase 7.
 - **One task per session**, reading only that task's plan section, the matching design-guide section, and the matching prototype file. This keeps a cheaper model from reading the old code and copying old patterns.
 - If the global table changes mid-rebuild, update §7.0 to match before the next task.
 
@@ -817,7 +828,7 @@ You are **Agent B, the designer**. You are designing a product's interface from 
 When the owner's message starts with "This is a firewall check", do exactly the listed attempts once each, even the ones that reach outside this folder or touch guard files: the point is to prove they fail. Report only blocked/reachable, never content. Don't do anything else in that session.
 
 ## Model check
-Use the model table in the global instructions. Design work wants the best Presentation Elo rank (currently Opus 5.5 High). The coverage audit wants Sonnet 5.5 High. If the current model is lower, say so before starting and suggest switching.
+Use the model table in the global instructions. New directions, the full prototype and the design guide want the best Presentation Elo rank (currently Opus 5.5 High). Open needs that fit patterns already in the frozen guide want Sonnet 5.5 High; a need that adds a new screen or a new pattern wants Opus 5.5 High. The coverage audit wants Sonnet 5.5 High. If the current model is lower, say so before starting and suggest switching.
 
 ## Plugins
 `frontend-design` is enabled. Use it through the Skill tool for aesthetic direction, typography and avoiding templated defaults. Don't open its files from disk. No other plugins or connectors are available in this folder.
