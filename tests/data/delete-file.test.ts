@@ -18,7 +18,7 @@ process.env.FIREBASE_PROJECT_ID = EMULATOR_PROJECT_ID;
 
 const { DELETE } = await import("@/app/api/files/[fileId]/route");
 const { deleteFileForGood } = await import("@/lib/data/files");
-const { sign } = await import("@/lib/server/cloudinary");
+const { destroyAsset, sign } = await import("@/lib/server/cloudinary");
 const { WriteError } = await import("@/lib/data/write-error");
 const { connect } = await import("../../scripts/migrate/admin");
 const { adminAuth: serverAuth } = await import("@/lib/server/firebase-admin");
@@ -315,7 +315,7 @@ describe("Delete for good", () => {
 
 /* ---------- the real Cloudinary account ---------- */
 
-function realKeys(): { cloudName: string; apiKey: string; apiSecret: string } | null {
+function realKeys(): { cloudName: string; apiKey: string; apiSecret: string; uploadPreset: string } | null {
   const env: Record<string, string> = {};
   if (existsSync(".env.local")) {
     for (const line of readFileSync(".env.local", "utf8").split("\n")) {
@@ -326,58 +326,52 @@ function realKeys(): { cloudName: string; apiKey: string; apiSecret: string } | 
   const cloudName = process.env.CLOUDINARY_TEST_CLOUD_NAME ?? env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_TEST_API_KEY ?? env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_TEST_API_SECRET ?? env.CLOUDINARY_API_SECRET;
-  return cloudName && apiKey && apiSecret ? { cloudName, apiKey, apiSecret } : null;
+  const uploadPreset = process.env.CLOUDINARY_TEST_UPLOAD_PRESET ?? env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  return cloudName && apiKey && apiSecret && uploadPreset ? { cloudName, apiKey, apiSecret, uploadPreset } : null;
 }
 
 const keys = realKeys();
 
 describe.skipIf(!keys)("Delete for good on the real Cloudinary account (test folder only)", () => {
   it("removes an uploaded test asset and its file, and a second call is harmless", async () => {
-    const { cloudName, apiKey, apiSecret } = keys!;
+    const { cloudName, apiKey, apiSecret, uploadPreset } = keys!;
     fake.on = false;
     process.env.CLOUDINARY_CLOUD_NAME = cloudName;
     process.env.CLOUDINARY_API_KEY = apiKey;
     process.env.CLOUDINARY_API_SECRET = apiSecret;
 
-    // Upload a small file into the test folder, signed.
-    const params = {
-      folder: "wedding-planning-tests",
-      timestamp: String(Math.floor(Date.now() / 1000)),
-    };
+    // Upload a small file into the test folder the way the app does, with
+    // the unsigned preset, so the server key needs no right to create.
     const form = new FormData();
-    for (const [k, v] of Object.entries(params)) form.set(k, v);
-    form.set("api_key", apiKey);
-    form.set("signature", sign(params, apiSecret));
+    form.set("upload_preset", uploadPreset);
+    form.set("folder", "wedding-planning-tests");
     form.set("file", new Blob([`delete-for-good test ${Date.now()}`], { type: "text/plain" }), "test.txt");
     const uploadRes = await realFetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, { method: "POST", body: form });
     const upload = (await uploadRes.json()) as { public_id: string; secure_url: string; resource_type: string };
     expect(uploadRes.status, JSON.stringify(upload)).toBe(200);
     expect(upload.public_id.startsWith("wedding-planning-tests/")).toBe(true);
 
-    const exists = async () => {
-      const res = await realFetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/resources/raw/upload/${upload.public_id
-          .split("/")
-          .map(encodeURIComponent)
-          .join("/")}`,
-        { headers: { Authorization: `Basic ${Buffer.from(`${apiKey}:${apiSecret}`).toString("base64")}` } },
-      );
-      return res.status === 200;
-    };
-    expect(await exists()).toBe(true);
+    // The key needs only the right to delete: asking Cloudinary to destroy
+    // the asset again and hearing "not found" shows it's gone. If anything
+    // below fails, the finally removes the test asset anyway.
+    const config = { cloudName, apiKey, apiSecret };
+    const asset = { resourceType: "raw" as const, publicId: upload.public_id };
+    try {
+      await db.doc("weddingFiles/real").set({
+        name: "test.txt",
+        url: upload.secure_url,
+        publicId: upload.public_id,
+        resourceType: upload.resource_type,
+      });
+      const first = await call("real", await gregory.auth.currentUser!.getIdToken());
+      expect(first).toEqual({ status: 200, body: { result: "deleted", asset: "destroyed", legacyCopiesRemoved: 0 } });
+      expect(await get("weddingFiles/real")).toBeUndefined();
+      expect(await destroyAsset(config, asset)).toBe("already-gone");
 
-    await db.doc("weddingFiles/real").set({
-      name: "test.txt",
-      url: upload.secure_url,
-      publicId: upload.public_id,
-      resourceType: upload.resource_type,
-    });
-    const first = await call("real", await gregory.auth.currentUser!.getIdToken());
-    expect(first).toEqual({ status: 200, body: { result: "deleted", asset: "destroyed", legacyCopiesRemoved: 0 } });
-    expect(await get("weddingFiles/real")).toBeUndefined();
-    expect(await exists()).toBe(false);
-
-    const second = await call("real", await gregory.auth.currentUser!.getIdToken());
-    expect(second).toEqual({ status: 200, body: { result: "already-gone" } });
+      const second = await call("real", await gregory.auth.currentUser!.getIdToken());
+      expect(second).toEqual({ status: 200, body: { result: "already-gone" } });
+    } finally {
+      await destroyAsset(config, asset).catch(() => undefined);
+    }
   });
 });

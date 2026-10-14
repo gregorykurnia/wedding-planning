@@ -1,5 +1,11 @@
 import { createHash } from "node:crypto";
+import { getDefaultAutoSelectFamilyAttemptTimeout, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
 import { RequestError } from "./request-error";
+
+// Node gives each of a host's addresses 250 ms to connect before trying the
+// next; from Jakarta Cloudinary's API takes about 280 ms, so every address
+// times out and `fetch` fails on a local server. Two seconds each is plenty.
+if (getDefaultAutoSelectFamilyAttemptTimeout() < 2000) setDefaultAutoSelectFamilyAttemptTimeout(2000);
 
 /**
  * Signed calls to Cloudinary's upload API (plan §2.9). The API key and secret
