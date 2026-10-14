@@ -919,10 +919,10 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.5 Guests, items, labels, formats, search and order | Sonnet 5.5 High | $0.88 | Every rule is written in the guide §6 and the prototype's `app.js` | real cost to log from `/cost` | [x] |
 | 1 | 1.6 Dates, agenda, month, tasks, reminders due | Sonnet 5.5 High | $0.88 | Rules written in the guide §6.11 and `schedule.js` | real cost to log from `/cost` | [x] |
 | 1 | 1.7 SUM engine and table sort | Sonnet 5.5 High | $0.88 | Exact reference: `formulas.js` and guide §6.10 | real cost to log from `/cost` | [x] |
-| 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | | [ ] |
-| 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | | [ ] |
-| 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | | [ ] |
-| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | | [ ] |
+| 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | 635d1ca, 809f507; built in one session with 1.9–1.11, real cost to log from `/cost` | [x] |
+| 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | 4777274; rules deployed 2026-10-14, owner confirmed the old UI loads and saves; real cost to log from `/cost` | [x] |
+| 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | 4b33422; real cost to log from `/cost` | [x] |
+| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | scripts and emulator tests in 24b1d15; waiting for the owner's service account key to take the backup, review the dry run and apply | [ ] |
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | | [ ] |
 | 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
@@ -1066,7 +1066,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** tests pass, including the stress 50 × 8 table and the `doc.html?id=scratch` cases.
 
 #### Task 1.8: Write layer · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 635d1ca, 809f507 · real cost to log from `/cost`; built in the same session as 1.9–1.11)
 - **Risk:** data loss under concurrent edits, undo or offline retries.
 - **Read:** §2.7; guide §6.1–§6.3; `src/lib/use-collection.ts`, `src/lib/confirmed-sub-entries.ts`, `src/lib/collections/{vendors,shortlist,todos,guests,master-list,vendor-categories,wedding-files}.ts`; `inventory-notes.md` §5 #19, #20, #27, #32.
 - **Files:** `src/lib/data/write.ts`, `activity.ts`, `members.ts`, `undo.ts`, `array-ops.ts`; small changes inside `src/lib/collections/*.ts` so old callers use the transactional helpers (no visible change).
@@ -1079,7 +1079,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** unit tests with the emulator cover two writers editing the same array at once, undo after a partner's edit, a timed-out write retried, and smoke tests still pass.
 
 #### Task 1.9: New collections, adapters and Firestore rules · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 4777274 · real cost to log from `/cost`; rules deployed to production the same day after the owner's go-ahead, and the owner confirmed the old UI still loads and saves)
 - **Risk:** a rules mistake locks both of you out of production data, or opens it.
 - **Read:** §2.7 (new fields), §2.9; `firestore.rules`; `inventory-notes.md` §3.
 - **Files:** `firestore.rules`, `tests/rules/*.test.ts` (with `@firebase/rules-unit-testing`), `src/lib/collections/{funders,members,activity,presence,push-subscriptions,guest-meta}.ts`, adapters in `src/lib/data/adapters/*.ts`.
@@ -1087,7 +1087,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** rules tests prove both accounts can read and write every collection and a third account can't; the old UI still works on production after the deploy.
 
 #### Task 1.10: Booking and money write operations · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-14 · 4b33422 · real cost to log from `/cost`)
 - **Risk:** data loss in prices and payments.
 - **Read:** §2.7; guide §6.9, §5.6, §5.10, §5.12, §5.14, §5.15; prototype `booking.html`, `vendor.html`, `finalist.html`, `venues.html` scripts (what each action does).
 - **Files:** `src/lib/data/bookings.ts`, `funders.ts`, `shortlist.ts`, `categories.ts`, and tests against the emulator.
@@ -1095,7 +1095,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** emulator tests cover every operation and its undo, including a split booking that is then removed and restored.
 
 #### Task 1.11: One-time migrations · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [ ] **Done** (date · commit · real cost). Scripts and emulator tests are in 24b1d15 (`npm run migrate:backup`, then `npm run migrate -- all` for the dry run, then `-- all --apply`); still to do on production: the backup, the owner's review of the dry run, the real run and the check that the old UI shows the same data.
 - **Risk:** writes to live production data.
 - **Read:** §2.7; `inventory-notes.md` §3, §6.
 - **Files:** `scripts/migrate/*.ts` run with the Firebase Admin SDK from the owner's machine, `appMeta/migrations` to record each run.
