@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, doc, getDoc, getDocs, orderBy, query, setDoc } from "firebase/firestore";
 import { TEST_ACCOUNTS } from "../e2e/emulator-config";
-import { clearFirestore, closeClient, makeClient, signIn, type Partner } from "./emulator";
+import { clearFirestore, closeClient, makeClient, signIn, warmUp, type Partner } from "./emulator";
 
 // The old UI's helpers use the app's own database from @/lib/firebase. Here
 // that is Gregory's emulator client; Bella writes through a second client.
@@ -27,6 +27,7 @@ let bella: Partner;
 beforeAll(async () => {
   await signInWithEmailAndPassword(auth!, TEST_ACCOUNTS[0].email, TEST_ACCOUNTS[0].password);
   bella = await signIn(makeClient(), TEST_ACCOUNTS[1]);
+  await Promise.all([warmUp({ db: db!, uid: auth!.currentUser!.uid }), warmUp(bella)]);
 });
 
 afterAll(async () => {

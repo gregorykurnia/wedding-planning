@@ -17,6 +17,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { recordMember } from "@/lib/data/members";
 
 interface AuthContextValue {
   user: User | null;
@@ -41,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      // members/{uid}: lets the partner's screen name who changed what. Never
+      // throws, so signing in can't fail because of it.
+      if (u) void recordMember(u);
     });
     return () => unsubscribe();
   }, []);

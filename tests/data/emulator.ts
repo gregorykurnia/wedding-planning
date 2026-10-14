@@ -7,7 +7,10 @@ import {
 } from "firebase/auth";
 import {
   connectFirestoreEmulator,
+  doc,
+  getDoc,
   getFirestore,
+  setDoc,
   terminate,
   type Firestore,
 } from "firebase/firestore";
@@ -59,10 +62,23 @@ export async function signIn(
 
 /** Gregory and Bella, signed in on two separate clients. */
 export async function twoPartners(): Promise<[Partner, Partner]> {
-  return Promise.all([
+  const partners = await Promise.all([
     signIn(makeClient(), TEST_ACCOUNTS[0]),
     signIn(makeClient(), TEST_ACCOUNTS[1]),
   ]);
+  await Promise.all(partners.map(warmUp));
+  return partners as [Partner, Partner];
+}
+
+/**
+ * One untimed write and read per client before the tests start. A freshly
+ * started emulator can take longer than the write layer's 10 seconds to answer
+ * its first write, which would read as a timeout.
+ */
+export async function warmUp(client: { db: Firestore; uid?: string }) {
+  const ref = doc(client.db, "settings", `warm-up-${client.uid ?? "anonymous"}`);
+  await setDoc(ref, { at: Date.now() });
+  await getDoc(ref);
 }
 
 export async function closeClient(client: { app: FirebaseApp; db: Firestore }) {

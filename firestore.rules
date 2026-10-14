@@ -1,15 +1,23 @@
 rules_version = '2';
 
-// Access is restricted to a fixed allowlist of Google accounts (the couple).
+// Access is restricted to a fixed allowlist of accounts (the couple), and the
+// address must be verified, so nobody can register an allowlisted address that
+// has no account yet and get in (inventory-notes §5 #33, plan §9.2 Q3).
 // The data model itself is unchanged — still flat, shared collections — this
-// just gates who can read/write them.
+// just gates who can read/write them. New collections are additive only:
+// these rules apply to production at once and gate the old UI too.
 service cloud.firestore {
   function isAllowed() {
     return request.auth != null &&
+      request.auth.token.email_verified == true &&
       request.auth.token.email in [
         "gregory.kurnia@gmail.com",
         "bellabarliana15@gmail.com"
       ];
+  }
+
+  function isSelf(uid) {
+    return isAllowed() && request.auth.uid == uid;
   }
 
   match /databases/{database}/documents {
@@ -60,6 +68,45 @@ service cloud.firestore {
     }
     match /masterListMeta/{docId} {
       allow read, write: if isAllowed();
+    }
+
+    // New in the redesign (plan §2.7).
+    match /funders/{docId} {
+      allow read, write: if isAllowed();
+    }
+    // guestMeta/counter issues guest numbers in a transaction.
+    match /guestMeta/{docId} {
+      allow read, write: if isAllowed();
+    }
+    // One per account, written by that account at sign-in.
+    match /members/{uid} {
+      allow read: if isAllowed();
+      allow write: if isSelf(uid);
+    }
+    // Partner news: written by whoever made the change, never edited.
+    match /activity/{docId} {
+      allow read: if isAllowed();
+      allow create: if isAllowed() && request.resource.data.by == request.auth.uid;
+      allow update, delete: if false;
+    }
+    // Who is in which document; each account writes only its own entries.
+    match /presence/{docId} {
+      allow read: if isAllowed();
+      allow create, update: if isAllowed() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAllowed() &&
+        (resource == null || resource.data.uid == request.auth.uid);
+    }
+    // A device's push subscription, readable and writable by its own account.
+    // The daily reminder job reads them all with the Admin SDK.
+    match /pushSubscriptions/{docId} {
+      allow read, delete: if isAllowed() &&
+        (resource == null || resource.data.uid == request.auth.uid);
+      allow create, update: if isAllowed() && request.resource.data.uid == request.auth.uid;
+    }
+    // Migration records, written only by the Admin SDK scripts (Task 1.11).
+    match /appMeta/{docId} {
+      allow read: if isAllowed();
+      allow write: if false;
     }
   }
 }

@@ -22,7 +22,7 @@ async function waitFor(url: string) {
   throw new Error(`Emulator did not start: ${url}`);
 }
 
-/** Empties both emulators and creates the two allowlisted accounts. */
+/** Empties both emulators and creates the two allowlisted accounts, verified. */
 export async function seed() {
   await waitFor(`http://${AUTH_EMULATOR}`);
   await waitFor(`http://${FIRESTORE_EMULATOR}`);
@@ -41,16 +41,27 @@ export async function seed() {
     "Clearing Firestore emulator",
   );
   for (const { email, password } of TEST_ACCOUNTS) {
+    const created = await fetch(
+      `http://${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, returnSecureToken: true }),
+      },
+    );
+    await expectOk(created, `Creating ${email}`);
+    const { localId } = (await created.json()) as { localId: string };
+    // The rules require a verified address (as Google sign-in gives).
     await expectOk(
       await fetch(
-        `http://${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key`,
+        `http://${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/projects/${EMULATOR_PROJECT_ID}/accounts:update`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, returnSecureToken: true }),
+          headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+          body: JSON.stringify({ localId, emailVerified: true }),
         },
       ),
-      `Creating ${email}`,
+      `Verifying ${email}`,
     );
   }
 }
