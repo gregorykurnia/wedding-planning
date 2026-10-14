@@ -30,3 +30,15 @@ What this means for the prototype: keep every screen to one main figure or job w
 ### Proposals for the owner
 - **P1: book a what-if item.** *Declined by the owner (2026-10-14): "no need".* What-if items stay apart from bookings, with no "Book it" action.
 - **P2: the "us" funder.** *Adopted by the owner (2026-10-14).* "Us" becomes two funders, Greg and Bella, alongside Greg's family and Bella's family. The mock data now uses all four.
+
+### Session 2, vendors group (2026-10-14)
+- **Vendors, Shortlist and Venues sit together** under the menu's "Vendors", with one quiet sub-navigation. Venues are done and rarely visited, so they don't get their own menu entry. The venues screen leads with the booked venue.
+- **Stage** is drawn as a short gold thread of steps, the same device as the budget's thread. Ruled-out vendors and venues are struck through in grey, so they're easy to tell apart without being hidden (F10). Venues hide ruled-out ones by default, with a switch (F4).
+- **Keen** is a small heart, the only rose element in a vendor row (F11).
+- **Price options and packages** are written like a printed menu, with dotted leaders. The one you're leaning towards is marked in gold italic, and its price becomes the screen's one figure (F8, F17).
+- **WhatsApp** opens a chat in one tap. Numbers starting with 0 are read as Indonesian (+62) (F7).
+- **Export** downloads exactly the vendors in view as a CSV that opens in Excel (F15).
+- **Categories:** standard categories can't be renamed. Your own can be renamed or removed, and removing one moves its vendors to "Other" (F14, F23).
+- **Choosing a vendor** (stage "Chosen"), booking a finalist or marking a venue "Booked" creates the booking straight away and offers to open it. The noted price becomes the booking's estimate, which keeps it apart from the agreed price (B1, B12).
+- **The shortlist keeps its own copy** of a vendor. A line says so, and that files added to the vendor appear there too (F16, F20).
+- **No "remove vendor" or "remove finalist"**: no story asks for it. Ruling out does the job. Say if you want removal.

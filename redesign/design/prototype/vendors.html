@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const ORDERS = [["category", "Category"], ["name", "Name"], ["stage", "Stage"], ["rating", "Rating"], ["reviewers", "Number of reviewers"], ["added", "Date added"]];
+const ui = { q: S === "noresults" ? "harpist" : "", cat: null, keen: false, order: "category", asc: true, shown: 100 };
+const stageIx = (v) => v.stage === "out" ? 99 : d.STAGES.findIndex(([k]) => k === v.stage);
+const preferred = (v) => v.prices.find((o) => o.preferred) || v.prices[0] || null;
+const onShortlist = (v) => d.finalists.find((f) => f.vendor === v.id);
+
+function visible() {
+  const s = ui.q.toLocaleLowerCase();
+  let list = d.vendors.filter((v) => (!ui.cat || v.category === ui.cat) && (!ui.keen || v.keen) &&
+    (!s || [v.name, v.notes, v.contact].some((x) => (x || "").toLocaleLowerCase().includes(s))));
+  const key = { name: (v) => v.name.toLocaleLowerCase(), category: (v) => v.category.toLocaleLowerCase(), stage: stageIx, rating: (v) => v.rating, reviewers: (v) => v.reviewers, added: (v) => v.added }[ui.order];
+  return list.map((v) => ({ v, k: key(v) })).sort((a, z) => {
+    if (a.k == null && z.k == null) return 0; if (a.k == null) return 1; if (z.k == null) return -1;
+    const c = typeof a.k === "number" ? a.k - z.k : String(a.k).localeCompare(String(z.k));
+    return (ui.asc ? c : -c) || a.v.name.localeCompare(z.v.name);
+  }).map((r) => r.v);
+}
+
+function row(v, showCat) {
+  const p = preferred(v), f = onShortlist(v);
+  return `<li data-id="${v.id}" class="${v.stage === "out" ? "ruled" : ""}"><div class="vrow">
+    <span class="first"><button class="keen" aria-pressed="${v.keen}" aria-label="Keen on ${V.esc(v.name)}" data-keen="${v.id}">${V.HEART}</button><a class="name" dir="auto" href="${V.href("vendor.html", { id: v.id })}">${V.esc(v.name)}</a></span>
+    ${p ? `<span class="price num">${V.rp(p.price)}</span>` : `<span class="price none">No price yet</span>`}
+    <span class="meta">${[showCat ? V.esc(v.category) : "", v.contact ? V.esc(v.contact) : ""].filter(Boolean).join(", ") || "&nbsp;"}</span>
+    <span class="right">${v.rating != null ? `<span class="rating"><b>${v.rating.toFixed(1)}</b> from ${V.plural(v.reviewers || 0, "review")}</span>` : "No rating yet"}</span>
+    <div class="foot">${V.stageThread(v.stage, d.STAGES)}${V.waLink(v.phone)}${f ? `<a class="link" href="${V.href("finalist.html", { id: f.id })}">On the shortlist</a>` : ""}${p && v.prices.length > 1 ? `<span class="meta">${V.plural(v.prices.length, "price option")}</span>` : ""}</div>
+  </div></li>`;
+}
+
+function list() {
+  const box = V.$("#list"), rows = visible();
+  if (!rows.length) {
+    box.innerHTML = `<div class="message inline"><h1>${ui.q ? `No vendors match “${V.esc(ui.q)}”` : ui.keen ? "No vendors you're keen on here" : "No vendors in this category yet"}</h1><p>${ui.q ? "Search looks through names, contact people and notes." : "Tap the heart on a vendor to mark one you're keen on."}</p><div class="acts">${ui.q ? `<button class="btn quiet" data-clear="q">Clear the search</button>` : ""}${ui.cat || ui.keen ? `<button class="btn quiet" data-clear="all">Show every vendor</button>` : ""}</div></div>`;
+    V.$$("[data-clear]", box).forEach((b) => b.onclick = () => { if (b.dataset.clear === "q") ui.q = ""; else { ui.cat = null; ui.keen = false; ui.q = ""; } V.rerender(); });
+    return;
+  }
+  const shown = rows.slice(0, ui.shown);
+  let html = "";
+  if (ui.order === "category" && !ui.cat) {
+    const groups = {};
+    shown.forEach((v) => (groups[v.category] = groups[v.category] || []).push(v));
+    html = Object.entries(groups).map(([c, vs]) => `<h2 class="cat-h" dir="auto">${V.esc(c)}<small>${V.plural(rows.filter((v) => v.category === c).length, "vendor")}</small></h2><ul class="ledger">${vs.map((v) => row(v, false)).join("")}</ul>`).join("");
+  } else html = `<ul class="ledger" style="margin-top:18px">${shown.map((v) => row(v, !ui.cat)).join("")}</ul>`;
+  box.innerHTML = `<p class="count">${ui.q || ui.cat || ui.keen ? `${V.plural(rows.length, "vendor")} here` : `${V.plural(rows.length, "vendor")}`}${rows.length > ui.shown ? `, showing ${ui.shown.toLocaleString("en-GB")}` : ""}. <button class="link" id="export">Export ${rows.length === d.vendors.length ? "all" : "these"} to a spreadsheet</button></p>${html}
+    ${rows.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show ${Math.min(100, rows.length - ui.shown)} more</button></p>` : ""}`;
+  const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 100; list(); };
+  V.$("#export").onclick = () => exportCsv(rows);
+  V.$$("[data-keen]", box).forEach((b) => b.onclick = () => {
+    const v = d.vendors.find((x) => x.id === b.dataset.keen); v.keen = !v.keen; b.setAttribute("aria-pressed", String(v.keen));
+    V.saved(v.keen ? `Marked ${V.esc(v.name)} as one you're keen on` : `Unmarked ${V.esc(v.name)}`);
+    hero();
+  });
+}
+
+/* F15: the vendors currently in view, as a CSV file */
+function exportCsv(rows) {
+  const cols = ["Name", "Category", "Contact person", "Phone", "Stage", "Rating", "Reviewers", "Preferred price", "Notes"];
+  const q = (x) => `"${String(x ?? "").replace(/"/g, '""')}"`;
+  const lines = [cols.map(q).join(",")].concat(rows.map((v) => [v.name, v.category, v.contact, v.phone, v.stage === "out" ? "Ruled out" : d.STAGES.find(([k]) => k === v.stage)[1], v.rating, v.reviewers, (preferred(v) || {}).price, v.notes].map(q).join(",")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv" }));
+  a.download = `vendors-${V.data.couple.join("-").toLowerCase().replace(/\s+/g, "-")}.csv`;
+  a.click();
+  V.toast(`Exported ${V.plural(rows.length, "vendor")} to ${a.download}`);
+}
+
+function hero() {
+  const h = V.$("#hero-sub"); if (!h) return;
+  const keen = d.vendors.filter((v) => v.keen).length;
+  h.textContent = `${V.plural(d.vendors.length, "vendor")}${keen ? `, ${keen.toLocaleString("en-GB")} you're keen on` : ""}`;
+}
+
+/* F6: capture a vendor in a few seconds */
+function addSheet(prefill) {
+  V.openSheet(`<h2>Add a vendor</h2><p class="sub">Just the name is enough for now.</p>
+    <div class="fields">
+      <div class="field"><label for="vn">Name</label><input id="vn" dir="auto" autofocus placeholder="For example, Bunga Melati Florist" value="${V.esc(prefill || "")}"></div>
+      <div class="field"><label for="vc">Category</label><select id="vc">${d.vendorCats.map((c) => `<option ${c.name === (ui.cat || "Other") ? "selected" : ""}>${V.esc(c.name)}</option>`).join("")}</select></div>
+      <div class="field"><label for="vp">Contact person</label><input id="vp" dir="auto"></div>
+      <div class="field"><label for="vt">Phone</label><input id="vt" type="tel" inputmode="tel" placeholder="0812 3456 7890"></div>
+      <div class="field"><label for="vx">Notes</label><textarea id="vx" placeholder="Where you found them, what they said"></textarea></div>
+    </div>
+    ${V.DEMO ? `<p class="sub">Demonstration mode: adding is turned off.</p>` : ""}
+    <div class="acts"><button class="btn quiet" data-again ${V.DEMO ? "disabled" : ""}>Add and start another</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add vendor</button></div>`, (el) => {
+    const go = (again) => {
+      const n = V.$("#vn", el);
+      if (!n.value.trim()) { n.closest(".field").classList.add("failed"); if (!V.$(".err", el)) n.insertAdjacentHTML("afterend", `<p class="err">Give the vendor a name.</p>`); n.focus(); return; }
+      const v = { id: "v" + Date.now(), name: n.value.trim(), category: V.$("#vc", el).value, contact: V.$("#vp", el).value.trim(), phone: V.$("#vt", el).value.trim(), stage: "noted", rating: null, reviewers: null, keen: false, added: "2026-10-14", prices: [], notes: V.$("#vx", el).value, files: [] };
+      d.vendors.push(v); V.rerender(); V.saved(`Added ${V.esc(v.name)}`, () => { d.vendors.splice(d.vendors.indexOf(v), 1); V.rerender(); });
+      if (again) addSheet(); else { V.closeSheet(); V.$$(`[data-id="${v.id}"] .vrow`).forEach((e) => e.classList.add("flash")); }
+    };
+    V.$("[data-ok]", el).onclick = () => go(false);
+    V.$("[data-again]", el).onclick = () => go(true);
+  });
+}
+
+/* F14, F23: our own categories */
+function catsSheet(state) {
+  const counts = (c) => d.vendors.filter((v) => v.category === c).length;
+  V.openSheet(`<h2>Vendor categories</h2><p class="sub">Categories you add are shared with ${V.esc(d.partner)}. “Other” is always there for anything that doesn't fit.</p>
+    <ul class="menu-card" style="margin-top:20px">${d.vendorCats.map((c, i) => `<li><div class="line"><span class="on" dir="auto" style="font-size:19px">${V.esc(c.name)}</span><span class="lead"></span><span style="font-size:14px;color:var(--ink-2);white-space:nowrap">${c.own ? "Ours, " : c.catchall ? "Catch-all, " : ""}${V.plural(counts(c.name), "vendor")}</span></div>
+      ${c.own ? `<div class="acts"><button class="link" data-ren="${i}">Rename</button><button class="link rose" data-del="${i}">Remove</button></div>` : ""}</li>`).join("")}</ul>
+    <div class="fields" style="margin-top:18px"><div class="field ${state === "taken" ? "failed" : ""}"><label for="nc">New category</label><input id="nc" maxlength="40" placeholder="Up to 40 characters" value="${state === "taken" ? "Catering" : ""}">
+      ${state === "taken" ? `<p class="err">There's already a category called Catering.</p>` : `<p class="hint" id="nc-left">40 characters left</p>`}</div></div>
+    <div class="acts"><button class="btn quiet" data-x>Done</button><button class="btn" data-add ${V.DEMO ? "disabled" : ""}>Add category</button></div>`, (el) => {
+    const nc = V.$("#nc", el);
+    nc.oninput = () => { const h = V.$("#nc-left", el); if (h) h.textContent = `${40 - nc.value.length} characters left`; };
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-add]", el).onclick = () => {
+      const n = nc.value.trim(); if (!n) { nc.focus(); return; }
+      if (d.vendorCats.some((c) => c.name.toLocaleLowerCase() === n.toLocaleLowerCase())) {
+        const f = nc.closest(".field"); f.classList.add("failed"); V.$(".hint, .err", f).outerHTML = `<p class="err">There's already a category called ${V.esc(n)}.</p>`; nc.focus(); return;
+      }
+      d.vendorCats.splice(d.vendorCats.length - 1, 0, { name: n, own: true }); V.saved(`Added ${V.esc(n)}`); catsSheet(); V.rerender();
+    };
+    V.$$("[data-ren]", el).forEach((b) => b.onclick = () => {
+      const c = d.vendorCats[b.dataset.ren], li = b.closest("li");
+      li.innerHTML = `<div class="field" style="border:0;padding:0"><label for="rc">Rename ${V.esc(c.name)}</label><input id="rc" maxlength="40" value="${V.esc(c.name)}"></div><div class="acts"><button class="link" data-save>Save</button><button class="link" data-cancel>Cancel</button></div>`;
+      const rc = V.$("#rc", li); rc.focus(); rc.select();
+      V.$("[data-cancel]", li).onclick = () => catsSheet();
+      V.$("[data-save]", li).onclick = () => {
+        const n = rc.value.trim(); if (!n || n === c.name) return catsSheet();
+        if (d.vendorCats.some((x) => x !== c && x.name.toLocaleLowerCase() === n.toLocaleLowerCase())) { rc.closest(".field").classList.add("failed"); if (!V.$(".err", li)) rc.insertAdjacentHTML("afterend", `<p class="err">That name is taken.</p>`); return; }
+        d.vendors.forEach((v) => { if (v.category === c.name) v.category = n; }); if (ui.cat === c.name) ui.cat = n; c.name = n;
+        V.saved(`Renamed to ${V.esc(n)}`); catsSheet(); V.rerender();
+      };
+    });
+    V.$$("[data-del]", el).forEach((b) => b.onclick = () => {
+      const i = +b.dataset.del, c = d.vendorCats[i], n = counts(c.name), li = b.closest("li");
+      li.innerHTML = `<p style="font-size:15px">Remove <b>${V.esc(c.name)}</b>?${n ? ` Its ${V.plural(n, "vendor")} move to Other.` : ""}</p><div class="acts"><button class="link" data-cancel>Keep it</button><button class="link rose" data-yes>Remove category</button></div>`;
+      V.$("[data-cancel]", li).onclick = () => catsSheet();
+      V.$("[data-yes]", li).onclick = () => {
+        const moved = d.vendors.filter((v) => v.category === c.name); moved.forEach((v) => v.category = "Other");
+        d.vendorCats.splice(i, 1); if (ui.cat === c.name) ui.cat = null; catsSheet(); V.rerender();
+        V.saved(`Removed ${V.esc(c.name)}`, () => { d.vendorCats.splice(i, 0, c); moved.forEach((v) => v.category = c.name); V.rerender(); });
+      };
+    });
+  });
+}
+
+V.init({
+  where: "Vendors", section: "vendors.html", noun: "your vendors", wide: true,
+  states: [["empty", "No vendors yet"], ["noresults", "No results"], ["capture", "Adding a vendor"], ["categories", "Editing categories"], ["taken", "Category name taken"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a vendor"]],
+  render(main) {
+    const head = `<section class="hero"><h1>Vendors</h1><p class="sub" id="hero-sub"></p>${V.subnav("vendors.html")}</section>`;
+    if (!d.vendors.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No vendors yet</h1><p>Add a vendor the moment you hear about one: a name is enough. Prices, reviews and files can follow.</p><div class="acts"><button class="btn" id="add" ${V.DEMO ? "" : ""}>Add a vendor</button></div></div>`;
+      V.$("#hero-sub").textContent = "Everyone you're considering";
+      V.$("#add").onclick = () => addSheet();
+      return;
+    }
+    const cats = d.vendorCats.map((c) => [c.name, d.vendors.filter((v) => v.category === c.name).length]).filter(([, n]) => n);
+    const focused = document.activeElement && document.activeElement.id === "q";
+    main.innerHTML = head + `
+      <div class="focus" role="group" aria-label="Focus on a category"><button class="chip" data-cat="" aria-pressed="${!ui.cat}">All<small>${d.vendors.length.toLocaleString("en-GB")}</small></button>${cats.map(([c, n]) => `<button class="chip" data-cat="${V.esc(c)}" aria-pressed="${ui.cat === c}" dir="auto">${V.esc(c)}<small>${n.toLocaleString("en-GB")}</small></button>`).join("")}<button class="chip dashed" id="cats">Edit categories</button></div>
+      <div class="tools" style="margin-top:18px">
+        <label class="search">${V.ICON.search}<span class="sr">Search vendors</span><input id="q" type="search" placeholder="Search names, contacts and notes" value="${V.esc(ui.q)}"></label>
+        <div class="toggles"><label class="check"><input type="checkbox" id="keen" ${ui.keen ? "checked" : ""}>Only ones we're keen on</label>
+        <span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select><button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button></span></div>
+      </div>
+      <div id="list"></div>
+      <button class="btn add-fab" id="add">Add a vendor</button>`;
+    hero(); list();
+    const q = V.$("#q"); q.oninput = () => { ui.q = q.value; ui.shown = 100; list(); };
+    if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    V.$$("[data-cat]").forEach((b) => b.onclick = () => { ui.cat = b.dataset.cat || null; ui.shown = 100; V.rerender(); });
+    V.$("#keen").onchange = (e) => { ui.keen = e.target.checked; list(); };
+    V.$("#ord").onchange = (e) => { ui.order = e.target.value; ui.asc = !["rating", "reviewers", "added"].includes(ui.order); V.$("#dir").textContent = ui.asc ? "Ascending" : "Descending"; list(); };
+    V.$("#dir").onclick = (e) => { ui.asc = !ui.asc; e.currentTarget.textContent = ui.asc ? "Ascending" : "Descending"; list(); };
+    V.$("#cats").onclick = () => catsSheet();
+    V.$("#add").onclick = () => addSheet();
+  },
+  sync() {
+    setTimeout(() => {
+      const v = d.vsync.vendor; d.vendors.push(v); V.rerender();
+      V.$$(`[data-id="${v.id}"] .vrow`).forEach((e) => e.classList.add("flash"));
+      V.toast(`${V.esc(d.vsync.by)} added ${V.esc(v.name)}`, { from: d.vsync.by, ms: 9000 });
+    }, 1600);
+  },
+});
+if (S === "capture") addSheet("Bunga Melati Florist");
+if (S === "categories" || S === "taken") catsSheet(S);
+</script>
+</body>
+</html>

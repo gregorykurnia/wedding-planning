@@ -103,7 +103,7 @@
   const SECTIONS = [
     ["Overview", "Days to go and what's next", "#"],
     ["Budget", "Bookings, payments and who pays", "budget.html"],
-    ["Vendors", "Everyone we're considering, and the shortlist", "#"],
+    ["Vendors", "Everyone we're considering, the shortlist and venues", "vendors.html"],
     ["Wedding items", "Every piece and who provides it", "#"],
     ["Schedule", "Appointments, tasks and deadlines", "#"],
     ["Documents", "Notes, plans and files", "#"],
@@ -124,7 +124,7 @@
   function indexPage() {
     return `<div class="index" id="index" hidden role="dialog" aria-modal="true" aria-label="Menu">
       <header class="top"><span class="couple">${esc(data.couple[0])} <span>&amp;</span> ${esc(data.couple[1])}</span><span></span><button class="menu-btn close-index"><i style="border-bottom:0;height:0"></i>Close</button></header>
-      <nav><ol>${SECTIONS.map(([t, s, h]) => `<li><a href="${h === "#" ? "#" : href(h)}" ${h === "budget.html" ? 'aria-current="page"' : ""} ${h === "#" ? 'data-later="1"' : ""}>${t}<small>${s}</small></a></li>`).join("")}</ol>
+      <nav><ol>${SECTIONS.map(([t, s, h]) => `<li><a href="${h === "#" ? "#" : href(h)}" ${h === (cfg.section || "budget.html") ? 'aria-current="page"' : ""} ${h === "#" ? 'data-later="1"' : ""}>${t}<small>${s}</small></a></li>`).join("")}</ol>
       <div class="account"><span>Signed in as ${esc(data.me.email)}</span><span><a class="link" href="#" data-later="1">Wedding settings</a>&emsp;<a class="link" href="#" data-later="1">Sign out</a></span></div></nav>
     </div>`;
   }
@@ -273,11 +273,45 @@
     if (cfg.wide) main.classList.add("wide");
     if (stateView(main)) return;
     cfg.render(main);
-    if (STATE === "sync") liveSync();
+    if (STATE === "sync") (cfg.sync || liveSync)();
     if (added && sessionStorage.getItem("veil-added-new")) { sessionStorage.removeItem("veil-added-new"); toast(`Added ${esc(added.name)}`); $$(`[data-id="${added.id}"]`).forEach((el) => el.classList.add("flash")); }
   }
 
+
+  /* ---------- shared pieces for records with files, stages and phone numbers ---------- */
+  const FILE_EXT = { pdf: "pdf", doc: "doc", sheet: "xls" };
+  function filesGrid(files, uploading) {
+    const fl = files.map((f) => `<li><a class="file" href="#" data-later="1"><div class="thumb">${f.type === "image" ? `<img src="${f.src}" alt="">` : `<span class="ext">${FILE_EXT[f.type] || "file"}</span>`}</div><div class="fn" dir="auto">${esc(f.name)}</div><div class="fs">${f.size}${f.fromVendor ? ", from the vendor" : ""}</div></a></li>`).join("");
+    const up = uploading ? `<li><div class="file"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Signed contract scan.pdf</div><div class="fs">Shrinking from 14.2 MB to fit under 10 MB</div><div class="bar"><span style="width:35%"></span></div></div></li>
+      <li><div class="file"><div class="thumb"><span class="ext">jpg</span></div><div class="fn">Transfer receipt.jpg</div><div class="fs">Uploading, 1.3 of 2.1 MB</div><div class="bar"><span style="width:62%"></span></div></div></li>
+      <li><div class="file bad"><div class="thumb"><span class="ext">zip</span></div><div class="fn">All photos.zip</div><div class="fs">Too large: 48 MB. Files can be up to 10 MB.</div></div></li>
+      <li><div class="file bad"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Invoice.pdf</div><div class="fs">Upload failed. <button class="link rose">Try again</button></div></div></li>` : "";
+    return `<ul class="files">${fl}${up}<li><button class="file drop" data-later="1"><span><b>Add files</b>Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you.</span></button></li></ul>`;
+  }
+  /* The stage as a short gold thread of steps; ruled out is drawn apart. */
+  function stageThread(stage, stages, label) {
+    if (stage === "out") return `<span class="stage out">Ruled out</span>`;
+    const i = stages.findIndex(([k]) => k === stage);
+    return `<span class="stage" title="${esc(stages[i][1])}"><span class="steps" aria-hidden="true">${stages.map((_, k) => `<i class="${k <= i ? "on" : ""}"></i>`).join("")}</span>${label === false ? `<span class="sr">${esc(stages[i][1])}</span>` : esc(stages[i][1])}</span>`;
+  }
+  /* F7: WhatsApp in one step. Indonesian numbers starting with 0 become +62. */
+  function waHref(phone) {
+    let d = String(phone || "").replace(/[^\d+]/g, "");
+    if (!d) return null;
+    if (d.startsWith("+")) d = d.slice(1); else if (d.startsWith("0")) d = "62" + d.slice(1);
+    return "https://wa.me/" + d;
+  }
+  function linkify(text) {
+    return esc(text).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (u) => `<a class="link" href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "")}</a>`).replace(/\n/g, "<br>");
+  }
+  const compact = (n) => n == null ? "" : n >= 1e6 ? Math.round(n / 1e5) / 10 + "M" : n >= 1e4 ? Math.round(n / 100) / 10 + "k" : n.toLocaleString("en-GB");
+  const subnav = (here) => `<nav class="subnav" aria-label="Vendors, shortlist and venues">${[["vendors.html", "Vendors"], ["shortlist.html", "Shortlist"], ["venues.html", "Venues"]].map(([h, t]) => `<a href="${href(h)}" ${h === here ? 'aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`;
+  const WA_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 13.5l.9-2.8A5.6 5.6 0 1 1 5.6 13z"/><path d="M6 5.5c0 2.5 2 4.5 4.5 4.5l.7-1.2-1.4-.7-.6.6c-.8-.3-1.5-1-1.8-1.8l.6-.6-.7-1.4z" fill="currentColor" stroke="none"/></svg>';
+  const waLink = (phone, label) => { const h = waHref(phone); return h ? `<a class="wa" href="${h}" target="_blank" rel="noopener">${WA_ICON}${esc(label || "WhatsApp")}</a>` : ""; };
+  const HEART = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6a3.6 3.6 0 0 1 6.5 2.4C16.5 13.1 10 17 10 17z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  const count = (n) => n == null ? "" : n.toLocaleString("en-GB");
+
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, group, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
     funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
-    init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
+    filesGrid, stageThread, waHref, waLink, HEART, subnav, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

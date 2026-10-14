@@ -19,7 +19,7 @@
 </style>
 </head>
 <body>
-<header class="top"><span class="couple">Veil <span>&amp;</span> prototype</span><span class="where">Stage 2, budget group</span><span></span></header>
+<header class="top"><span class="couple">Veil <span>&amp;</span> prototype</span><span class="where">Stage 2</span><span></span></header>
 <main>
   <section class="hero"><h1>Screens and states</h1><p class="sub">Open any screen on a phone or computer. The dashed “Prototype” tab in the corner switches states and the stress data.</p></section>
   <ul class="toc" id="toc"></ul>
@@ -36,6 +36,16 @@ const S = [
   ["booking-new.html", "Add a booking", "B2: something booked outside Vendors and Venues", [["", "Normal"], ["state=busy", "Adding"], ["state=failed", "Couldn't add"], ["state=demo", "Demonstration mode"], ["state=offline", "Offline"]]],
   ["payments.html", "Payments due", "B6, S6, O2: every unpaid amount with a date, late first", [["", "Normal"], ["state=empty", "Nothing due"], ["state=loading", "Loading"], ["state=error", "Couldn't load"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data"]]],
   ["funders.html", "Who pays", "B7, B11: paid and still to pay per funder; add, rename, remove", [["", "Normal"], ["state=empty", "Nothing booked yet"], ["state=rename", "Renaming"], ["state=adding", "Adding"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=sync", "Bella's change arrives"], ["stress", "Stress data (14 funders)"]]],
+  ["vendors.html", "Vendors", "F6, F7, F9–F15, F23: capture, browse by category, keen, WhatsApp, export, own categories", [["", "Normal"], ["state=empty", "No vendors yet"], ["state=noresults", "No results"], ["state=capture", "Adding a vendor"], ["state=categories", "Editing categories"], ["state=taken", "Category name taken"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["state=sync", "Bella adds a vendor"], ["stress", "Stress data (2,004 vendors)"]]],
+  ["vendor.html?id=kebun", "A vendor", "F7, F8, F9, F10, F11, F13, F16, B1: prices, stage, reputation, notes, files, copy to the shortlist", [["", "Normal"], ["state=savefail", "A change didn't save"], ["state=uploading", "Uploading files"], ["state=demo", "Demonstration mode"]]],
+  ["vendor.html?id=ara", "A vendor with no prices", "F6, F8: just noted, nothing yet", [["", "Normal"]]],
+  ["vendor.html?id=nusantara", "A ruled-out vendor", "F10: ruled out, drawn apart", [["", "Normal"]]],
+  ["vendor.html?id=sv-long", "A vendor under stress", "30 price options, a long note with links, a long unbroken name", [["stress", "Stress data"]]],
+  ["shortlist.html", "Shortlist", "F17, F18, F19, F21: finalists side by side, by category", [["", "Normal"], ["state=empty", "Nothing on the shortlist"], ["state=adding", "Adding a finalist"], ["state=loading", "Loading"], ["state=demo", "Demonstration mode"], ["stress", "Stress data (83 finalists)"]]],
+  ["finalist.html?id=f-kebun", "A finalist", "F17, F18, F20, F24: packages, popularity, files from the vendor, book it", [["", "Normal"], ["state=booking", "Booking it"], ["state=uploading", "Uploading files"]]],
+  ["finalist.html?id=f-arka", "A finalist added from scratch", "F21, F24: no vendor behind it, so it can move into Vendors", [["", "Normal"]]],
+  ["finalist.html?id=sf-deep", "A finalist under stress", "30 packages, huge counts", [["stress", "Stress data"]]],
+  ["venues.html", "Venues", "F1, F3, F4, F5, F22, B1: capture, narrow by cost and capacity, order, files", [["", "Normal"], ["state=empty", "No venues yet"], ["state=noresults", "No results"], ["state=loading", "Loading"], ["state=demo", "Demonstration mode"], ["stress", "Stress data (302 venues)"]]],
   ["whatif.html", "What-if items", "B8, B9, B10: ideas kept apart, the projected total and who would pay", [["", "Normal"], ["state=empty", "No what-if items"], ["state=loading", "Loading"], ["state=offline", "Offline"], ["state=demo", "Demonstration mode"], ["stress", "Stress data (301 items)"]]],
 ];
 const url = (p, q) => q ? p + (p.includes("?") ? "&" : "?") + q : p;

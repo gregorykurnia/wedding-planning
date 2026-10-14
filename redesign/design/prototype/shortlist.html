@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shortlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/data-vendors.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const V = Veil, S = V.STATE, d = V.data;
+const ui = { cat: null, order: "category", shown: 60 };
+const ORDERS = [["category", "Category"], ["price", "Preferred price"], ["reviews", "Reviews"], ["followers", "Instagram followers"]];
+const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+const pref = (f) => f.packages.find((p) => p.preferred) || f.packages[0] || null;
+
+function card(f) {
+  const p = pref(f), shown = f.packages.slice(0, 4), b = f.moved === "booking";
+  return `<li class="card fcard ${b ? "moved" : ""}" data-id="${f.id}">
+    ${b ? `<span class="flag gold" style="align-self:center">Now a booking</span>` : ""}
+    <a class="name" dir="auto" href="${V.href("finalist.html", { id: f.id })}">${V.esc(f.name)}</a>
+    <span class="meta">${[f.reviews != null ? V.plural(f.reviews, "review") : "", f.followers != null ? `${V.compact(f.followers)} followers` : ""].filter(Boolean).join(", ") || "No reviews or followers yet"}</span>
+    ${f.packages.length ? `<ul class="pkgs">${shown.map((k) => `<li class="${k === p ? "preferred" : ""}"><span class="pn" dir="auto">${V.esc(k.name)}</span><span class="lead"></span><span class="pv num">${V.rp(k.price)}</span></li>`).join("")}${f.packages.length > 4 ? `<li style="color:var(--ink-2)">and ${V.plural(f.packages.length - 4, "more package")}</li>` : ""}</ul>` : `<p class="meta" style="margin:10px 0">No packages yet</p>`}
+    <p class="step">${f.step ? `<span>Next:</span> <span dir="auto" style="color:var(--ink)">${V.esc(f.step.length > 120 ? f.step.slice(0, 118) + "…" : f.step)}</span>` : `<span>No next step</span>`}</p>
+  </li>`;
+}
+
+function addSheet() {
+  V.openSheet(`<h2>Add a finalist</h2><p class="sub">Straight onto the shortlist, without adding a vendor first.</p>
+    <div class="fields">
+      <div class="field"><label for="fn">Name</label><input id="fn" dir="auto" autofocus placeholder="For example, Arka Visual"></div>
+      <div class="field"><label for="fc">Category</label><select id="fc">${d.vendorCats.map((c) => `<option ${c.name === (ui.cat || "Other") ? "selected" : ""}>${V.esc(c.name)}</option>`).join("")}</select></div>
+      <div class="field"><label for="fk">First package</label><input id="fk" dir="auto" placeholder="For example, Signature"></div>
+      <div class="field"><label for="fp">Its price</label><input id="fp" class="num" inputmode="numeric" placeholder="Rp 0"></div>
+    </div>
+    <div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add finalist</button></div>`, (el) => {
+    V.$("#fp", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
+    V.$("[data-x]", el).onclick = V.closeSheet;
+    V.$("[data-ok]", el).onclick = () => {
+      const n = V.$("#fn", el); if (!n.value.trim()) { n.focus(); return; }
+      const k = V.$("#fk", el).value.trim();
+      const f = { id: "f" + Date.now(), vendor: null, name: n.value.trim(), category: V.$("#fc", el).value, contact: "", phone: "", reviews: null, followers: null, step: "", notes: "",
+        packages: k || V.$("#fp", el).value ? [{ id: "k1", name: k || "Package", price: num(V.$("#fp", el).value), includes: "", reviews: null, step: "", notes: "", files: [], preferred: true }] : [], files: [] };
+      d.finalists.push(f); V.closeSheet(); V.rerender();
+      V.saved(`Added ${V.esc(f.name)} to the shortlist`, () => { d.finalists.splice(d.finalists.indexOf(f), 1); V.rerender(); });
+    };
+  });
+}
+
+V.init({
+  where: "Vendors", section: "vendors.html", noun: "your shortlist", wide: true,
+  states: [["empty", "Nothing on the shortlist"], ["adding", "Adding a finalist"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  render(main) {
+    const cats = [...new Set(d.finalists.map((f) => f.category))];
+    const head = `<section class="hero"><h1>Shortlist</h1><p class="sub">${d.finalists.length ? `${V.plural(d.finalists.length, "finalist")} in ${V.plural(cats.length, "category", "categories")}` : "Finalists, side by side"}</p>${V.subnav("shortlist.html")}</section>`;
+    if (!d.finalists.length) {
+      main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>Nothing on the shortlist yet</h1><p>When a category comes down to a few names, copy them here from Vendors to compare their packages side by side. Or add a finalist straight away.</p><div class="acts"><a class="btn quiet" href="${V.href("vendors.html")}">Go to Vendors</a><button class="btn" id="add">Add a finalist</button></div></div>`;
+      V.$("#add").onclick = addSheet; return;
+    }
+    let list = d.finalists.filter((f) => !ui.cat || f.category === ui.cat);
+    const key = { price: (f) => (pref(f) || {}).price ?? null, reviews: (f) => f.reviews, followers: (f) => f.followers }[ui.order];
+    if (key) list = list.slice().sort((a, z) => key(a) == null ? 1 : key(z) == null ? -1 : ui.order === "price" ? key(a) - key(z) : key(z) - key(a));
+    let body;
+    if (ui.order === "category") {
+      const groups = {};
+      list.slice(0, ui.shown).forEach((f) => (groups[f.category] = groups[f.category] || []).push(f));
+      body = Object.entries(groups).sort((a, z) => a[0].localeCompare(z[0])).map(([c, fs]) => `<h2 class="cat-h" dir="auto">${V.esc(c)}<small>${V.plural(d.finalists.filter((f) => f.category === c).length, "finalist")}</small></h2><ul class="finalists">${fs.map(card).join("")}</ul>`).join("");
+    } else body = `<ul class="finalists" style="margin-top:28px">${list.slice(0, ui.shown).map(card).join("")}</ul>`;
+    main.innerHTML = head + `
+      <div class="focus" role="group" aria-label="Focus on a category"><button class="chip" data-cat="" aria-pressed="${!ui.cat}">All</button>${cats.sort().map((c) => `<button class="chip" data-cat="${V.esc(c)}" aria-pressed="${ui.cat === c}" dir="auto">${V.esc(c)}<small>${d.finalists.filter((f) => f.category === c).length}</small></button>`).join("")}</div>
+      <div class="tools" style="margin-top:12px;justify-content:flex-end"><span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select></span></div>
+      ${body}
+      ${list.length > ui.shown ? `<p style="text-align:center;margin-top:28px"><button class="btn quiet" id="more">Show more</button></p>` : ""}
+      <button class="btn add-fab" id="add">Add a finalist</button>`;
+    V.$$("[data-cat]").forEach((b) => b.onclick = () => { ui.cat = b.dataset.cat || null; V.rerender(); });
+    V.$("#ord").onchange = (e) => { ui.order = e.target.value; V.rerender(); };
+    V.$("#add").onclick = addSheet;
+    const m = V.$("#more"); if (m) m.onclick = () => { ui.shown += 60; V.rerender(); };
+  },
+});
+if (S === "adding") addSheet();
+</script>
+</body>
+</html>
