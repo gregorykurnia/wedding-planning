@@ -39,7 +39,7 @@ const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
 function item(w) {
   const ps = V.wiParts(w), total = V.wiTotal(w);
   const fs = [...new Set(ps.map((p) => p.funder ?? null))];
-  const who = fs.length > 2 ? V.plural(fs.length, "funder") : fs.map((f) => f === null ? "nobody yet" : f === "us" ? "us" : V.funderName(f)).join(" and ");
+  const who = fs.length > 2 ? V.plural(fs.length, "funder") : V.andList(fs.map((f) => f === null ? "nobody yet" : V.funderName(f)));
   let parts = "";
   if (w.parts) {
     const shown = w.parts.slice(0, 5);

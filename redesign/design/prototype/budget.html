@@ -49,7 +49,7 @@ V.init({
 
     const overNote = B.over ? `, <span class="late">${B.over} overpaid</span>` : "";
     const fs = V.byFunder(), un = fs.find((f) => f.id === null);
-    const funderNote = d.funders.length <= 3 ? d.funders.map((f) => f.name).join(", ") : V.plural(d.funders.length, "funder");
+    const funderNote = d.funders.length <= 4 ? V.andList(d.funders.map((f) => f.name)) : V.plural(d.funders.length, "funder");
     const lastDue = dues.length ? V.monthOf(dues[dues.length - 1].due) : "";
     const wi = V.whatif();
 

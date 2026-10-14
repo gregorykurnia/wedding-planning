@@ -1,7 +1,7 @@
 # Decisions
 
 ## Stage 1
-- Mock data uses Indonesian thousands separators (Rp 948.800.000) and funders named "Us", "Greg's family", "Bella's family" and "Not assigned". Both are placeholders until the owner confirms them.
+- Mock data uses Indonesian thousands separators (Rp 948.800.000) and funders named "Greg", "Bella", "Greg's family", "Bella's family" and "Not assigned" (see P2). The separators are still a placeholder until the owner confirms them.
 - "Still to pay" is worked out the same way everywhere: price minus paid. An overpaid booking makes it negative and is flagged on its own (B5, B7).
 
 ### Round 1: all three rejected (2026-10-14)
@@ -27,6 +27,6 @@ What this means for the prototype: keep every screen to one main figure or job w
 - **Splitting a booking:** what's already paid becomes a "Deposit" part, and the rest becomes "Balance" with the old due date and next step. Undo is available.
 - **Removing a funder** moves their costs to "Not assigned". Payments already recorded stay as they are, with undo.
 
-### Proposals for the owner (not adopted)
-- **P1: book a what-if item.** A "Book it" action on a what-if item would turn it into a real booking with its parts and funders carried across. Today, B8 only keeps them apart. Adopt?
-- **P2: the "us" funder.** The mock data has a funder called "Us" alongside both families. If the two of you always pay as one, keep it. If you each pay separately, it could become "Greg" and "Bella". This is only a data question, but it changes how "Who pays" reads.
+### Proposals for the owner
+- **P1: book a what-if item.** *Declined by the owner (2026-10-14): "no need".* What-if items stay apart from bookings, with no "Book it" action.
+- **P2: the "us" funder.** *Adopted by the owner (2026-10-14).* "Us" becomes two funders, Greg and Bella, alongside Greg's family and Bella's family. The mock data now uses all four.

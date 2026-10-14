@@ -65,7 +65,7 @@ function partLine(p) {
   return `<li><span class="pn">${V.esc(p.name)}</span><span class="lead"></span>${v}</li>`;
 }
 function entry({ b, t }) {
-  const funders = t.funders.length > 2 ? V.plural(t.funders.length, "funder") : t.funders.map((f) => f === "us" ? "us" : V.funderName(f)).join(" and ");
+  const funders = t.funders.length > 2 ? V.plural(t.funders.length, "funder") : V.andList(t.funders.map(V.funderName));
   let parts = "";
   if (b.parts) {
     const ps = b.parts.length > 5 ? b.parts.filter((p) => p.price - (p.paid || 0) !== 0).slice(0, 4) : b.parts;
@@ -75,7 +75,7 @@ function entry({ b, t }) {
   const est = b.estimate != null && t.price !== b.estimate ? `, ${V.rp(Math.abs(t.price - b.estimate))} ${t.price < b.estimate ? "under" : "over"} the estimate` : "";
   return `<li><a class="entry" data-id="${b.id}" href="${V.href("booking.html", { id: b.id })}">
     <span class="name" dir="auto">${V.esc(b.name)}</span><span class="price num">${V.rp(t.price)}</span>
-    <span class="meta">${V.esc(b.category || "No category")}, ${V.esc(t.funders.length === 1 && t.funders[0] === null ? "no funder yet" : funders === "us" ? "paid by us" : "paid by " + funders)}${est}</span>${status(t)}
+    <span class="meta">${V.esc(b.category || "No category")}, ${V.esc(t.funders.length === 1 && t.funders[0] === null ? "no funder yet" : "paid by " + funders)}${est}</span>${status(t)}
     ${parts}</a></li>`;
 }
 

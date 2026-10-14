@@ -41,7 +41,8 @@
 
   /* ---------- money model ---------- */
   const funderName = (id) => id == null ? "Not assigned" : ((data.funders.find((f) => f.id === id) || {}).name || "Not assigned");
-  const paidBy = (id) => id == null ? "no funder yet" : id === "us" ? "paid by us" : "paid by " + funderName(id);
+  const paidBy = (id) => id == null ? "no funder yet" : "paid by " + funderName(id);
+  const andList = (a) => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
   const partsOf = (b) => b.parts ? b.parts : [{ id: null, name: b.name, price: b.price, paid: b.paid || 0, funder: b.funder, due: b.due, step: b.step }];
   const totals = (b) => {
     const ps = partsOf(b);
@@ -277,6 +278,6 @@
   }
 
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, group, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
-    funderName, paidBy, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
+    funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
     init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();
