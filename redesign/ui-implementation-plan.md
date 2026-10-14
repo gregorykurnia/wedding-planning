@@ -922,7 +922,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 1 | 1.8 Write layer | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Transactions on embedded arrays, undo restores and retry ids decide whether concurrent edits or removed records survive | 635d1ca, 809f507; built in one session with 1.9–1.11, real cost to log from `/cost` | [x] |
 | 1 | 1.9 New collections, adapters and Firestore rules | **Opus 5.5 High** | $1.82 | **Risk: production lock-out or exposure.** Rules deploy straight to production and gate both UIs | 4777274; rules deployed 2026-10-14, owner confirmed the old UI loads and saves; real cost to log from `/cost` | [x] |
 | 1 | 1.10 Booking and money write operations | **Opus 5.5 High** | $1.82 | **Risk: data loss in money records.** Split, merge, remove booking, record payment and mark booked rewrite prices and payments | 4b33422; real cost to log from `/cost` | [x] |
-| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | scripts and emulator tests in 24b1d15; waiting for the owner's service account key to take the backup, review the dry run and apply | [ ] |
+| 1 | 1.11 One-time migrations | **Opus 5.5 High** | $1.82 | **Risk: data loss.** Writes to live production data | 24b1d15; ran on production 2026-10-14 after a backup and the owner's review of the dry run (492 writes, second run plans nothing, 615 existing records unchanged); report raised G12/N12; real cost to log from `/cost` | [x] |
 | 1 | Review | **Opus 5.5 High** | $1.82 | Phase 1 rule: a missed bug can lose data | | [ ] |
 | 2 | 2.1 Tokens, base styles, fonts, style check | Haiku 5.5 Max | $0.21 | Verbatim copy plus a port of `veil.css` globals | | [ ] |
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | | [ ] |
@@ -1095,7 +1095,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** emulator tests cover every operation and its undo, including a split booking that is then removed and restored.
 
 #### Task 1.11: One-time migrations · Opus 5.5 High
-- [ ] **Done** (date · commit · real cost). Scripts and emulator tests are in 24b1d15 (`npm run migrate:backup`, then `npm run migrate -- all` for the dry run, then `-- all --apply`); still to do on production: the backup, the owner's review of the dry run, the real run and the check that the old UI shows the same data.
+- [x] **Done** (2026-10-14 · 24b1d15 · real cost to log from `/cost`). On production: JSON backup in the git-ignored `backups/`, dry run reviewed by the owner, real run logged in `appMeta/migrations` (4 funders, 421 guest numbers and the counter, 11 bookings, 7 finalist links plus Cheese n Click linked by hand to vendor `AJAwXH45EmMGmodFQx0C` at the owner's choice, 23 files in 24 folders, `startedOn` 2026-08-02). A second dry run plans nothing, and all 615 existing records keep every field unchanged. The item report found 4 items with several people: G12 in §9.1 and N12 in `needs.md`, before Task 4.23.
 - **Risk:** writes to live production data.
 - **Read:** §2.7; `inventory-notes.md` §3, §6.
 - **Files:** `scripts/migrate/*.ts` run with the Firebase Admin SDK from the owner's machine, `appMeta/migrations` to record each run.
@@ -1518,6 +1518,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G9 | **N9** | The event sheet saves as you go, but an event needs a title and a date, and an end can't come before its start (today's checks in `schedule/page.tsx:250-270`; `scheduleEvents` without `startAt` vanish from the query). The design words only two validation messages (a booking's name, a taken category). | 4.20 (validation only) | open |
 | G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | open |
 | G11 | **N11** | Owner decision §9.2 Q8. On Vercel Hobby the reminder job runs once a day, in the morning, within the hour. The event sheet offers "When it starts", "15 minutes", "1 hour", "1 day" and "1 week before" (guide §6.12); only the day-before and week-before ones can be delivered. Existing events may already store 60 minutes (the old default). | 4.20 (Remind us only), 6.2 | open |
+| G12 | **N12** | Owner decision §9.2 Q4. The report from migration 1.11 (run on production 2026-10-14) found 4 wedding items with more than one person in `persons[]`: "Make Up Artist Groom and Bride Moms" (Groom Mom, Bride Mom), "Groom Dad & Brothers Suit" (Groom Dad, Groom Brother), "Groom Mom & Sister Dress" (Groom Mom, Groom Sister) and "Bride Dad & Brothers Suit" (Bride Dad, Bride Brothers). The design gives each item one person, so these can't be shown or filtered as they are. | 4.23 | open |
 
 ### 9.2 Questions for the owner: decided
 
