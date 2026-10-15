@@ -1,4 +1,4 @@
-Open needs: N1–N14
+Open needs: N1–N15
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -16,3 +16,4 @@ Open needs: N1–N14
 | N12 | When something we need to arrange is for more than one person, such as suits for the groom's father and brothers or make-up for both mothers, I want to name everyone it's for on that one item, so that it still comes up when I look for what any of them needs. | Step 7 | open |
 | N13 | When I take back something I've just done, but one of us has changed that same thing since (a payment recorded on it, a file moved again), I want to be told that it can't be taken back and why, with what's there now kept as it is, so that nothing either of us did is quietly lost. | Step 7 | open |
 | N14 | When I ask to remove or delete something and the planner can't finish it, I want to be told that nothing was changed and be able to try again, so that I never wonder whether it happened. | Step 7 | open |
+| N15 | When I open the planner on a phone, I want the couple's names to be as large as they are on a computer, so that both sizes read the same. The design gives no size for them on a phone, so the planner uses the nearest size, which is smaller. | Step 7 | open |

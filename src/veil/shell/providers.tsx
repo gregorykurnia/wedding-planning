@@ -4,12 +4,12 @@ import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { veilHref } from "../href";
 import { SheetHost } from "./sheet";
 import { ToastHost } from "./toasts";
 
-// Becomes veilHref("/") and veilHref("/sign-in") once Task 2.4 adds it.
-const HOME = "/new";
-const SIGN_IN = "/new/sign-in";
+const HOME = veilHref("/");
+const SIGN_IN = veilHref("/sign-in");
 
 /**
  * Everything the new UI's screens share: the session (who is signed in, demo

@@ -60,6 +60,8 @@ export interface Session {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   lookAround: () => void;
+  /** Demo only: leave Look around and go back to the sign-in screen. */
+  leaveDemo: () => void;
 }
 
 interface AuthState {
@@ -208,6 +210,15 @@ export function useSessionSource(): Session {
     setLookingAround(true);
   }, []);
 
+  const leaveDemo = useCallback(() => {
+    try {
+      sessionStorage.removeItem(LOOK_AROUND_KEY);
+    } catch {
+      // Nothing stored to clear.
+    }
+    setLookingAround(false);
+  }, []);
+
   const connection: Connection =
     state.status === "demo" || !isFirebaseConfigured ? "demo" : online ? "online" : "offline";
 
@@ -220,8 +231,18 @@ export function useSessionSource(): Session {
       signInWithEmail,
       signOut,
       lookAround,
+      leaveDemo,
     }),
-    [state, connection, lookingAround, signInWithGoogle, signInWithEmail, signOut, lookAround],
+    [
+      state,
+      connection,
+      lookingAround,
+      signInWithGoogle,
+      signInWithEmail,
+      signOut,
+      lookAround,
+      leaveDemo,
+    ],
   );
 }
 

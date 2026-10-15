@@ -46,6 +46,13 @@ textarea {
   color: inherit;
 }
 
+/* The page keeps room at the bottom for the floating add button (guide §3). The
+   top and sides belong to each screen's column: the top bar sits inside main
+   and must stay full width. */
+main {
+  padding-bottom: var(--space-page-bottom);
+}
+
 /* Every focusable thing gets the same 2px rose ring, offset 3px (guide §8). */
 a:focus-visible,
 button:focus-visible,

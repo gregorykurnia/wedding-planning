@@ -1,0 +1,56 @@
+/* Guide §4.1. Ported from the prototype's .top, .couple and .menu-btn. */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-top-y) var(--space-top-x);
+}
+
+/* The names in serif, the ampersand in champagne italic. The size is the
+   nearest token: no token holds the prototype's 24px on a phone (gap G15). */
+.couple {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-row-lg);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-names);
+  color: var(--color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.amp {
+  padding: 0 var(--space-hair);
+  color: var(--accent-thread);
+  font-style: italic;
+  font-weight: var(--weight-display-light);
+}
+
+.menuBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  cursor: pointer;
+}
+
+/* Two short lines for Menu; Close has one. */
+.lines {
+  display: inline-block;
+  width: 22px;
+  height: 8px;
+  border-top: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+}
+
+.single {
+  height: 0;
+  border-bottom: 0;
+}

@@ -1,0 +1,39 @@
+/* Guide §3. Ported from the prototype's .add-fab, on its .btn pill. */
+.add {
+  position: fixed;
+  right: calc(var(--space-8) + var(--space-1));
+  bottom: var(--space-8);
+  z-index: var(--z-fab);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 11px 22px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-text);
+  color: var(--surface-page);
+  box-shadow: var(--shadow-fab);
+  font-size: var(--text-meta);
+  font-weight: var(--weight-emphasis);
+  letter-spacing: var(--tracking-label);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.add:hover {
+  background: var(--color-text-strong-hover);
+}
+
+/* On a phone it moves in to 20px from the edges, and it steps aside while a document is being edited. */
+@media (max-width: 760px) {
+  .add {
+    right: var(--space-5);
+    bottom: var(--space-6);
+  }
+
+  :global(body[data-editing]) .add {
+    display: none;
+  }
+}

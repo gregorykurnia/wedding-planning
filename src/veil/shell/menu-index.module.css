@@ -1,0 +1,79 @@
+/* Guide §4.2. Ported from the prototype's .index, its nav and .account. */
+.index {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-menu);
+  overflow: auto;
+  background: var(--glow-menu);
+}
+
+.nav {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-1) var(--space-6) 60px;
+  text-align: center;
+}
+
+.list {
+  list-style: none;
+}
+
+/* Serif entries; the current section is gold and italic. */
+.link {
+  display: block;
+  padding: var(--space-1) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-menu);
+  font-weight: var(--weight-display-light);
+  line-height: var(--leading-row-loose);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.link:hover {
+  font-style: italic;
+}
+
+.link[aria-current="page"] {
+  color: var(--accent-gold-text);
+  font-style: italic;
+}
+
+.sub {
+  display: block;
+  margin-top: -2px;
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 44px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-rule);
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.account span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* The account's links and buttons, underlined in champagne. */
+.action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-size: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
