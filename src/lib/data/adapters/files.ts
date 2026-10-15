@@ -113,3 +113,27 @@ export function cloudinaryAsset(url: string): { cloudName: string; resourceType:
   const path = decodeURIComponent(rest.split(/[?#]/)[0]);
   return { cloudName, resourceType, publicId: resourceType === "raw" ? path : path.replace(/\.[^./]+$/, "") };
 }
+
+/** Where a record keeps its old `files[]`: the document, and a part's id or `null` for the record's own list. */
+export interface LegacyPlace {
+  collection: string;
+  docId: string;
+  partId: string | null;
+}
+
+export function legacyPlace(ref: RecordRef): LegacyPlace | null {
+  const partId = ref.partId ?? null;
+  switch (ref.kind) {
+    case "vendor":
+      return { collection: "vendors", docId: ref.id, partId };
+    case "venue":
+      return { collection: "venues", docId: ref.id, partId };
+    case "finalist":
+      return { collection: "shortlist", docId: ref.id, partId };
+    case "booking": {
+      // Booking ids are `vendor-<id>` or `venue-<id>` (adapters/bookings).
+      const match = /^(vendor|venue)-(.+)$/.exec(ref.id);
+      return match ? { collection: match[1] === "vendor" ? "vendors" : "venues", docId: match[2], partId } : null;
+    }
+  }
+}

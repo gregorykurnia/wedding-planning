@@ -32,7 +32,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | **Phase 3: components** | | |
 | [x] 3.0 Gallery · Haiku 5.5 xHigh | wait for 3.0 | wait for 3.0 |
 | [x] 3.4 Fields · Sonnet 5.5 High | [x] 3.3 Buttons · Haiku 5.5 Max | [x] 3.11 Agenda and month · Sonnet 5.5 High |
-| [ ] 3.10 Uploads (after 3.3) · Sonnet 5.5 High | [x] 3.1 Hero · Haiku 5.5 Max | [x] 3.6 Parts · Haiku 5.5 Max |
+| [x] 3.10 Uploads (after 3.3) · Sonnet 5.5 High | [x] 3.1 Hero · Haiku 5.5 Max | [x] 3.6 Parts · Haiku 5.5 Max |
 | [ ] 3.12 Task, item and guest rows (after 3.3) · Sonnet 5.5 High | [ ] 3.2 Next card · Haiku 5.5 Max | [ ] 3.7 Search and filters · Haiku 5.5 Max |
 | — | [ ] 3.5 Ledger rows (L) · Haiku 5.5 Max | [ ] 3.8 Sheet patterns (after 3.3) · Haiku 5.5 Max |
 | — | — | [ ] 3.9 Stage thread, heart, WhatsApp · Haiku 5.5 Max |
@@ -79,7 +79,8 @@ The studio round for needs N1–N14 (see `redesign/handoff/needs.md`) is put off
 Until it's done, tasks that touch a need build everything else and leave that part out (the §9.1 rule). Phases 2 and 3 have three such parts, which get a follow-up after the import:
 - 2.6 and 3.8 leave out what Undo says when it can't undo (N13), and 2.6 leaves out what a confirm says when its write fails (N14);
 - 2.7 names the partner with the second name in settings (N3);
-- 3.4's money field puts the old amount back for text that isn't an amount, without a message (N16).
+- 3.4's money field puts the old amount back for text that isn't an amount, without a message (N16);
+- 3.10 words a PDF that is still too big after shrinking with a provisional line (N17).
 
 | Task | Waits for | Model |
 |---|---|---|
