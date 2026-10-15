@@ -1,4 +1,4 @@
-Open needs: N1–N16
+Open needs: N1–N17
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -18,3 +18,4 @@ Open needs: N1–N16
 | N14 | When I ask to remove or delete something and the planner can't finish it, I want to be told that nothing was changed and be able to try again, so that I never wonder whether it happened. | Step 7 | open |
 | N15 | When I open the planner on a phone, I want the couple's names to be as large as they are on a computer, so that both sizes read the same. The design gives no size for them on a phone, so the planner uses the nearest size, which is smaller. | Step 7 | open |
 | N16 | When I type something into an amount that isn't an amount (words, a minus sign, or a figure too big to hold), I want to be told it can't be used and have the amount I had before kept, so that I never wonder why what I entered disappeared. | Step 7 | open |
+| N17 | When I add a PDF that is too big and the planner shrinks it but it is still over the size we can keep, I want to be told that shrinking wasn't enough and how big it still is, so that I know to choose a smaller file and don't think the first message about size applies. | Step 7 | open |

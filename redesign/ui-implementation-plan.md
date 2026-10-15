@@ -205,7 +205,7 @@ One row per component in the design guide §4. **Selectors** are the prototype's
 | 4.2 Menu index | `MenuIndex` · `shell/menu-index.tsx` | `.index`, `nav ol`, `.account` | current section `aria-current="page"`; demo account line; `hidden` when closed | `role="dialog"`, `aria-modal`; opening focuses Close; Escape and Close return focus to Menu; the email wraps | 2.4 |
 | 4.3 Sub-navigation | `SubNav` · `shell/sub-nav.tsx` | `.subnav` | sets `vendors`, `records`, `schedule`; current `aria-current="page"` | wraps on narrow widths; `nav` with an `aria-label`; not rendered in a folder or on detail screens | 2.4 |
 | 3 Back link, add button | `BackLink`, `AddButton` · `shell/` | `.back`, `.add-fab` | add button hidden while editing a document on a phone (`data-editing` on body) | 20px from the edges on a phone; the page keeps 120px (phone 140px) at the bottom | 2.4 |
-| 4.4 Hero, figure, thread | `Hero`, `Kicker`, `Figure`, `Context`, `Thread` · `parts/hero/` | `.hero`, `.kicker`, `.figure`, `.figure.md`, `.days-fig`, `.rp`, `.context`, `.thread`, `.thread.small`, `.over`, `.maybe` | figure `tone`: `late` → `.late`, `over` (kicker "Overpaid by", rose), `settled` (gold); `long` when more than 13 digits (`longFigure()` in the model); thread `small`, `over`, `maybe` (dashed what-if part) | figures never wrap; phone sizes from tokens; every thread `role="img"` with an `aria-label` in words | 3.1 |
+| 4.4 Hero, figure, thread | `Hero`, `Kicker`, `Figure`, `Context`, `Thread` · `parts/hero/` | `.hero`, `.kicker`, `.figure`, `.figure.md`, `.days-fig`, `.rp`, `.context`, `.thread`, `.thread.small`, `.over`, `.maybe` | figure `tone`: `late` → `.late`, `over` (kicker "Overpaid by", rose), `settled` (gold); `long` when more than 13 digits (`isLongFigure()` in `src/lib/model/format.ts`); thread `small`, `over`, `maybe` (dashed what-if part) | figures never wrap; phone sizes from tokens; every thread `role="img"` with an `aria-label` in words | 3.1 |
 | 4.5 Next card | `NextCard`, `AfterLine` · `parts/next-card/` | `.card.next`, `.flag`, `.flag.gold`, `.flag.calm`, `.after` | flag from `urgency()`: late → rose, soon (≤14 days) → `.gold`, later → `.calm`; empty variant; label "Next to pay, 1 of 3 late" | stacked under 760px, flag first; Record payment is the one primary | 3.2 |
 | 4.6 Doors | `Doors`, `Door` · `parts/doors/` | `.doors` | summary may hold one rose fragment (`attention` part) | summary moves under the name on a phone; each door is a link with its summary in its name | 3.2 |
 | 4.7 Ledger rows | `BookingEntry`, `WhatIfEntry`, `VendorRow`, `DueRow`, `DocumentRow`, `FileRow`, `GuestRow` (shell), `AgendaRow`, `TaskRow`, `ItemRow` · `parts/rows/` | `.ledger`, `.entry`, `.vrow`, `.due`, `.drow`, `.frow`, `.grow`, `.ag`, `.tk`, `.irow` | shared row states: `.flash` (just changed; added for 2.4s by `useFlash(id)`), `.ruled`, `.completed`/`.cancelled`, `.done`, `.next`, `.failed` (+ `.row-err` line) | empty meta keeps height with a non-breaking space; names `dir="auto"` and `overflow-wrap:anywhere`; amounts `nowrap` | 3.5 (rows), 3.11, 3.12 |
@@ -739,7 +739,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | T6 temporary order | Wedding items | `OrderBy`, `SortedNote` | model `order.ts`; handles hidden while sorted | 4.23 | [ ] |
 | T7 own order, insert | Wedding items | handle, drag, Alt+arrows, row menu, add-items sheet | `addMasterListItems`, `moveMasterListItem` (renumber when gaps run out) | 1.8, 4.23 | [ ] |
 | T8 remove with undo | Wedding items | `ConfirmSheet`, undo | `restoreMasterListItem` (same `sortOrder`) | 1.8, 4.23 | [ ] |
-| T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [ ] |
+| T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [x] |
 | T10 starts filled in | Wedding items | first-use `Banner`, Start with common items | `ensureMasterListInitialized` (guard kept; list per §9.2 Q12) | 4.23 | [ ] |
 | S1 record an event | Schedule (event sheet) | kind chips, `Fields`, related select | `collections/schedule-events.ts` (`organiser_call` added) | 4.20 | [ ] |
 | S2 complete, cancel, delete | Event sheet | status actions, `ConfirmSheet`, undo | write layer | 4.20 | [ ] |
@@ -759,8 +759,8 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [ ] |
 | R7 delete for good | A document | `ConfirmSheet` (Delete for good), message | `deleteNote` (no undo) | 4.17 | [ ] |
 | R8 folders | Files | `PathTrail`, folder rows, folder sheet, `BlockedNotice` | `collections/wedding-files.ts` | 4.19 | [ ] |
-| R9 upload | Files, every record | `UploadSheet`, `UploadQueue` | upload pipeline + `compress-pdf.ts` | 3.10 | [ ] |
-| R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [ ] |
+| R9 upload | Files, every record | `UploadSheet`, `UploadQueue` | upload pipeline + `compress-pdf.ts` | 3.10 | [x] |
+| R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [x] |
 | R11 open, download, move, edit, delete | Files | `FileDetailsSheet`, `MoveSheet` | `updateWeddingFile`, move | 4.19 | [ ] |
 | R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
 | R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [ ] |
@@ -934,7 +934,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-15: first pass found 2 blockers (B1 in 2.6; B2, no placeholder hero on `/new`), both fixed in the same session with seven smaller items; 6 should-fix items stay open (S1 session re-probe, S2–S4 partner and presence clocks, S5–S6 layout before Phase 3 screens); see `redesign/reviews/phase-2-review.md`; real cost to log from `/cost` | [x] |
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
-| 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
+| 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | d7671cd; real cost to log from `/cost`; long figures keep the prototype's 30px floor, not `--text-figure-long` (see AGENTS.md) | [x] |
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | d250864, 9542b82; real cost to log from `/cost`; the local button copies in the confirm sheet, screen states, messages and the add button now use Btn | [x] |
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
@@ -943,9 +943,9 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | b2ac54d; 20 model and 8 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
-| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
+| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit 9889de6); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
-| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
+| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
@@ -1170,7 +1170,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** the route lists sections for each later task and is absent in production builds.
 
 #### Task 3.1: Hero, kicker, figure, context, thread · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · d7671cd · real cost to log from `/cost`). `Hero`, `Kicker`, `Figure`, `Context` and `Thread` are in `src/veil/parts/hero/`, and section 3.1 of the component gallery shows every variant. The long figure keeps the prototype's 30px floor, not `--text-figure-long` (AGENTS.md has the detail). `.days-fig`, the overview's days figure, waits for 4.2. No §5, §6 or §10 row names this task alone; the hero rows wait for their screens.
 - **Read:** guide §3 (hero order), §4.4, §6.9 (figures); prototype `budget.html`, `booking.html?id=kirana`, `whatif.html`, `veil.css` (`.hero`, `.kicker`, `.figure*`, `.rp`, `.context`, `.thread*`).
 - **Done when:** late, overpaid, settled, long and what-if variants match the prototype; threads carry `role="img"` labels.
 
@@ -1214,7 +1214,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Read:** guide §4.21–§4.23, §4.30; prototype `assets/app.js` (`stageThread`, `waLink`, `HEART`), `overview.html?state=install`, `settings.html` (all notification states).
 
 #### Task 3.10: File tiles, upload sheet and upload pipeline · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t1, commit 9889de6 · real cost to log from `/cost`). `FileTiles` and `UploadSheet` (`src/veil/parts/files/`) read one `UploadQueue` (`src/lib/data/upload-queue.ts`) that the screen owns through `useUploadQueue`, so the tiles and the sheet show the same uploads. Pure words and rules are in `src/lib/model/uploads.ts`; the Cloudinary request (`/auto/upload`, as the old button), the record's folder (found by `recordRef`, made on first use, one at a time per record) and the `weddingFiles` document plus the record's old `files[]` are in `src/lib/data/uploads.ts`. Files upload in parallel; PDFs shrink one at a time. A retry after a failed filing doesn't send the file again and reuses the document id. `legacyPlace` moved to `adapters/files.ts`. Gallery section 3.10 uses a stand-in, and the real pipeline against the emulators. The upload sheet's Done and Try again use `Btn` and `TextLink`.
 - **Read:** guide §4.20, §6.2 (files); prototype `assets/app.js` (`filesGrid`, `uploadSheet`, `mbText`, `FILE_CATS`), `files.html?state=uploading`, `booking.html?state=uploading`; `src/lib/compress-pdf.ts` and the Cloudinary call in `src/components/cloudinary-upload-button.tsx` (the request only).
 - **Files:** `src/veil/parts/files/*`, `src/lib/data/uploads.ts`.
 - **Do:** queue several files in parallel with progress per file; PDFs over 10 MB go through `compress-pdf` with the "Shrinking from … to fit under 10 MB" status; other big files are refused with the designed wording; failures offer Try again per file; a finished upload creates the `weddingFiles` document (name, category, description, `recordRef`, folder named after the record, created on first use) and appends to the legacy `files[]` array on the record (§2.7); demo shows "Not uploaded".
@@ -1226,7 +1226,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** groups, late flags, kind labels, completed and cancelled rows, and the month grid with dots, today, selected, wedding day and full cell labels render from model data.
 
 #### Task 3.12: Task, item and guest rows · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t1, commit 242068d · real cost to log from `/cost`). `TaskRow` with `StepRow` and `FinishedTasks` (`parts/tasks/`), `ItemRow`, `ItemList` and `WorkOnNextCard` (`parts/items/`), `GuestRow` and `RsvpSwitch` (`parts/guests/`); gallery section 3.12 draws them with switches that force saves to fail, turn a sort on and turn demonstration mode on. Rows are props-driven: the screen writes, and a change that didn't save is a `failed` flag with the typed text kept in the row. Drag by the handle shows the rose line and fades the row to 40%; Alt+↑/↓ moves it and keeps focus, and a screen reader hears where it went. `.ev` event chips are built here. An item that lists several people (G12) shows the first until Task 4.23.
 - **Read:** guide §4.27–§4.29; prototype `tasks.html`, `items.html`, `guests.html` (scripts and `<style>` blocks).
 - **Do:** task disclosure with steps and the failed-step line; item row with drag and drop (rose line, 40% fade), Alt+↑/↓ with focus kept, row menu, star and tick, failed vendor field; guest row with the RSVP switch and failed-reply line.
 - **Done when:** keyboard and pointer moves work in the gallery; one-tap saves show the failed state when forced.
@@ -1524,6 +1524,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | open |
 | G15 | **N15** | Raised by Task 2.4. The prototype sets the couple's names in the top bar at 24px on a phone as well as on a computer. No token holds 24px at both widths: `--text-row-lg` is 24px and drops to 21px under 760px, its size for booking entries. Built with `--text-row-lg`, so the names are 21px on a phone until decided (`src/veil/shell/top-bar.module.css`). The rest of the top bar, the menu and the account line match the prototype at 390px and 1440px. | 2.4 (follow-up) | open |
 | G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | open |
+| G17 | **N17** | Raised by Task 3.10. The guide words a file that is too large ('Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.') and a PDF being shrunk, but not a PDF that is still over the limit after shrinking: the first message would say only PDFs are shrunk, which is wrong for it. Built with a provisional line, 'Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.' (`stillTooLargeText` in `src/lib/model/uploads.ts`). Also undesigned and built plainly: the name, category and description in the upload sheet stay editable after a file is uploaded and save when the field is left (a failure keeps the text and offers Try again); and a refused or failed tile stays on the record until the upload sheet is opened again, which clears refused and finished entries. | 3.10 (follow-up), 4.19 | open |
 
 ### 9.2 Questions for the owner: decided
 
