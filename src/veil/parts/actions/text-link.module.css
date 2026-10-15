@@ -1,0 +1,17 @@
+/* Guide §4.11. Ported from the prototype's .link and .link.rose. */
+.link {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+}
+
+.rose {
+  color: var(--accent-attention-text);
+  text-decoration-color: currentColor;
+}

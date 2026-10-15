@@ -1,0 +1,10 @@
+/* Guide §4.11. Ported from the prototype's .dir. */
+.dir {
+  font: inherit;
+  font-size: var(--text-label);
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  cursor: pointer;
+  color: var(--color-text);
+}

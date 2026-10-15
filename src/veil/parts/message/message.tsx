@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { RibbonKnot } from "@/veil/icons/ribbon-knot";
 import { StruckCloud } from "@/veil/icons/struck-cloud";
 import styles from "./message.module.css";
@@ -39,23 +39,4 @@ function Mark({ kind }: { kind: MessageKind }) {
   if (kind === "no-results") return null;
   if (kind === "offline") return <StruckCloud className={styles.mark} />;
   return <RibbonKnot className={styles.mark} />;
-}
-
-type MessageActionProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Quiet: an outlined button for the second choice. */
-  quiet?: boolean;
-};
-
-/**
- * A button for a message's actions, ported from the prototype's .btn and
- * .btn.quiet. Task 3.3's shared Btn replaces this copy.
- */
-export function MessageAction({ quiet = false, ...props }: MessageActionProps) {
-  return (
-    <button
-      type="button"
-      className={quiet ? `${styles.action} ${styles.quiet}` : styles.action}
-      {...props}
-    />
-  );
 }

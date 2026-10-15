@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { Loaded } from "@/lib/data/settings";
-import { Message, MessageAction } from "@/veil/parts/message/message";
+import { Btn } from "@/veil/parts/actions/btn";
+import { Message } from "@/veil/parts/message/message";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
 import { Banner, Problem } from "@/veil/shell/banner";
 import { ScreenState } from "@/veil/shell/screen-state";
@@ -61,8 +62,8 @@ export function StatesDemos() {
         title="No bookings match “fireworks”"
         actions={
           <>
-            <MessageAction quiet>Clear the search</MessageAction>
-            <MessageAction quiet>Show everything</MessageAction>
+            <Btn variant="quiet">Clear the search</Btn>
+            <Btn variant="quiet">Show everything</Btn>
           </>
         }
       >

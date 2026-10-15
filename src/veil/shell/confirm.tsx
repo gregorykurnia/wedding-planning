@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
+import { Btn } from "@/veil/parts/actions/btn";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
 import styles from "./confirm.module.css";
 
@@ -97,18 +98,17 @@ export function ConfirmSheet({
         </p>
       )}
       <SheetActions>
-        <button type="button" className={`${styles.btn} ${styles.quiet}`} autoFocus disabled={isBusy} onClick={keep}>
+        <Btn variant="quiet" autoFocus disabled={isBusy} onClick={keep}>
           Keep it
-        </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${danger ? styles.danger : ""} ${isBusy ? styles.busy : ""}`}
-          aria-disabled={isBusy || undefined}
-          aria-busy={isBusy || undefined}
+        </Btn>
+        <Btn
+          variant={danger ? "danger" : "primary"}
+          busy={isBusy}
+          busyLabel={busy ?? busyLabel(action)}
           onClick={() => void go()}
         >
-          {isBusy ? (busy ?? busyLabel(action)) : action}
-        </button>
+          {action}
+        </Btn>
       </SheetActions>
     </Sheet>
   );

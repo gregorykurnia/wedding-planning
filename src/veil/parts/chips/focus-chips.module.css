@@ -1,0 +1,18 @@
+/* Guide §4.13. Ported from the prototype's .focus and .focus .chip. */
+.focus {
+  display: flex;
+  gap: var(--gap-chips);
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  margin: 26px -2px 0;
+  scrollbar-width: thin;
+}
+
+/* Two classes, so it beats .chip from chip.module.css whatever the order of the CSS. */
+.focus .chip {
+  white-space: nowrap;
+  flex: none;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,39 @@
+/* Guide §4.10. Ported from the prototype's .chip, .chip.dashed and .chips. */
+.chip {
+  font: inherit;
+  font-size: var(--text-label);
+  border: 1px solid var(--color-edge);
+  background: var(--surface-page);
+  color: var(--color-text);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  cursor: pointer;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.chip[aria-pressed="true"],
+.chip[aria-checked="true"] {
+  background: var(--color-text);
+  color: var(--surface-page);
+  border-color: var(--color-text);
+}
+
+/* After .chip, so the dashed edge wins over the solid one. */
+.dashed {
+  border-style: dashed;
+  color: var(--color-text-muted);
+}
+
+.count {
+  margin-left: var(--space-1);
+  opacity: 0.7;
+  color: inherit;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-chips);
+}

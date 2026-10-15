@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "react";
 import type { Loaded } from "@/lib/data/settings";
-import { Message, MessageAction } from "@/veil/parts/message/message";
+import { Btn } from "@/veil/parts/actions/btn";
+import { Message } from "@/veil/parts/message/message";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
 import { Banner } from "./banner";
 import { useBusyClaim } from "./busy";
@@ -45,7 +46,7 @@ export function ScreenState<T>({ read, what, onRetry, children }: ScreenStatePro
       <Message
         kind="failure"
         title={`${capitalise(what)} didn’t load`}
-        actions={<MessageAction onClick={onRetry}>Try again</MessageAction>}
+        actions={<Btn onClick={onRetry}>Try again</Btn>}
       >
         The planner couldn’t reach its database. Your data is safe; it just isn’t here yet.
       </Message>
@@ -57,9 +58,9 @@ export function ScreenState<T>({ read, what, onRetry, children }: ScreenStatePro
         kind="offline"
         title="You’re offline"
         actions={
-          <MessageAction quiet onClick={onRetry}>
+          <Btn variant="quiet" onClick={onRetry}>
             Try again
-          </MessageAction>
+          </Btn>
         }
       >
         The planner needs a connection to show {what}. It will load again as soon as this{" "}
