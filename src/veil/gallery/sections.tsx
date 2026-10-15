@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AgendaDemos } from "./agenda-demos";
 import { IconsDemo } from "./icons-demo";
 
 export type GallerySection = {
@@ -25,7 +26,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.8", title: "Sheet patterns, confirm variants, banners and problem boxes" },
   { task: "3.9", title: "Stage thread, keen heart, WhatsApp, install card, notification state" },
   { task: "3.10", title: "File tiles, upload sheet and upload pipeline" },
-  { task: "3.11", title: "Agenda rows and month calendar" },
+  { task: "3.11", title: "Agenda rows and month calendar", demo: <AgendaDemos /> },
   { task: "3.12", title: "Task, item and guest rows" },
 ];
 
