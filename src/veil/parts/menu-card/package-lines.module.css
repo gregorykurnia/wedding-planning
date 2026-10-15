@@ -1,0 +1,43 @@
+/*
+ * Packages on a finalist's card (guide §4.8; prototype `.fcard .pkgs`). The
+ * package we're leaning towards is gold italic, as the menu card shows it.
+ */
+
+.pkgs {
+  list-style: none;
+  margin: var(--space-2) 0 var(--space-1);
+  text-align: left;
+}
+
+.pkgs li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  font-size: var(--text-meta);
+}
+
+.pn {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  flex: 1;
+  min-width: var(--space-4);
+  border-bottom: 1px dotted var(--color-decor);
+  transform: translateY(-4px);
+}
+
+.pv {
+  white-space: nowrap;
+}
+
+.pkgs .preferred .pn,
+.pkgs .preferred .pv {
+  font-family: var(--font-display);
+  font-size: var(--text-lead);
+  font-style: italic;
+  font-weight: var(--weight-display);
+  color: var(--accent-gold-text);
+}
