@@ -25,7 +25,7 @@ test("lists the icon set, then a section for each later task, in plan order", as
 
 test("a section whose task is not built yet says so", async ({ page }) => {
   await openGallery(page);
-  await expect(page.locator("#section-3-2")).toContainText("Not built yet. Task 3.2 builds it.");
+  await expect(page.locator("#section-3-5")).toContainText("Not built yet. Task 3.5 builds it.");
 });
 
 test("links to the Phase 2 demos", async ({ page }) => {
