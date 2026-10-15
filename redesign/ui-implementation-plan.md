@@ -799,7 +799,7 @@ Every place in the current code that produces something visible, from a full swe
 | password reset | doesn't exist today; not in the inventory; nothing to build | n/a |
 | `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [ ] |
 | `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [ ] |
-| `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [ ] |
+| `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [x] |
 | account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
 | `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [ ] |
@@ -929,7 +929,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.2 Icon set | Haiku 5.5 xHigh | $0.12 | Copy SVG paths from `app.js` and the screens | af96e25; real cost to log from `/cost` | [x] |
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | 4a59578; real cost to log from `/cost`; names at 390px are 21px until N15 (G15) | [x] |
-| 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
+| 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | 23b6352; real cost to log from `/cost`; offline copy says phone or computer by width, as the prototype does (guide §5 says phone) | [x] |
 | 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost` | [x] |
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
@@ -1141,7 +1141,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** matches the prototype at both widths; focus moves to Close and back; Escape closes; the current section is marked.
 
 #### Task 2.5: Whole-screen states, message, banner · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 23b6352 · real cost to log from `/cost`). `ScreenState` takes a read's `{ status, data }` and renders loading (the skeleton, with a hidden "Loading the budget" line and `main` `aria-busy`), couldn't load and offline only when no data has arrived, and demonstration mode (the gold banner above the screen). `gone` isn't a read status yet: screens render `Message kind="gone"` themselves. The data hooks have no retry, so each screen passes `onRetry`. The offline copy says phone or computer by width (prototype); guide §5 says phone only, for the designer to confirm. Gallery at `/new/gallery/states`.
 - **Read:** guide §4.17–§4.19, §5 (shared states copy), §6.5–§6.7; prototype `assets/app.js` (`stateView`, demo banner).
 - **Files:** `src/veil/parts/{message,shimmer}/`, `src/veil/shell/banner.tsx`, `src/veil/shell/screen-state.tsx` (renders loading, error, offline and demo from a hook's `status`).
 - **Done when:** each state renders from a fake status in the gallery.
