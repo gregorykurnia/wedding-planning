@@ -1,0 +1,319 @@
+/* Fields and inline editing, ported from the prototype's .fields, .field,
+   .hint, .err, .check, .stepper, .big-input, .notes-view and .save-state
+   (guide §4.9). Tokens only. */
+
+.fields {
+  border-top: 1px solid var(--color-rule);
+}
+
+/* The label column is 180px on a detail screen; a sheet sets --field-label to 130px. */
+.field {
+  display: grid;
+  grid-template-columns: var(--field-label, var(--label-column)) 1fr;
+  gap: var(--space-1) var(--space-6);
+  align-items: center;
+  padding: 10px var(--space-row-x);
+  border-bottom: 1px solid var(--color-rule);
+  min-height: 56px;
+}
+
+.label {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+/* Inputs look like text until touched. */
+.input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: var(--text-lead);
+  padding: 8px 10px;
+  margin-left: -10px;
+  border-radius: var(--radius-input);
+  outline: none;
+  color: var(--color-text);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 68px;
+  line-height: 1.5;
+}
+
+.input:hover {
+  background: var(--hover-field);
+}
+
+.input:focus {
+  background: var(--surface-page);
+  box-shadow: var(--ring-field);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.input:disabled {
+  color: var(--color-text-muted);
+  -webkit-text-fill-color: var(--color-text-muted);
+  background: transparent;
+  cursor: default;
+}
+
+.hint {
+  grid-column: 2;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  margin-top: -4px;
+}
+
+.static {
+  font-size: var(--text-lead);
+}
+
+.static small {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+/* A change that didn't save, or a value that can't be saved: a rose ring and a line. */
+.failed .input,
+.problem .input {
+  box-shadow: var(--ring-field-failed);
+  background: var(--surface-page);
+}
+
+.err {
+  grid-column: 2;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+  display: flex;
+  gap: var(--gap-buttons);
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+/* A text button, ported from the prototype's .link and .link.rose until Task 3.3's shared one. */
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+  font-size: inherit;
+}
+
+.rose {
+  color: var(--accent-attention-text);
+  text-decoration-color: currentColor;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.check input {
+  accent-color: var(--accent-attention);
+  width: 16px;
+  height: 16px;
+}
+
+.check input:disabled,
+.check:has(input:disabled) {
+  cursor: default;
+  color: var(--color-text-muted);
+}
+
+/* A stepper for plus-ones: − 2 + */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stepper button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--color-edge);
+  background: var(--surface-page);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--hover-quiet);
+}
+
+.stepper button:disabled {
+  cursor: default;
+  color: var(--color-decor);
+}
+
+.stepper b {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-display);
+  min-width: 24px;
+  text-align: center;
+}
+
+/* The amount in Record a payment: serif, centred, an underline that turns rose on focus. */
+.big {
+  font-family: var(--font-display);
+  font-size: var(--text-big-input);
+  font-weight: var(--weight-display-light);
+  text-align: center;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--color-edge);
+  background: none;
+  outline: none;
+  padding: 6px 0;
+  margin-top: 18px;
+}
+
+.big:focus {
+  border-bottom-color: var(--accent-attention);
+}
+
+/* A funder's name while it is being renamed: the name becomes an input with a rose underline. */
+.rename {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--gap-actions);
+}
+
+.renameInput {
+  flex: 1 1 200px;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  border: 0;
+  border-bottom: 1px solid var(--accent-attention);
+  background: none;
+  outline: none;
+  padding: 2px 0;
+}
+
+.renameActions {
+  display: inline-flex;
+  gap: var(--gap-actions);
+  font-size: var(--text-label);
+}
+
+.renameErr {
+  flex-basis: 100%;
+}
+
+.notesView {
+  font-size: var(--text-reading);
+  line-height: var(--leading-reading);
+  overflow-wrap: anywhere;
+  padding: 10px var(--space-row-x);
+  white-space: pre-wrap;
+}
+
+.notesEmpty {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  margin-top: 14px;
+}
+
+.notesHead {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  margin: var(--space-section) 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.notesHead .link {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+}
+
+/* One full-width value with a hidden label: the notes editor. */
+.single {
+  grid-template-columns: 1fr;
+}
+
+.single .hint,
+.single .err {
+  grid-column: 1;
+}
+
+.single .textarea {
+  min-height: 160px;
+}
+
+.notesDone {
+  margin-top: var(--space-3);
+}
+
+/* The prototype's .btn.quiet.small, until Task 3.3's shared Btn. */
+.doneButton {
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-emphasis);
+  letter-spacing: var(--tracking-label);
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-edge);
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 7px 15px;
+  white-space: nowrap;
+}
+
+.doneButton:hover {
+  background: var(--hover-quiet);
+}
+
+/* The save-state line, centred under a detail screen's title. */
+.saveLine {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-top: 10px;
+  min-height: 20px;
+}
+
+.saveFailed {
+  color: var(--accent-attention-text);
+}
+
+@media (max-width: 760px) /* --bp-phone */ {
+  .field {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 10px var(--space-row-x) 6px;
+  }
+
+  .hint,
+  .err {
+    grid-column: 1;
+  }
+}

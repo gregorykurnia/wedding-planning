@@ -1,4 +1,4 @@
-Open needs: N1–N15
+Open needs: N1–N16
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -17,3 +17,4 @@ Open needs: N1–N15
 | N13 | When I take back something I've just done, but one of us has changed that same thing since (a payment recorded on it, a file moved again), I want to be told that it can't be taken back and why, with what's there now kept as it is, so that nothing either of us did is quietly lost. | Step 7 | open |
 | N14 | When I ask to remove or delete something and the planner can't finish it, I want to be told that nothing was changed and be able to try again, so that I never wonder whether it happened. | Step 7 | open |
 | N15 | When I open the planner on a phone, I want the couple's names to be as large as they are on a computer, so that both sizes read the same. The design gives no size for them on a phone, so the planner uses the nearest size, which is smaller. | Step 7 | open |
+| N16 | When I type something into an amount that isn't an amount (words, a minus sign, or a figure too big to hold), I want to be told it can't be used and have the amount I had before kept, so that I never wonder why what I entered disappeared. | Step 7 | open |

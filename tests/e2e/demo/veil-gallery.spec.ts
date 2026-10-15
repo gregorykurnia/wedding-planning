@@ -17,7 +17,8 @@ async function openGallery(page: Page) {
 
 test("lists the icon set, then a section for each later task, in plan order", async ({ page }) => {
   await openGallery(page);
-  const headings = await page.locator("section[aria-labelledby] > h2").allTextContents();
+  // Only the gallery's own sections: a demo can hold sections of its own (the Notes part has one).
+  const headings = await page.locator('section[id^="section-"] > h2').allTextContents();
   const tasks = headings.map((text) => text.match(/Task (\d+\.\d+)/)?.[1]);
   expect(tasks).toEqual(["2.2", ...LATER_TASKS]);
 });
