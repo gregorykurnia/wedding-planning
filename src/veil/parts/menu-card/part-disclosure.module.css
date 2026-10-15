@@ -1,0 +1,107 @@
+/*
+ * One part of a booking (guide §4.8; prototype `.part`): a native disclosure.
+ * The list's top rule is the screen's; each item carries its own bottom rule.
+ */
+
+.item {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.item:first-child {
+  border-top: 1px solid var(--color-rule);
+}
+
+.part > summary {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--space-hair) var(--space-5);
+  align-items: baseline;
+  padding: var(--space-row-y) var(--space-row-x);
+  list-style: none;
+  cursor: pointer;
+}
+
+.part > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pn {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  overflow-wrap: anywhere;
+}
+
+.pa {
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-weight: var(--weight-display);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.pm {
+  grid-column: 1;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.ps {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.late {
+  color: var(--accent-attention-text);
+  font-weight: var(--weight-emphasis);
+}
+
+.done {
+  color: var(--accent-settled-text);
+}
+
+.chev {
+  grid-row: 1;
+  grid-column: 3;
+  align-self: center;
+  color: var(--color-decor);
+  transition: transform var(--motion-disclose);
+}
+
+.chev svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.part[open] > summary .chev {
+  transform: rotate(90deg);
+}
+
+/*
+ * The part's fields, indented behind a champagne hairline. The fields drop the
+ * rule above them and the rule under their last row, as the prototype's
+ * `.part .fields` does; the fields module can't be reached by name from here.
+ */
+.body {
+  margin: 0 0 var(--space-4) var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--accent-thread-track);
+}
+
+.body > :first-child {
+  border-top: 0;
+}
+
+.body > :first-child > :last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 760px) {
+  /* --bp-phone */
+  .body {
+    margin-left: var(--space-1);
+  }
+}
