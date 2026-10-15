@@ -1,0 +1,48 @@
+/* Loading placeholders, ported from the prototype's .sk (guide §4.19). Colours
+   come from the skeleton tokens; reduced motion stops the shine (base.css). */
+.sk {
+  background: linear-gradient(
+    90deg,
+    var(--surface-skeleton) 0%,
+    var(--surface-petal) 40%,
+    var(--surface-skeleton) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: var(--radius-input);
+}
+
+.line {
+  height: 14px;
+  margin: 14px auto 0;
+  max-width: 300px;
+}
+
+/* The kicker: a shorter line above the figure. Declared after .line to win. */
+.short {
+  max-width: 120px;
+}
+
+.fig {
+  height: 96px;
+  max-width: 420px;
+  margin: 18px auto 0;
+  border-radius: var(--radius-panel);
+}
+
+.card {
+  height: 132px;
+  margin-top: 48px;
+  border-radius: var(--radius-card);
+}
+
+.row {
+  height: 22px;
+  margin-top: 26px;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

@@ -4,7 +4,9 @@ import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { Shimmer } from "@/veil/parts/shimmer/shimmer";
 import { veilHref } from "../href";
+import { BusyProvider, useBusy } from "./busy";
 import { FlashProvider } from "./flash";
 import { PartnerNewsListener } from "./partner-news";
 import { SheetHost } from "./sheet";
@@ -29,7 +31,9 @@ export function Providers({ children }: { children: ReactNode }) {
         <FlashProvider>
           <Suspense fallback={<Busy />}>
             <SheetHost>
-              <Gate>{children}</Gate>
+              <BusyProvider>
+                <Gate>{children}</Gate>
+              </BusyProvider>
               <PartnerNewsListener />
             </SheetHost>
           </Suspense>
@@ -61,6 +65,7 @@ function Gate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const busy = useBusy();
 
   const onSignIn = pathname === SIGN_IN;
   const resolving = session.status === "loading" || session.status === "checking";
@@ -83,13 +88,19 @@ function Gate({ children }: { children: ReactNode }) {
   }, [target, router]);
 
   if (resolving || target !== null) return <Busy />;
-  return <main id="main">{children}</main>;
+  return (
+    <main id="main" aria-busy={busy || undefined}>
+      {children}
+    </main>
+  );
 }
 
+/** The skeleton, not a blank page (guide §6.6), while the session is checked. */
 function Busy() {
   return (
     <main id="main" aria-busy="true">
       <p className="sr">Checking who’s signed in</p>
+      <Shimmer />
     </main>
   );
 }

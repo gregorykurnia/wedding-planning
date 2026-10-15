@@ -1,0 +1,47 @@
+/* Banners and problem boxes, ported from the prototype's .banner, .banner.rose
+   and .problem (guide §4.17). */
+.wrap {
+  padding: 0 var(--space-6);
+}
+
+.banner {
+  margin: 0 auto;
+  max-width: 760px;
+  display: flex;
+  gap: 12px 18px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: var(--text-label);
+  color: var(--accent-gold-text-on-tint);
+  background: var(--surface-banner);
+  border-radius: var(--radius-pill);
+  padding: 9px 20px;
+  text-align: center;
+}
+
+.rose {
+  color: var(--accent-attention-text);
+  background: var(--accent-attention-wash);
+}
+
+/* The box inside a form. Declared after .banner so its margin and radius win. */
+.inline {
+  margin: var(--space-6) auto 0;
+  border-radius: var(--radius-tile);
+}
+
+.problem {
+  margin-top: var(--space-5);
+  text-align: left;
+  border-radius: var(--radius-tile);
+  padding: 14px 18px;
+  font-size: var(--text-meta);
+  background: var(--accent-attention-wash);
+  color: var(--accent-attention-text);
+}
+
+.calm {
+  background: var(--surface-banner);
+  color: var(--accent-gold-text-on-tint);
+}

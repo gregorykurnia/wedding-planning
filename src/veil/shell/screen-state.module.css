@@ -1,0 +1,19 @@
+/* The offline copy says "phone" or "computer" by width, as the prototype does
+   (under 760px is a phone). The hidden word isn't read out. */
+.phone {
+  display: none;
+}
+
+.computer {
+  display: inline;
+}
+
+@media (max-width: 759px) {
+  .phone {
+    display: inline;
+  }
+
+  .computer {
+    display: none;
+  }
+}
