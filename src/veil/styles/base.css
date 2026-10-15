@@ -73,6 +73,36 @@ summary:focus-visible,
   white-space: nowrap;
 }
 
+/* A row that just changed, yours or your partner's (guide §2.4). The second
+   class swaps the animation name so a repeat flash starts over. */
+.flash {
+  animation: flash-a var(--motion-flash);
+}
+
+.flash.again {
+  animation-name: flash-b;
+}
+
+@keyframes flash-a {
+  0%,
+  30% {
+    background: var(--accent-attention-wash);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes flash-b {
+  0%,
+  30% {
+    background: var(--accent-attention-wash);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
 /* Under reduced motion, every animation and transition runs in 0.001ms (guide §8). */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -4,6 +4,8 @@ import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { FlashProvider } from "./flash";
+import { PartnerNewsListener } from "./partner-news";
 import { SheetHost } from "./sheet";
 import { ToastHost } from "./toasts";
 
@@ -13,8 +15,9 @@ const SIGN_IN = "/new/sign-in";
 
 /**
  * Everything the new UI's screens share: the session (who is signed in, demo
- * mode, online or offline), the gate, and the toast and sheet hosts. Sheets sit
- * inside the toasts, so a sheet can raise a toast.
+ * mode, online or offline), the gate, the toast and sheet hosts, and the
+ * partner's live changes (a toast and a flash). Sheets sit inside the toasts,
+ * so a sheet can raise a toast.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const session = useSessionSource();
@@ -23,11 +26,14 @@ export function Providers({ children }: { children: ReactNode }) {
     <SessionContext.Provider value={session}>
       {/* useSearchParams needs a Suspense boundary, or the build fails. */}
       <ToastHost>
-        <Suspense fallback={<Busy />}>
-          <SheetHost>
-            <Gate>{children}</Gate>
-          </SheetHost>
-        </Suspense>
+        <FlashProvider>
+          <Suspense fallback={<Busy />}>
+            <SheetHost>
+              <Gate>{children}</Gate>
+              <PartnerNewsListener />
+            </SheetHost>
+          </Suspense>
+        </FlashProvider>
       </ToastHost>
     </SessionContext.Provider>
   );

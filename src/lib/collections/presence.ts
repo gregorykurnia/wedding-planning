@@ -18,10 +18,10 @@ import { requireDb, uidOf } from "@/lib/data/db";
 import { guarded } from "@/lib/data/write";
 
 // Who has a document open (guide §6.3: "Bella is also in this document").
-// One entry per account and document, refreshed while it stays open; entries
-// older than PRESENCE_FRESH_MS count as gone, so a closed laptop drops out.
+// One entry per account and document, refreshed while it stays open; the
+// model (PRESENCE_FRESH_MS in src/lib/model/partner.ts) treats an old entry as
+// gone, so a closed laptop drops out.
 const COLLECTION = "presence";
-export const PRESENCE_FRESH_MS = 2 * 60_000;
 
 export interface Presence {
   documentId: string;
