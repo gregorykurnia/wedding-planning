@@ -1,0 +1,43 @@
+/* The page column and a placeholder hero, ported from the prototype's main,
+   .hero h1 and .kicker, until Tasks 3.1 and 4.2. */
+.column {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-page-top) var(--space-page-x) var(--space-page-bottom);
+}
+
+.hero {
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-page-title);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.kicker {
+  margin-top: var(--space-hero-figure);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-kicker);
+}
+
+.account {
+  margin-top: var(--space-9);
+  text-align: center;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.action {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}

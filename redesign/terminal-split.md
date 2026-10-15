@@ -28,7 +28,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | [x] 2.6 Sheets and toasts · Sonnet 5.5 High | [x] 2.2 Icons · Haiku 5.5 xHigh | [x] 6.1 Service worker (after 2.3) · Opus 5.5 High |
 | [x] 2.7 Partner changes · Sonnet 5.5 High | [x] 2.4 Top bar · Haiku 5.5 Max | [x] 6.7 Old-names check · Haiku 5.5 Max |
 | — | [x] 2.5 Screen states · Haiku 5.5 Max | — |
-| 🛑 [ ] Phase 2 review · Opus 5.5 Medium | wait | wait |
+| 🛑 [x] Phase 2 review · Opus 5.5 Medium | wait | wait |
 | **Phase 3: components** | | |
 | [ ] 3.0 Gallery · Haiku 5.5 xHigh | wait for 3.0 | wait for 3.0 |
 | [ ] 3.4 Fields · Sonnet 5.5 High | [ ] 3.3 Buttons · Haiku 5.5 Max | [ ] 3.11 Agenda and month · Sonnet 5.5 High |

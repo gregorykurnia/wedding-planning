@@ -1,8 +1,9 @@
 /* Messages, ported from the prototype's .message and .btn (guide §4.18, §4.11). */
 .message {
   text-align: center;
-  max-width: 460px;
+  max-width: var(--measure-message);
   margin: 10vh auto 0;
+  padding: 0 var(--space-page-x);
 }
 
 .inline {

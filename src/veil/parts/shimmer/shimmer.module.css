@@ -1,14 +1,9 @@
 /* Loading placeholders, ported from the prototype's .sk (guide §4.19). Colours
    come from the skeleton tokens; reduced motion stops the shine (base.css). */
 .sk {
-  background: linear-gradient(
-    90deg,
-    var(--surface-skeleton) 0%,
-    var(--surface-petal) 40%,
-    var(--surface-skeleton) 80%
-  );
+  background: var(--fill-skeleton);
   background-size: 200% 100%;
-  animation: shimmer 1.6s linear infinite;
+  animation: shimmer var(--motion-shimmer);
   border-radius: var(--radius-input);
 }
 
@@ -39,6 +34,13 @@
 .row {
   height: 22px;
   margin-top: 26px;
+}
+
+/* The page column, as a screen gives it (prototype main). */
+.column {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-page-top) var(--space-page-x) var(--space-page-bottom);
 }
 
 @keyframes shimmer {

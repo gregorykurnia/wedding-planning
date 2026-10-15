@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
-import { veilHref } from "../href";
+import { safeNext, veilHref } from "../href";
 import { BusyProvider, useBusy } from "./busy";
 import { FlashProvider } from "./flash";
 import { PartnerNewsListener } from "./partner-news";
@@ -48,12 +48,6 @@ function useServiceWorker() {
   useEffect(registerServiceWorker, []);
 }
 
-/** Only addresses inside the new UI are followed after sign-in. */
-function safeNext(next: string | null): string {
-  if (!next || !next.startsWith(HOME) || next.startsWith("//")) return HOME;
-  return next;
-}
-
 /**
  * Signed-out visitors (and, in demo mode, anyone who hasn't chosen Look
  * around) go to sign-in, with the address they wanted kept in `next`. Signed-in
@@ -89,7 +83,7 @@ function Gate({ children }: { children: ReactNode }) {
 
   if (resolving || target !== null) return <Busy />;
   return (
-    <main id="main" aria-busy={busy || undefined}>
+    <main id="main" tabIndex={-1} aria-busy={busy || undefined}>
       {children}
     </main>
   );
@@ -100,7 +94,7 @@ function Busy() {
   return (
     <main id="main" aria-busy="true">
       <p className="sr">Checking who’s signed in</p>
-      <Shimmer />
+      <Shimmer column />
     </main>
   );
 }

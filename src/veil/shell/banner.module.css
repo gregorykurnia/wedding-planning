@@ -6,9 +6,9 @@
 
 .banner {
   margin: 0 auto;
-  max-width: 760px;
+  max-width: var(--measure-banner);
   display: flex;
-  gap: 12px 18px;
+  gap: var(--gap-buttons) var(--space-page-top);
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
