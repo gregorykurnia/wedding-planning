@@ -936,7 +936,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
-| 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | d250864, 9542b82; real cost to log from `/cost`; the local button copies in the confirm sheet, screen states, messages and the add button now use Btn | [x] |
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | | [ ] |
@@ -1179,7 +1179,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Read:** guide §4.5, §4.6; prototype `budget.html`, `overview.html`, `veil.css` (`.card.next`, `.flag*`, `.after`, `.doors`).
 
 #### Task 3.3: Buttons, links, chips and focus chips · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · d250864, 9542b82 · real cost to log from `/cost`). `Btn`, `TextLink` and `DirectionWord` are in `src/veil/parts/actions/`, and `Chip`, `ChipGroup` and `FocusChips` in `src/veil/parts/chips/`; section 3.3 of the component gallery shows them. The busy, disabled, danger, quiet, small, pressed, radiogroup and dashed variants render and behave in the browser. The local button copies are gone (confirm sheet, screen states, messages, add button). `.ev` event chips wait for 3.12.
 - **Read:** guide §4.10, §4.11, §4.13; prototype `veil.css` (`.btn*`, `.link*`, `.chip*`, `.focus`, `.dir`), `vendors.html`.
 - **Done when:** busy, disabled, danger, quiet, small, pressed, radiogroup and dashed variants all render.
 
