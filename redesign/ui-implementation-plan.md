@@ -939,7 +939,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | d250864, 9542b82; real cost to log from `/cost`; the local button copies in the confirm sheet, screen states, messages and the add button now use Btn | [x] |
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
-| 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
@@ -1196,7 +1196,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** each row type and each row state (flash, ruled, completed, cancelled, done, next, failed, empty meta) renders with stress names.
 
 #### Task 3.6: Parts, menu cards, tally · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t3, commit ca91830 · real cost to log from `/cost`). `PartLines`, `PartDisclosure`, `MenuCardList`, `PackageLines`, `Tally` and `CarryLines` (`parts/menu-card/`) take model data as props, and `partLineList()` collapses a booking's parts past five; gallery section 3.6 shows every variant from fake data, and lean, edit and remove work in the demo. Off-scale values take the nearest token: the preferred line is `--text-lead` (16.5px for the prototype's 17px). `PackageLines` is the `.pkgs` list the shortlist card (4.13) will use. A part's fields lose the rule above and below them by position, as the prototype's `.part .fields` does.
 - **Read:** guide §4.8; prototype `booking.html`, `vendor.html`, `finalist.html`, `guests.html` (tally), `whatif.html` (`.carry`), `veil.css` (`.parts`, `.part*`, `.menu-card`).
 
 #### Task 3.7: Search, ordering, filters, count line and paging · Haiku 5.5 Max
