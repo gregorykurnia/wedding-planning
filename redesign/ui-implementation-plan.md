@@ -935,7 +935,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-15: first pass found 2 blockers (B1 in 2.6; B2, no placeholder hero on `/new`), both fixed in the same session with seven smaller items; 6 should-fix items stay open (S1 session re-probe, S2–S4 partner and presence clocks, S5–S6 layout before Phase 3 screens); see `redesign/reviews/phase-2-review.md`; real cost to log from `/cost` | [x] |
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | d7671cd; real cost to log from `/cost`; long figures keep the prototype's 30px floor, not `--text-figure-long` (see AGENTS.md) | [x] |
-| 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | a977160; real cost to log from `/cost`; the doors' row padding is the 16px token, where the prototype has 15px | [x] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | d250864, 9542b82; real cost to log from `/cost`; the local button copies in the confirm sheet, screen states, messages and the add button now use Btn | [x] |
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
@@ -1175,7 +1175,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** late, overpaid, settled, long and what-if variants match the prototype; threads carry `role="img"` labels.
 
 #### Task 3.2: Next card, after line, doors · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · a977160 · real cost to log from `/cost`). `NextCard` and `AfterLine` (`parts/next-card/`) and `Doors` and `Door` (`parts/doors/`) are built, and section 3.2 of the component gallery shows every variant from fake data. The name links through `veilHref`. The card and the doors were compared with the prototype at 1440px and 390px. No §5, §6 or §10 row names this task alone.
 - **Read:** guide §4.5, §4.6; prototype `budget.html`, `overview.html`, `veil.css` (`.card.next`, `.flag*`, `.after`, `.doors`).
 
 #### Task 3.3: Buttons, links, chips and focus chips · Haiku 5.5 Max
