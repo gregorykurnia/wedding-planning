@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { ActionDemos } from "./actions-demos";
 import { AgendaDemos } from "./agenda-demos";
 import { FieldsDemo } from "./fields-demos";
+import { HeroDemos } from "./hero-demos";
 import { IconsDemo } from "./icons-demo";
 
 export type GallerySection = {
@@ -18,7 +19,7 @@ export type GallerySection = {
 /** One section per task, in plan order. The icon set (2.2) waited for this page. */
 export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "2.2", title: "Icon set", demo: <IconsDemo /> },
-  { task: "3.1", title: "Hero, kicker, figure, context, thread" },
+  { task: "3.1", title: "Hero, kicker, figure, context, thread", demo: <HeroDemos /> },
   { task: "3.2", title: "Next card, after line, doors" },
   { task: "3.3", title: "Buttons, links, chips and focus chips", demo: <ActionDemos /> },
   { task: "3.4", title: "Fields and save-as-you-go", demo: <FieldsDemo /> },
