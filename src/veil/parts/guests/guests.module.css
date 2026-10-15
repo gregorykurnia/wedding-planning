@@ -1,0 +1,141 @@
+/* Guest rows and the RSVP switch, ported from the prototype's .grow and .seg (guide §4.29). */
+.grow {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: var(--space-hair) var(--space-4);
+  align-items: center;
+  padding: var(--space-row-y) var(--space-row-x);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.no {
+  grid-row: span 2;
+  align-self: start;
+  padding-top: var(--space-hair);
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-style: italic;
+  color: var(--accent-gold-text);
+}
+
+.gname {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row-loose);
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.gname:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+}
+
+.gname small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+  margin-left: var(--space-1);
+}
+
+.gmeta {
+  grid-column: 2;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.food {
+  color: var(--accent-gold-text);
+}
+
+.right {
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.inv {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.rowErr {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: var(--space-hair) var(--space-row-x) 0;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+}
+
+/* The three-way switch: a pill track, the chosen segment filled. */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-pill);
+  padding: var(--space-hair);
+  background: var(--surface-sheet);
+}
+
+.segFailed {
+  box-shadow: 0 0 0 1px var(--accent-attention);
+}
+
+.segment {
+  border: 0;
+  background: none;
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) 11px;
+  font-size: var(--text-tiny);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segment[aria-checked="true"] {
+  background: var(--color-text);
+  color: var(--surface-sheet);
+}
+
+.segment[aria-checked="true"][data-rsvp="yes"] {
+  background: var(--accent-settled-text);
+}
+
+.segment[aria-checked="true"][data-rsvp="no"] {
+  background: var(--color-text-muted);
+}
+
+.seg[aria-disabled="true"] .segment {
+  cursor: default;
+}
+
+@media (max-width: 760px) {
+  .grow {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .right {
+    grid-row: auto;
+    grid-column: 2;
+    align-items: flex-start;
+    margin-top: var(--space-2);
+  }
+
+  .segment {
+    padding: 7px 13px;
+    font-size: var(--text-label);
+  }
+}

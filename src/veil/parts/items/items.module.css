@@ -1,0 +1,356 @@
+/* Wedding item rows, the list and the work-on-next card, ported from the prototype's items.html (guide §4.28). */
+.ilist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.irow {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 44px 72px 34px;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 6px;
+  border-bottom: 1px solid var(--color-rule);
+  position: relative;
+}
+
+.next {
+  background: var(--surface-warm);
+  box-shadow: var(--edge-next-row);
+}
+
+.dropAbove {
+  box-shadow: var(--edge-drop-above);
+}
+
+.dropBelow {
+  box-shadow: var(--edge-drop-below);
+}
+
+.dragging {
+  opacity: 0.4;
+}
+
+.handle {
+  width: 26px;
+  height: 34px;
+  border: 0;
+  background: none;
+  cursor: grab;
+  color: var(--color-control-outline);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-input-sm);
+  padding: 0;
+}
+
+span.handle {
+  cursor: default;
+}
+
+button.handle:hover,
+button.handle:focus-visible {
+  color: var(--color-text);
+  background: var(--hover-tool);
+}
+
+.handle svg {
+  width: 12px;
+  height: 18px;
+}
+
+.nm,
+.vd {
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 7px var(--space-2);
+  border-radius: var(--radius-input);
+  outline: none;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.nm {
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-weight: var(--weight-display);
+}
+
+.vd {
+  font-size: var(--text-small);
+}
+
+.vd::placeholder {
+  color: var(--color-text-muted);
+  font-style: italic;
+  opacity: 1;
+}
+
+.nm:hover:not(:disabled),
+.vd:hover:not(:disabled) {
+  background: var(--hover-input);
+}
+
+.nm:focus,
+.vd:focus {
+  background: var(--surface-page);
+  box-shadow: var(--ring-field);
+}
+
+.failed .vd[aria-invalid="true"],
+.failed .nm[aria-invalid="true"] {
+  background: var(--surface-page);
+  box-shadow: var(--ring-field-failed);
+}
+
+.err {
+  grid-column: 2 / -1;
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: 0 var(--space-2) 6px;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+}
+
+/* The four event chips: small pills, blush when on. */
+.evs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.ev {
+  border: 1px solid var(--color-edge);
+  background: var(--surface-sheet);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) 10px;
+  min-height: 26px;
+  font-size: var(--text-micro);
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.ev[aria-pressed="true"] {
+  background: var(--glow-blush);
+  border-color: var(--color-alert-edge);
+  color: var(--color-text);
+}
+
+.ev:disabled {
+  cursor: default;
+}
+
+.person {
+  border: 0;
+  background: none;
+  font-size: var(--text-label);
+  padding: 6px var(--space-1);
+  border-radius: var(--radius-input-sm);
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.person:hover:not(:disabled) {
+  background: var(--hover-input);
+}
+
+/* Star and tick: 34px round buttons; gold when marked, sage when confirmed. */
+.tog {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  padding: 0;
+  color: var(--color-control-outline);
+}
+
+.tog svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tog:hover:not(:disabled) {
+  background: var(--hover-tool);
+}
+
+.conf[aria-pressed="true"] {
+  color: var(--accent-settled-text);
+}
+
+.conf[aria-pressed="true"] :global(circle) {
+  fill: var(--accent-settled-wash);
+}
+
+.star[aria-pressed="true"] {
+  color: var(--accent-gold-text);
+}
+
+.star[aria-pressed="true"] :global(path) {
+  fill: var(--accent-thread);
+}
+
+.moreBtn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-input-sm);
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  padding: 0;
+}
+
+.moreBtn:hover:not(:disabled) {
+  background: var(--hover-tool);
+}
+
+.rowmenu {
+  position: absolute;
+  right: 6px;
+  top: 42px;
+  z-index: var(--z-row-menu);
+  background: var(--surface-sheet);
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-field);
+  padding: 6px;
+  box-shadow: var(--shadow-popover);
+  display: grid;
+  min-width: 200px;
+}
+
+.rowmenu button {
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+.rowmenu button:hover,
+.rowmenu button:focus-visible {
+  background: var(--hover-tool);
+}
+
+.rowmenu .rose {
+  color: var(--accent-attention-text);
+}
+
+/* "To work on next": a card of champagne pills. */
+.nextcard {
+  margin-top: var(--space-8);
+  text-align: center;
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-card));
+  -webkit-backdrop-filter: blur(var(--blur-card));
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-card);
+  padding: var(--space-card-y) var(--space-card-x);
+}
+
+.nextcard h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-display);
+}
+
+.nextcard ul {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.nextcard button {
+  display: inline-block;
+  padding: 6px var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 0;
+  background: var(--glow-champagne);
+  color: var(--color-text);
+  font-size: var(--text-meta);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.nextcard button:hover {
+  background: var(--surface-champagne-hover);
+}
+
+.nextMore {
+  align-self: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+/* --bp-table: the row stacks. */
+@media (max-width: 860px) {
+  .irow {
+    grid-template-columns: 26px 1fr 40px 40px 34px;
+    grid-template-areas:
+      "h n s c m"
+      ". v v v v"
+      ". e e e e"
+      ". p p p p";
+    gap: var(--space-hair) 6px;
+    padding: 10px var(--space-1);
+  }
+
+  .handle {
+    grid-area: h;
+  }
+
+  .nm {
+    grid-area: n;
+    font-size: var(--text-row-sm);
+  }
+
+  .vd {
+    grid-area: v;
+  }
+
+  .evs {
+    grid-area: e;
+    padding-left: var(--space-2);
+  }
+
+  .person {
+    grid-area: p;
+    width: auto;
+    justify-self: start;
+  }
+
+  .star {
+    grid-area: s;
+  }
+
+  .conf {
+    grid-area: c;
+  }
+
+  .moreBtn {
+    grid-area: m;
+  }
+
+  .err {
+    grid-area: auto;
+    grid-column: 1 / -1;
+  }
+}
