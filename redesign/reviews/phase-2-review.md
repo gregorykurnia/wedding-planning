@@ -79,3 +79,13 @@ Suggested follow-up sessions:
 - **Sign-out.** A failed sign-out of a not-allowed account no longer leaves the skeleton up forever; a failed sign-out from the menu takes back "You've signed out."
 - **Menu.** Picking a section, or Wedding settings, closes the menu, which matters when the link is the screen you're on. The menu's `nav` is labelled.
 - **Tokens.** `Message` uses `--measure-message` and gets side padding on a phone; the banner `--measure-banner` and spacing tokens; the skeleton `--fill-skeleton` and `--motion-shimmer`; the sub-navigation `--space-page-top`.
+
+## Re-check after Task 3.0 (2026-10-15)
+
+Run on `redesign` at `133e59f` (Task 3.0 is `198a3e6`). Code changed since the review: the gallery route and its gate, and the four Phase 2 demo pages lost their own copy of the gate (see the 3.0 entry in `AGENTS.md`).
+
+- **Full e2e (`npm run test:e2e`):** 61 of 61 pass on the second run (7.6 min, demo and emulator projects together). The count rose from 57 by the four gallery tests.
+- **First run:** 60 passed, 1 failed: `tests/e2e/emulator/files.spec.ts`, "create a folder and upload a file (Cloudinary stubbed)". Sign-in stayed on `/login` and showed `Error (auth/network-request-failed)`, so the browser couldn't reach the Auth emulator. The test passed alone (16.5 s) and in the second run, so this was a transient connection failure, not a code change. The test has no retry. If it recurs, retry the sign-in once in `tests/e2e/helpers.ts`.
+- **Firestore log lines:** `already-exists` commit failures during the run come from the master-list initialization transaction losing a race. Its guard (`src/lib/collections/master-list.ts:148`) checks the marker again inside the transaction. The SDK logs the lost commit and the tests pass. I haven't traced which test starts the race.
+- **S5 and S6** were planned for Task 3.0 or 3.1. Task 3.0 didn't take them, so they move to Task 3.1, the first component that sits in a screen column.
+- The Phase 2 result stands (passed after fixes). S1–S4 stay open as listed above.
