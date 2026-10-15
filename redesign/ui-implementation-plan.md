@@ -987,7 +987,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
-| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | | [ ] |
+| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
 | 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
 | 7 | 7.2 Rollback rehearsal on a preview | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
@@ -1424,7 +1424,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Waits for:** need N5. **Files:** `src/lib/model/csv.ts` columns; filename `vendors-<first>-<second>.csv` from settings (guide §5.11).
 
 #### Task 6.7: Old-names check · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · bc5d423 · real cost to log from `/cost`). `scripts/check-old-names.mjs` reads `scripts/old-names.txt`: 53 terms, which are 23 component and path names, 7 style names and 23 pieces of old wording. Words the new design also uses are left out. The seven tests in `tests/model/old-names.test.ts` plant old words in a temporary folder. The check passes on the four new-UI roots today. Its run over `src` with no exclusions waits for Phase 9.
 - **Files:** `scripts/check-old-names.mjs`, `scripts/old-names.txt`.
 - **Do:** the list holds distinctive old identifiers and wording only: old component and file names (`AppShell`, `VendorsTable`, `VenuesTable`, `ShortlistTable`, `EditableText`, `EditableNumber`, `EditableDate`, `FunderSelect`, `ConfirmedTypePill`, `VendorCategoryPill`, `VendorCategoryTabs`, `VendorContractPill`, `VenueStatusPill`, `VenueGalleryDialog`, `VenueNotesCell`, `FilesCell`, `ContactCell`, `MasterListEditableCell`, `MasterListMultiSelect`, `CloudinaryUploadButton`, `RichTextEditor`, the `components/ui/*` names), old style names (`bg-background`, `text-foreground`, `data-slot`, `--terracotta`, `--cream`, `tw-animate`), and old wording from `inventory-notes.md` §2 ("Words used by the current UI") and the reverse-coverage sweep ("Welcome back", "Our Wedding", "Track RSVPs", "Next up", "Real budget spent", "Pending spending", "to track", "Starred only", "Hide rejected", "Add to budget", "Sub-entry", "Start writing", "Skip for now", "Clear filters", "Firebase isn't connected"). Words the new design also uses (Vendors, Shortlist, Guests, Schedule, Budget, Files) aren't listed. Stored field names are data, not UI, and aren't listed. `--exclude <glob>` for the frozen fallback.
 - **Done when:** it passes on `src/veil/**`, `src/app/(veil)/**`, `src/lib/model/**` and `src/lib/data/**`, and fails when an old word is planted.
