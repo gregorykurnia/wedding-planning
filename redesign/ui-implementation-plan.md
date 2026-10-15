@@ -940,7 +940,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
-| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
+| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | b2ac54d; 20 model and 8 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
@@ -1200,7 +1200,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Read:** guide §4.8; prototype `booking.html`, `vendor.html`, `finalist.html`, `guests.html` (tally), `whatif.html` (`.carry`), `veil.css` (`.parts`, `.part*`, `.menu-card`).
 
 #### Task 3.7: Search, ordering, filters, count line and paging · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t3, commit b2ac54d · real cost to log from `/cost`). `SearchField`, `OrderBy`, `FilterSelect`, `RangeField`, `FilterCheck`, `ShowEverything`, `CountLine`, `SortedNote` and `ShowMore` (`parts/tools/`) take the model's choices, paging counts and read and format functions as props; the screen runs the model's ordering and filtering. Focus stays in search while results change. Gallery section 3.7 shows every variant from fake data; 20 model and 8 demo e2e tests.
 - **Read:** guide §4.12, §6.8; prototype `vendors.html`, `venues.html`, `items.html` (`.sorted-note`, `.filters`), `veil.css` (`.tools`, `.search`, `.order`, `.count`, `.range`).
 - **Done when:** components take the model's ordering and filter functions as props; focus stays in search while results change.
 
