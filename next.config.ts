@@ -27,6 +27,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // The component gallery is dev-only. With its switch off, its addresses are
+  // rewritten to a path that doesn't exist, so the server answers 404. A not-found
+  // page rendered while streaming would answer 200 instead. beforeFiles runs before
+  // the page match, so the gallery pages never render.
+  async rewrites() {
+    if (process.env.NEXT_PUBLIC_VEIL_GALLERY === "1") return [];
+    return {
+      beforeFiles: [{ source: "/new/gallery/:path*", destination: "/new/gallery-off" }],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default nextConfig;

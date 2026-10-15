@@ -146,7 +146,13 @@ export function useSessionSource(): Session {
           user: toSessionUser(user),
           notice: { kind: "not-allowed", email: user.email ?? "" },
         });
-        if (auth) await firebaseSignOut(auth).catch(() => {});
+        // If the sign-out itself fails, the screen still mustn't wait forever
+        // on the skeleton: show sign-in with the notice.
+        if (auth)
+          await firebaseSignOut(auth).catch(() => {
+            if (gen === generation.current)
+              setState({ status: "signed-out", user: null, notice: { kind: "not-allowed", email: user.email ?? "" } });
+          });
         return;
       }
       // Offline or the database didn't answer: can't tell, so let the account
@@ -197,8 +203,15 @@ export function useSessionSource(): Session {
 
   const signOut = useCallback(async () => {
     if (!auth) return;
+    // The notice is set first so the listener's signed-out state keeps it; a
+    // failed sign-out takes it back.
     setState((prev) => ({ ...prev, notice: { kind: "signed-out" } }));
-    await firebaseSignOut(auth);
+    try {
+      await firebaseSignOut(auth);
+    } catch (err) {
+      setState((prev) => (prev.notice?.kind === "signed-out" ? { ...prev, notice: null } : prev));
+      throw err;
+    }
   }, []);
 
   const lookAround = useCallback(() => {

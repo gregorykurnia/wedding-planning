@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -48,6 +49,8 @@ interface Entry {
   node: ReactNode;
   opener: HTMLElement | null;
   onClose?: () => void;
+  /** The screen it was opened on; leaving that screen closes it. */
+  path: string;
 }
 
 const SheetsContext = createContext<Sheets | null>(null);
@@ -82,6 +85,14 @@ export function SheetHost({ children }: { children: ReactNode }) {
   // Where focus goes once the sheet that just closed is gone.
   const returnFocusTo = useRef<HTMLElement | null>(null);
 
+  // The current screen, kept up to date before any page effect can open a
+  // sheet: layout effects run before every passive effect of the same commit.
+  const pathname = usePathname();
+  const pathRef = useRef(pathname);
+  useLayoutEffect(() => {
+    pathRef.current = pathname;
+  }, [pathname]);
+
   const commit = useCallback((next: Entry[]) => {
     entriesRef.current = next;
     setEntries(next);
@@ -107,7 +118,13 @@ export function SheetHost({ children }: { children: ReactNode }) {
       const active = document.activeElement;
       commit([
         ...entriesRef.current,
-        { id, node, opener: active instanceof HTMLElement ? active : null, onClose: options?.onClose },
+        {
+          id,
+          node,
+          opener: active instanceof HTMLElement ? active : null,
+          onClose: options?.onClose,
+          path: pathRef.current,
+        },
       ]);
       return id;
     },
@@ -156,15 +173,20 @@ export function SheetHost({ children }: { children: ReactNode }) {
     if (!target) return;
     returnFocusTo.current = null;
     if (target.isConnected && target.getClientRects().length > 0) target.focus();
+    // The opener went with what was removed: focus the screen rather than
+    // dropping it to the top of the page.
+    else if (entriesRef.current.length === 0) document.getElementById("main")?.focus({ preventScroll: true });
   }, [entries]);
 
-  // Moving to another screen closes every sheet.
-  const pathname = usePathname();
-  const lastPath = useRef(pathname);
+  // Moving to another screen closes the sheets opened on the old one, except
+  // a busy one: its write is in flight and must still report back (a confirm
+  // that resolved "no" here would lose the undo). Sheets the new screen opened
+  // as it mounted stay open.
   useEffect(() => {
-    if (lastPath.current === pathname) return;
-    lastPath.current = pathname;
-    [...entriesRef.current].reverse().forEach((e) => close(e.id));
+    [...entriesRef.current]
+      .reverse()
+      .filter((e) => e.path !== pathname && !busy.current.has(e.id))
+      .forEach((e) => close(e.id));
   }, [pathname, close]);
 
   const setBusy = useCallback((id: number, value: boolean) => {

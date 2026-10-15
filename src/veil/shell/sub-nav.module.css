@@ -4,7 +4,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px var(--space-7);
-  margin-top: 18px;
+  margin-top: var(--space-page-top);
 }
 
 .link {

@@ -770,7 +770,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [ ] |
 | A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
 | A5 account, settings, sign out | Menu, Settings | `MenuIndex` account line, `AccountsList` | `members` | 2.4, 4.25 | [ ] |
-| A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [ ] |
+| A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [x] |
 
 ---
 
@@ -930,21 +930,21 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | 4a59578; real cost to log from `/cost`; names at 390px are 21px until N15 (G15) | [x] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | 23b6352; real cost to log from `/cost`; offline copy says phone or computer by width, as the prototype does (guide §5 says phone) | [x] |
-| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost` | [x] |
+| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost`; the Phase 2 review rejected it (B1, a busy confirm closed by a route change lost its undo), so the fix moved one row up and was done in the review session on Opus 5.5 Medium | [x] |
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
-| 2 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | | [ ] |
+| 2 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-15: first pass found 2 blockers (B1 in 2.6; B2, no placeholder hero on `/new`), both fixed in the same session with seven smaller items; 6 should-fix items stay open (S1 session re-probe, S2–S4 partner and presence clocks, S5–S6 layout before Phase 3 screens); see `redesign/reviews/phase-2-review.md`; real cost to log from `/cost` | [x] |
+| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | | [ ] |
-| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | | [ ] |
+| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
-| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | | [ ] |
+| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
@@ -1121,7 +1121,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
 
 #### Task 2.2: Icon set · Haiku 5.5 xHigh
-- [x] **Done** (2026-10-15 · af96e25 · real cost to log from `/cost`). The gallery check in Done when waits for Task 3.0; `tests/model/icons.test.tsx` renders every icon now. `FileTypeTag` is a span, since the prototype writes the extension as text. The Google mark keeps its four brand colours, the one colour exception in the style check (`scripts/check-veil-styles.mjs`).
+- [x] **Done** (2026-10-15 · af96e25 · real cost to log from `/cost`). The gallery check in Done when is met by Task 3.0's icon section; `tests/model/icons.test.tsx` renders every icon now. `FileTypeTag` is a span, since the prototype writes the extension as text. The Google mark keeps its four brand colours, the one colour exception in the style check (`scripts/check-veil-styles.mjs`).
 - **Read:** §2.6; prototype `assets/app.js` (`ICON`, `WA_ICON`, `HEART`), `files.html` (envelope), `items.html` (handle, star, tick), `signin.html` (Google mark).
 - **Files:** `src/veil/icons/*.tsx`.
 - **Done when:** each icon renders in the gallery (3.0), `aria-hidden`, with `currentColor`.
@@ -1147,14 +1147,14 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** each state renders from a fake status in the gallery.
 
 #### Task 2.6: Sheets, confirm and toasts · Sonnet 5.5 High
-- [x] **Done** (2026-10-15 · lane t1, commit in the change log · real cost to log from `/cost`). `useSheets().open(node)`, `useSheet()`, `Sheet`, `SheetActions`, `useConfirm()` and `useToast()` are live in `providers.tsx`. A sheet opened over a sheet stacks (the one underneath stays mounted, hidden). The confirm's `run` is the write: the action stays busy until it resolves, and a rejection keeps the sheet open with a provisional line (G14). A failed Undo goes back to Undo for another window (wording waits for N13). Create/edit sheet actions, the save line, inline confirm and blocked notice are Task 3.8. Demos at `/new/gallery/shell` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
+- [x] **Done** (2026-10-15 · lane t1, commit in the change log · real cost to log from `/cost`). `useSheets().open(node)`, `useSheet()`, `Sheet`, `SheetActions`, `useConfirm()` and `useToast()` are live in `providers.tsx`. A sheet opened over a sheet stacks (the one underneath stays mounted, hidden). The confirm's `run` is the write: the action stays busy until it resolves, and a rejection keeps the sheet open with a provisional line (G14). A failed Undo goes back to Undo for another window (wording waits for N13). Create/edit sheet actions, the save line, inline confirm and blocked notice are Task 3.8. Demos at `/new/gallery/shell` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery lists.
 - **Read:** guide §4.14–§4.16, §6.2; prototype `assets/app.js` (`openSheet`, `closeSheet`, `confirm`, `toast`, `sheetSaver`, `demoLine`).
 - **Files:** `src/veil/shell/{sheet,confirm,toasts}.tsx` + module CSS.
 - **Do:** one sheet host, centred on desktop and a bottom sheet on a phone; focus in and back; Escape and scrim close; `confirm()` promise with the busy confirming button held until the write resolves; toasts stack, 6 s (9 s partner), Undo becomes "Restoring" until the restore resolves; layers per tokens.
 - **Done when:** gallery demos plus an e2e test of confirm → remove → undo on a fake record.
 
 #### Task 2.7: Partner changes and presence · Sonnet 5.5 High
-- [x] **Done** (2026-10-15 · lane t1, commit 0616302 · real cost to log from `/cost`). `PartnerNewsListener` (mounted in `providers.tsx`) turns the other account's `activity` entries into a partner toast and a flash; `useFlash(target)` and `useFlasher()` are the flash API (`.flash` is in `base.css`); `useDocumentPresence(id)` gives "also here" for the Banner (Task 2.5 builds the Banner itself); `useRemovedByPartner(record)` is what the data hooks use for `status: 'gone'` (they don't exist yet). Removals have no toast. Demo at `/new/gallery/partner` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
+- [x] **Done** (2026-10-15 · lane t1, commit 0616302 · real cost to log from `/cost`). `PartnerNewsListener` (mounted in `providers.tsx`) turns the other account's `activity` entries into a partner toast and a flash; `useFlash(target)` and `useFlasher()` are the flash API (`.flash` is in `base.css`); `useDocumentPresence(id)` gives "also here" for the Banner (Task 2.5 builds the Banner itself); `useRemovedByPartner(record)` is what the data hooks use for `status: 'gone'` (they don't exist yet). Removals have no toast. Demo at `/new/gallery/partner` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery lists.
 - **Read:** guide §6.3; §2.7 (`activity`, `presence`).
 - **Files:** `src/lib/data/partner.ts`, `src/veil/shell/partner-news.tsx`, `src/lib/data/presence.ts`.
 - **Do:** (documents follow §9.2 Q7.) Listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
@@ -1165,7 +1165,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 Built in a dev-only gallery so every variant can be seen and screenshotted before any screen exists. **Done when:** every component in §3 renders in every listed state at both widths in the gallery and matches the prototype; the review passes.
 
 #### Task 3.0: Component gallery · Haiku 5.5 xHigh
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 198a3e6 · real cost to log from `/cost`). The gate is `app/(veil)/new/gallery/layout.tsx` (the four Phase 2 demo pages lost their own copy). `next.config.ts` rewrites the gallery addresses to a missing path when the switch is off: a `notFound()` while streaming answered 200, so the status is set before the body streams. A production build answers 404 with the switch off and 200 with it on. The icon set is the first section, so 2.2's gallery check is met. Each later section says it is not built yet until its task sets `demo` in `src/veil/gallery/sections.tsx`.
 - **Files:** `src/app/(veil)/new/gallery/page.tsx` (returns `notFound()` unless `NEXT_PUBLIC_VEIL_GALLERY=1`), `src/veil/gallery/`.
 - **Done when:** the route lists sections for each later task and is absent in production builds.
 
@@ -1184,7 +1184,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** busy, disabled, danger, quiet, small, pressed, radiogroup and dashed variants all render.
 
 #### Task 3.4: Fields and save-as-you-go · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 8295ea0 · real cost to log from `/cost`). `useAutosaveField({ value, save, required, normalize })` and the screen's save scope are in `src/lib/data/use-autosave-field.ts`; the words and the state machine are pure in `src/lib/model/save-state.ts`. Fields spread `field.bind` (`value`, `onChange`, `onCommit`, `disabled`) and sit in a `FieldRow` that takes `field` for the failed ring, the failure line and Try again. A sheet wraps its fields in `<SaveScopeProvider sheet>`: the failure shows once in its `SaveLine`, with one Try again for every field, and the rows keep only the ring (Task 3.8 builds the sheet frame around it). Leaving a failed field doesn't retry by itself, so the Try again button isn't removed mid-click. A money field puts the old amount back for text that isn't an amount, silently (G16/N16). The gallery form at `/new/gallery` saves to `settings/wedding` against the emulators and to a stand-in otherwise, so it never writes real data; it has switches for demonstration mode, failing saves and slow saves. `Done`, links and rename buttons are local copies until Task 3.3's `Btn`.
 - **Read:** guide §4.9, §6.1; prototype `booking.html` (fields and save line), `settings.html?state=savefail`, `veil.css` (`.fields`, `.field*`, `.hint`, `.save-state*`, `.big-input`, `.notes-view`).
 - **Files:** `src/veil/parts/fields/*`, `src/lib/data/use-autosave-field.ts`.
 - **Do:** every field type; `useAutosaveField(save)` saves on blur or change, shows Saving → Saved on the screen's `SaveLine`, keeps the typed value on failure with Try again, restores the old name if a name is cleared, and is disabled in demo with the demo save line; money reformat on blur; inline rename (Enter, Escape).
@@ -1221,7 +1221,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** e2e with Cloudinary stubbed covers success, shrinking, too large and failure-then-retry.
 
 #### Task 3.11: Agenda rows and month calendar · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t3, commit 8005594 · real cost to log from `/cost`). `AgendaRow`, `AgendaGroup` (`parts/agenda/`) and `MonthCalendar` (`parts/month/`) take model data as props; gallery section 3.11 shows every variant. Record payment is filled when late (guide §4.25) although the prototype's script shows only the flag. Record payment, the late flag and Earlier/Later are local copies until 3.3's `Btn`. The event sheet is Task 4.20.
 - **Read:** guide §4.25, §4.26; prototype `assets/schedule.js`, `assets/schedule.css`, `schedule.html?view=month`.
 - **Done when:** groups, late flags, kind labels, completed and cancelled rows, and the month grid with dots, today, selected, wedding day and full cell labels render from model data.
 
@@ -1523,6 +1523,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G13 | **N13** | Raised by the Phase 1 review (B1, S1). Undo refuses with `WriteError` code `changed`, writing nothing, when the fields it would put back were changed since, by you or the partner (`patchWithUndo` and `removeAddedElement` in `src/lib/data/undo.ts`). Example: Split a booking, Bella records a payment on the Balance, then Undo. Guide §6.2 says what undo does when it works but not what the toast says when it can't. | 2.6 (toast host), 3.8 | open |
 | G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | open |
 | G15 | **N15** | Raised by Task 2.4. The prototype sets the couple's names in the top bar at 24px on a phone as well as on a computer. No token holds 24px at both widths: `--text-row-lg` is 24px and drops to 21px under 760px, its size for booking entries. Built with `--text-row-lg`, so the names are 21px on a phone until decided (`src/veil/shell/top-bar.module.css`). The rest of the top bar, the menu and the account line match the prototype at 390px and 1440px. | 2.4 (follow-up) | open |
+| G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | open |
 
 ### 9.2 Questions for the owner: decided
 

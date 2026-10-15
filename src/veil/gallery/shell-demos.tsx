@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
+import { veilHref } from "@/veil/href";
 import { useConfirm } from "@/veil/shell/confirm";
 import { Sheet, SheetActions, useSheet, useSheets } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
@@ -29,9 +31,12 @@ export function ShellDemos() {
   const confirm = useConfirm();
   const [records, setRecords] = useState(START);
   const failNext = useRef(false);
+  const slowNext = useRef(false);
 
   async function write(change: () => void) {
-    await pause(300);
+    const slow = slowNext.current;
+    slowNext.current = false;
+    await pause(slow ? 2000 : 300);
     if (failNext.current) {
       failNext.current = false;
       throw new Error("The write failed");
@@ -77,7 +82,15 @@ export function ShellDemos() {
       <label>
         <input type="checkbox" onChange={(e) => (failNext.current = e.target.checked)} /> Make the
         next write fail
-      </label>
+      </label>{" "}
+      <label>
+        <input type="checkbox" onChange={(e) => (slowNext.current = e.target.checked)} /> Make the
+        next write slow
+      </label>{" "}
+      {/* Leaving while a confirm is busy must still give the undo toast. */}
+      <Link id="leave-demo" href={veilHref("/gallery/partner")}>
+        Go to the partner demo
+      </Link>
 
       <h2>Toasts</h2>
       <p>

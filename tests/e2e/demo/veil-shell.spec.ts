@@ -145,3 +145,34 @@ test("toasts stack, last 6 seconds (9 for a partner), and Open acts at once", as
   await page.getByRole("button", { name: "Show the demonstration toast" }).click();
   await expect(box.getByText("Not saved: demonstration mode")).toBeVisible();
 });
+
+// Phase 2 review: leaving the screen while a confirm is busy doesn't lose the undo.
+test("leaving while Removing keeps the sheet until the write lands, then offers Undo", async ({ page }) => {
+  // Compile the page it leaves for first, so the move lands inside the write.
+  await page.goto("/new/gallery/partner");
+  await openDemos(page);
+  await page.getByLabel("Make the next write slow").check();
+  await page.getByRole("button", { name: "Remove Villa Samaya Ubud" }).click();
+  const dialog = page.getByRole("dialog", { name: "Remove Villa Samaya Ubud?" });
+  await dialog.getByRole("button", { name: "Remove booking" }).click();
+  await expect(dialog.getByRole("button", { name: "Removing" })).toBeVisible();
+
+  // The link sits behind the modal, so it is clicked from script, as a
+  // navigation from elsewhere (a partner toast's Open, the back button) would be.
+  await page.evaluate(() => document.getElementById("leave-demo")?.click());
+  await expect(page).toHaveURL("/new/gallery/partner", { timeout: COMPILE_TIMEOUT });
+  await expect(dialog.getByRole("button", { name: "Removing" })).toBeVisible();
+
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole("status").getByText("Removed Villa Samaya Ubud")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+});
+
+test("leaving the screen closes an idle sheet", async ({ page }) => {
+  await openDemos(page);
+  await page.getByRole("button", { name: "Open a sheet" }).click();
+  await expect(page.getByRole("dialog", { name: "A demo sheet" })).toBeVisible();
+  await page.evaluate(() => document.getElementById("leave-demo")?.click());
+  await expect(page).toHaveURL("/new/gallery/partner", { timeout: COMPILE_TIMEOUT });
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});

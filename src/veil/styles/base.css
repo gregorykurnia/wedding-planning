@@ -65,6 +65,12 @@ summary:focus-visible,
   outline-offset: var(--ring-focus-offset);
 }
 
+/* The screen itself takes focus only as a fallback (a sheet's opener is gone);
+   it isn't a control, so it gets no ring. */
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 .num {
   font-variant-numeric: var(--numeric-amount);
   white-space: nowrap;

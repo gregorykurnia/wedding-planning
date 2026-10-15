@@ -83,7 +83,7 @@ export function MenuIndex({
       onKeyDown={keepFocusInside}
     >
       {children}
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Sections">
         <ol className={styles.list}>
           {SECTIONS.map((item) => (
             <li key={item.key}>
@@ -91,6 +91,9 @@ export function MenuIndex({
                 href={veilHref(item.path)}
                 className={styles.link}
                 aria-current={item.key === section ? "page" : undefined}
+                // Picking the screen you're on is no navigation, so nothing
+                // else would close the menu.
+                onClick={onClose}
               >
                 {item.title}
                 <small className={styles.sub}>{item.subtitle}</small>
@@ -98,14 +101,14 @@ export function MenuIndex({
             </li>
           ))}
         </ol>
-        <Account />
+        <Account onClose={onClose} />
       </nav>
     </div>
   );
 }
 
 /** The foot of the menu: who is signed in, or that nobody is. */
-function Account() {
+function Account({ onClose }: { onClose: () => void }) {
   const { status, user, signOut, leaveDemo } = useSession();
   return (
     <div className={styles.account}>
@@ -113,7 +116,7 @@ function Account() {
         <>
           <span>Demonstration mode: nobody is signed in</span>
           <span>
-            <Link href={veilHref("/settings")} className={styles.action}>
+            <Link href={veilHref("/settings")} className={styles.action} onClick={onClose}>
               Wedding settings
             </Link>
             &emsp;
@@ -126,11 +129,11 @@ function Account() {
         <>
           <span>Signed in as {user?.email}</span>
           <span>
-            <Link href={veilHref("/settings")} className={styles.action}>
+            <Link href={veilHref("/settings")} className={styles.action} onClick={onClose}>
               Wedding settings
             </Link>
             &emsp;
-            <button type="button" className={styles.action} onClick={() => void signOut()}>
+            <button type="button" className={styles.action} onClick={() => void signOut().catch(() => {})}>
               Sign out
             </button>
           </span>

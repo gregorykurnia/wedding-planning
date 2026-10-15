@@ -25,6 +25,8 @@
   padding: 30px 32px 28px;
   box-shadow: var(--shadow-sheet);
   outline: none;
+  /* Fields inside a sheet use the narrower label column (guide §4.9). */
+  --field-label: 130px;
 }
 
 .title {
