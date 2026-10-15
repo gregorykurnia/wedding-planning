@@ -739,7 +739,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | T6 temporary order | Wedding items | `OrderBy`, `SortedNote` | model `order.ts`; handles hidden while sorted | 4.23 | [ ] |
 | T7 own order, insert | Wedding items | handle, drag, Alt+arrows, row menu, add-items sheet | `addMasterListItems`, `moveMasterListItem` (renumber when gaps run out) | 1.8, 4.23 | [ ] |
 | T8 remove with undo | Wedding items | `ConfirmSheet`, undo | `restoreMasterListItem` (same `sortOrder`) | 1.8, 4.23 | [ ] |
-| T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [ ] |
+| T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [x] |
 | T10 starts filled in | Wedding items | first-use `Banner`, Start with common items | `ensureMasterListInitialized` (guard kept; list per §9.2 Q12) | 4.23 | [ ] |
 | S1 record an event | Schedule (event sheet) | kind chips, `Fields`, related select | `collections/schedule-events.ts` (`organiser_call` added) | 4.20 | [ ] |
 | S2 complete, cancel, delete | Event sheet | status actions, `ConfirmSheet`, undo | write layer | 4.20 | [ ] |
@@ -945,7 +945,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit 9889de6); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
-| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
+| 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
@@ -1226,7 +1226,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** groups, late flags, kind labels, completed and cancelled rows, and the month grid with dots, today, selected, wedding day and full cell labels render from model data.
 
 #### Task 3.12: Task, item and guest rows · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t1, commit 242068d · real cost to log from `/cost`). `TaskRow` with `StepRow` and `FinishedTasks` (`parts/tasks/`), `ItemRow`, `ItemList` and `WorkOnNextCard` (`parts/items/`), `GuestRow` and `RsvpSwitch` (`parts/guests/`); gallery section 3.12 draws them with switches that force saves to fail, turn a sort on and turn demonstration mode on. Rows are props-driven: the screen writes, and a change that didn't save is a `failed` flag with the typed text kept in the row. Drag by the handle shows the rose line and fades the row to 40%; Alt+↑/↓ moves it and keeps focus, and a screen reader hears where it went. `.ev` event chips are built here. An item that lists several people (G12) shows the first until Task 4.23.
 - **Read:** guide §4.27–§4.29; prototype `tasks.html`, `items.html`, `guests.html` (scripts and `<style>` blocks).
 - **Do:** task disclosure with steps and the failed-step line; item row with drag and drop (rose line, 40% fade), Alt+↑/↓ with focus kept, row menu, star and tick, failed vendor field; guest row with the RSVP switch and failed-reply line.
 - **Done when:** keyboard and pointer moves work in the gallery; one-tap saves show the failed state when forced.

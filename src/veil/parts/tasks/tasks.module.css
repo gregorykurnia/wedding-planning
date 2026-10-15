@@ -1,0 +1,288 @@
+/* Task rows and steps, ported from the prototype's .tk and .steps-list (guide §4.27). */
+.item {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.item:first-child {
+  border-top: 1px solid var(--color-rule);
+}
+
+.tk > summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 28px 1fr auto 18px;
+  gap: var(--space-hair) 14px;
+  align-items: baseline;
+  padding: var(--space-row-y) var(--space-row-x);
+}
+
+.tk > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The 24px round tick: ringed in the control outline, sage and ticked when the task is done. */
+.tickBox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-control-outline);
+  background: var(--surface-sheet);
+  cursor: pointer;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.tickBox[aria-checked="true"] {
+  background: var(--accent-settled-text);
+  border-color: var(--accent-settled-text);
+}
+
+.tickBox[aria-checked="true"]::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 1.5px solid var(--surface-sheet);
+  border-bottom: 1.5px solid var(--surface-sheet);
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.tickBox[aria-disabled="true"] {
+  cursor: default;
+}
+
+.tt {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row-loose);
+  overflow-wrap: anywhere;
+}
+
+.done .tt {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-strike);
+  color: var(--color-text-muted);
+}
+
+.td {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.late {
+  color: var(--accent-attention-text);
+  font-weight: var(--weight-emphasis);
+}
+
+.tm {
+  grid-column: 2;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.chev {
+  grid-column: 4;
+  grid-row: 1;
+  align-self: center;
+  color: var(--color-decor);
+  transition: transform var(--motion-disclose);
+}
+
+.chev svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.tk[open] > summary .chev {
+  transform: rotate(90deg);
+}
+
+/* The small thread under "2 of 5 steps done". */
+.thread {
+  position: relative;
+  display: block;
+  height: 10px;
+  max-width: 220px;
+  margin-top: 6px;
+}
+
+.thread::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  border-top: 1px solid var(--accent-thread-track);
+}
+
+.threadDone {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  height: 3px;
+  background: var(--accent-thread);
+  border-radius: var(--radius-hair);
+}
+
+.inner {
+  padding: 0 var(--space-row-x) var(--space-5) 46px;
+}
+
+.steps {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  gap: var(--space-2) 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--color-edge);
+}
+
+.sbox {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent-settled-text);
+}
+
+.stepTitle {
+  border: 0;
+  background: none;
+  font-size: var(--text-reading);
+  padding: var(--space-1) 6px;
+  margin-left: -6px;
+  border-radius: var(--radius-input-sm);
+  outline: none;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.stepTitle:hover {
+  background: var(--hover-input);
+}
+
+.stepTitle:focus {
+  background: var(--surface-sheet);
+  box-shadow: var(--ring-field);
+}
+
+.stepDone .stepTitle {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.stepFailed .stepTitle {
+  background: var(--surface-sheet);
+  box-shadow: var(--ring-field-failed);
+}
+
+.stepDate {
+  border: 0;
+  background: none;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+.x {
+  background: none;
+  border: 0;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: var(--radius-input-sm);
+}
+
+.x:hover:not(:disabled) {
+  background: var(--hover-tool);
+}
+
+.rowErr {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: var(--space-hair) var(--space-1) 0;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+}
+
+.addStep {
+  margin-top: 10px;
+  font-size: var(--text-label);
+}
+
+.dueFields {
+  margin-top: var(--space-4);
+}
+
+.notes {
+  width: 100%;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-tile-sm);
+  padding: 10px var(--space-3);
+  font-size: var(--text-small);
+  min-height: 60px;
+  background: var(--surface-sheet);
+  margin-top: var(--space-3);
+  resize: vertical;
+  color: var(--color-text);
+}
+
+.tacts {
+  display: flex;
+  gap: var(--gap-actions);
+  font-size: var(--text-label);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* The disclosure under the open tasks. */
+.doneWrap {
+  margin-top: var(--space-8);
+}
+
+.doneWrap > summary {
+  cursor: pointer;
+  font-size: var(--text-small);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+  width: fit-content;
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 760px) {
+  .inner {
+    padding-left: var(--space-row-x);
+  }
+
+  .tk > summary {
+    grid-template-columns: 28px 1fr 18px;
+  }
+
+  .td {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: left;
+  }
+
+  .tm {
+    grid-row: 3;
+  }
+}

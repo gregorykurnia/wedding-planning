@@ -6,6 +6,7 @@ import { HeroDemos } from "./hero-demos";
 import { IconsDemo } from "./icons-demo";
 import { NextDemos } from "./next-demos";
 import { PartsDemos } from "./parts-demos";
+import { RowsDemos } from "./rows-demos";
 import { UploadDemo } from "./upload-demos";
 
 export type GallerySection = {
@@ -33,7 +34,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.9", title: "Stage thread, keen heart, WhatsApp, install card, notification state" },
   { task: "3.10", title: "File tiles, upload sheet and upload pipeline", demo: <UploadDemo /> },
   { task: "3.11", title: "Agenda rows and month calendar", demo: <AgendaDemos /> },
-  { task: "3.12", title: "Task, item and guest rows" },
+  { task: "3.12", title: "Task, item and guest rows", demo: <RowsDemos /> },
 ];
 
 /**
