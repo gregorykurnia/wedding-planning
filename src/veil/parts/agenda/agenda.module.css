@@ -1,0 +1,201 @@
+/* Agenda groups and rows, ported from the prototype's .group-h and .ag (guide §4.25). */
+.groupHead {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  margin: var(--space-group) 0 var(--space-1);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.groupHead small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-text);
+  white-space: nowrap;
+}
+
+.groupLate {
+  color: var(--accent-attention-text);
+}
+
+.agenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+.ag {
+  display: grid;
+  grid-template-columns: var(--agenda-time-width) 1fr auto;
+  gap: var(--space-1) var(--space-5);
+  align-items: start;
+  padding: var(--space-row-y) var(--space-row-x);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.when {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  padding-top: var(--space-hair);
+}
+
+.when b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-weight: var(--weight-display);
+  color: var(--color-text);
+}
+
+.when small {
+  font-size: var(--text-tiny);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-hair);
+  min-width: 0;
+}
+
+.kind {
+  font-size: var(--text-tiny);
+  color: var(--color-text-muted);
+}
+
+.what {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row-loose);
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.what:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+}
+
+.sub {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.rel,
+.link {
+  font-size: var(--text-label);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+}
+
+.rel {
+  align-self: flex-start;
+  overflow-wrap: anywhere;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+/* Kind labels: muted for events, gold for payments, sage for tasks. */
+.payment .kind {
+  color: var(--accent-gold-text);
+}
+
+.task .kind {
+  color: var(--accent-settled-text);
+}
+
+/* Late: the date turns rose, and a flag says how late. */
+.late .when b {
+  color: var(--accent-attention-text);
+}
+
+.completed .what,
+.cancelled .what {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-strike);
+  color: var(--color-text-muted);
+}
+
+.completed .kind {
+  color: var(--accent-settled-text);
+}
+
+/* The flag and the button are local copies of .flag and .btn until Task 3.3's shared Btn. */
+.flag {
+  display: inline-block;
+  font-size: var(--text-caption);
+  font-weight: 500;
+  color: var(--accent-attention-text);
+  background: var(--accent-attention-wash);
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.btn {
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-emphasis);
+  letter-spacing: var(--tracking-label);
+  cursor: pointer;
+  background: var(--color-text);
+  color: var(--surface-page);
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 7px 15px;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--color-text-strong-hover);
+}
+
+.btn.quiet {
+  background: transparent;
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-edge);
+}
+
+.btn.quiet:hover {
+  background: var(--hover-quiet);
+}
+
+@media (max-width: 760px) {
+  .groupHead {
+    font-size: 23px;
+  }
+
+  .ag {
+    grid-template-columns: var(--agenda-time-width) 1fr;
+  }
+
+  /* The flag and the button move under the text. */
+  .aside {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-self: start;
+  }
+}

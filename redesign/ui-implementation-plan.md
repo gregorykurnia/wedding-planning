@@ -944,7 +944,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
-| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | | [ ] |
+| 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
@@ -1221,7 +1221,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** e2e with Cloudinary stubbed covers success, shrinking, too large and failure-then-retry.
 
 #### Task 3.11: Agenda rows and month calendar · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t3, commit 8005594 · real cost to log from `/cost`). `AgendaRow`, `AgendaGroup` (`parts/agenda/`) and `MonthCalendar` (`parts/month/`) take model data as props; gallery section 3.11 shows every variant. Record payment is filled when late (guide §4.25) although the prototype's script shows only the flag. Record payment, the late flag and Earlier/Later are local copies until 3.3's `Btn`. The event sheet is Task 4.20.
 - **Read:** guide §4.25, §4.26; prototype `assets/schedule.js`, `assets/schedule.css`, `schedule.html?view=month`.
 - **Done when:** groups, late flags, kind labels, completed and cancelled rows, and the month grid with dots, today, selected, wedding day and full cell labels render from model data.
 
