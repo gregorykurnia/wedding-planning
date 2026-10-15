@@ -931,7 +931,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | 4a59578; real cost to log from `/cost`; names at 390px are 21px until N15 (G15) | [x] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | | [ ] |
 | 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost` | [x] |
-| 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | | [ ] |
+| 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | | [ ] |
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
@@ -987,7 +987,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
-| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | | [ ] |
+| 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
 | 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
 | 7 | 7.2 Rollback rehearsal on a preview | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
@@ -1154,7 +1154,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** gallery demos plus an e2e test of confirm → remove → undo on a fake record.
 
 #### Task 2.7: Partner changes and presence · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t1, commit 0616302 · real cost to log from `/cost`). `PartnerNewsListener` (mounted in `providers.tsx`) turns the other account's `activity` entries into a partner toast and a flash; `useFlash(target)` and `useFlasher()` are the flash API (`.flash` is in `base.css`); `useDocumentPresence(id)` gives "also here" for the Banner (Task 2.5 builds the Banner itself); `useRemovedByPartner(record)` is what the data hooks use for `status: 'gone'` (they don't exist yet). Removals have no toast. Demo at `/new/gallery/partner` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
 - **Read:** guide §6.3; §2.7 (`activity`, `presence`).
 - **Files:** `src/lib/data/partner.ts`, `src/veil/shell/partner-news.tsx`, `src/lib/data/presence.ts`.
 - **Do:** (documents follow §9.2 Q7.) Listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
@@ -1424,7 +1424,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Waits for:** need N5. **Files:** `src/lib/model/csv.ts` columns; filename `vendors-<first>-<second>.csv` from settings (guide §5.11).
 
 #### Task 6.7: Old-names check · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · bc5d423 · real cost to log from `/cost`). `scripts/check-old-names.mjs` reads `scripts/old-names.txt`: 53 terms, which are 23 component and path names, 7 style names and 23 pieces of old wording. Words the new design also uses are left out. The seven tests in `tests/model/old-names.test.ts` plant old words in a temporary folder. The check passes on the four new-UI roots today. Its run over `src` with no exclusions waits for Phase 9.
 - **Files:** `scripts/check-old-names.mjs`, `scripts/old-names.txt`.
 - **Do:** the list holds distinctive old identifiers and wording only: old component and file names (`AppShell`, `VendorsTable`, `VenuesTable`, `ShortlistTable`, `EditableText`, `EditableNumber`, `EditableDate`, `FunderSelect`, `ConfirmedTypePill`, `VendorCategoryPill`, `VendorCategoryTabs`, `VendorContractPill`, `VenueStatusPill`, `VenueGalleryDialog`, `VenueNotesCell`, `FilesCell`, `ContactCell`, `MasterListEditableCell`, `MasterListMultiSelect`, `CloudinaryUploadButton`, `RichTextEditor`, the `components/ui/*` names), old style names (`bg-background`, `text-foreground`, `data-slot`, `--terracotta`, `--cream`, `tw-animate`), and old wording from `inventory-notes.md` §2 ("Words used by the current UI") and the reverse-coverage sweep ("Welcome back", "Our Wedding", "Track RSVPs", "Next up", "Real budget spent", "Pending spending", "to track", "Starred only", "Hide rejected", "Add to budget", "Sub-entry", "Start writing", "Skip for now", "Clear filters", "Firebase isn't connected"). Words the new design also uses (Vendors, Shortlist, Guests, Schedule, Budget, Files) aren't listed. Stored field names are data, not UI, and aren't listed. `--exclude <glob>` for the frozen fallback.
 - **Done when:** it passes on `src/veil/**`, `src/app/(veil)/**`, `src/lib/model/**` and `src/lib/data/**`, and fails when an old word is planted.
