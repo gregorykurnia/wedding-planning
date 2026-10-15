@@ -1,0 +1,66 @@
+# Old names and old wording that the new UI must not use (redesign plan Task 6.7).
+# scripts/check-old-names.mjs reads this list: one term per line, and a line that
+# starts with # is a comment. Terms match exactly and case-sensitively.
+# Not listed, on purpose: words the new design also uses (Vendors, Shortlist,
+# Guests, Schedule, Budget, Files, Overview, Confirmed, "Confirmed or not", and
+# "Our wedding planner", the new name) and stored field names, which are data.
+
+# Old component and file names (src/components/**, the old pages' helpers)
+AppShell
+VendorsTable
+VenuesTable
+ShortlistTable
+EditableText
+EditableNumber
+EditableDate
+FunderSelect
+ConfirmedTypePill
+VendorCategoryPill
+VendorCategoryTabs
+VendorContractPill
+VenueStatusPill
+VenueGalleryDialog
+VenueNotesCell
+FilesCell
+ContactCell
+MasterListEditableCell
+MasterListMultiSelect
+CloudinaryUploadButton
+RichTextEditor
+components/ui/
+@/components/
+
+# Old style names (shadcn and Tailwind classes and theme variables)
+bg-background
+text-foreground
+muted-foreground
+data-slot
+--terracotta
+--cream
+tw-animate
+
+# Old wording: the current UI's words (inventory-notes §2) and the
+# reverse-coverage sweep (redesign plan §6)
+Welcome back
+Our Wedding
+Track RSVPs
+Next up
+Next?
+Real budget spent
+Pending spending
+to track
+Starred only
+Hide rejected
+Add to budget
+Sub-entry
+Start writing
+Skip for now
+Clear filters
+Firebase isn't connected
+Copy to shortlist
+Confirmed/Not
+Dashboard
+Planning
+Archived
+Hypothetical
+???
