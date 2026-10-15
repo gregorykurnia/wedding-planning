@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ActionDemos } from "./actions-demos";
 import { AgendaDemos } from "./agenda-demos";
 import { FieldsDemo } from "./fields-demos";
 import { IconsDemo } from "./icons-demo";
@@ -19,7 +20,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "2.2", title: "Icon set", demo: <IconsDemo /> },
   { task: "3.1", title: "Hero, kicker, figure, context, thread" },
   { task: "3.2", title: "Next card, after line, doors" },
-  { task: "3.3", title: "Buttons, links, chips and focus chips" },
+  { task: "3.3", title: "Buttons, links, chips and focus chips", demo: <ActionDemos /> },
   { task: "3.4", title: "Fields and save-as-you-go", demo: <FieldsDemo /> },
   { task: "3.5", title: "Ledger rows and row states" },
   { task: "3.6", title: "Parts, menu cards, tally" },

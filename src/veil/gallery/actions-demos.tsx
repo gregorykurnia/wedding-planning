@@ -21,8 +21,8 @@ const FOCUS = [
 ];
 
 /**
- * Dev-only demos of the buttons, links and chips (Task 3.3). Task 3.0's gallery
- * lists this page; the e2e test drives it.
+ * Task 3.3's section of the component gallery: the buttons, links, chips and
+ * focus chips, with fixed fake data. The gallery's e2e test drives it.
  */
 export function ActionDemos() {
   const [presses, setPresses] = useState(0);
@@ -42,9 +42,7 @@ export function ActionDemos() {
 
   return (
     <>
-      <h1>Buttons, links and chips</h1>
-
-      <h2>Buttons</h2>
+      <h3>Buttons</h3>
       <p>
         <Btn>Add vendor</Btn> <Btn variant="quiet">Cancel</Btn> <Btn small>Add item</Btn>{" "}
         <Btn variant="danger">Remove booking</Btn> <Btn disabled>Move here</Btn>
@@ -57,7 +55,7 @@ export function ActionDemos() {
       </p>
       <p>Presses: {presses}</p>
 
-      <h2>Links</h2>
+      <h3>Links</h3>
       <p>
         <TextLink>Rename</TextLink> <TextLink tone="rose">Remove this booking</TextLink>{" "}
         <TextLink href="/new/gallery/states">On the shortlist</TextLink>
@@ -67,7 +65,7 @@ export function ActionDemos() {
         <DirectionWord ascending={ascending} onToggle={() => setAscending((on) => !on)} />
       </p>
 
-      <h2>Chips</h2>
+      <h3>Chips</h3>
       <p>
         <Chip pressed={decorating} onClick={() => setDecorating((on) => !on)}>
           Decoration
@@ -75,10 +73,10 @@ export function ActionDemos() {
         <Chip pressed={false}>Lighting</Chip> <Chip count="12">Florist</Chip>{" "}
         <Chip dashed>Add a category</Chip>
       </p>
-      <h2>Choice group</h2>
+      <h3>Choice group</h3>
       <ChipGroup label="Event" options={EVENTS} value={event} onChange={setEvent} />
 
-      <h2>Focus chips</h2>
+      <h3>Focus chips</h3>
       <FocusChips
         label="Focus on a category"
         chips={FOCUS}
