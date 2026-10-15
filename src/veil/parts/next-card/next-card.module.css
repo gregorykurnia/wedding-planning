@@ -1,0 +1,139 @@
+/* Guide §4.5. Ported from the prototype's .card.next, .flag, .flag.gold, .flag.calm and .after. Sizes, colours and phone values come from tokens.css. The 6px row gap, the 3px flag padding and the 10px button margin have no token and keep the prototype's numbers. */
+
+.card {
+  margin-top: var(--space-next);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px var(--space-6);
+  align-items: center;
+  padding: var(--space-card-y) var(--space-card-x);
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-card));
+  -webkit-backdrop-filter: blur(var(--blur-card));
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-card);
+}
+
+.label {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-label);
+}
+
+/* Rose is the base flag: a late date. */
+.flag {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-display);
+  white-space: nowrap;
+  color: var(--accent-attention-text);
+  background: var(--accent-attention-wash);
+}
+
+/* Within 14 days. */
+.gold {
+  color: var(--accent-gold-text-on-tint);
+  background: var(--accent-thread-track);
+}
+
+/* Later: a date that needs nothing yet. The prototype's 400 weight. */
+.calm {
+  color: var(--color-text-muted);
+  background: var(--surface-flag-calm);
+  font-weight: var(--weight-display-light);
+}
+
+.name {
+  grid-column: 1;
+  grid-row: 2;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-card-title);
+  line-height: var(--leading-heading);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.amt {
+  grid-column: 2;
+  grid-row: 2;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-card-title);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.meta {
+  grid-column: 1;
+  grid-row: 3;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.action {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* Under the card. */
+.after {
+  margin-top: var(--space-4);
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.after b {
+  font-weight: var(--weight-emphasis);
+  color: var(--color-text);
+}
+
+/* Phones stack the card in one column, flag first. */
+@media (max-width: 760px) {
+  .card {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+
+  .flag {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    margin-bottom: 4px;
+  }
+
+  .label {
+    grid-row: 2;
+  }
+
+  .name {
+    grid-row: 3;
+  }
+
+  .amt {
+    grid-column: 1;
+    grid-row: 4;
+    text-align: left;
+  }
+
+  .meta {
+    grid-row: 5;
+  }
+
+  .action {
+    grid-column: 1;
+    grid-row: 6;
+    justify-self: start;
+    margin-top: 10px;
+  }
+}
