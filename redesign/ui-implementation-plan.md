@@ -770,7 +770,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [ ] |
 | A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
 | A5 account, settings, sign out | Menu, Settings | `MenuIndex` account line, `AccountsList` | `members` | 2.4, 4.25 | [ ] |
-| A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [ ] |
+| A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [x] |
 
 ---
 
@@ -937,7 +937,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | | [ ] |
-| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | | [ ] |
+| 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
@@ -1184,7 +1184,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** busy, disabled, danger, quiet, small, pressed, radiogroup and dashed variants all render.
 
 #### Task 3.4: Fields and save-as-you-go · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 8295ea0 · real cost to log from `/cost`). `useAutosaveField({ value, save, required, normalize })` and the screen's save scope are in `src/lib/data/use-autosave-field.ts`; the words and the state machine are pure in `src/lib/model/save-state.ts`. Fields spread `field.bind` (`value`, `onChange`, `onCommit`, `disabled`) and sit in a `FieldRow` that takes `field` for the failed ring, the failure line and Try again. A sheet wraps its fields in `<SaveScopeProvider sheet>`: the failure shows once in its `SaveLine`, with one Try again for every field, and the rows keep only the ring (Task 3.8 builds the sheet frame around it). Leaving a failed field doesn't retry by itself, so the Try again button isn't removed mid-click. A money field puts the old amount back for text that isn't an amount, silently (G16/N16). The gallery form at `/new/gallery` saves to `settings/wedding` against the emulators and to a stand-in otherwise, so it never writes real data; it has switches for demonstration mode, failing saves and slow saves. `Done`, links and rename buttons are local copies until Task 3.3's `Btn`.
 - **Read:** guide §4.9, §6.1; prototype `booking.html` (fields and save line), `settings.html?state=savefail`, `veil.css` (`.fields`, `.field*`, `.hint`, `.save-state*`, `.big-input`, `.notes-view`).
 - **Files:** `src/veil/parts/fields/*`, `src/lib/data/use-autosave-field.ts`.
 - **Do:** every field type; `useAutosaveField(save)` saves on blur or change, shows Saving → Saved on the screen's `SaveLine`, keeps the typed value on failure with Try again, restores the old name if a name is cleared, and is disabled in demo with the demo save line; money reformat on blur; inline rename (Enter, Escape).
