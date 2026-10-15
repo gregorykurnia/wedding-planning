@@ -3,6 +3,7 @@ import { ActionDemos } from "./actions-demos";
 import { AgendaDemos } from "./agenda-demos";
 import { FieldsDemo } from "./fields-demos";
 import { IconsDemo } from "./icons-demo";
+import { PartsDemos } from "./parts-demos";
 
 export type GallerySection = {
   /** The task that builds the section's components, such as "3.1". */
@@ -23,7 +24,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.3", title: "Buttons, links, chips and focus chips", demo: <ActionDemos /> },
   { task: "3.4", title: "Fields and save-as-you-go", demo: <FieldsDemo /> },
   { task: "3.5", title: "Ledger rows and row states" },
-  { task: "3.6", title: "Parts, menu cards, tally" },
+  { task: "3.6", title: "Parts, menu cards, tally", demo: <PartsDemos /> },
   { task: "3.7", title: "Search, ordering, filters, count line and paging" },
   { task: "3.8", title: "Sheet patterns, confirm variants, banners and problem boxes" },
   { task: "3.9", title: "Stage thread, keen heart, WhatsApp, install card, notification state" },

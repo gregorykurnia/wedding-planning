@@ -1,0 +1,64 @@
+/*
+ * Price options, packages and categories as a printed menu (guide §4.8;
+ * prototype `.menu-card`).
+ */
+
+.menuCard {
+  list-style: none;
+  border-top: 1px solid var(--color-rule);
+}
+
+.menuCard > li {
+  padding: var(--space-row-y) var(--space-row-x);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.on {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  flex: 1;
+  min-width: var(--space-6);
+  border-bottom: 1px dotted var(--color-decor);
+  transform: translateY(-5px);
+}
+
+.op {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  white-space: nowrap;
+}
+
+.inc {
+  margin-top: var(--space-hair);
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-actions);
+  margin-top: var(--space-2);
+  font-size: var(--text-label);
+}
+
+.pref {
+  font-family: var(--font-display);
+  font-size: var(--text-lead);
+  font-style: italic;
+  color: var(--accent-gold-text);
+}

@@ -1,0 +1,38 @@
+/*
+ * Who would pay the extra (guide §4.8; prototype `.carry` on the what-if screen).
+ * Dashed leaders and italic amounts: none of it is real money yet.
+ */
+
+.carry {
+  list-style: none;
+  margin-top: var(--space-4);
+}
+
+.carry li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  font-size: var(--text-small);
+}
+
+.lead {
+  flex: 1;
+  min-width: var(--space-6);
+  border-bottom: 1px dashed var(--color-decor);
+  transform: translateY(-4px);
+}
+
+.pn {
+  overflow-wrap: anywhere;
+}
+
+.pv {
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.carry .more {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}

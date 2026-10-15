@@ -1,0 +1,55 @@
+/*
+ * Parts in a ledger row (guide §4.8; prototype `.parts`). Dotted leaders; a
+ * what-if list (`.hypothetical`) has dashed leaders and italic values.
+ */
+
+.parts {
+  list-style: none;
+  grid-column: 1 / -1;
+  margin: var(--space-3) 0 var(--space-hair) var(--space-hair);
+}
+
+.parts li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.pn {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  flex: 1;
+  min-width: var(--space-6);
+  border-bottom: 1px dotted var(--color-decor);
+  transform: translateY(-4px);
+}
+
+.pv {
+  white-space: nowrap;
+}
+
+.late {
+  color: var(--accent-attention-text);
+}
+
+.done {
+  color: var(--accent-settled-text);
+}
+
+.parts .more {
+  font-size: var(--text-label);
+}
+
+.hypothetical .lead {
+  border-bottom-style: dashed;
+}
+
+.hypothetical .pv {
+  font-style: italic;
+}
