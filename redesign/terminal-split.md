@@ -30,7 +30,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | — | [x] 2.5 Screen states · Haiku 5.5 Max | — |
 | 🛑 [x] Phase 2 review · Opus 5.5 Medium | wait | wait |
 | **Phase 3: components** | | |
-| [ ] 3.0 Gallery · Haiku 5.5 xHigh | wait for 3.0 | wait for 3.0 |
+| [x] 3.0 Gallery · Haiku 5.5 xHigh | wait for 3.0 | wait for 3.0 |
 | [ ] 3.4 Fields · Sonnet 5.5 High | [ ] 3.3 Buttons · Haiku 5.5 Max | [ ] 3.11 Agenda and month · Sonnet 5.5 High |
 | [ ] 3.10 Uploads (after 3.3) · Sonnet 5.5 High | [ ] 3.1 Hero · Haiku 5.5 Max | [ ] 3.6 Parts · Haiku 5.5 Max |
 | [ ] 3.12 Task, item and guest rows (after 3.3) · Sonnet 5.5 High | [ ] 3.2 Next card · Haiku 5.5 Max | [ ] 3.7 Search and filters · Haiku 5.5 Max |

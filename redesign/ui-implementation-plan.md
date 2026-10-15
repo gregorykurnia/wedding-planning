@@ -933,7 +933,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost`; the Phase 2 review rejected it (B1, a busy confirm closed by a route change lost its undo), so the fix moved one row up and was done in the review session on Opus 5.5 Medium | [x] |
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-15: first pass found 2 blockers (B1 in 2.6; B2, no placeholder hero on `/new`), both fixed in the same session with seven smaller items; 6 should-fix items stay open (S1 session re-probe, S2–S4 partner and presence clocks, S5–S6 layout before Phase 3 screens); see `redesign/reviews/phase-2-review.md`; real cost to log from `/cost` | [x] |
-| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | | [ ] |
+| 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
 | 3 | 3.1 Hero, figure, thread | Haiku 5.5 Max | $0.21 | Port from `veil.css` and guide §4.4 | | [ ] |
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | | [ ] |
@@ -1121,7 +1121,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** `tokens.css` is byte-identical to the frozen one (`cmp` in the check script), the page glow and fonts show on `/new`, and the style check passes.
 
 #### Task 2.2: Icon set · Haiku 5.5 xHigh
-- [x] **Done** (2026-10-15 · af96e25 · real cost to log from `/cost`). The gallery check in Done when waits for Task 3.0; `tests/model/icons.test.tsx` renders every icon now. `FileTypeTag` is a span, since the prototype writes the extension as text. The Google mark keeps its four brand colours, the one colour exception in the style check (`scripts/check-veil-styles.mjs`).
+- [x] **Done** (2026-10-15 · af96e25 · real cost to log from `/cost`). The gallery check in Done when is met by Task 3.0's icon section; `tests/model/icons.test.tsx` renders every icon now. `FileTypeTag` is a span, since the prototype writes the extension as text. The Google mark keeps its four brand colours, the one colour exception in the style check (`scripts/check-veil-styles.mjs`).
 - **Read:** §2.6; prototype `assets/app.js` (`ICON`, `WA_ICON`, `HEART`), `files.html` (envelope), `items.html` (handle, star, tick), `signin.html` (Google mark).
 - **Files:** `src/veil/icons/*.tsx`.
 - **Done when:** each icon renders in the gallery (3.0), `aria-hidden`, with `currentColor`.
@@ -1147,14 +1147,14 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 - **Done when:** each state renders from a fake status in the gallery.
 
 #### Task 2.6: Sheets, confirm and toasts · Sonnet 5.5 High
-- [x] **Done** (2026-10-15 · lane t1, commit in the change log · real cost to log from `/cost`). `useSheets().open(node)`, `useSheet()`, `Sheet`, `SheetActions`, `useConfirm()` and `useToast()` are live in `providers.tsx`. A sheet opened over a sheet stacks (the one underneath stays mounted, hidden). The confirm's `run` is the write: the action stays busy until it resolves, and a rejection keeps the sheet open with a provisional line (G14). A failed Undo goes back to Undo for another window (wording waits for N13). Create/edit sheet actions, the save line, inline confirm and blocked notice are Task 3.8. Demos at `/new/gallery/shell` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
+- [x] **Done** (2026-10-15 · lane t1, commit in the change log · real cost to log from `/cost`). `useSheets().open(node)`, `useSheet()`, `Sheet`, `SheetActions`, `useConfirm()` and `useToast()` are live in `providers.tsx`. A sheet opened over a sheet stacks (the one underneath stays mounted, hidden). The confirm's `run` is the write: the action stays busy until it resolves, and a rejection keeps the sheet open with a provisional line (G14). A failed Undo goes back to Undo for another window (wording waits for N13). Create/edit sheet actions, the save line, inline confirm and blocked notice are Task 3.8. Demos at `/new/gallery/shell` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery lists.
 - **Read:** guide §4.14–§4.16, §6.2; prototype `assets/app.js` (`openSheet`, `closeSheet`, `confirm`, `toast`, `sheetSaver`, `demoLine`).
 - **Files:** `src/veil/shell/{sheet,confirm,toasts}.tsx` + module CSS.
 - **Do:** one sheet host, centred on desktop and a bottom sheet on a phone; focus in and back; Escape and scrim close; `confirm()` promise with the busy confirming button held until the write resolves; toasts stack, 6 s (9 s partner), Undo becomes "Restoring" until the restore resolves; layers per tokens.
 - **Done when:** gallery demos plus an e2e test of confirm → remove → undo on a fake record.
 
 #### Task 2.7: Partner changes and presence · Sonnet 5.5 High
-- [x] **Done** (2026-10-15 · lane t1, commit 0616302 · real cost to log from `/cost`). `PartnerNewsListener` (mounted in `providers.tsx`) turns the other account's `activity` entries into a partner toast and a flash; `useFlash(target)` and `useFlasher()` are the flash API (`.flash` is in `base.css`); `useDocumentPresence(id)` gives "also here" for the Banner (Task 2.5 builds the Banner itself); `useRemovedByPartner(record)` is what the data hooks use for `status: 'gone'` (they don't exist yet). Removals have no toast. Demo at `/new/gallery/partner` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery should list.
+- [x] **Done** (2026-10-15 · lane t1, commit 0616302 · real cost to log from `/cost`). `PartnerNewsListener` (mounted in `providers.tsx`) turns the other account's `activity` entries into a partner toast and a flash; `useFlash(target)` and `useFlasher()` are the flash API (`.flash` is in `base.css`); `useDocumentPresence(id)` gives "also here" for the Banner (Task 2.5 builds the Banner itself); `useRemovedByPartner(record)` is what the data hooks use for `status: 'gone'` (they don't exist yet). Removals have no toast. Demo at `/new/gallery/partner` (`NEXT_PUBLIC_VEIL_GALLERY=1`), which Task 3.0's gallery lists.
 - **Read:** guide §6.3; §2.7 (`activity`, `presence`).
 - **Files:** `src/lib/data/partner.ts`, `src/veil/shell/partner-news.tsx`, `src/lib/data/presence.ts`.
 - **Do:** (documents follow §9.2 Q7.) Listen to `activity` newer than the session start and by the other account; turn each kind into the guide's partner toast text (the partner's name comes from need N3, until then the second name in settings) and flash the target (`useFlash`); presence heartbeat every 20 s for an open document, "also here" when the other account's heartbeat is under 45 s old; when a viewed record is removed by the partner, hooks return `status: 'gone'` with who removed it.
@@ -1165,7 +1165,7 @@ The old UI must look and behave exactly as today at the end of this phase; only 
 Built in a dev-only gallery so every variant can be seen and screenshotted before any screen exists. **Done when:** every component in §3 renders in every listed state at both widths in the gallery and matches the prototype; the review passes.
 
 #### Task 3.0: Component gallery · Haiku 5.5 xHigh
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · 198a3e6 · real cost to log from `/cost`). The gate is `app/(veil)/new/gallery/layout.tsx` (the four Phase 2 demo pages lost their own copy). `next.config.ts` rewrites the gallery addresses to a missing path when the switch is off: a `notFound()` while streaming answered 200, so the status is set before the body streams. A production build answers 404 with the switch off and 200 with it on. The icon set is the first section, so 2.2's gallery check is met. Each later section says it is not built yet until its task sets `demo` in `src/veil/gallery/sections.tsx`.
 - **Files:** `src/app/(veil)/new/gallery/page.tsx` (returns `notFound()` unless `NEXT_PUBLIC_VEIL_GALLERY=1`), `src/veil/gallery/`.
 - **Done when:** the route lists sections for each later task and is absent in production builds.
 
