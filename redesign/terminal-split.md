@@ -25,7 +25,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 |---|---|---|
 | **Phase 2: shell** | | |
 | [x] 2.3 Auth and providers · Opus 5.5 Medium | [x] 2.1 Tokens · Haiku 5.5 Max | [x] 6.3 Delete for good · Opus 5.5 High |
-| [x] 2.6 Sheets and toasts · Sonnet 5.5 High | [ ] 2.2 Icons · Haiku 5.5 xHigh | [x] 6.1 Service worker (after 2.3) · Opus 5.5 High |
+| [x] 2.6 Sheets and toasts · Sonnet 5.5 High | [x] 2.2 Icons · Haiku 5.5 xHigh | [x] 6.1 Service worker (after 2.3) · Opus 5.5 High |
 | [x] 2.7 Partner changes · Sonnet 5.5 High | [ ] 2.4 Top bar · Haiku 5.5 Max | [ ] 6.7 Old-names check · Haiku 5.5 Max |
 | — | [ ] 2.5 Screen states · Haiku 5.5 Max | — |
 | 🛑 [ ] Phase 2 review · Opus 5.5 Medium | wait | wait |
