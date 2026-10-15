@@ -1,0 +1,80 @@
+/* Guide §3 and §4.4. Ported from the prototype's .hero, .kicker, .figure, .rp and .context. Sizes and colours come from tokens.css, which also sets the phone sizes. The few values with no token (the 6px and 10px gaps) are the prototype's. */
+
+.hero {
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-page-title);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.sub {
+  margin-top: 6px;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* The figure block sits 30px under a title. With no title, a figure-only hero starts at the top. */
+.afterHead {
+  margin-top: var(--space-hero-figure);
+}
+
+.kicker {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-kicker);
+}
+
+.figure {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-weight: var(--weight-figure);
+  font-size: var(--text-figure);
+  line-height: var(--leading-figure);
+  letter-spacing: var(--tracking-figure);
+  white-space: nowrap;
+}
+
+.figure.md {
+  font-size: var(--text-figure-md);
+}
+
+/* Over 13 digits, the figure shrinks to stay on one line. This is the prototype's clamp, which goes down to 30px; tokens.css's --text-figure-long is marked "budget only" and isn't used. */
+.figure.long,
+.figure.md.long {
+  font-size: clamp(30px, 5.5vw, 72px);
+}
+
+/* Late payments and overpaid amounts are rose; "Paid in full" is gold. */
+.late,
+.over {
+  color: var(--accent-attention-text);
+}
+
+.settled {
+  color: var(--accent-gold-text);
+}
+
+.rp {
+  font-size: var(--text-figure-unit);
+  font-weight: var(--weight-display-light);
+  vertical-align: 0.95em;
+  margin-right: 0.2em;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
+
+.context {
+  margin-top: var(--space-4);
+  font-size: var(--text-lead);
+  color: var(--color-text-muted);
+}
+
+.context b {
+  color: var(--color-text);
+  font-weight: var(--weight-emphasis);
+}

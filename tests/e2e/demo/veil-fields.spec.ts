@@ -18,8 +18,14 @@ const form = (page: Page) => page.getByRole("group", { name: "Detail screen form
 const line = (scope: Locator) => scope.getByRole("status").first();
 const row = (scope: Locator, label: string) => scope.getByLabel(label, { exact: true });
 
+// The gallery shows every section's demo on one page, and the upload demo (3.10) has
+// a "Demonstration mode" switch too, so the switches are found inside this section.
 async function switches(page: Page, name: string, on: boolean) {
-  await page.getByRole("group", { name: "Demo switches" }).getByLabel(name).setChecked(on);
+  await page
+    .locator("#section-3-4")
+    .getByRole("group", { name: "Demo switches" })
+    .getByLabel(name)
+    .setChecked(on);
 }
 
 test("a changed field saves on blur: Saving, then Saved, and the value stays", async ({ page }) => {
