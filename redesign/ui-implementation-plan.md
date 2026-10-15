@@ -759,8 +759,8 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [ ] |
 | R7 delete for good | A document | `ConfirmSheet` (Delete for good), message | `deleteNote` (no undo) | 4.17 | [ ] |
 | R8 folders | Files | `PathTrail`, folder rows, folder sheet, `BlockedNotice` | `collections/wedding-files.ts` | 4.19 | [ ] |
-| R9 upload | Files, every record | `UploadSheet`, `UploadQueue` | upload pipeline + `compress-pdf.ts` | 3.10 | [ ] |
-| R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [ ] |
+| R9 upload | Files, every record | `UploadSheet`, `UploadQueue` | upload pipeline + `compress-pdf.ts` | 3.10 | [x] |
+| R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [x] |
 | R11 open, download, move, edit, delete | Files | `FileDetailsSheet`, `MoveSheet` | `updateWeddingFile`, move | 4.19 | [ ] |
 | R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
 | R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [ ] |
@@ -943,7 +943,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
-| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | | [ ] |
+| 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit to follow); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | | [ ] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
@@ -1214,7 +1214,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Read:** guide §4.21–§4.23, §4.30; prototype `assets/app.js` (`stageThread`, `waLink`, `HEART`), `overview.html?state=install`, `settings.html` (all notification states).
 
 #### Task 3.10: File tiles, upload sheet and upload pipeline · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-15 · lane t1, commit to follow · real cost to log from `/cost`). `FileTiles` and `UploadSheet` (`src/veil/parts/files/`) read one `UploadQueue` (`src/lib/data/upload-queue.ts`) that the screen owns through `useUploadQueue`, so the tiles and the sheet show the same uploads. Pure words and rules are in `src/lib/model/uploads.ts`; the Cloudinary request (`/auto/upload`, as the old button), the record's folder (found by `recordRef`, made on first use, one at a time per record) and the `weddingFiles` document plus the record's old `files[]` are in `src/lib/data/uploads.ts`. Files upload in parallel; PDFs shrink one at a time. A retry after a failed filing doesn't send the file again and reuses the document id. `legacyPlace` moved to `adapters/files.ts`. Gallery section 3.10 uses a stand-in, and the real pipeline against the emulators. The upload sheet's Done and Try again use `Btn` and `TextLink`.
 - **Read:** guide §4.20, §6.2 (files); prototype `assets/app.js` (`filesGrid`, `uploadSheet`, `mbText`, `FILE_CATS`), `files.html?state=uploading`, `booking.html?state=uploading`; `src/lib/compress-pdf.ts` and the Cloudinary call in `src/components/cloudinary-upload-button.tsx` (the request only).
 - **Files:** `src/veil/parts/files/*`, `src/lib/data/uploads.ts`.
 - **Do:** queue several files in parallel with progress per file; PDFs over 10 MB go through `compress-pdf` with the "Shrinking from … to fit under 10 MB" status; other big files are refused with the designed wording; failures offer Try again per file; a finished upload creates the `weddingFiles` document (name, category, description, `recordRef`, folder named after the record, created on first use) and appends to the legacy `files[]` array on the record (§2.7); demo shows "Not uploaded".
@@ -1524,6 +1524,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | open |
 | G15 | **N15** | Raised by Task 2.4. The prototype sets the couple's names in the top bar at 24px on a phone as well as on a computer. No token holds 24px at both widths: `--text-row-lg` is 24px and drops to 21px under 760px, its size for booking entries. Built with `--text-row-lg`, so the names are 21px on a phone until decided (`src/veil/shell/top-bar.module.css`). The rest of the top bar, the menu and the account line match the prototype at 390px and 1440px. | 2.4 (follow-up) | open |
 | G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | open |
+| G17 | **N17** | Raised by Task 3.10. The guide words a file that is too large ('Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.') and a PDF being shrunk, but not a PDF that is still over the limit after shrinking: the first message would say only PDFs are shrunk, which is wrong for it. Built with a provisional line, 'Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.' (`stillTooLargeText` in `src/lib/model/uploads.ts`). Also undesigned and built plainly: the name, category and description in the upload sheet stay editable after a file is uploaded and save when the field is left (a failure keeps the text and offers Try again); and a refused or failed tile stays on the record until the upload sheet is opened again, which clears refused and finished entries. | 3.10 (follow-up), 4.19 | open |
 
 ### 9.2 Questions for the owner: decided
 

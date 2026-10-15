@@ -1,6 +1,6 @@
 import { FieldValue, type DocumentReference, type Firestore } from "firebase-admin/firestore";
 import { isObject, str } from "@/lib/data/adapters/common";
-import { cloudinaryAsset, recordRef, type RecordRef } from "@/lib/data/adapters/files";
+import { cloudinaryAsset, legacyPlace, recordRef } from "@/lib/data/adapters/files";
 import type { Asset } from "./cloudinary";
 import { RequestError } from "./request-error";
 
@@ -75,30 +75,6 @@ function pointsAt(url: unknown, asset: Asset, cloudName: string): boolean {
     parsed.resourceType === asset.resourceType &&
     parsed.publicId === asset.publicId
   );
-}
-
-/** Where a record keeps its old `files[]`: the document, and a part's id or `null` for the record's own list. */
-interface LegacyPlace {
-  collection: string;
-  docId: string;
-  partId: string | null;
-}
-
-export function legacyPlace(ref: RecordRef): LegacyPlace | null {
-  const partId = ref.partId ?? null;
-  switch (ref.kind) {
-    case "vendor":
-      return { collection: "vendors", docId: ref.id, partId };
-    case "venue":
-      return { collection: "venues", docId: ref.id, partId };
-    case "finalist":
-      return { collection: "shortlist", docId: ref.id, partId };
-    case "booking": {
-      // Booking ids are `vendor-<id>` or `venue-<id>` (adapters/bookings).
-      const match = /^(vendor|venue)-(.+)$/.exec(ref.id);
-      return match ? { collection: match[1] === "vendor" ? "vendors" : "venues", docId: match[2], partId } : null;
-    }
-  }
 }
 
 function withoutMatches(raw: unknown, matches: (url: unknown) => boolean): { files: unknown[]; removed: number } | null {
