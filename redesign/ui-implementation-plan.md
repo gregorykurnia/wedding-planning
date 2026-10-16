@@ -765,7 +765,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
 | R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [ ] |
 | R14 find a file anywhere | Files | `SearchField`, `ShowMore` | data `useFileSearch` | 4.19 | [ ] |
-| A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [ ] |
+| A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [x] |
 | A2 live partner changes | every screen | `.flash`, partner toast, `Banner` (document) | `activity` listener, `presence` | 1.8, 2.7 | [ ] |
 | A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [ ] |
 | A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
@@ -794,11 +794,11 @@ Every place in the current code that produces something visible, from a full swe
 | `app/budget/page.tsx`, `app/checklist/page.tsx` (orphaned) | dropped (§4 #1, #2); data stays in Firestore | [ ] |
 | no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [ ] |
 | **Auth** | | |
-| `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [ ] |
+| `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [x] |
 | `login/page.tsx` Register button (`auth-context.tsx` `createUserWithEmailAndPassword`) | dropped (§9.2 Q2: both sign in with Google) | n/a |
 | password reset | doesn't exist today; not in the inventory; nothing to build | n/a |
-| `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [ ] |
-| `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [ ] |
+| `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [x] |
+| `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [x] |
 | `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [x] |
 | account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
@@ -947,7 +947,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; the Phase 3 review rejected it (B3, no failed state for an item's one-tap changes; B4, `HeadcountsCard` and `SidesCard` not built), so the fix moved one row up; fixed 2026-10-16 in the review session on Opus 5.5 High; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-16 (lane t1, run on Opus 5.5 High): first pass found 4 blockers (B1 in 3.4, B2 in 3.3, B3 and B4 in 3.12), all fixed in the same session with six should-fix items; 13 should-fix items stay open (S1–S13), and Phase 2 S5–S6 (top bar inside `main`, no page column) must be done before 4.1 and 4.2; see `redesign/reviews/phase-3-review.md`; real cost to log from `/cost` | [x] |
-| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
+| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | 2026-10-17 (lane t3, 7dd2e9a): built; raised G19/N19; real cost to log from `/cost` | [x] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
 | 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
 | 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | | [ ] |
@@ -1238,7 +1238,7 @@ Each screen is built in its **normal** state with real data from the emulator an
 Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sections of the components it uses, and its prototype file. Each task also adds the screen's `page.tsx` under `src/app/(veil)/new/…` and the screen component in `src/veil/screens/<screen>/`.
 
 #### Task 4.1: Sign in · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · 7dd2e9a · real cost to log from `/cost`). The N3 "Which of you is this?" screens are not part of this task. Raised G19/N19 (an email sign-in turned away for another reason).
 - **Guide:** §5.1, §6.4, §6.5. **Prototype:** `signin.html`.
 - **Do:** Google sign-in (popup, as today), email and password, and no registration (§9.2 Q2); Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
 
