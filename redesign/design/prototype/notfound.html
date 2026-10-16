@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not here</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  .message .addr { display: inline-block; margin-top: 14px; font-size: 13.5px; color: var(--ink-2); background: #fdf6f8; box-shadow: inset 0 0 0 1px var(--line); border-radius: var(--r-pill); padding: 4px 14px; overflow-wrap: anywhere; max-width: 100%; }
+  .places { list-style: none; margin: 40px auto 0; max-width: 460px; }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+/* N2: an address that leads nowhere. Signed in: the shell stays, with two ways back and the places you know.
+   Signed out (?state=signedout): nothing about the wedding shows; the way back is signing in. */
+const V = Veil, S = V.STATE;
+const wanted = new URLSearchParams(location.search).get("path") || "/budget/bookings/old-link";
+if (S === "signedout") {
+  document.body.innerHTML = `<main><div class="message">${V.ICON.knot}<h1>This page isn't here</h1><p>The address doesn't lead anywhere in the planner. Sign in and you'll start from the overview.</p><div class="acts"><a class="btn" href="signin.html">Sign in</a></div></div></main><details class="proto"><summary>Prototype</summary><div class="box"><b>States</b><a href="notfound.html">Signed in</a><a href="notfound.html?state=signedout" aria-current="true">Signed out</a><b>Screens</b><a href="index.html">All screens and states</a></div></details>`;
+  document.title = "Not here · Our wedding planner";
+  document.head.insertAdjacentHTML("beforeend", `<link rel="icon" href="assets/identity/favicon.svg" type="image/svg+xml">`);
+} else V.init({
+  noun: "this page", section: "none",
+  states: [["signedout", "Signed out"]],
+  render(main) {
+    main.innerHTML = `<div class="message">${V.ICON.knot}<h1>This page isn't here</h1>
+      <p>The address may be mistyped, or it points to something that has moved. Nothing has changed in the planner.</p>
+      <span class="addr" dir="auto">${V.esc(wanted)}</span>
+      <div class="acts"><button class="btn quiet" id="menu">Open the menu</button><a class="btn" href="${V.href("overview.html")}">Go to the overview</a></div></div>
+      <ul class="doors places" aria-label="Places you know">
+        <li><a href="${V.href("budget.html")}"><span class="t">Budget</span><span class="v">Bookings, payments and who pays</span>${V.ICON.chev}</a></li>
+        <li><a href="${V.href("schedule.html")}"><span class="t">Schedule</span><span class="v">What's coming up</span>${V.ICON.chev}</a></li>
+        <li><a href="${V.href("guests.html")}"><span class="t">Guests</span><span class="v">Who's coming to what</span>${V.ICON.chev}</a></li>
+      </ul>`;
+    V.$("#menu").onclick = () => V.$(".top .menu-btn").click();
+  },
+});
+</script>
+</body>
+</html>

@@ -96,3 +96,11 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
 - Questions 20–23 were decided with the designer's suggestions: decimal commas and full-ink placeholders (built into the prototype), the link sheet keeps Save, a finalist keeps its own next step.
 - From here on: a change to the guide bumps the version and is logged in `decisions.md`. New stories arrive through `needs.md` (open needs).
 
+
+## Open needs
+- 2026-10-16: **N1–N14 designed** (one session). The guide and tokens are **v1.1 (2026-10-16)**; each answer is logged under its ID in `decisions.md`, and `coverage.md` maps each need to the prototype.
+  - New screens: `prototype/identity.html` (the mark, name and colours on devices, N1) and `prototype/notfound.html` (N2). New files: `prototype/manifest.webmanifest`, `prototype/assets/identity/`.
+  - New shared behaviour in `assets/app.js`: tab titles and icons, `?state=crash`, "isn't here" for unknown records, the self toast, undo that can't, confirms that couldn't finish, the wedding day and after, and the reminder rules.
+  - Three new questions (24–26) with suggestions, built in the suggested way.
+  - Not seen rendered (the browser is blocked here). Open `prototype/index.html`, then `identity.html` first.
+- Still open: N15–N18.

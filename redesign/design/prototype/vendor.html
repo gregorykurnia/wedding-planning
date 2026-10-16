@@ -17,7 +17,7 @@
 <script>
 const V = Veil, S = V.STATE, d = V.data;
 const id = new URLSearchParams(location.search).get("id") || (V.STRESS ? "sv-long" : "kebun");
-const v = d.vendors.find((x) => x.id === id);
+let v = d.vendors.find((x) => x.id === id);
 let editingNotes = false;
 const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
 const preferred = () => v.prices.find((o) => o.preferred) || null;
@@ -64,7 +64,8 @@ function optionSheet(o) {
 }
 
 function render(main) {
-  if (!v) { main.innerHTML = `<a class="back" href="${V.href("vendors.html")}">${V.ICON.back}Vendors</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "No vendors in demonstration mode" : "This vendor isn't here any more"}</h1><p>${V.DEMO ? "The planner isn't connected to its database yet." : "Open Vendors to see everyone you're considering."}</p><div class="acts"><a class="btn" href="${V.href("vendors.html")}">See all vendors</a></div></div>`; return; }
+  if (!v && V.DEMO) { main.innerHTML = `<a class="back" href="${V.href("vendors.html")}">${V.ICON.back}Vendors</a><div class="message">${V.ICON.knot}<h1>No vendors in demonstration mode</h1><p>The planner isn't connected to its database yet.</p><div class="acts"><a class="btn" href="${V.href("vendors.html")}">See all vendors</a></div></div>`; return; }
+  if (!v) { main.innerHTML = V.notHere("vendor", "all vendors", "vendors.html", "Vendors"); return; }
   document.title = v.name;
   const p = preferred(), b = booking(), f = finalist();
   const stageChips = d.STAGES.concat([["out", "Ruled out"]]).map(([k, l]) => `<button class="chip" data-stage="${k}" aria-pressed="${v.stage === k}">${l}</button>`).join("");
@@ -105,7 +106,8 @@ function render(main) {
     <section class="card" style="margin-top:56px;text-align:center">
       ${f ? `<h2 class="serif" style="font-size:26px;font-weight:500">On the shortlist</h2><p class="note" style="margin-top:6px">The shortlist has its own copy, so you can compare packages there without changing this vendor. New files here appear there too.</p><p style="margin-top:16px"><a class="btn quiet" href="${V.href("finalist.html", { id: f.id })}">Open on the shortlist</a></p>`
         : `<h2 class="serif" style="font-size:26px;font-weight:500">Narrowing down ${V.esc(v.category)}?</h2><p class="note" style="margin-top:6px">Copy this vendor to the shortlist with its prices, contact, reviews, notes and files. This vendor stays exactly as it is.</p><p style="margin-top:16px"><button class="btn" id="copy" ${V.DEMO ? "disabled" : ""}>Copy to the shortlist</button></p>${V.demoLine("copying")}`}
-    </section>`;
+    </section>
+    <div class="danger-zone"><button class="link rose" id="remove">Remove this vendor</button></div>`;
   wire(main);
 }
 
@@ -141,6 +143,17 @@ function wire(main) {
   V.$("#add-opt", main).onclick = () => optionSheet(null);
   const en = V.$("#edit-notes", main); if (en) en.onclick = () => { editingNotes = true; V.rerender(); V.$("#notes").focus(); };
   const dn = V.$("#done-notes", main); if (dn) dn.onclick = () => { v.notes = V.$("#notes").value; editingNotes = false; V.rerender(); };
+  /* N10: added by mistake or twice. Confirm, then a few seconds to change your mind. What came from it
+     (a booking, a shortlist copy, its files in Files) stays, and the confirm says so. */
+  V.$("#remove", main).onclick = async () => {
+    const b = booking(), f = finalist(), what = [v.prices.length ? V.plural(v.prices.length, "price option") : null, v.notes ? "notes" : null].filter(Boolean);
+    const stays = [v.files.length ? `${v.files.length === 1 ? "Its file stays" : `Its ${v.files.length} files stay`} in Files › Vendors › ${V.esc(v.name)}.` : "", f ? "Its copy on the shortlist stays." : "", b ? "Its booking stays in the budget." : ""].filter(Boolean).join(" ");
+    if (!await V.confirm({ title: `Remove ${v.name}?`, body: `It leaves Vendors${what.length ? `, with its ${V.andList(what)}` : ""}. ${stays ? stays + " " : ""}You can undo for a few seconds.`, action: "Remove vendor", danger: true })) return;
+    const i = d.vendors.indexOf(v), kept = v;
+    d.vendors.splice(i, 1); v = null;
+    main.innerHTML = `<a class="back" href="${V.href("vendors.html")}">${V.ICON.back}Vendors</a><div class="message">${V.ICON.knot}<h1 dir="auto">${V.esc(kept.name)} was removed</h1><p>It's no longer in Vendors.</p><div class="acts"><a class="btn" href="${V.href("vendors.html")}">See all vendors</a></div></div>`;
+    V.saved(`Removed ${V.esc(kept.name)}`, () => { d.vendors.splice(i, 0, kept); v = kept; V.rerender(); });
+  };
   const cp = V.$("#copy", main);
   if (cp) cp.onclick = () => {
     cp.classList.add("busy"); cp.textContent = "Copying";
@@ -155,7 +168,7 @@ function wire(main) {
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "this vendor",
-  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["removefail", "Removing couldn't finish"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render,
 });
 </script>

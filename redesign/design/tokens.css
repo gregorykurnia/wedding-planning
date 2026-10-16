@@ -1,5 +1,6 @@
 /* =====================================================================
-   Veil design tokens, v1.0 (2026-10-14), frozen with design-guide.md
+   Veil design tokens, v1.1 (2026-10-16), with design-guide.md v1.1
+   (v1.0 frozen 2026-10-14; v1.1 adds the app identity colours for N1)
    Taken from the stage 2 prototype (prototype/assets/veil.css, editor.css,
    schedule.css and the per-screen <style> blocks). Light only: the brief
    says dark mode isn't needed (decisions.md, stage 2 session 1).
@@ -317,6 +318,19 @@
   --z-popover:        45; /* editor colour, table size and link bubble */
   --z-toast:          50;
   /* 60 is taken by the prototype's state switcher, which is not part of the design. */
+
+  /* ------------------------------------------------------------------
+     15. App identity (v1.1, N1). Outside the page only: the manifest,
+     theme-color and the icon files in prototype/assets/identity/.
+     ------------------------------------------------------------------ */
+  --app-theme:       #fce6ec;  /* theme_color: browser bar, installed window title bar (= --glow-blush) */
+  --app-splash:      #ffffff;  /* background_color: the opening screen */
+  --app-mark:        #8a6a2e;  /* the knot on the icon (= --accent-gold-text): 4,2:1 on blush, 3,5:1 at the deepest light; a graphic needs 3:1 */
+  --app-tile-blush:  #f9cbd8;  /* the icon's top-right light, deepest point */
+  --app-tile-gold:   #efdcb7;  /* the icon's bottom-left light, deepest point */
+
+  /* Self avatar in a toast (v1.1, N3): your own other device. [.toast .ava.self]
+     --glow-champagne behind --accent-gold-text-on-tint; the partner keeps --glow-blush. */
 }
 
 /* Phone overrides: the values that change under --bp-phone. */

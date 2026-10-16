@@ -17,7 +17,7 @@
 <script>
 const V = Veil, S = V.STATE, d = V.data;
 const id = new URLSearchParams(location.search).get("id") || (V.STRESS ? "sf-deep" : "f-kebun");
-const f = d.finalists.find((x) => x.id === id);
+let f = d.finalists.find((x) => x.id === id);
 const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
 const pref = () => f.packages.find((p) => p.preferred) || null;
 let editingNotes = false;
@@ -92,7 +92,8 @@ function moveSheet(to) {
 }
 
 function render(main) {
-  if (!f) { main.innerHTML = `<a class="back" href="${V.href("shortlist.html")}">${V.ICON.back}Shortlist</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "Nothing on the shortlist in demonstration mode" : "This finalist isn't here any more"}</h1><div class="acts"><a class="btn" href="${V.href("shortlist.html")}">See the shortlist</a></div></div>`; return; }
+  if (!f && V.DEMO) { main.innerHTML = `<a class="back" href="${V.href("shortlist.html")}">${V.ICON.back}Shortlist</a><div class="message">${V.ICON.knot}<h1>Nothing on the shortlist in demonstration mode</h1><div class="acts"><a class="btn" href="${V.href("shortlist.html")}">See the shortlist</a></div></div>`; return; }
+  if (!f) { main.innerHTML = V.notHere("finalist", "the shortlist", "shortlist.html", "Shortlist"); return; }
   document.title = f.name;
   const p = pref(), booked = f.moved === "booking";
   const vendor = f.vendor && d.vendors.find((v) => v.id === f.vendor);
@@ -132,7 +133,8 @@ function render(main) {
 
     ${booked ? "" : `<section class="card" style="margin-top:56px;text-align:center"><h2 class="serif" style="font-size:26px;font-weight:500">Chosen this one?</h2>
       <p class="note" style="margin-top:6px">Book it to make it a confirmed booking${vendor ? "" : ", or move it into Vendors to keep it on file"}. Its details come along, so nothing is typed twice.</p>
-      <p style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">${vendor ? "" : `<button class="btn quiet" id="to-vendors">Move into Vendors</button>`}<button class="btn" id="to-booking">Book it</button></p></section>`}`;
+      <p style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">${vendor ? "" : `<button class="btn quiet" id="to-vendors">Move into Vendors</button>`}<button class="btn" id="to-booking">Book it</button></p></section>`}
+    <div class="danger-zone"><button class="link rose" id="remove">Remove from the shortlist</button></div>`;
 
   V.$$("[data-k]", main).forEach((el) => el.addEventListener("change", () => { const k = el.dataset.k; save(() => { f[k] = ["reviews", "followers"].includes(k) ? (el.value ? num(el.value) : null) : el.value; }, () => { if (k === "phone") V.rerender(); }); }));
   V.$$("[data-pref]", main).forEach((b) => b.onclick = () => save(() => f.packages.forEach((k) => k.preferred = k.id === b.dataset.pref), () => V.rerender()));
@@ -145,13 +147,23 @@ function render(main) {
   V.$("#add-pkg", main).onclick = () => packageSheet(null);
   const en = V.$("#edit-notes", main); if (en) en.onclick = () => { editingNotes = true; V.rerender(); V.$("#notes").focus(); };
   const dn = V.$("#done-notes", main); if (dn) dn.onclick = () => { f.notes = V.$("#notes").value; editingNotes = false; V.rerender(); };
+  /* N10: remove a finalist added by mistake or twice; the vendor it came from and any booking stay. */
+  V.$("#remove", main).onclick = async () => {
+    const bk = d.bookings.find((b) => b.id === f.id || (vendor && b.id === vendor.id));
+    const stays = [vendor ? `${V.esc(vendor.name)} stays in Vendors, files and all.` : f.files.length ? `${f.files.length === 1 ? "Its file stays" : `Its ${f.files.length} files stay`} in Files › Shortlist › ${V.esc(f.name)}.` : "", bk ? "Its booking stays in the budget." : ""].filter(Boolean).join(" ");
+    if (!await V.confirm({ title: `Remove ${f.name} from the shortlist?`, body: `It leaves the shortlist${f.packages.length ? `, with its ${V.plural(f.packages.length, "package")}` : ""}. ${stays ? stays + " " : ""}You can undo for a few seconds.`, action: "Remove finalist", danger: true })) return;
+    const i = d.finalists.indexOf(f), kept = f;
+    d.finalists.splice(i, 1); f = null;
+    main.innerHTML = `<a class="back" href="${V.href("shortlist.html")}">${V.ICON.back}Shortlist</a><div class="message">${V.ICON.knot}<h1 dir="auto">${V.esc(kept.name)} was removed from the shortlist</h1><div class="acts"><a class="btn" href="${V.href("shortlist.html")}">See the shortlist</a></div></div>`;
+    V.saved(`Removed ${V.esc(kept.name)} from the shortlist`, () => { d.finalists.splice(i, 0, kept); f = kept; V.rerender(); });
+  };
   const tb = V.$("#to-booking", main); if (tb) tb.onclick = () => moveSheet("booking");
   const tv = V.$("#to-vendors", main); if (tv) tv.onclick = () => moveSheet("vendors");
 }
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "this finalist",
-  states: [["booking", "Booking it"], ["uploading", "Uploading files"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["booking", "Booking it"], ["removefail", "Removing couldn't finish"], ["uploading", "Uploading files"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render,
 });
 if (S === "booking" && f) moveSheet("booking");

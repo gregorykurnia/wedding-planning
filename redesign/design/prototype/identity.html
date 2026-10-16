@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On your devices · Greg &amp; Bella</title>
+<link rel="icon" href="assets/identity/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/identity/icon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#fce6ec">
+<meta name="apple-mobile-web-app-title" content="Greg &amp; Bella">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/veil.css">
+<style>
+  main { max-width: 1040px; }
+  .sec { margin-top: 64px; }
+  .sec > h2 { font-family: var(--serif); font-size: 30px; font-weight: 500; text-align: center; }
+  .sec > p.sub { text-align: center; margin-top: 6px; }
+  .stage-row { display: flex; flex-wrap: wrap; gap: 28px 36px; justify-content: center; align-items: flex-end; margin-top: 28px; }
+  .stage-row figure { display: grid; justify-items: center; gap: 10px; }
+  .stage-row figcaption { font-size: 13px; color: var(--ink-2); text-align: center; }
+  .shadowed { box-shadow: 0 18px 40px -22px rgba(51,38,44,.45); border-radius: 22%; }
+  .masks img { width: 108px; height: 108px; }
+  .masks .circle { border-radius: 50%; } .masks .squircle { border-radius: 30%; } .masks .tear { border-radius: 50% 50% 50% 12%; }
+  .mono { width: 108px; height: 108px; border-radius: 50%; display: grid; place-items: center; }
+  .mono span { width: 64px; height: 64px; display: block; -webkit-mask: url(assets/identity/icon-mono.svg) center / contain no-repeat; mask: url(assets/identity/icon-mono.svg) center / contain no-repeat; }
+  .names-t { margin: 26px auto 0; max-width: 680px; }
+  .names-t .field .v { font-size: 16px; }
+  .names-t .field .v.serif { font-family: var(--serif); font-size: 22px; }
+  /* phone mock-ups */
+  .phones { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; margin-top: 28px; }
+  .phone { width: 250px; height: 500px; border-radius: 40px; padding: 12px; background: #1d1a1c; box-shadow: 0 30px 60px -30px rgba(51,38,44,.6); }
+  .screen { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; position: relative; }
+  .wall-light { background: linear-gradient(160deg, #dfe8f1, #f3ece4 60%, #e9dfe8); }
+  .wall-dark { background: linear-gradient(160deg, #1f2638, #2b2433 60%, #151317); }
+  .bar { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-size: 11px; font-weight: 500; }
+  .wall-dark .bar, .wall-dark .lbl { color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; padding: 18px 14px; }
+  .app { display: grid; justify-items: center; gap: 5px; }
+  .tile { width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,.55); }
+  .wall-dark .tile { background: rgba(255,255,255,.14); }
+  .app img { width: 46px; height: 46px; border-radius: 12px; }
+  .lbl { font-size: 10px; color: #222; white-space: nowrap; max-width: 58px; overflow: hidden; text-overflow: ellipsis; }
+  .android .app img { border-radius: 50%; }
+  .android .mono-tile { width: 46px; height: 46px; border-radius: 50%; background: #e6dfd2; display: grid; place-items: center; }
+  .android .mono-tile span { width: 30px; height: 30px; display: block; background: #5b4f3b; -webkit-mask: url(assets/identity/icon-mono.svg) center / contain no-repeat; mask: url(assets/identity/icon-mono.svg) center / contain no-repeat; }
+  .android .gtile { width: 46px; height: 46px; border-radius: 50%; background: #e6dfd2; }
+  .cap { text-align: center; font-size: 13px; color: var(--ink-2); margin-top: 10px; max-width: 250px; }
+  .splash { background: #fff; display: grid; place-items: center; align-content: center; gap: 18px; height: 100%; }
+  .splash img { width: 96px; height: 96px; border-radius: 22px; }
+  .splash p { font-family: var(--serif); font-size: 24px; text-align: center; line-height: 1.15; padding: 0 20px; }
+  .note-card { position: absolute; left: 10px; right: 10px; top: 44px; background: rgba(255,255,255,.88); backdrop-filter: blur(16px); border-radius: 18px; padding: 10px 12px; display: grid; grid-template-columns: 34px 1fr; gap: 4px 10px; font-size: 12px; color: #1d1a1c; box-shadow: 0 10px 30px -14px rgba(0,0,0,.35); }
+  .note-card img { width: 34px; height: 34px; border-radius: 9px; grid-row: span 3; }
+  .note-card .app-n { display: flex; justify-content: space-between; color: #6b6b6b; font-size: 11px; }
+  .note-card b { font-weight: 500; }
+  .lock-time { text-align: center; color: #fff; font-size: 54px; font-weight: 300; margin-top: 70px; }
+  .wall-dark .note-card { top: 160px; }
+  /* desktop mock-ups */
+  .desk { margin: 28px auto 0; max-width: 880px; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 60px -30px rgba(51,38,44,.5); border: 1px solid var(--line-2); }
+  .tabs { background: #ede7ea; display: flex; align-items: flex-end; gap: 4px; padding: 8px 10px 0 76px; position: relative; }
+  .tabs::before { content: ""; position: absolute; left: 14px; top: 14px; width: 48px; height: 12px; background: radial-gradient(circle, #ff6159 5px, transparent 6px) 0 0/16px 12px repeat-x; }
+  .tab { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px 10px 0 0; font-size: 12.5px; color: #4a4045; width: 210px; white-space: nowrap; overflow: hidden; }
+  .tab.on { background: #fff; }
+  .tab img { width: 16px; height: 16px; flex: none; }
+  .tab .g { width: 16px; height: 16px; border-radius: 4px; background: #c9c2c6; flex: none; }
+  .addr { background: #fff; padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); }
+  .pwa-bar { background: #fce6ec; display: flex; align-items: center; gap: 10px; padding: 9px 14px 9px 80px; font-size: 13px; position: relative; color: #33262c; }
+  .pwa-bar::before { content: ""; position: absolute; left: 14px; top: 13px; width: 48px; height: 12px; background: radial-gradient(circle, #ff6159 5px, transparent 6px) 0 0/16px 12px repeat-x; }
+  .pwa-bar img { width: 18px; height: 18px; }
+  .page-peek { height: 150px; background: radial-gradient(60% 120% at 100% 0, #fce6ec, transparent 60%), #fff; display: flex; justify-content: space-between; padding: 22px 28px; font-family: var(--serif); font-size: 22px; }
+  .page-peek i { color: var(--champagne); }
+  .dock { margin: 34px auto 0; width: max-content; max-width: 100%; display: flex; gap: 12px; padding: 10px 14px; border-radius: 22px; background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(51,38,44,.12); position: relative; }
+  .dock .tile { width: 54px; height: 54px; border-radius: 14px; background: #d9d2d6; }
+  .dock img { width: 54px; height: 54px; }
+  .dock .tip { position: absolute; top: -34px; left: 50%; transform: translateX(-50%); background: rgba(40,36,38,.85); color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 8px; white-space: nowrap; }
+  .rules { margin: 30px auto 0; max-width: 680px; font-size: 15px; }
+  .rules li + li { margin-top: 8px; }
+  @media (max-width: 760px) { .phone { width: 220px; height: 440px; } .tab { width: 150px; } }
+</style>
+</head>
+<body>
+<header class="top"><a class="couple" href="overview.html">Greg <span>&amp;</span> Bella</a><span></span><a class="menu-btn" href="index.html" style="text-decoration:none"><i></i>Screens</a></header>
+<main>
+  <section class="hero"><p class="sub">N1</p><h1>On your devices</h1><p class="sub">Where the planner shows its own name, mark and colours outside its pages: tabs, home screens, the Dock, the opening screen and reminders.</p></section>
+
+  <section class="sec"><h2>The mark</h2><p class="sub">The ribbon knot from the planner's quiet moments, drawn heavier, in gold ink on the page's corner light.</p>
+    <div class="stage-row">
+      <figure><img class="shadowed" src="assets/identity/icon.svg" width="200" height="200" alt="The app mark: a gold ribbon knot on blush and champagne light"><figcaption>App icon, 512 and up</figcaption></figure>
+      <figure><img class="shadowed" src="assets/identity/icon.svg" width="96" height="96" alt=""><figcaption>96</figcaption></figure>
+      <figure><img class="shadowed" src="assets/identity/icon.svg" width="60" height="60" alt=""><figcaption>60, home screen</figcaption></figure>
+      <figure><img src="assets/identity/favicon.svg" width="32" height="32" alt=""><figcaption>32, tab</figcaption></figure>
+      <figure><img src="assets/identity/favicon.svg" width="16" height="16" alt=""><figcaption>16, tab</figcaption></figure>
+    </div>
+    <div class="stage-row masks">
+      <figure><img class="circle" src="assets/identity/icon-maskable.svg" alt=""><figcaption>Maskable, circle</figcaption></figure>
+      <figure><img class="squircle" src="assets/identity/icon-maskable.svg" alt=""><figcaption>Maskable, rounded</figcaption></figure>
+      <figure><img class="tear" src="assets/identity/icon-maskable.svg" alt=""><figcaption>Maskable, teardrop</figcaption></figure>
+      <figure><div class="mono" style="background:#e6dfd2"><span style="background:#5b4f3b"></span></div><figcaption>Monochrome, themed (light)</figcaption></figure>
+      <figure><div class="mono" style="background:#2f2a2c"><span style="background:#e6dfd2"></span></div><figcaption>Monochrome, themed (dark)</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec"><h2>The name</h2>
+    <div class="fields names-t">
+      <div class="field"><span class="lab">Full name</span><span class="v serif">Gregory &amp; Bella's Wedding</span><p class="hint">From the brief. Install prompts, the opening screen, the app switcher on a computer.</p></div>
+      <div class="field"><span class="lab">Short name</span><span class="v serif">Greg &amp; Bella</span><p class="hint">Under the icon on a home screen and in the Dock, where about 12 characters fit.</p></div>
+      <div class="field"><span class="lab">Browser tab</span><span class="v">Budget · Greg &amp; Bella</span><p class="hint">The screen, then what the top bar says. Before signing in and in demonstration mode: “Sign in · Our wedding planner”.</p></div>
+      <div class="field"><span class="lab">Colours</span><span class="v">Blush <code>#fce6ec</code> for the browser and window bar; white <code>#ffffff</code> behind the opening screen; gold ink <code>#8a6a2e</code> for the mark</span></div>
+    </div>
+  </section>
+
+  <section class="sec"><h2>On a phone</h2><p class="sub">The light tile stands out on light and dark wallpapers alike.</p>
+    <div class="phones">
+      <div><div class="phone"><div class="screen wall-light"><div class="bar"><span>11:30</span><span>●●● ▮</span></div>
+        <div class="grid"></div></div></div><p class="cap">iPhone home screen, light wallpaper</p></div>
+      <div><div class="phone"><div class="screen wall-dark"><div class="bar"><span>11:30</span><span>●●● ▮</span></div>
+        <div class="grid"></div></div></div><p class="cap">iPhone home screen, dark wallpaper</p></div>
+      <div><div class="phone android"><div class="screen wall-light"><div class="bar"><span>11:30</span><span>▾ ▮</span></div>
+        <div class="grid" id="android"></div></div></div><p class="cap">Android with themed icons: the monochrome mark takes the system's colours</p></div>
+      <div><div class="phone"><div class="screen splash"><img src="assets/identity/icon.svg" alt=""><p>Gregory &amp; Bella's Wedding</p></div></div><p class="cap">Opening screen while the planner starts: white, the mark and the full name</p></div>
+      <div><div class="phone"><div class="screen wall-dark"><div class="bar"><span></span><span>●●● ▮</span></div><p class="lock-time">7:02</p>
+        <div class="note-card"><img src="assets/identity/icon.svg" alt=""><span class="app-n"><span>GREG &amp; BELLA</span><span>now</span></span><b>Tomorrow: Tasting at Sendok Emas</b><span>11:00, Jl. Raya Kerobokan 88, Kerobokan</span></div></div></div><p class="cap">A morning reminder on the lock screen (N11): the mark and short name say where it's from</p></div>
+    </div>
+  </section>
+
+  <section class="sec"><h2>On a computer</h2>
+    <div class="desk">
+      <div class="tabs"><span class="tab"><span class="g"></span>Inbox</span><span class="tab on"><img src="assets/identity/favicon.svg" alt="">Budget · Greg &amp; Bella</span><span class="tab"><span class="g"></span>Flights to Tokyo</span></div>
+      <div class="addr">planner address</div>
+      <div class="page-peek"><span>Greg <i>&amp;</i> Bella</span><span style="font-family:var(--sans);font-size:14px">Menu</span></div>
+    </div>
+    <p class="cap" style="margin:10px auto 0;max-width:none">In a browser tab: the favicon and “screen · names”</p>
+    <div class="desk">
+      <div class="pwa-bar"><img src="assets/identity/favicon.svg" alt="">Gregory &amp; Bella's Wedding</div>
+      <div class="page-peek"><span>Greg <i>&amp;</i> Bella</span><span style="font-family:var(--sans);font-size:14px">Menu</span></div>
+    </div>
+    <p class="cap" style="margin:10px auto 0;max-width:none">Installed on a Mac: its own window with a blush title bar</p>
+    <div class="dock"><span class="tile"></span><span class="tile"></span><img src="assets/identity/icon.svg" alt=""><span class="tile"></span><span class="tile"></span><span class="tip">Greg &amp; Bella</span></div>
+  </section>
+
+  <section class="sec"><h2>Rules</h2>
+    <ul class="rules">
+      <li>One mark everywhere: the knot. Don't add the names to the icon; the label under it carries them.</li>
+      <li>The mark is gold ink, never rose: rose means something needs you, and an icon never does.</li>
+      <li>Export PNGs from the SVGs for the places that don't take SVG: 180 × 180 for iPhone, 192 and 512 for Android (plus the maskable 512), and a 32 × 32 favicon fallback.</li>
+      <li>The opening screen is white with the mark, so the step into the white page is calm.</li>
+      <li>The tab name follows the top bar: it changes when you change your names in Wedding settings, and it never shows names before signing in.</li>
+    </ul>
+  </section>
+</main>
+<script>
+const ours = (round) => `<div class="app"><img src="assets/identity/${round ? "icon-maskable" : "icon"}.svg" alt=""><span class="lbl">Greg &amp; Bella</span></div>`;
+document.querySelectorAll(".phone:not(.android) .grid").forEach((g) => { g.innerHTML = Array.from({ length: 16 }, (_, i) => i === 6 ? ours(false) : `<div class="app"><span class="tile"></span><span class="lbl">&nbsp;</span></div>`).join(""); });
+document.getElementById("android").innerHTML = Array.from({ length: 16 }, (_, i) => i === 5 ? `<div class="app"><span class="mono-tile"><span></span></span><span class="lbl">Greg &amp; Bella</span></div>` : `<div class="app"><span class="gtile"></span><span class="lbl">&nbsp;</span></div>`).join("");
+</script>
+</body>
+</html>

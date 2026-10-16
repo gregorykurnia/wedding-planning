@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Browser tab: the same tile, the knot heavier so it holds at 16 px. -->
+  <rect width="64" height="64" rx="15" fill="#fce6ec"/>
+  <g transform="translate(-2.2 -8.5) scale(.95)" fill="none" stroke="#8a6a2e" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"><path d="M36 36c-8-10-22-14-24-6s14 10 24 6zM36 36c8-10 22-14 24-6s-14 10-24 6z"/><path d="M36 36c-4 8-10 18-14 24M36 36c4 8 10 18 14 24"/><circle cx="36" cy="36" r="4.6" fill="#8a6a2e" stroke="none"/></g>
+</svg>

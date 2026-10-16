@@ -64,7 +64,7 @@
         price: 18.5 * M, paid: 20 * M, funder: "bella", due: null, step: "", files: [] },
       { id: "peony", name: "Paper & Peony", category: "Invitations", origin: { from: "direct", on: "2026-09-21" }, estimate: null,
         price: 14.3 * M, paid: 7.15 * M, funder: null, due: "2026-10-21", step: "Approve the proof and pay the balance", files: [] },
-      { id: "cincin", name: "Rumah Cincin", category: "Rings", origin: { from: "direct", on: "2026-05-10" }, estimate: null,
+      { id: "cincin", name: "Rumah Cincin", category: "Rings", origin: { from: "direct", on: null }, estimate: null,
         price: 46 * M, paid: 46 * M, funder: "greg", due: null, step: "", files: [{ name: "Ring receipt.pdf", size: "220 KB", type: "pdf" }] },
       { id: "sakura", name: "Sakura Transport", category: "Transport", origin: { from: "vendor", on: "2026-10-01" }, estimate: 10 * M,
         price: 12 * M, paid: 0, funder: null, due: "2027-03-10", step: "Confirm the cars and pay", files: [] },

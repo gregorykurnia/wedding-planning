@@ -198,12 +198,12 @@ function guestSheet(g) {
 
 V.init({
   where: "Guests", section: "guests.html", noun: "your guests", wide: true,
-  states: [["empty", "No guests yet"], ["noresults", "No results"], ["waiting", "Who hasn't replied"], ["guest", "A guest's details"], ["remove", "Removing a guest"], ["savefail", "A reply didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella records an RSVP"]],
+  states: [["empty", "No guests yet"], ["noresults", "No results"], ["waiting", "Who hasn't replied"], ["guest", "A guest's details"], ["remove", "Removing a guest"], ["removefail", "Removing couldn't finish"], ["savefail", "A reply didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella records an RSVP"]],
   render,
   sync() { setTimeout(() => { const g = d.guests.find((x) => x.rsvp === "waiting"); if (!g) return; g.rsvp = "yes"; V.rerender(); const li = V.$(`.grow[data-no="${g.no}"]`); if (li) li.classList.add("flash"); V.toast(`${V.esc(d.partner)} marked ${V.esc(g.name)} as attending`, { from: d.partner, ms: 9000 }); }, 1600); },
 });
 if (S === "guest" && d.guests.length) guestSheet(d.guests.find((g) => g.no === 3) || d.guests[0]);
-if (S === "remove" && d.guests.length) { guestSheet(d.guests.find((g) => g.no === 3) || d.guests[0]); const b = V.$(".sheet [data-del]"); if (b) b.click(); }
+if ((S === "remove" || S === "removefail") && d.guests.length) { guestSheet(d.guests.find((g) => g.no === 3) || d.guests[0]); const b = V.$(".sheet [data-del]"); if (b) b.click(); }
 </script>
 </body>
 </html>

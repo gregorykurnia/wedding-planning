@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in</title>
+<title>Sign in · Our wedding planner</title>
+<link rel="icon" href="assets/identity/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/identity/icon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#fce6ec">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Jost:wght@300..600&display=swap" rel="stylesheet">
@@ -25,12 +29,17 @@
   .gate .problem { margin-top: 20px; text-align: left; border-radius: 16px; padding: 14px 18px; font-size: 14.5px; background: var(--rose-soft); color: var(--rose-ink); }
   .gate .problem.calm { background: rgba(244,234,215,.75); color: var(--gold-ink-tint); }
   .gate .foot { margin-top: 26px; font-size: 13.5px; color: var(--ink-2); }
+  .gate .problem .link { color: inherit; }
+  .gate .wait { margin-top: 20px; text-align: left; border-radius: 16px; padding: 14px 18px; font-size: 14.5px; background: rgba(244,234,215,.75); color: var(--gold-ink-tint); display: flex; gap: 10px 16px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+  .gate .who-chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  .gate .who-chips .chip { font-family: var(--serif); font-size: 24px; padding: 10px 26px; }
+  .gate .acct { margin-top: 26px; font-size: 14.5px; color: var(--ink-2); overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
 <div class="gate" id="gate"></div>
 <details class="proto"><summary>Prototype</summary><div class="box"><b>States</b>
-  <a href="signin.html">Normal</a><a href="signin.html?state=busy">Signing in</a><a href="signin.html?state=wrong">Wrong email or password</a><a href="signin.html?state=notallowed">Account not allowed</a><a href="signin.html?state=signedout">Just signed out</a><a href="signin.html?state=offline">Offline</a><a href="signin.html?state=demo">Not connected (demonstration)</a>
+  <a href="signin.html">Normal</a><a href="signin.html?state=busy">Signing in</a><a href="signin.html?state=wrong">Wrong email or password</a><a href="signin.html?state=notallowed">Account not allowed</a><a href="signin.html?state=signedout">Just signed out</a><a href="signin.html?state=offline">Offline</a><a href="signin.html?state=demo">Not connected (demonstration)</a><a href="signin.html?state=google-waiting">Waiting for the Google window</a><a href="signin.html?state=google-closed">Google window closed</a><a href="signin.html?state=google-blocked">Google window blocked</a><a href="signin.html?state=google-failed">Google sign-in failed</a><a href="signin.html?state=whoami">Which of you is this?</a><a href="signin.html?state=whoami-new">First sign-in, no names yet</a>
   <b>Screens</b><a href="index.html">All screens and states</a></div></details>
 <script>
 const S = new URLSearchParams(location.search).get("state") || "normal";
@@ -42,11 +51,32 @@ const problem = {
   notallowed: `<p class="problem" role="alert">You're signed in as <b>someone.else@gmail.com</b>, which isn't one of the two accounts that can open this planner. Sign in with Greg's or Bella's account instead.</p>`,
   signedout: `<p class="problem calm" role="status">You've signed out. Nothing is shown on this device until one of you signs in again.</p>`,
   offline: `<p class="problem calm" role="status">You're offline. Signing in needs a connection; try again once this device is back online.</p>`,
+  /* N4: the Google window closed, was blocked or failed before signing in finished. Say which, keep both ways in. */
+  "google-closed": `<p class="problem calm" role="status">The Google window closed before signing in finished, so you're not signed in yet. Continue with Google to try again.</p>`,
+  "google-blocked": `<p class="problem" role="alert">Your browser blocked the Google window. Allow pop-ups for the planner in the browser's address bar, then continue with Google again. Or sign in with your email below.</p>`,
+  "google-failed": `<p class="problem" role="alert">Google couldn't finish signing you in. Nothing was changed. Try again in a moment, or sign in with your email below.</p>`,
 }[S] || "";
-document.getElementById("gate").innerHTML = `${knot}<h1>Our wedding planner</h1><p class="sub">For the two of us only. Sign in to see everything.</p>
+const waiting = S === "google-waiting";
+/* N3: the first time an account signs in, the planner asks which of the two names is theirs, so news of a
+   partner's change names the right person and your own changes on another device are never reported as theirs.
+   Asked once per account, and only while neither account has a name. If one has, the other name is taken. */
+if (S === "whoami" || S === "whoami-new") {
+  document.getElementById("gate").innerHTML = `${knot}<h1>Welcome</h1><p class="sub">You're signed in as <b>bella@example.com</b>.</p>
+    ${S === "whoami" ? `<p class="sub" style="margin-top:22px">Which of you is this?</p>
+      <div class="who-chips" role="radiogroup" aria-label="Which of you is this"><button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Greg</button><button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Bella</button></div>`
+    : `<form id="names" style="margin-top:22px" novalidate><div class="fields" style="border-top:0"><div class="field" style="border-bottom:0"><label for="mine">Your first name</label><input id="mine" dir="auto" autofocus autocomplete="given-name"></div><div class="field" style="border-bottom:0"><label for="theirs">Your partner's first name</label><input id="theirs" dir="auto"></div></div></form>`}
+    <p class="acct">So the planner can say who changed what. You can change this later in Wedding settings.</p>
+    <button class="btn go" id="cont" disabled>Continue</button>`;
+  const cont = document.getElementById("cont");
+  document.querySelectorAll(".who-chips .chip").forEach((c, i, all) => c.onclick = () => { all.forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); cont.disabled = false; cont.textContent = `Continue as ${c.textContent}`; });
+  const nm = document.getElementById("names");
+  if (nm) nm.oninput = () => { cont.disabled = !(document.getElementById("mine").value.trim() && document.getElementById("theirs").value.trim()); };
+  cont.onclick = () => { cont.classList.add("busy"); cont.textContent = "Saving"; setTimeout(() => location.href = "overview.html", 700); };
+} else document.getElementById("gate").innerHTML = `${knot}<h1>Our wedding planner</h1><p class="sub">For the two of us only. Sign in to see everything.</p>
   ${demo ? `<p class="problem calm" style="margin-top:28px">The planner isn't connected to its database yet. You can look around in demonstration mode: there's no data and nothing is saved.</p><p style="margin-top:20px"><a class="btn go" href="overview.html?state=demo">Look around</a></p>`
   : `<form id="f" novalidate>
-    <button type="button" class="btn google" ${busy || off ? "disabled" : ""}>${G}Continue with Google</button>
+    <button type="button" class="btn google ${waiting ? "busy" : ""}" id="google" ${busy || off ? "disabled" : ""} ${waiting ? 'aria-busy="true"' : ""}>${waiting ? "" : G}${waiting ? "Waiting for Google" : S.startsWith("google-") ? "Continue with Google again" : "Continue with Google"}</button>
+    ${waiting ? `<div class="wait" role="status"><span>Finish signing in in the Google window. If you can't see it, it may be behind this one.</span><button type="button" class="link" id="stopwait">Cancel</button></div>` : ""}
     <p class="or">or with email</p>
     <div class="fields" style="border-top:0">
       <div class="field" style="border-bottom:0"><label for="em">Email</label><input id="em" type="email" autocomplete="username" value="${S === "wrong" || busy ? "greg@example.com" : ""}" ${busy ? "readonly" : ""}></div>
@@ -57,6 +87,10 @@ document.getElementById("gate").innerHTML = `${knot}<h1>Our wedding planner</h1>
     ${S === "notallowed" ? `<p class="foot"><button type="button" class="link">Use a different Google account</button></p>` : ""}
   </form>`}`;
 const f = document.getElementById("f");
+const gb = document.getElementById("google");
+if (gb) gb.onclick = () => { if (!waiting) location.href = "signin.html?state=google-waiting"; };
+const sw = document.getElementById("stopwait");
+if (sw) sw.onclick = () => location.href = "signin.html";
 if (f) f.onsubmit = (e) => { e.preventDefault(); const b = f.querySelector(".go"); b.classList.add("busy"); b.textContent = "Signing in"; setTimeout(() => location.href = "overview.html", 900); };
 </script>
 </body>

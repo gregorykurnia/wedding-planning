@@ -1,0 +1,17 @@
+{
+  "name": "Gregory & Bella's Wedding",
+  "short_name": "Greg & Bella",
+  "description": "Our wedding planner, for the two of us.",
+  "lang": "en-GB",
+  "start_url": "overview.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#fce6ec",
+  "icons": [
+    { "src": "assets/identity/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/identity/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "assets/identity/icon-mono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "monochrome" }
+  ]
+}

@@ -173,7 +173,9 @@ function moveSheet({ file, folder }) {
       const to = (V.$("input[name=to]:checked", el) || {}).value || null;
       const t = file || folder, key = file ? "folder" : "parent", old = t[key];
       t[key] = to; V.closeSheet(); V.rerender();
-      V.saved(`Moved to ${V.esc(pathName(to))}`, () => { t[key] = old; V.rerender(); });
+      /* N13: if Bella moved it again in the meantime, Undo says so and leaves it where she put it */
+      V.saved(`Moved to ${V.esc(pathName(to))}`, () => { t[key] = old; V.rerender(); },
+        `Can't move it back: ${V.esc(d.partner)} has since moved ${V.esc(t.name)} to Files › Contracts. It stays there.`);
     };
   });
 }
@@ -215,7 +217,7 @@ function uploadSheet(demoQueue) {
 
 V.init({
   where: "Documents", section: "documents.html", noun: "your files", wide: true,
-  states: [["empty", "No files yet"], ["emptyfolder", "An empty folder"], ["noresults", "No results"], ["uploading", "Uploading"], ["file", "A file's details"], ["moving", "Moving a folder"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella uploads a file"]],
+  states: [["empty", "No files yet"], ["emptyfolder", "An empty folder"], ["noresults", "No results"], ["uploading", "Uploading"], ["file", "A file's details"], ["moving", "Moving a folder"], ["undo-conflict", "Undo a move after Bella moved it again"], ["removefail", "Deleting couldn't finish"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella uploads a file"]],
   render,
   sync() {
     setTimeout(() => {

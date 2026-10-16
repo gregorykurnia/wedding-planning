@@ -17,6 +17,15 @@
   /* Demonstration mode shows nothing about the wedding: no names, no date, nobody signed in. */
   if (DEMO) Object.assign(data, { couple: null, wedding: null, me: { name: "", email: "" }, partner: "your partner", funders: [] });
 
+  /* N7: the day before, the wedding day itself, and the weeks after it while the last payments are settled.
+     Today stays fixed; the wedding date moves. */
+  const isoOf = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+  const shiftDays = (n) => { const x = new Date(TODAY); x.setDate(x.getDate() + n); return isoOf(x); };
+  if (data.wedding && STATE === "eve") data.wedding = shiftDays(1);
+  if (data.wedding && STATE === "day") data.wedding = D.TODAY;
+  if (data.wedding && (STATE === "after" || STATE === "settled")) data.wedding = shiftDays(-12);
+  if (STATE === "settled") data.bookings.forEach((b) => (b.parts || [b]).forEach((p) => { p.paid = p.price; }));
+
   /* ---------- formatting ---------- */
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const group = (n) => Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -86,6 +95,43 @@
   const wiTotal = (w) => wiParts(w).reduce((s, p) => s + (p.price || 0), 0);
   const whatif = () => data.whatifs.reduce((s, w) => s + wiTotal(w), 0);
   const daysLeft = () => data.wedding ? daysFrom(data.wedding) : null;
+  /* N7: where we are relative to the wedding: before it, on the day, or after it. Never a negative countdown. */
+  const wedding = () => { if (!data.wedding) return null; const n = daysFrom(data.wedding); return n > 0 ? { phase: "before", n } : n === 0 ? { phase: "day", n: 0 } : { phase: "after", n: -n }; };
+  /* The closing line on the budget (and anywhere else that counts down) */
+  const daysLine = () => {
+    const w = wedding(); if (!w) return "";
+    if (w.phase === "day") return `<p class="days"><b>Today</b> is the wedding day</p>`;
+    if (w.phase === "after") return `<p class="days"><b>${n0(w.n)}</b> ${w.n === 1 ? "day" : "days"} since the wedding on ${dateLong(data.wedding)}</p>`;
+    return w.n === 1 ? `<p class="days"><b>Tomorrow</b> is the wedding, ${dateLong(data.wedding)}</p>` : `<p class="days"><b>${n0(w.n)}</b> days until ${dateLong(data.wedding)}</p>`;
+  };
+  /* The same in a sentence: "157 days to go", "That's tomorrow", "That's today", "That was 12 days ago" */
+  const daysText = () => { const w = wedding(); if (!w) return ""; return w.phase === "day" ? "That's today" : w.phase === "after" ? `That was ${plural(w.n, "day")} ago` : w.n === 1 ? "That's tomorrow" : `${plural(w.n, "day")} to go`; };
+
+  /* ---------- reminders on this device (S10, N6, N11) ---------- */
+  /* Permission on this device: granted, default (not asked yet), denied (turned off), install (an iPhone that
+     only gets notifications once the planner is on the home screen) or unsupported (this browser never can). */
+  const NOTIF = { "notif-default": "default", "notif-denied": "denied", "notif-install": "install", "notif-unsupported": "unsupported" }[STATE];
+  if (NOTIF) data.notif = NOTIF;
+  const device = () => innerWidth < 760 ? "phone" : "computer";
+  /* N11: reminders go out once a day, in the morning, so the only ones that can arrive are a day or a week ahead. */
+  const REMINDERS = [["", "No reminder"], ["1d", "The morning before"], ["7d", "A week before, in the morning"]];
+  const REMIND_AHEAD = { "1d": 1, "7d": 7 };
+  /* Reminders set before this rule: a day or a week ahead carry over; a time of day can't arrive. */
+  const OLD_REMIND = { "0": "When it starts", "15": "15 minutes before", "60": "1 hour before" };
+  const remindKey = (r) => r === "1440" ? "1d" : r === "10080" ? "7d" : r;
+  const remindBad = (e) => e.status === "scheduled" && !!OLD_REMIND[e.remind] && e.date >= D.TODAY;
+  /* A reminder whose morning has already gone can't arrive either: it's offered, but greyed, with the reason. */
+  const remindPast = (key, iso) => REMIND_AHEAD[key] != null && daysFrom(iso) - REMIND_AHEAD[key] < 1;
+  function notifNote(where) {
+    const n = data.notif, here = `this ${device()}`, sheet = where === "sheet";
+    if (n === "granted") return sheet ? `<p class="hint">Arrives in the morning on ${here} and your other devices where reminders are allowed, even when the planner is closed.</p>`
+      : `<p class="note">Allowed on ${here}. Reminders come once a day, in the morning, a day or a week before the appointments and calls you choose them for. They arrive even when the planner is closed.</p><p style="margin-top:12px"><button class="btn quiet small" id="test">Send a test reminder</button></p>`;
+    if (n === "denied") return `<p class="${sheet ? "err" : "note"}" style="color:var(--rose-ink)">Notifications are turned off for the planner on ${here}, so reminders can't arrive here. Turn them on in ${device() === "phone" ? "your phone's Settings, under Notifications" : "the browser's site settings for the planner"}.${sheet ? " They still arrive on your other devices where they're allowed." : ""}</p>`;
+    if (n === "install") return `<p class="${sheet ? "hint" : "note"}">On an iPhone, reminders can only arrive once the planner is on your home screen. Add it there, open it from the home screen, then allow notifications.${sheet ? " Until then, they arrive only on your other devices." : ""}</p><p style="margin-top:${sheet ? 4 : 12}px"><a class="${sheet ? "link" : "btn quiet small"}" href="${href("settings.html")}#install">Show me how</a></p>`;
+    if (n === "unsupported") return `<p class="${sheet ? "err" : "note"}" style="color:var(--rose-ink)">This browser can't show reminders from the planner, even with it installed, so they won't arrive on ${here}. They still arrive on your other devices where they're allowed. To get them here, open the planner in a recent Safari, Chrome, Edge or Firefox.</p>`;
+    return sheet ? `<p class="hint">To get reminders when the planner is closed, allow notifications on this device. <button class="link" id="allow">Allow notifications</button></p>`
+      : `<p class="note">Not allowed yet on ${here}. Allow them to get morning reminders when the planner is closed.</p><p style="margin-top:12px"><button class="btn small" id="allow">Allow notifications</button></p>`;
+  }
 
   /* ---------- links keep the data set and demo mode ---------- */
   const href = (path, extra) => {
@@ -139,7 +185,7 @@
     </div>`;
   }
   function switcher() {
-    const states = [["normal", "Normal"]].concat(cfg.states || []);
+    const states = [["normal", "Normal"]].concat(cfg.states || [], [["crash", "Something unexpected went wrong"]]);
     const here = location.pathname.split("/").pop();
     const qs = (p) => { const s = p.toString().replace(/=(&|$)/g, "$1"); return here + (s ? "?" + s : ""); };
     const sw = (s) => { const p = new URLSearchParams(location.search); s === "normal" ? p.delete("state") : p.set("state", s); return qs(p); };
@@ -150,7 +196,17 @@
       <b>Screens</b><a href="index.html">All screens and states</a></div></details>`;
   }
 
+  /* N1: the planner's own name, mark and colours wherever the device shows it. The tab reads
+     "<screen> · <what the top bar says>", so it follows the names (and stays nameless in demonstration mode). */
+  function identity() {
+    const h = document.head;
+    if (!$('link[rel="icon"]')) h.insertAdjacentHTML("beforeend", `<link rel="icon" href="assets/identity/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="assets/identity/icon.svg"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#fce6ec"><meta name="apple-mobile-web-app-title" content="Greg &amp; Bella"><meta name="application-name" content="Greg &amp; Bella">`);
+  }
+  const tabName = () => data.couple ? `${data.couple[0]} & ${data.couple[1]}` : "Our wedding planner";
+  function retitle() { const t = document.title.split(" · ")[0]; document.title = `${t} · ${tabName()}`; }
+
   function mount() {
+    identity();
     document.body.insertAdjacentHTML("afterbegin", header());
     document.body.insertAdjacentHTML("beforeend", indexPage() + `<div class="scrim" hidden></div><div class="toasts" role="status" aria-live="polite"></div>` + switcher());
     const idx = $("#index"), btn = $(".top .menu-btn");
@@ -178,8 +234,13 @@
       main.innerHTML = `<div class="message">${ICON.cloud}<h1>You're offline</h1><p>The planner needs a connection to show ${esc(what)}. It will load again as soon as this ${innerWidth < 760 ? "phone" : "computer"} is back online.</p><div class="acts"><button class="btn quiet" onclick="location.reload()">Try again</button></div></div>`;
       return true;
     }
+    /* N2: something the planner didn't expect. Same shell, plain words, two ways out. */
+    if (STATE === "crash") { main.innerHTML = unexpected(); return true; }
     return false;
   }
+  const unexpected = () => `<div class="message">${ICON.knot}<h1>Something went wrong</h1><p>The planner ran into a problem it didn't expect. Everything you've saved is safe; only this screen didn't open.</p><div class="acts"><a class="btn quiet" href="${href("overview.html")}">Go to the overview</a><button class="btn" onclick="location.reload()">Try again</button></div></div>`;
+  /* N2: a record that isn't there (an old link, a typo, or removed some time ago). Not the same as "Bella just removed it". */
+  const notHere = (noun, list, listHref, listLabel) => `<a class="back" href="${href(listHref)}">${ICON.back}${esc(listLabel)}</a><div class="message">${ICON.knot}<h1>This ${esc(noun)} isn't here</h1><p>The link may be out of date, or the ${esc(noun)} was removed a while ago. Everything else is just where you left it.</p><div class="acts"><a class="btn" href="${href(listHref)}">See ${esc(list)}</a></div></div>`;
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
   /* ---------- sheets and dialogs ---------- */
@@ -197,30 +258,50 @@
 
   /* Busy: the confirm button says what it is doing ("Removing", "Deleting") for a moment before the change lands. */
   const gerund = (a) => /^remove\b/i.test(a) ? "Removing" : /^delete\b/i.test(a) ? "Deleting" : /^empty\b/i.test(a) ? "Emptying" : "Working";
+  /* N14 (?state=removefail): the first try can't finish. The dialog stays, says nothing was changed, and the
+     same button tries again (in the prototype the second try works). */
+  let removeFails = STATE === "removefail";
   function confirm({ title, body, action, danger }) {
     return new Promise((res) => {
-      openSheet(`<h2>${esc(title)}</h2><p class="sub">${body}</p><div class="acts"><button class="btn quiet" data-no>Keep it</button><button class="btn ${danger ? "danger" : ""}" data-yes>${esc(action)}</button></div>`, (el) => {
+      openSheet(`<h2>${esc(title)}</h2><p class="sub">${body}</p><p class="sub confirm-err" role="alert" hidden></p><div class="acts"><button class="btn quiet" data-no>Keep it</button><button class="btn ${danger ? "danger" : ""}" data-yes>${esc(action)}</button></div>`, (el) => {
         $("[data-no]", el).onclick = () => { closeSheet(); res(false); };
         $("[data-yes]", el).onclick = (e) => {
           const b = e.currentTarget; b.classList.add("busy"); b.textContent = gerund(action); $("[data-no]", el).disabled = true;
-          setTimeout(() => { closeSheet(); res(true); }, 450);
+          setTimeout(() => {
+            if (removeFails) {
+              removeFails = false;
+              const del = /^delete|^empty/i.test(action);
+              const err = $(".confirm-err", el); err.hidden = false;
+              err.innerHTML = `<b>${del ? "Nothing was deleted." : "Nothing was removed."}</b> The planner couldn't reach its database, so everything is just as it was. Try again, or keep it for now.`;
+              b.classList.remove("busy"); b.textContent = "Try again"; $("[data-no]", el).disabled = false; b.focus();
+              return;
+            }
+            closeSheet(); res(true);
+          }, 450);
         };
       });
     });
   }
 
+  /* N3: a change from your own other device carries your initial in champagne; your partner's carries theirs in blush. */
   function toast(msg, opts = {}) {
     const box = $(".toasts");
     const t = document.createElement("div");
     t.className = "toast";
-    t.innerHTML = `${opts.from ? `<span class="ava" aria-hidden="true">${esc(opts.from[0])}</span>` : ""}<span>${msg}</span>${opts.action ? `<button>${esc(opts.action)}</button>` : ""}`;
+    t.innerHTML = `${opts.from ? `<span class="ava ${opts.self ? "self" : ""}" aria-hidden="true">${esc(opts.from[0])}</span>` : ""}<span>${msg}</span>${opts.action ? `<button>${esc(opts.action)}</button>` : ""}`;
     box.appendChild(t);
     /* Undo is busy ("Restoring") while the item goes back to where it was. */
     if (opts.action) $("button", t).onclick = (e) => {
       const b = e.currentTarget;
       if (opts.action !== "Undo") { opts.onAction && opts.onAction(); t.remove(); return; }
       b.disabled = true; b.textContent = "Restoring"; b.classList.add("busy");
-      setTimeout(() => { opts.onAction && opts.onAction(); t.remove(); }, 450);
+      setTimeout(() => {
+        t.remove();
+        /* N13 (?state=undo-conflict): the partner has changed the same thing since, so it can't be taken back.
+           Nothing is restored; what's there now stays, and the toast says who changed what. */
+        if (STATE === "undo-conflict") { toast(opts.conflict || `Can't undo: ${esc(data.partner)} has changed this since. It's kept as it is now.`, { from: data.partner, ms: 9000 }); return; }
+        opts.onAction && opts.onAction();
+      }, 450);
     };
     setTimeout(() => t.remove(), opts.ms || 6000);
   }
@@ -254,9 +335,9 @@
   const demoLine = (what) => DEMO ? `<p class="sub demo-line">Demonstration mode: ${what || "adding"} is turned off.</p>` : "";
 
   /* Saving is immediate (A6). In demo mode nothing saves. */
-  function saved(msg, undo) {
+  function saved(msg, undo, conflict) {
     if (DEMO) { toast("Not saved: demonstration mode"); return false; }
-    toast(msg, undo ? { action: "Undo", onAction: undo } : {});
+    toast(msg, undo ? { action: "Undo", onAction: undo, conflict } : {});
     return true;
   }
 
@@ -295,14 +376,17 @@
           const before = p.paid || 0;
           p.paid = before + v; if (!b.parts) b.paid = p.paid;
           closeSheet(); rerender();
-          saved(`Recorded ${rp(v)} for ${esc(b.name)}`, () => { p.paid = before; if (!b.parts) b.paid = before; rerender(); });
+          saved(`Recorded ${rp(v)} for ${esc(b.name)}`, () => { p.paid = before; if (!b.parts) b.paid = before; rerender(); },
+            `Can't take the payment back: ${esc(data.partner)} has changed ${esc(b.name)} since. It's kept as it is now.`);
         }, 650);
       };
     });
   }
 
   /* ---------- live sync: the partner's change arrives ---------- */
-  function liveSync() {
+  /* N3: the planner knows which account belongs to which name. A change made on your own other phone or
+     computer (?state=sync-self) arrives the same way but in your name, never as your partner's. */
+  function liveSync(self) {
     const s = data.sync; if (!s) return;
     setTimeout(() => {
       const b = data.bookings.find((x) => x.id === s.booking); if (!b) return;
@@ -310,20 +394,22 @@
       if (p) p.paid = (p.paid || 0) + s.amount; else b.paid = (b.paid || 0) + s.amount;
       rerender();
       $$(`[data-id="${s.booking}"]`).forEach((el) => { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); });
-      toast(`${esc(s.by)} recorded ${rp(s.amount)} for ${esc(b.name)}`, { from: s.by, ms: 9000 });
+      if (self) toast(`You recorded ${rp(s.amount)} for ${esc(b.name)} on your other ${innerWidth < 760 ? "computer" : "phone"}`, { from: data.me.name, self: true, ms: 9000 });
+      else toast(`${esc(s.by)} recorded ${rp(s.amount)} for ${esc(b.name)}`, { from: s.by, ms: 9000 });
     }, 1600);
   }
 
-  function rerender() { const main = $("main"); if (cfg.render) cfg.render(main); }
+  function rerender() { const main = $("main"); if (cfg.render) cfg.render(main); retitle(); }
 
   function init(c) {
     cfg = c;
     mount();
     const main = $("main");
     if (cfg.wide) main.classList.add("wide");
-    if (stateView(main)) return;
-    cfg.render(main);
+    if (stateView(main)) { retitle(); return; }
+    cfg.render(main); retitle();
     if (STATE === "sync") (cfg.sync || liveSync)();
+    if (STATE === "sync-self") liveSync(true);
     if (added && sessionStorage.getItem("veil-added-new")) { sessionStorage.removeItem("veil-added-new"); toast(`Added ${esc(added.name)}`); $$(`[data-id="${added.id}"]`).forEach((el) => el.classList.add("flash")); }
   }
 
@@ -431,6 +517,6 @@
   const count = (n) => n == null ? "" : n.toLocaleString("id-ID");
 
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, longFig, n0, group, names, mbText, uploadSheet, sheetSaveLine, sheetSaver, demoLine, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
-    funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, href, ICON, $, $$,
+    funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, wedding, daysLine, daysText, shiftDays, notHere, unexpected, notifNote, device, REMINDERS, OLD_REMIND, remindKey, remindBad, remindPast, href, ICON, $, $$,
     dec, filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

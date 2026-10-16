@@ -249,6 +249,8 @@ function tableAction(a) {
 
 /* ---------- page ---------- */
 function render(main) {
+  /* N2: an unknown document is "isn't here"; only ?id=gone is the partner's delete arriving */
+  if (!doc && !V.DEMO && qp.get("id") !== "gone") { main.innerHTML = V.notHere("document", "all documents", "documents.html", "Documents"); return; }
   if (!doc) { main.innerHTML = `<a class="back" href="${V.href("documents.html")}">${V.ICON.back}Documents</a><div class="message">${V.ICON.knot}<h1>${V.DEMO ? "No documents in demonstration mode" : "This document was deleted"}</h1><p>${V.DEMO ? "The planner isn't connected to its database yet." : `${V.esc(d.partner)} deleted it on another device. It can't be brought back.`}</p><div class="acts"><a class="btn" href="${V.href("documents.html")}">See all documents</a></div></div>`; return; }
   document.title = doc.title || "Untitled";
   main.innerHTML = `<a class="back" href="${V.href("documents.html")}">${V.ICON.back}Documents</a>

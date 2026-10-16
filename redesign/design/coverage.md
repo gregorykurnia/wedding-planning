@@ -226,3 +226,22 @@ Every screen takes `?stress` except sign-in and the add-a-booking form (nothing 
 | Schedule, tasks | 1.204 events, 401 tasks, one with 60 steps |
 | Items | 2.004 items, one with an unbroken 73-character name and a 74-character vendor |
 | Guests | 1.500 guests, a guest with 12 plus-ones and a 73-character name |
+
+## Open needs (v1.1, 2026-10-16)
+
+| Need | Where the prototype covers it |
+|---|---|
+| N1 name, mark, colours | `identity.html`; `manifest.webmanifest`; `assets/identity/*.svg`; icon links and tab titles on every screen (`assets/app.js`, `signin.html`) |
+| N2 nowhere, unexpected | `notfound.html` (and `?state=signedout`); `?state=crash` on every screen; `booking.html?id=old-link`, `vendor.html?id=old-link`, `finalist.html?id=old-link`, `doc.html?id=old-link` |
+| N3 who's who | `signin.html?state=whoami`, `?state=whoami-new`; `settings.html` (Swap them); `budget.html?state=sync-self`, `booking.html?state=sync-self` |
+| N4 Google window | `signin.html?state=google-waiting`, `google-closed`, `google-blocked`, `google-failed` |
+| N5 export columns | `vendors.html`, Export (interaction); columns in guide 5.11 |
+| N6 can't receive reminders | `settings.html?state=notif-install`, `notif-unsupported`; `schedule.html` with the same states (event sheet) |
+| N7 the day and after | `overview.html?state=eve`, `day`, `after`, `settled`; `budget.html` with the same |
+| N8 unknown dates | `booking.html?id=cincin`; `tasks.html` ("Book the church" under finished) |
+| N9 missing title or date, end before start | `schedule.html?state=invalid`, `new-invalid`; `tasks.html?state=add-invalid` |
+| N10 remove vendor, finalist, venue | `vendor.html?id=kebun`, `finalist.html?id=f-kebun` (rose link at the foot); `venues.html` (Remove venue in a venue's sheet) |
+| N11 reminders that arrive | `schedule.html` (rose box, row lines, the event sheet's Remind us; open "Call with Laras about the arch"); `settings.html` (count) |
+| N12 several people | `items.html` (Who it's for picker), `items.html?state=people` |
+| N13 undo refused | `booking.html?id=ayu&state=undo-conflict` (split, then Undo); `files.html?state=undo-conflict` (move, then Undo) |
+| N14 remove couldn't finish | `?state=removefail` on booking, vendor, finalist, venues, files, schedule, tasks, items, guests |

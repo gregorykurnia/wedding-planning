@@ -98,14 +98,18 @@ function month(box) {
 
 V.init({
   where: "Schedule", section: "schedule.html", noun: "your schedule", wide: true,
-  states: [["empty", "Nothing scheduled"], ["noresults", "No results"], ["done", "Showing completed and cancelled"], ["event", "An event's details"], ["savefail", "A change didn't save"], ["new", "Adding an event"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an appointment"]],
+  states: [["empty", "Nothing scheduled"], ["noresults", "No results"], ["done", "Showing completed and cancelled"], ["event", "An event's details"], ["savefail", "A change didn't save"], ["new", "Adding an event"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["notif-install", "iPhone, not on the home screen yet"], ["notif-unsupported", "Browser can't show reminders"], ["invalid", "An event that ends before it starts"], ["new-invalid", "Adding without a title or date"], ["removefail", "Deleting couldn't finish"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds an appointment"]],
   render(main) {
     if (!A.items().length && !d.events.length) {
       main.innerHTML = hero() + `<div class="message inline">${V.ICON.knot}<h1>Nothing scheduled yet</h1><p>Add appointments, vendor calls and deadlines. Payments due on bookings and tasks with dates appear here by themselves.</p><div class="acts"><button class="btn" id="add">Add to the schedule</button></div></div>`;
       V.$("#add").onclick = () => A.eventSheet(null); return;
     }
     const focused = document.activeElement && document.activeElement.id === "q";
-    main.innerHTML = hero() + controls() + `<div id="list"></div><button class="btn add-fab" id="add">Add to the schedule</button>`;
+    /* N11: reminders set before for a time of day can't arrive. Name them, each one tap from choosing again. */
+    const bad = d.events.filter(V.remindBad);
+    const remind = bad.length && !V.DEMO ? `<p class="banner rose rem-list" role="status">${bad.length === 1 ? "1 reminder" : bad.length + " reminders"} you set before can't arrive, because reminders now come only in the morning: ${bad.slice(0, 3).map((e) => `<button class="link" data-fix="${e.id}" dir="auto">${V.esc(e.title)}</button>`).join(", ")}${bad.length > 3 ? ` and ${bad.length - 3} more` : ""}. Choose again for each.</p>` : "";
+    main.innerHTML = hero() + remind + controls() + `<div id="list"></div><button class="btn add-fab" id="add">Add to the schedule</button>`;
+    V.$$("[data-fix]", main).forEach((b) => b.onclick = () => A.eventSheet(d.events.find((e) => e.id === b.dataset.fix)));
     (view === "month" ? month : agenda)(V.$("#list"));
     const q = V.$("#q"); q.oninput = () => { ui.q = q.value; (view === "month" ? month : agenda)(V.$("#list")); };
     if (focused) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
@@ -115,14 +119,17 @@ V.init({
   },
   sync() {
     setTimeout(() => {
-      const e = { id: "sync1", title: "Makeup trial with Kirana", kind: "appointment", date: "2026-10-15", start: "10:00", end: "12:00", allDay: false, related: "kirana", where: "Kirana Makeup, Sanur", notes: "", remind: "60", status: "scheduled" };
+      const e = { id: "sync1", title: "Makeup trial with Kirana", kind: "appointment", date: "2026-10-15", start: "10:00", end: "12:00", allDay: false, related: "kirana", where: "Kirana Makeup, Sanur", notes: "", remind: "1d", status: "scheduled" };
       d.events.push(e); V.rerender(); V.$$('[data-ev="sync1"]').forEach((x) => x.classList.add("flash"));
       V.toast(`${V.esc(d.partner)} added “${V.esc(e.title)}” tomorrow at 10:00`, { from: d.partner, ms: 9000 });
     }, 1600);
   },
 });
-if (S === "event" || S === "savefail" || S === "notif-default" || S === "notif-denied") A.eventSheet(d.events.find((e) => e.id === "e2"));
+if (["event", "savefail", "notif-default", "notif-denied", "notif-install", "notif-unsupported", "removefail"].includes(S)) A.eventSheet(d.events.find((e) => e.id === "e2"));
 if (S === "new") A.eventSheet(null);
+/* N9: what was typed stays; the sheet says what to fix */
+if (S === "invalid") A.eventSheet(d.events.find((e) => e.id === "e2"), null, { typed: { start: "11:00", end: "10:30" }, check: true });
+if (S === "new-invalid") A.eventSheet(null, null, { typed: { title: "", date: "", start: "16:00" }, check: true });
 </script>
 </body>
 </html>

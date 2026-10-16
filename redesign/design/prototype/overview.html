@@ -35,7 +35,7 @@ if (S === "nodate") d.wedding = null;
 
 V.init({
   where: "Overview", section: "overview.html", noun: "your overview",
-  states: [["nodate", "No wedding date yet"], ["empty", "Just started, nothing yet"], ["install", "Install suggestion on a phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  states: [["nodate", "No wedding date yet"], ["empty", "Just started, nothing yet"], ["install", "Install suggestion on a phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"], ["eve", "The day before the wedding"], ["day", "The wedding day"], ["after", "After the wedding, payments left"], ["settled", "After the wedding, all settled"]],
   render(main) {
     const names = d.couple ? `<p class="names">${V.esc(d.couple[0])} &amp; ${V.esc(d.couple[1])}</p>` : "";
     /* O1: days to go, and how much of the preparation time has passed */
@@ -45,18 +45,42 @@ V.init({
         <div class="fields" style="max-width:420px;margin:24px auto 0;text-align:left"><div class="field"><label for="wd">Wedding date</label><input id="wd" type="date"></div></div>
         <p style="margin-top:18px"><button class="btn" id="setd" ${V.DEMO ? "disabled" : ""}>Save the date</button></p>${V.DEMO ? `<p class="sub demo-line">Demonstration mode: saving is turned off.</p>` : ""}</section>`;
     } else {
+      /* O1, N7: before the day, a countdown; on the day, the day itself; after it, what's still to settle, then
+         how long you've been married. One figure each time, never a negative countdown. */
+      const W = V.wedding(), B0 = V.budget();
       const total = (new Date(d.wedding) - new Date(d.since)) / 864e5, gone = (V.TODAY - new Date(d.since + "T00:00:00")) / 864e5;
       const pct = Math.max(0, Math.min(100, Math.round(gone / total * 100)));
-      top = `<section class="hero">${names}
-        <p class="days-fig num">${V.daysLeft().toLocaleString("id-ID")}</p>
-        <p class="context">days until ${V.dateLong(d.wedding)}</p>
-        <div class="thread" role="img" aria-label="${pct}% of the preparation time has passed"><span class="done" style="width:${pct}%"></span><span class="dot" style="left:${pct}%"></span><span class="ends"><span>Started ${V.dateShort(d.since)}</span><span>${pct}% of the time gone</span></span></div></section>`;
+      /* N8: without the day planning started, there's no honest "time gone", so the thread is left out */
+      const timeThread = (end) => !d.since && W.phase === "before" ? "" : `<div class="thread" role="img" aria-label="${W.phase === "before" ? pct + "% of the preparation time has passed" : "All of the preparation time has passed"}"><span class="done" style="width:${W.phase === "before" ? pct : 100}%"></span><span class="dot" style="left:${W.phase === "before" ? pct : 100}%"></span><span class="ends"><span>${d.since ? `Started ${V.dateShort(d.since)}` : ""}</span><span>${end}</span></span></div>`;
+      if (W.phase === "before") top = `<section class="hero">${names}
+        <p class="days-fig num">${W.n.toLocaleString("id-ID")}</p>
+        <p class="context">${W.n === 1 ? `day to go: tomorrow, ${V.dateLong(d.wedding)}` : `days until ${V.dateLong(d.wedding)}`}</p>
+        ${timeThread(`${pct}% of the time gone`)}</section>`;
+      else if (W.phase === "day") top = `<section class="hero">${names}
+        <p class="kicker" style="margin-top:22px">The wedding day</p>
+        <p class="days-fig">Today</p>
+        <p class="context">${V.dateLong(d.wedding)}. Everything for today is below.</p>
+        ${timeThread("The day is here")}</section>`;
+      else if (B0.left > 0) {
+        const paid = B0.price ? Math.round(B0.paid / B0.price * 100) : 0, left = V.dues().length, late = V.dues().filter((x) => x.urgency === "late").length;
+        top = `<section class="hero">${names}
+        <p class="kicker" style="margin-top:22px">Still to settle</p>
+        <p class="figure num ${V.longFig(B0.left)}">${V.fig(B0.left)}</p>
+        <p class="context">Married ${V.plural(W.n, "day")} ago, on ${V.dateLong(d.wedding)}. ${left ? `${V.plural(left, "payment")} left${late ? `, <b style="color:var(--rose-ink)">${late} late</b>` : `, the next on ${V.dateLong(V.dues()[0].due)}`}.` : "Some costs have no due date yet."}</p>
+        <div class="thread" role="img" aria-label="${paid}% paid"><span class="done" style="width:${paid}%"></span><span class="dot" style="left:${paid}%"></span><span class="ends"><span>${paid}% paid</span><span>${100 - paid}% to settle</span></span></div></section>`;
+      } else top = `<section class="hero">${names}
+        <p class="kicker" style="margin-top:22px">Married for</p>
+        <p class="days-fig num">${W.n.toLocaleString("id-ID")}</p>
+        <p class="context">${W.n === 1 ? "day" : "days"}, since ${V.dateLong(d.wedding)}. Every payment is settled.</p>
+        ${timeThread("All settled")}</section>`;
     }
     const install = S === "install" ? `<section class="card install"><p>Add the planner to your home screen to open it like an app.</p><span style="display:flex;gap:12px"><a class="btn small" href="${V.href("settings.html")}#install">Show me how</a><button class="btn quiet small" id="noinst">Not now</button></span></section>` : "";
 
     /* O2: the next few things, whatever kind */
+    const W2 = d.wedding ? V.wedding() : null;
     const next = A.items().filter((i) => i.status === "scheduled").slice(0, 5);
-    const coming = next.length ? `<section class="coming"><h2>Coming up</h2><ul class="agenda">${next.map(A.row).join("")}</ul><p class="all"><a class="link" href="${V.href("schedule.html")}">See the whole schedule</a></p></section>`
+    const comingTitle = W2 && W2.phase === "day" ? "Today and next" : W2 && W2.phase === "after" ? "Still to do" : "Coming up";
+    const coming = next.length ? `<section class="coming"><h2>${comingTitle}</h2><ul class="agenda">${next.map(A.row).join("")}</ul><p class="all"><a class="link" href="${V.href("schedule.html")}">See the whole schedule</a></p></section>`
       : `<section class="coming"><h2>Coming up</h2><p class="note" style="text-align:center">Nothing dated yet. Appointments, payments due and tasks with dates will show here.</p></section>`;
 
     /* O3, O4: a pulse check, each a step into the detail */
