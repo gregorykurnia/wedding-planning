@@ -4,6 +4,7 @@ import { AgendaDemos } from "./agenda-demos";
 import { FieldsDemo } from "./fields-demos";
 import { HeroDemos } from "./hero-demos";
 import { IconsDemo } from "./icons-demo";
+import { LedgerDemos } from "./ledger-demos";
 import { NextDemos } from "./next-demos";
 import { PartsDemos } from "./parts-demos";
 import { RowsDemos } from "./rows-demos";
@@ -27,7 +28,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.2", title: "Next card, after line, doors", demo: <NextDemos /> },
   { task: "3.3", title: "Buttons, links, chips and focus chips", demo: <ActionDemos /> },
   { task: "3.4", title: "Fields and save-as-you-go", demo: <FieldsDemo /> },
-  { task: "3.5", title: "Ledger rows and row states" },
+  { task: "3.5", title: "Ledger rows and row states", demo: <LedgerDemos /> },
   { task: "3.6", title: "Parts, menu cards, tally", demo: <PartsDemos /> },
   { task: "3.7", title: "Search, ordering, filters, count line and paging" },
   { task: "3.8", title: "Sheet patterns, confirm variants, banners and problem boxes" },

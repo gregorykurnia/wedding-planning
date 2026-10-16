@@ -1,0 +1,446 @@
+/*
+ * Ledger rows (guide §4.7), ported from the prototype's .ledger, .entry, .vrow,
+ * .due, .drow, .frow and the what-if and guest shells. Tokens only. Values with no
+ * token take the nearest one; the 18px row padding is --space-4 (16px).
+ */
+
+/* ---------- the list: hairlines between rows, one above the first ---------- */
+
+.ledger {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+
+.ledger > li {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.ledger > li:first-child {
+  border-top: 1px solid var(--color-rule);
+}
+
+/* A row that is a link washes blush on hover; rows that only hold controls don't. */
+.linkRow:hover {
+  background: var(--hover-row);
+}
+
+/* ---------- booking and what-if entries ---------- */
+
+.entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-hair) var(--space-6);
+  padding: var(--space-5) var(--space-row-x) var(--space-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.entryName {
+  font-family: var(--font-display);
+  font-size: var(--text-row-lg);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.entryPrice {
+  font-family: var(--font-display);
+  font-size: var(--text-amount);
+  font-weight: var(--weight-display);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.status {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.statusLate {
+  color: var(--accent-attention-text);
+  font-weight: var(--weight-emphasis);
+}
+
+.statusDone {
+  color: var(--accent-settled-text);
+}
+
+/* A what-if amount is not real money yet: italic, and dashed leaders below. */
+.whatIf .entryPrice {
+  font-style: italic;
+}
+
+/* The parts of a booking span the whole row, under its name and status. */
+.partsSlot {
+  grid-column: 1 / -1;
+}
+
+.acts {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-5);
+  font-size: var(--text-label);
+  margin-top: var(--space-2);
+}
+
+/* ---------- vendor and venue rows ---------- */
+
+.vrow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-hair) var(--space-6);
+  padding: var(--space-4) var(--space-row-x);
+  align-items: baseline;
+}
+
+.first {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.vname {
+  font-family: var(--font-display);
+  font-size: var(--text-row-md);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row);
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.vname:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+}
+
+.vprice {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.none {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-text);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.right {
+  text-align: right;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.score {
+  font-weight: var(--weight-emphasis);
+  color: var(--color-text);
+}
+
+.foot {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-2) var(--space-5);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-1);
+  font-size: var(--text-label);
+}
+
+/* A ruled-out name is greyed and struck through (guide §4.7). */
+.ruled .vname {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--color-strike);
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- payments due ---------- */
+
+.due {
+  display: grid;
+  grid-template-columns: var(--date-card-width) 1fr auto;
+  gap: var(--space-1) var(--space-5);
+  align-items: center;
+  padding: var(--space-row-y) var(--space-row-x);
+}
+
+.dateCard {
+  width: var(--date-card-width);
+  text-align: center;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-field);
+  padding: 6px 0 7px;
+  background: var(--surface-sheet);
+  line-height: 1.05;
+  grid-row: span 2;
+  align-self: start;
+}
+
+.dateCard b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-display);
+}
+
+.dateCard span {
+  font-size: var(--text-micro);
+  color: var(--color-text-muted);
+}
+
+.dueLate .dateCard {
+  border-color: var(--color-alert-edge);
+  background: var(--accent-attention-wash);
+}
+
+.dueLate .dateCard b,
+.dueLate .dateCard span {
+  color: var(--accent-attention-text);
+}
+
+.what {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row);
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.what:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+}
+
+.amt {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dueMeta {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.lateWhen {
+  color: var(--accent-attention-text);
+  font-weight: var(--weight-emphasis);
+}
+
+.act {
+  justify-self: end;
+}
+
+/* ---------- documents ---------- */
+
+.drow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-hair) var(--space-6);
+  align-items: baseline;
+  padding: var(--space-row-y) var(--space-row-x);
+  color: inherit;
+  text-decoration: none;
+}
+
+.docName {
+  font-family: var(--font-display);
+  font-size: var(--text-row);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row-loose);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.untitled {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.docWhen {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.docExtract {
+  grid-column: 1;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* The search match in a title or an extract (guide §4.7; the document's champagne). */
+.mark {
+  background: var(--doc-mark-champagne);
+  color: inherit;
+  border-radius: var(--radius-mark);
+  padding: 0 2px;
+}
+
+/* ---------- files and folders ---------- */
+
+.frow {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: var(--space-hair) var(--space-4);
+  align-items: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-row-x);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ico {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-tile-sm);
+  background: var(--surface-mist);
+  border: 1px solid var(--color-rule);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  grid-row: span 2;
+}
+
+.ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The extension, written in gold italic on the tile. */
+.ext {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-lead);
+  color: var(--accent-gold-text);
+}
+
+.ico svg {
+  width: 26px;
+  height: 26px;
+  color: var(--accent-thread);
+}
+
+.folder .ico {
+  background: var(--glow-champagne);
+  border-color: transparent;
+}
+
+.fname {
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row-loose);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.fmeta {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat {
+  color: var(--accent-gold-text);
+}
+
+.fside {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  text-align: right;
+  white-space: nowrap;
+  grid-row: span 2;
+}
+
+.fside svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-decor);
+}
+
+/* ---------- a phone (760px and under) ---------- */
+
+@media (max-width: 760px) {
+  .due {
+    grid-template-columns: var(--date-card-width) 1fr;
+    gap: var(--space-hair) var(--space-3);
+  }
+
+  .dateCard {
+    grid-row: span 3;
+  }
+
+  .what {
+    font-size: var(--text-amount);
+  }
+
+  .amt {
+    font-size: var(--text-amount);
+    text-align: left;
+  }
+
+  .act {
+    justify-self: start;
+    margin-top: var(--space-2);
+  }
+
+  .vprice {
+    font-size: var(--text-amount);
+  }
+
+  /* The size and date and the meta line move under the name, in its column. */
+  .frow .fside {
+    grid-row: auto;
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .frow .fmeta {
+    grid-column: 2;
+  }
+
+  .frow .ico {
+    grid-row: span 3;
+  }
+}
