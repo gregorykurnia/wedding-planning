@@ -25,6 +25,8 @@
       "ShareOnboardingGuide",
       "Read(//Users/gregorykurnia/projects/wedding-planning/**)",
       "Edit(//Users/gregorykurnia/projects/wedding-planning/**)",
+      "Read(//Users/gregorykurnia/projects/wedding-planning-lanes/**)",
+      "Edit(//Users/gregorykurnia/projects/wedding-planning-lanes/**)",
       "Read(~/.claude/history.jsonl)",
       "Read(~/.claude/projects/**)",
       "Read(~/.claude/file-history/**)",
@@ -47,6 +49,7 @@
     "filesystem": {
       "denyRead": [
         "/Users/gregorykurnia/projects/wedding-planning",
+        "/Users/gregorykurnia/projects/wedding-planning-lanes",
         "~/.claude/history.jsonl",
         "~/.claude/projects",
         "~/.claude/file-history",
