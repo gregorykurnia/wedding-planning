@@ -33,7 +33,7 @@ None. The designer has a free hand within the personality above.
 - No role-based visibility: both of us see and can change everything.
 
 ## Branding
-Name, logo and colours are all open. One wish: bright colours.
+Name: Gregory & Bella's Wedding. Logo and colours are open. One wish: bright colours.
 
 ## Permission to challenge the model
 Yes. The designer may propose merging, splitting or removing concepts. Proposals are flagged for my decision, never silently adopted.
