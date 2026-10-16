@@ -16,6 +16,9 @@ import { FileRow, FolderRow, type FileRowData } from "@/veil/parts/rows/file-row
 import { Ledger } from "@/veil/parts/rows/ledger";
 import { VendorRow, type VendorRowData } from "@/veil/parts/rows/vendor-row";
 import { WhatIfEntry, type WhatIfItem } from "@/veil/parts/rows/what-if-entry";
+import { KeenHeart } from "@/veil/parts/keen/keen-heart";
+import { StageThread } from "@/veil/parts/stage/stage-thread";
+import { WhatsAppLink } from "@/veil/parts/whatsapp/whatsapp-link";
 import { useFlasher, type FlashTarget } from "@/veil/shell/flash";
 
 /**
@@ -129,6 +132,14 @@ const VENDORS: VendorRowData[] = [
 ];
 
 const VENUE: VendorRowData = { id: "h1", name: "Hotel Ballroom", category: "Venue", contact: "Front desk", price: 10_000_000, optionCount: 1, rating: null, reviewers: 0 };
+
+/** Task 3.9's parts for each row: the stored stage, whether we're keen, and a number when there is one. */
+const TRADE: Record<string, { stage: string; keen: boolean; phone?: string }> = {
+  v1: { stage: "Chosen", keen: true },
+  v2: { stage: "Inquiring", keen: false },
+  v3: { stage: "Done", keen: false, phone: "0812 3456 7890" },
+  v4: { stage: "Rejected", keen: false },
+};
 
 const DOCUMENTS: DocumentRowData[] = [
   {
@@ -283,9 +294,19 @@ export function LedgerDemos() {
             href={HERE}
             showCategory
             shortlistHref={v.id === "v1" ? HERE : null}
+            keen={<KeenHeart name={v.name} keen={TRADE[v.id].keen} />}
+            stage={<StageThread kind="vendor" stage={TRADE[v.id].stage} />}
+            whatsApp={<WhatsAppLink phone={TRADE[v.id].phone} />}
           />
         ))}
-        <VendorRow vendor={VENUE} href={HERE} kind="venue" showCategory />
+        <VendorRow
+          vendor={VENUE}
+          href={HERE}
+          kind="venue"
+          showCategory
+          keen={<KeenHeart name={VENUE.name} keen={false} />}
+          stage={<StageThread kind="venue" stage="Booked" />}
+        />
       </Ledger>
 
       <h3>Payments due</h3>
@@ -332,7 +353,7 @@ export function LedgerDemos() {
       </Ledger>
 
       <h3>Row states</h3>
-      <p>Ruled out: Organ and Co, in the vendor list above, is greyed and struck through. Its stage line is Task 3.9’s.</p>
+      <p>Ruled out: Organ and Co, in the vendor list above, is greyed and struck through, and its stage reads Ruled out.</p>
       <ul aria-label="Completed and cancelled" style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {AGENDA.map((x) => (
           <AgendaRow key={x.key} item={x} today={TODAY} funderName={null} />

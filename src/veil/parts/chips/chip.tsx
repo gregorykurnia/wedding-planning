@@ -30,6 +30,8 @@ type ChipGroupProps<T extends string> = {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  /** Demonstration mode: every chip is inert. */
+  disabled?: boolean;
 };
 
 /**
@@ -37,11 +39,12 @@ type ChipGroupProps<T extends string> = {
  * on the chosen chip; the arrow keys, Home and End move and choose, as in any
  * radio group.
  */
-export function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGroupProps<T>) {
+export function ChipGroup<T extends string>({ label, options, value, onChange, disabled = false }: ChipGroupProps<T>) {
   const chips = useRef<(HTMLButtonElement | null)[]>([]);
   const checked = Math.max(0, options.findIndex((option) => option.value === value));
 
   function choose(index: number) {
+    if (disabled) return;
     onChange(options[index].value);
     chips.current[index]?.focus();
   }
@@ -85,6 +88,7 @@ export function ChipGroup<T extends string>({ label, options, value, onChange }:
           aria-checked={option.value === value}
           tabIndex={index === checked ? 0 : -1}
           className={styles.chip}
+          disabled={disabled}
           onClick={() => choose(index)}
         >
           {option.label}

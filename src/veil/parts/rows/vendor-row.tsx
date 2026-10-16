@@ -38,7 +38,7 @@ export interface VendorRowProps {
   shortlistHref?: string | null;
   /**
    * The keen heart at the start of the name, the stage thread and the WhatsApp
-   * link. They are Task 3.9's: until then the screen leaves them out.
+   * link (Task 3.9's parts). The screen passes them in, or leaves them out.
    */
   keen?: ReactNode;
   stage?: ReactNode;

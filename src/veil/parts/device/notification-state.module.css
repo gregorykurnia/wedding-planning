@@ -1,0 +1,36 @@
+/* Guide §4.30 and §6.12. Ported from the prototype's .note (15px, muted) and the
+   rose turned-off note. The 14px gap above a note has no token and keeps the
+   prototype's number. The phone and computer words switch at 760px, as the
+   offline copy does. */
+
+.note {
+  margin: 14px 0 0;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.off {
+  color: var(--accent-attention-text);
+}
+
+.action {
+  margin-top: var(--space-3);
+}
+
+.phone {
+  display: none;
+}
+
+.computer {
+  display: inline;
+}
+
+@media (max-width: 759px) {
+  .phone {
+    display: inline;
+  }
+
+  .computer {
+    display: none;
+  }
+}

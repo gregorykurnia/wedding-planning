@@ -1,0 +1,20 @@
+/* Guide §4.23. Ported from the prototype's .wa. The colour and weight come from
+   tokens; the 6px gap and the 15px icon keep the prototype's numbers. */
+
+.wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-settled-text);
+  font-weight: var(--weight-emphasis);
+  text-decoration: none;
+}
+
+.wa svg {
+  width: 15px;
+  height: 15px;
+}
+
+.wa:hover {
+  text-decoration: underline;
+}

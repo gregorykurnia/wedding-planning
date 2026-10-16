@@ -1,0 +1,26 @@
+/* Guide §4.30. Ported from the overview's .install, which sits on the .card
+   surface with a smaller padding. The margin above it belongs to the screen.
+   The 14px gap has no token and takes the nearest one, 16px. */
+
+.install {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-card));
+  -webkit-backdrop-filter: blur(var(--blur-card));
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-card);
+}
+
+.install p {
+  font-size: var(--text-meta);
+}
+
+.actions {
+  display: flex;
+  gap: var(--gap-buttons);
+}

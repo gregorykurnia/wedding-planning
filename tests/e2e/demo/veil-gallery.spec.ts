@@ -23,9 +23,12 @@ test("lists the icon set, then a section for each later task, in plan order", as
   expect(tasks).toEqual(["2.2", ...LATER_TASKS]);
 });
 
-test("a section whose task is not built yet says so", async ({ page }) => {
+// Every section of Phase 3 has a demo now, so none says it isn't built yet. A later
+// task's section that has no demo yet would say so, as the sections file explains.
+test("every section is built, so none says it is not built yet", async ({ page }) => {
   await openGallery(page);
-  await expect(page.locator("#section-3-9")).toContainText("Not built yet. Task 3.9 builds it.");
+  await expect(page.locator('section[id^="section-"]').first()).toBeVisible();
+  await expect(page.getByText("Not built yet")).toHaveCount(0);
 });
 
 test("links to the Phase 2 demos", async ({ page }) => {

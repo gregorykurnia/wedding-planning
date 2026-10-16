@@ -1,0 +1,32 @@
+/* Guide §4.22. Ported from the prototype's .keen. The heart is drawn at 18px
+   with 6px of padding, which makes the target about 30px. Drawn sizes have no
+   token and keep the prototype's numbers, as the icons do. */
+
+.keen {
+  padding: 6px;
+  margin: -6px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-control-outline);
+  line-height: 0;
+  cursor: pointer;
+}
+
+.keen:disabled {
+  cursor: default;
+}
+
+.keen svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Pressed: the one rose element allowed in a vendor row, the heart filled. */
+.keen[aria-pressed="true"] {
+  color: var(--accent-attention);
+}
+
+.keen[aria-pressed="true"] :global(path) {
+  fill: currentColor;
+}
