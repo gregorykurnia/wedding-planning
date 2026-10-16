@@ -38,7 +38,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | — | — | [x] 3.9 Stage thread, heart, WhatsApp · Haiku 5.5 Max |
 | 🛑 [x] Phase 3 review · Opus 5.5 Medium | wait | wait |
 | **Phase 4: screens** | | |
-| [ ] Before 4.1 and 4.2: Phase 2 review S5 and S6, the top bar outside `main` and a page column (see `redesign/reviews/phase-3-review.md`) · Sonnet 5.5 High | | |
+| [x] Before 4.1 and 4.2: Phase 2 review S5 and S6, the top bar outside `main` and a page column (see `redesign/reviews/phase-3-review.md`) · Sonnet 5.5 High (done 2026-10-16, lane t1, on Opus 5.5) | | |
 | [ ] 4.9 Who pays · Sonnet 5.5 High | [ ] 4.11 Vendors · Sonnet 5.5 High | [ ] 4.1 Sign in · Sonnet 5.5 High |
 | [ ] 4.9 second build, calibration trial · Haiku 5.5 Max | [ ] 4.12 A vendor · Sonnet 5.5 High | [ ] 4.2 Overview · Sonnet 5.5 High |
 | [ ] 4.4 Record a payment · Sonnet 5.5 High | [ ] 4.13 Shortlist ★ · Haiku 5.5 Max | [ ] 4.19 Files (L) · Sonnet 5.5 High |

@@ -1,0 +1,19 @@
+/* Ported from the prototype's main and main.wide, with the guide's other two
+   measures (§3). The bottom room is main's, in base.css. */
+.column {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-page-top) var(--space-page-x) 0;
+}
+
+.wide {
+  max-width: var(--measure-wide);
+}
+
+.doc {
+  max-width: var(--measure-doc);
+}
+
+.table {
+  max-width: var(--measure-table);
+}

@@ -1,11 +1,5 @@
-/* The page column and a placeholder hero, ported from the prototype's main,
-   .hero h1 and .kicker, until Tasks 3.1 and 4.2. */
-.column {
-  max-width: var(--measure);
-  margin: 0 auto;
-  padding: var(--space-page-top) var(--space-page-x) var(--space-page-bottom);
-}
-
+/* A placeholder hero, ported from the prototype's .hero h1 and .kicker, until
+   Task 4.2. */
 .hero {
   text-align: center;
 }

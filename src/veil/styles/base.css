@@ -47,8 +47,8 @@ textarea {
 }
 
 /* The page keeps room at the bottom for the floating add button (guide §3). The
-   top and sides belong to each screen's column: the top bar sits inside main
-   and must stay full width. */
+   top, sides and width belong to each screen's PageColumn; the top bar and the
+   demonstration banner sit above main, outside it. */
 main {
   padding-bottom: var(--space-page-bottom);
 }
