@@ -20,14 +20,16 @@ const V = Veil, S = V.STATE, d = V.data;
 const opened = new Set([new URLSearchParams(location.search).get("open") || (S === "open" || S === "savefail" ? "t1" : "")]);
 /* S8: a step change that didn't save keeps what was typed and offers a retry */
 let failedStep = S === "savefail" ? "t1:s2" : null;
-if (S === "alldone") d.tasks.forEach((t) => { t.done = true; t.doneOn = "2026-10-14"; });
+if (S === "alldone") d.tasks.forEach((t) => { if (!t.done) { t.done = true; t.doneOn = "2026-10-14"; } });
 let showDone = S === "alldone";
 const ui = { open: 100, done: 100 };
 
+/* N8: a finished task whose finishing day isn't known says "Done", never its due date or today's. */
 function dueText(t) {
+  if (t.done) return `<span class="td">${t.doneOn ? "Done " + V.dateShort(t.doneOn) : "Done"}</span>`;
   if (!t.due) return `<span class="td">No date</span>`;
   const n = V.daysFrom(t.due);
-  return `<span class="td ${n < 0 && !t.done ? "late" : ""}">${t.done ? "Done " + V.dateShort(t.doneOn || t.due) : n < 0 ? V.plural(-n, "day") + " late" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + V.dateShort(t.due)}</span>`;
+  return `<span class="td ${n < 0 && !t.done ? "late" : ""}">${n < 0 ? V.plural(-n, "day") + " late" : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : "Due " + V.dateShort(t.due)}</span>`;
 }
 function task(t) {
   const n = t.steps.length, k = t.steps.filter((s) => s.done).length, pct = n ? Math.round(k / n * 100) : 0;
@@ -49,7 +51,9 @@ function addSheet() {
     <p class="sub" style="margin-top:12px">Break it into steps once it's added.</p>${V.demoLine()}<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add task</button></div>`, (el) => {
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$("[data-ok]", el).onclick = () => {
-      const tt = V.$("#nt", el).value.trim(); if (!tt) { V.$("#nt", el).focus(); return; }
+      /* N9: say what's missing and keep what was typed (the date stays chosen) */
+      const tt = V.$("#nt", el).value.trim();
+      if (!tt) { const f = V.$("#nt", el).closest(".field"); f.classList.add("failed"); V.$("#nt", el).setAttribute("aria-invalid", "true"); if (!V.$(".need", f)) f.insertAdjacentHTML("beforeend", `<p class="need" role="alert">Say what needs doing, so you can find the task later.</p>`); V.$("#nt", el).focus(); return; }
       const t = { id: "t" + Date.now(), title: tt, due: V.$("#nd", el).value || null, notes: "", done: false, steps: [] };
       d.tasks.push(t); opened.add(t.id); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(tt)}`);
     };
@@ -58,7 +62,7 @@ function addSheet() {
 
 V.init({
   where: "Schedule", section: "schedule.html", noun: "your tasks", wide: true,
-  states: [["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["savefail", "A step didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella finishes a step"]],
+  states: [["add-invalid", "Adding without a title"], ["removefail", "Deleting couldn't finish"], ["open", "A task opened"], ["empty", "No tasks yet"], ["alldone", "Everything done"], ["savefail", "A step didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella finishes a step"]],
   sync() {
     setTimeout(() => {
       const t = d.tasks.find((x) => x.id === "t2") || d.tasks.find((x) => !x.done && x.steps.some((y) => !y.done)); if (!t) return;
@@ -68,7 +72,7 @@ V.init({
     }, 1600);
   },
   render(main) {
-    const open = order(d.tasks.filter((t) => !t.done)), done = d.tasks.filter((t) => t.done).sort((a, z) => (z.doneOn || "").localeCompare(a.doneOn || ""));
+    const open = order(d.tasks.filter((t) => !t.done)), done = d.tasks.filter((t) => t.done).sort((a, z) => !a.doneOn && !z.doneOn ? 0 : !a.doneOn ? 1 : !z.doneOn ? -1 : z.doneOn.localeCompare(a.doneOn));
     const head = `<section class="hero"><h1>Tasks</h1><p class="sub">${d.tasks.length ? `${open.length.toLocaleString("id-ID")} open${done.length ? `, ${done.length.toLocaleString("id-ID")} done` : ""}` : "Big jobs, broken into steps"}</p>${V.subnav("tasks.html", "schedule")}</section>`;
     if (!d.tasks.length) {
       main.innerHTML = head + `<div class="message inline">${V.ICON.knot}<h1>No tasks yet</h1><p>Add the big jobs, like choosing the caterer, and break them into steps with their own dates. Tasks with a due date also show in the agenda.</p><div class="acts"><button class="btn" id="add">Add a task</button></div></div>`;
@@ -114,6 +118,7 @@ function wire(main) {
     };
   });
 }
+if (S === "add-invalid") { addSheet(); V.$("#nd").value = "2026-11-01"; V.$(".sheet [data-ok]").click(); }
 </script>
 </body>
 </html>

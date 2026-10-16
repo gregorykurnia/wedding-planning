@@ -90,6 +90,7 @@ function render(main) {
     main.innerHTML = `<a class="back" href="${V.href("bookings.html")}">${V.ICON.back}Bookings</a><div class="message">${V.ICON.knot}<h1>No bookings in demonstration mode</h1><p>The planner isn't connected to its database yet, so there are no bookings to open.</p></div>`;
     return;
   }
+  if (!b && S !== "gone") { main.innerHTML = V.notHere("booking", "all bookings", "bookings.html", "Bookings"); return; }
   if (!b) {
     main.innerHTML = `<a class="back" href="${V.href("bookings.html")}">${V.ICON.back}Bookings</a><div class="message">${V.ICON.knot}<h1>This booking was removed</h1><p>${V.esc(V.data.partner)} removed it on another device a moment ago. It's no longer part of the budget.</p><div class="acts"><a class="btn" href="${V.href("bookings.html")}">See all bookings</a></div></div>`;
     return;
@@ -102,7 +103,7 @@ function render(main) {
     <section class="hero"><p class="sub">${V.esc(b.category || "No category")}</p><h1 dir="auto">${V.esc(b.name)}</h1>
       <p class="save-state ${S === "savefail" ? "failed" : ""}" id="save" role="status">${S === "savefail" ? "1 change not saved" : V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p>
       <div id="hero" style="margin-top:28px"></div>
-      <p class="origin">${FROM[b.origin.from]} on ${V.dateLong(b.origin.on)}</p></section>
+      <p class="origin">${FROM[b.origin.from]}${b.origin.on ? ` on ${V.dateLong(b.origin.on)}` : ""}</p></section>
 
     <h2 class="section-h">Details</h2>
     <div class="fields">
@@ -157,7 +158,8 @@ function wire(main) {
     parts.push({ id: "p2", name: paid > 0 ? "Balance" : "First payment", price: b.price - Math.min(paid, b.price), paid: Math.max(0, paid - b.price), funder: b.funder, due: b.due, step: b.step });
     b.parts = parts; ["price", "paid", "funder", "due", "step"].forEach((k) => delete b[k]);
     open.add(parts[parts.length - 1].id); render(main);
-    V.saved(`Split into ${V.plural(parts.length, "part")}`, () => { Object.keys(b).forEach((k) => delete b[k]); Object.assign(b, before); render(main); });
+    V.saved(`Split into ${V.plural(parts.length, "part")}`, () => { Object.keys(b).forEach((k) => delete b[k]); Object.assign(b, before); render(main); },
+      `Can't undo the split: ${V.esc(V.data.partner)} recorded ${V.rp(5000000)} on the ${V.esc(parts[parts.length - 1].name.toLowerCase())} since. Both parts stay as they are now.`);
   };
   const ap = V.$("#add-part", main);
   if (ap) ap.onclick = () => {
@@ -180,7 +182,7 @@ function wire(main) {
 
 V.init({
   where: "Budget", noun: "this booking",
-  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["gone", "Removed by Bella"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["gone", "Removed by Bella"], ["removefail", "Removing couldn't finish"], ["badamount", "Words typed into an amount"],  ["undo-conflict", "Undo after Bella's change"], ["sync-self", "Your own change from your phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
   render,
 });
 </script>

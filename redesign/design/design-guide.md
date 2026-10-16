@@ -1,6 +1,8 @@
 # Veil design guide
 
-**v1.0 (2026-10-14).** Frozen: approved by the owner on 2026-10-14. Later changes bump the version and are logged in `decisions.md`. This guide describes the prototype as it is. All 23 open questions are decided (see [Decided](#decided-2026-10-14) and [Decided at the freeze](#decided-2026-10-14-at-the-freeze)).
+**v1.2 (2026-10-16).** Frozen: approved by the owner on 2026-10-16 (v1.0 was frozen on 2026-10-14). v1.1 added the open needs **N1–N14** and v1.2 adds **N15–N18**, from `redesign/handoff/needs.md`, with the owner's answers to questions 24–26 (each answer is logged under its ID in `decisions.md`, "Open needs"). This guide describes the prototype as it is. All 26 questions are decided.
+
+What v1.1 adds, by need: **N1** the app mark, name and colours (4.31, 5.24) · **N2** pages and records that aren't there, and the unexpected (5.25, shared states) · **N3** who's who (5.1, 5.3, 6.3) · **N4** the Google window (5.1) · **N5** export columns (5.11) · **N6** devices that can't get reminders (4.30, 6.12) · **N7** the wedding day and after (5.2, 5.4, 6.11) · **N8** dates the planner doesn't know (6.11) · **N9** dated things missing what they need (6.1, 5.19, 5.21) · **N10** removing vendors, finalists and venues (5.12, 5.14, 5.15) · **N11** morning reminders (6.12, 5.19) · **N12** an item for several people (4.28, 5.22) · **N13** undo after the partner's change (6.2) · **N14** a remove that couldn't finish (4.15, 6.2) · **N15** the names the same size on a phone (4.4, 5.2) · **N16** amounts that aren't amounts (4.9, 6.9) · **N17** a PDF still too big after shrinking (4.20) · **N18** Done and dismissing before a change has saved (4.14, 6.1, 5.17).
 
 - Tokens: `tokens.css`, beside this file.
 - Prototype: `prototype/`. Every URL below is relative to that folder. Open `index.html` for the list of screens. The dashed "Prototype" tab on each screen switches states (`?state=…`) and swaps in the stress data (`?stress`). The tab itself is not part of the design.
@@ -59,6 +61,7 @@ All values are in `tokens.css`, with the prototype's old names in brackets.
 | Surfaces | `--surface-*` | Cards (`card`, frosted with `--blur-card`), sheets, tinted areas (`petal`, `mist`, `warm`), banners, the scrim | |
 | Hover | `--hover-*` | A blush wash. Rows get the lightest; small tools the strongest | |
 | Document palette | `--doc-ink-*`, `--doc-mark-*` | Only inside the document editor's text-colour and highlight choices | App chrome |
+| App identity | `--app-theme`, `--app-splash`, `--app-mark` | Outside the page (N1): the browser and window bar (blush), the opening screen (white), the mark (gold ink) | Anything inside the page |
 
 Rules of thumb:
 - **One rose thing per row**, at most. A late booking shows rose in its "late" amount only, not in its name.
@@ -117,6 +120,7 @@ From low to high: add button (5), editor table bar (9) and toolbar (10, its phon
 - **Back link.** "‹ Budget", "‹ Bookings", "‹ Vendors": small muted text above the hero, naming the parent screen. Lists reached from the menu have none.
 - **Floating add button.** On list screens, the main "add" action floats bottom right as an ink pill (`.add-fab`): "Add booking", "Add a vendor", "Add a finalist", "Add a venue", "Add to the schedule", "Add a task", "Add items", "Add a guest", "Add a what-if item". On a phone it moves in to 20px from the edges. It's hidden while editing a document on a phone.
 - **No menu bar, no tab bar, no sidebar.** Getting around goes: top bar → full-page menu → a section → (sub-navigation) → a list → a detail.
+- **Outside the page** (N1): every screen carries the favicon, the manifest and the blush theme colour, and its tab reads "*screen* · *what the top bar says*" ("Budget · Greg & Bella"; "Sign in · Our wedding planner"). See 4.31.
 
 ---
 
@@ -128,7 +132,7 @@ Each entry gives its purpose, its anatomy, its variants and states, and its rule
 - **Anatomy:** the couple's names on the left ("Greg *&* Bella", serif 24px, the "&" in champagne italic), a link to the overview, and **Menu** on the right (two short lines and the word).
 - **Same on every screen.** No page name in the middle (owner feedback, 2026-10-14: the label repeated the big title). The `.where` style is left over and no longer used.
 - **States:** normal. In demonstration mode the names give way to "Our wedding planner" and a gold banner follows directly beneath. On the menu itself, the right-hand button reads **Close**.
-- **Phone:** 20px padding.
+- **Phone:** 20px padding. The names stay 24px (`--text-names-top`), the same as on a computer (N15).
 - **Stress:** long names (Gregorius Alexander Wijayakusuma & Isabella Margaretha Setyaningsih) wrap onto several lines. Menu stays on the right.
 
 ### 4.2 Menu index (`.index`)
@@ -235,7 +239,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - **placeholder:** full muted ink, italic where it carries meaning ("What has to happen next", "No estimate", "Rp 0")
 - **Types:**
   - text
-  - money (`.num`, numeric keyboard, reformatted to "Rp 12.500.000" on blur)
+  - money (`.num`, numeric keyboard, reformatted to "Rp 12.500.000" on blur). **Not an amount** (N16): words, a minus, decimals or more than 15 digits can't be used. The field puts back the amount it had, rings rose and says why, quoting what was typed: "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." / "An amount can't be below zero, so “−5.000.000” can't be used." / "Rupiah amounts have no decimals, so “12,5” can't be used." / "That's more than an amount can hold here: up to Rp 999.999.999.999.999." With nothing before: "Nothing was changed." The line goes as soon as a usable amount is typed
   - date (native)
   - select (no arrow, reads as text)
   - textarea
@@ -297,8 +301,13 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Behaviour:**
   - `role="dialog"` and `aria-modal`
   - focus goes to the `autofocus` field, or else the first button or input
-  - Escape or a click on the scrim closes it
+  - Escape or a click on the scrim closes it, unless a change hasn't saved (below)
   - focus returns to what opened it
+- **Before a change has saved** (N18):
+  - **Saving:** Done, Escape or a tap outside waits; the save line reads "Saving, then this closes", and it closes when saved.
+  - **Didn't save, or can't be saved yet** (a failed save, or a dated thing missing a title or date, N9): it stays open. The save line says "Your last change isn't saved yet. **Try again** or **close without it**" (focus on Try again), or "1 change not saved yet. Fix it, or close without it". Closing without it says so: "Closed without your last change. It wasn't saved."
+  - **A sheet that adds something,** dismissed with typed text in it (Escape or a tap outside): it stays, with "You've started typing here. Close and it's not added, or keep going." and a rose **Close without adding it**. A second Escape closes. **Cancel** is a clear choice, so it closes at once.
+  - `schedule.html?state=done-unsaved` (Done while a change didn't save); `?state=savefail` on any screen with editing sheets, then Done or Escape.
 - **Sheets in the prototype:**
   - Record a payment
   - Add a vendor (with "Add and start another")
@@ -334,6 +343,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - "It's removed from storage for good, freeing 2,4 MB. It can't be brought back."
 - **Inline confirm** (inside the categories sheet): the row turns into "Remove **Florist**? Its 4 vendors move to Other." with "Keep it" and a rose "Remove category".
 - **Blocked** (a folder with contents): "Empty Catering first", "It still holds 4 files and 1 folder. Move or delete them, then delete the folder.", and **OK**.
+- **Couldn't finish** (N14, `?state=removefail` on any screen with a confirm): after "Removing" or "Deleting", the dialog stays open. A rose box under the body says "**Nothing was removed.** The planner couldn't reach its database, so everything is just as it was. Try again, or keep it for now." ("Nothing was deleted." for deletes, documents and files included). The action becomes **Try again**, focused; **Keep it** closes with nothing changed. No toast, no undo, because nothing happened.
 
 ### 4.16 Toasts (`.toast`)
 - An ink pill at the bottom centre (on a phone, 90px up; in the editor on a phone, 120px), 14.5px white text, with an optional action in pale gold.
@@ -342,6 +352,8 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - **with undo**: "Removed Villa Samaya Ubud · **Undo**", "Recorded Rp 25.000.000 for Villa Samaya Ubud · **Undo**"
   - **with a next step**: "Kebun Bunga Atelier is now a booking · **Open**"
   - **partner**: a blush circle with the partner's initial, then "Bella recorded Rp 55.500.000 for Dapur Lestari Catering"; stays 9 seconds
+  - **your other device** (N3): a champagne circle with your own initial, "You recorded Rp 55.500.000 for Dapur Lestari Catering on your other phone"; 9 seconds. Never shown as the partner's
+  - **can't undo** (N13): the partner's blush circle, "Can't undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now."; 9 seconds, no action
   - **demonstration**: "Not saved: demonstration mode"
 - **Timing:** 6 seconds by default, and the undo lasts as long as the toast. Tapping **Undo** turns it into "Restoring" (disabled) for a moment, then the item is back in its place. Toasts stack upward; the box is `role="status"`, `aria-live="polite"`.
 
@@ -379,6 +391,7 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
     - "Shrinking from 14,2 MB to fit under 10 MB"
     - "Uploaded" (sage) or "Uploaded, shrunk to 7,8 MB"
     - "Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk." (rose)
+    - **Still too big after shrinking** (N17, a PDF): "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." (rose). Its own words, so it isn't read as the first size message. Shown in the upload sheet and on a record's tiles (`files.html?state=uploading`, `booking.html?state=uploading`)
     - "Upload failed. Try again" (rose)
     - "Not uploaded: demonstration mode"
 - **Envelope folder** (`.frow.folder`): the icon is an envelope with a V flap on champagne-soft. The meta reads "2 folders, 14 files" or "Empty".
@@ -472,8 +485,9 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
 - **Paging:** open and finished tasks show 100 at a time, with "Showing 100 of 401" and "Show 100 more".
 
 ### 4.28 Item rows (wedding items)
-- **Desktop columns:** handle · Item (serif input) · Vendor (input, placeholder "*Vendor not known yet*") · Events (four small chips) · Who it's for (select) · Next (star) · Confirmed (tick) · ⋯
-- **Phone (under 860px):** stacked. The handle, name, star, tick and ⋯ are on top; the vendor, events and person below.
+- **Desktop columns:** handle · Item (serif input) · Vendor (input, placeholder "*Vendor not known yet*") · Events (four small chips) · Who it's for (a people picker) · Next (star) · Confirmed (tick) · ⋯
+- **Who it's for** (N12): reads as text ("Groom's father, Groom's brother"; past two, "Bride, Groom's father and 2 more"; muted "General" when it's for no one in particular). Tapping it opens a small menu of checks: "General, no one in particular", a hairline, then every person. Ticking people clears General; clearing everyone means General. Each tick saves at once. It's `<details>`, labelled "Who Wedding cake is for: General", and closes when you tap elsewhere.
+- **Phone (under 860px):** stacked. The handle, name, star, tick and ⋯ are on top; the vendor, events and people below.
 - **Star** (work on next): gold outline; filled champagne when on. **Tick** (confirmed): a sage circle with a mint fill when on. Both are 34px round buttons with `aria-pressed`.
 - **Handle:** six dots in `--color-control-outline`, grab cursor. Drag and drop shows a rose line above or below the target; the dragged row fades to 40%. **Alt+↑/↓** moves the row. Handles hide while any sort or filter is on.
 - **Row menu (⋯):** Add an item below · Add several below · Move up · Move down (in your own order only) · Remove (rose).
@@ -491,9 +505,24 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
   - **allowed:** "Arrives on this phone and your other devices, even when the planner is closed.", and in settings a "Send a test reminder" button
   - **not yet allowed:** "Allow notifications" (a primary small button in settings, a link in the sheet)
   - **turned off:** rose text saying where to turn them on ("your phone's Settings, under Notifications" / "the browser's site settings for the planner")
+  - **not until installed** (N6, an iPhone in the browser): "On an iPhone, reminders can only arrive once the planner is on your home screen. Add it there, open it from the home screen, then allow notifications." with **Show me how** (to the install steps). In the event sheet: "Until then, they arrive only on your other devices."
+  - **can't here at all** (N6, a browser without notifications): rose, "This browser can't show reminders from the planner, even with it installed, so they won't arrive on this computer. They still arrive on your other devices where they're allowed. To get them here, open the planner in a recent Safari, Chrome, Edge or Firefox."
+  - Every note says whether reminders still reach your other devices, so nobody counts on one that won't come.
 - **Who can open the planner:** a list of the two accounts, "Greg, you · greg@…, signed in with Google" and "Bella", plus "Only these two accounts can see or change anything. Anyone else who signs in sees nothing."
 
-### 4.31 Excluded
+### 4.31 App mark, name and colours (N1)
+- **The mark** is the ribbon knot, drawn heavier (stroke about 3 in the 72-unit knot), in gold ink `--app-mark` on a tile lit like the page: white, with blush light from the top right and champagne from the bottom left. Files: `prototype/assets/identity/`.
+  - `icon.svg`: any purpose, a rounded tile (radius 22%), for the Dock, the opening screen, the notification and the iPhone home screen
+  - `icon-maskable.svg`: full-bleed, the knot inside the central 80% circle, so circles, squircles and teardrops keep it whole
+  - `icon-mono.svg`: the shape only, for Android themed icons and notification badges
+  - `favicon.svg`: a blush tile with a heavier knot that holds at 16px
+  - The build exports PNGs where SVG isn't taken: 180 × 180 (iPhone), 192 and 512 (Android, plus a maskable 512), and a 32 × 32 favicon.
+- **The name:** full "Gregory & Bella's Wedding" (from the brief: install prompts, the opening screen, the window title, the app switcher); short "Greg & Bella" (under the icon and in the Dock, where about 12 characters fit).
+- **Tabs:** "*screen* · *what the top bar says*", so they follow the names set in settings and never show names before signing in or in demonstration mode ("Sign in · Our wedding planner").
+- **Colours outside the page:** blush `#fce6ec` for the browser bar and the installed window's title bar (`theme-color`), white behind the opening screen (`background_color`).
+- **Rules:** one mark everywhere; no names on the icon (the label carries them); never rose on the mark, because an icon never needs you.
+
+### 4.32 Excluded
 The **prototype switcher** (`.proto`, the dashed "Prototype" tab) and the screens index (`index.html`) are tools for review, not part of the design.
 
 ---
@@ -506,6 +535,8 @@ The whole-screen states **Loading**, **Couldn't load** and **Offline** look the 
 - **Loading** shows the skeleton.
 - **Couldn't load** shows the knot and "*Thing* didn't load. The planner couldn't reach its database. Your data is safe; it just isn't here yet." with **Try again**.
 - **Offline** shows the cloud and "You're offline. The planner needs a connection to show *thing*. It will load again as soon as this phone is back online." with a quiet **Try again**.
+- **Something went wrong** (N2, `?state=crash` on every screen): the knot and "The planner ran into a problem it didn't expect. Everything you've saved is safe; only this screen didn't open.", with **Go to the overview** (quiet) and **Try again**. The top bar and menu stay, so there's always a way somewhere familiar.
+- **Not here** (N2): a detail screen opened from an old or mistyped link ("This booking isn't here", "This vendor isn't here", finalist, document): "The link may be out of date, or the booking was removed a while ago. Everything else is just where you left it." with **See all bookings**. This is not the partner's remove arriving ("This booking was removed… Bella removed it on another device a moment ago"), which only shows when that just happened.
 
 They're listed per screen without repeating that copy.
 
@@ -521,16 +552,25 @@ No top bar, no data: a centred gate, 440px wide, with the knot, "Our wedding pla
 | Just signed out | `?state=signedout` | Gold box "You've signed out. Nothing is shown on this device until one of you signs in again." |
 | Offline | `?state=offline` | Gold box; both sign-in buttons disabled |
 | Not connected | `?state=demo` | No form: gold box explaining demonstration mode, then **Look around** |
+| Waiting for Google (N4) | `?state=google-waiting` | The Google button is busy, "Waiting for Google"; a gold note "Finish signing in in the Google window. If you can't see it, it may be behind this one." with **Cancel**. Email sign-in stays usable |
+| Google window closed (N4) | `?state=google-closed` | Gold box "The Google window closed before signing in finished, so you're not signed in yet. Continue with Google to try again."; the button reads **Continue with Google again** |
+| Google window blocked (N4) | `?state=google-blocked` | Rose box "Your browser blocked the Google window. Allow pop-ups for the planner in the browser's address bar, then continue with Google again. Or sign in with your email below." |
+| Google sign-in failed (N4) | `?state=google-failed` | Rose box "Google couldn't finish signing you in. Nothing was changed. Try again in a moment, or sign in with your email below." |
+| Which of you is this? (N3) | `?state=whoami` | After an account's first sign-in, while neither account has a name: "Welcome", "You're signed in as bella@…", "Which of you is this?", two large serif name chips, "So the planner can say who changed what. You can change this later in Wedding settings.", **Continue as Bella** (disabled until chosen) |
+| First sign-in, no names yet (N3) | `?state=whoami-new` | The same, with "Your first name" and "Your partner's first name" fields instead of chips; **Continue** once both are filled. These become the two names (O6) |
 
 **Phone:** the same gate at full width with 24px padding; the fields are always stacked.
+
+**Who's who** (N3): the question is asked once per account. Once one account has a name, the other account gets the other name without asking. The pairing belongs to the account, not the spelling, so renaming "Greg" to "Gregory" keeps it.
 
 ### 5.2 Overview: `overview.html` (O1–O6)
 The home screen; the names in the top bar lead here.
 - **Hero:** names in gold italic, **157** (the days figure), "days until Saturday 20 March 2027", and the thread "Started 1 Mar · 59% of the time gone".
+- **The names are 44px on a phone and on a computer** (`--text-names`, N15), line height 1.1. Long names wrap onto more lines rather than shrink.
 - **Coming up:** the next five dated things of any kind, as agenda rows, then "See the whole schedule".
 - **Doors:**
   - Budget: "Rp 473.150.000 paid of Rp 882.800.000"
-  - Tasks: "1 of 6 tasks done"
+  - Tasks: "2 of 7 tasks done"
   - Guests: "17 attending of 20 guests invited"
   - Wedding items: "12 of 25 confirmed"
 
@@ -544,14 +584,19 @@ The home screen; the names in the top bar lead here.
 | Demonstration mode | `?state=demo` | Gold banner; no names, no countdown: "When is the wedding?" with **Save the date** disabled and "Demonstration mode: saving is turned off."; empty doors |
 | Bella's change arrives | `?state=sync` | Partner toast after 1.6s |
 | Stress | `?stress` | Long names wrap; thousands in the doors, grouped with dots |
+| The day before (N7) | `?state=eve` | **1**, "day to go: tomorrow, Thursday 15 October" |
+| The wedding day (N7) | `?state=day` | Kicker "The wedding day", the word **Today** at the days size, "Wednesday 14 October. Everything for today is below.", the thread full, "The day is here". Coming up is titled "Today and next" |
+| After the wedding (N7) | `?state=after` | The count ends (decision 26): the names, the kicker "Married" and the day in serif ("Friday 2 October"). No figure, no thread. Coming up and the doors stay as they are |
 
 **Phone:** the days figure scales down (clamped at 96px); door summaries move under their names.
+
+**No negative countdown, ever.** Before the day the figure counts down; on the day it's the word; after it the count simply ends, because the planner is hardly used by then (decision 26). This is the one screen state with no figure. Without a start date (N8), the time thread is left out rather than guessed.
 
 ### 5.3 Wedding settings: `settings.html` (O5, O6, A3, A5, S10)
 Sections:
 - **The two of you:** first name, second name, wedding date. Hints: "Used wherever the planner addresses you…", "Every countdown and date works from this."
 - **Who can open the planner:** the two accounts, then **Sign out of this computer/phone**.
-- **Reminders on this computer/phone:** the notification state.
+- **Reminders on this computer/phone:** the notification state, then any reminders that can't arrive.
 - **On your phone:** the iPhone and Android steps.
 - **Also:** doors to Who pays and Vendor categories.
 
@@ -564,6 +609,10 @@ The save line sits under the title.
 | Notifications not yet allowed | `?state=notif-default` | "Not allowed yet on this computer…" + **Allow notifications** |
 | Notifications turned off | `?state=notif-denied` | Rose note naming where to turn them on |
 | Installed on this phone | `?state=installed` | "Installed on this phone. Open it from your home screen like any app." |
+| iPhone, not on the home screen yet (N6) | `?state=notif-install` | "On an iPhone, reminders can only arrive once the planner is on your home screen…" + quiet **Show me how** |
+| Browser can't show reminders (N6) | `?state=notif-unsupported` | Rose note: reminders won't arrive on this computer, still arrive on your other devices, and which browsers can |
+| Reminders that can't arrive (N11) | (normal data) | Under the notification state, rose: "2 appointments and calls have a reminder you set before for a time of day, which can't arrive. **Choose again in the schedule**" |
+| Swap who's who (N3) | interaction | Under the two accounts: "Each name belongs to one account, so the planner can say which of you changed something. Changes you make on your other phone show as yours. Names the wrong way round? **Swap them**", with undo |
 | Loading / Offline | `?state=loading` / `offline` | shared states |
 | Demonstration mode | `?state=demo` | Banner; save line "Demonstration mode: changes aren't saved"; empty name fields; "Demonstration mode: nobody is signed in…" instead of the two accounts and Sign out |
 
@@ -582,6 +631,8 @@ The save line sits under the title.
 | Bella's change arrives | `?state=sync` | Figure and next card update; the card flashes; partner toast |
 | Overpaid | (data: paid more than committed) | kicker "Overpaid by", the amount over in rose, context "Rp X paid against Rp Y committed. Check the overpaid bookings.", a rose thread ending "overpaid" |
 | Stress | `?stress` | 1.206 bookings; the figure shrinks when it passes 13 digits; "15 funders" in the Who pays door |
+| Your own change from your other device (N3) | `?state=sync-self` | As Bella's change, but the toast carries your initial in champagne: "You recorded … on your other phone" |
+| The day before, the day, after (N7) | `?state=eve` / `day` / `after` | The closing line reads "**Tomorrow** is the wedding, …", "**Today** is the wedding day", or "Married on Friday 2 October" |
 | Record a payment | interaction (**Record payment**) | Sheet: big amount pre-filled with what's left, "Pays this in full" / "Rp X still to pay after this" / rose "This is Rp X more than what's left. It will show as overpaid.", Paid on, Paid by chips, Attach a receipt; **Record payment** busy "Recording"; undo toast |
 | Menu | interaction (**Menu**) | the full-page menu |
 
@@ -621,6 +672,11 @@ The save line sits under the title.
 | A change didn't save | `?id=samaya&state=savefail` (and `?id=ayu&state=savefail`) | the last part opens, "Paid so far" ringed rose with "Couldn't save this change. What you typed is kept. Try again"; save line "1 change not saved" |
 | Uploading files | `?state=uploading` | tiles shrinking, uploading, too large, failed |
 | Removed by Bella | `?state=gone` | full message "This booking was removed", "Bella removed it on another device a moment ago…", **See all bookings** |
+| A link that leads nowhere (N2) | `booking.html?id=old-link` | "This booking isn't here", "The link may be out of date, or the booking was removed a while ago…", **See all bookings** |
+| Booked on a day the planner doesn't know (N8) | `booking.html?id=cincin` | The origin line drops the date: "Added directly" |
+| Removing couldn't finish (N14) | `?state=removefail` | Remove this booking (or a part): the confirm stays with "Nothing was removed…" and **Try again** |
+| Undo after Bella's change (N13) | `?id=ayu&state=undo-conflict` | Split, then Undo: "Can't undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now." The same for Undo after recording a payment |
+| Your own change from your other device (N3) | `?state=sync-self` | the figure updates; the toast is in your name |
 | Loading / Couldn't load / Offline | shared | |
 | Demonstration mode | `?state=demo` | "No bookings in demonstration mode" |
 | Bella's change arrives | `?state=sync` | figure updates, toast |
@@ -711,6 +767,21 @@ The save line sits under the title.
 | Stress | `?stress` | 2.004 vendors, 37 categories (some near the 40-character limit, CJK), paged by 100 |
 | Export | interaction | downloads `vendors-greg-bella.csv`; toast "Exported 16 vendors to vendors-greg-bella.csv" |
 
+**The spreadsheet** (N5): one row per vendor in view (the current category, search and keen filter), in the order shown. Columns, named as the planner names them, in the order of the vendor screen:
+
+| Column | Holds |
+|---|---|
+| Name · Category · Stage · Keen on | as shown; Stage uses the stage names ("Inquiring", "Ruled out"); Keen on is Yes or No |
+| Contact person · Phone · WhatsApp | the phone as typed, and the `wa.me` link the planner makes from it |
+| Rating (out of 5) · Number of reviewers | numbers, empty when not known |
+| Leaning towards · Its price (Rp) | the option you're leaning towards and its price, empty when none is chosen |
+| Price options · All price options | how many, then each as "Gold, 400 guests: Rp 161.000.000 (Buffet, 7 dishes…)", separated by semicolons |
+| On the shortlist · Booked | Yes or No |
+| Files · Notes · Date added | the number of files, the notes as written, and the day it was added |
+
+- **Ready to analyse:** money is whole rupiah with no "Rp" or dots (161000000) in the price column, so it sums; ratings use a decimal point (4.8) and dates are year-month-day (2026-05-02), which every spreadsheet reads as numbers and dates. Empty fields are empty cells, never "No rating yet".
+- **Ready to share:** UTF-8 with a byte-order mark (so Chinese and Arabic names open correctly in Excel), every cell quoted, Windows line endings.
+
 **Phone:** focus chips scroll sideways; rows keep price and rating on the right.
 
 ### 5.12 A vendor: `vendor.html?id=…` (F7–F11, F13, F16, B1)
@@ -735,6 +806,9 @@ The save line sits under the title.
 | Chosen | interaction (Chosen chip) | creates a booking; toast "Kebun Bunga Atelier is now a booking · Open" |
 | Copying | interaction | button busy "Copying", then the card flips to "On the shortlist", with undo |
 | Price option | interaction | Add: Cancel · **Add option**. Edit: saves as you go, **Done** |
+| Remove this vendor (N10) | interaction (rose link at the foot) | "Remove Kebun Bunga Atelier?", "It leaves Vendors, with its 2 price options. Its copy on the shortlist stays. You can undo for a few seconds." (it names files staying in Files › Vendors › …, and a booking staying in the budget, when there are any). **Remove vendor** → in place "Kebun Bunga Atelier was removed" with **See all vendors**, and an undo toast |
+| Removing couldn't finish (N14) | `?state=removefail` | the confirm stays, "Nothing was removed…", **Try again** |
+| A link that leads nowhere (N2) | `vendor.html?id=old-link` | "This vendor isn't here" |
 
 ### 5.13 Shortlist: `shortlist.html` (F17–F19, F21)
 - "Shortlist", with "6 finalists in 4 categories", and the sub-navigation. Focus chips by category; Order by Category, Preferred price, Reviews, Instagram followers, with Ascending / Descending (price starts low to high, reviews and followers high to low).
@@ -770,6 +844,8 @@ The save line sits under the title.
 | Booked | interaction | gold flag "Now a booking" + "Open the booking"; the card disappears |
 | A change didn't save | `?state=savefail` | the first package's sheet opens with the rose save line |
 | Package | interaction | Add: Cancel · **Add package** ("Add the package first, then attach its files."). Edit: saves as you go, with the package's own **Files** (tiles and **Add files**), **Done** |
+| Remove from the shortlist (N10) | interaction (rose link at the foot) | "Remove Kebun Bunga Atelier from the shortlist?", "It leaves the shortlist, with its 2 packages. Kebun Bunga Atelier stays in Vendors, files and all. You can undo for a few seconds." **Remove finalist** → in place "… was removed from the shortlist", undo toast |
+| Removing couldn't finish (N14) | `?state=removefail` | as on a vendor |
 
 ### 5.15 Venues: `venues.html` (F1, F3–F5, F22, B1)
 - "Venues", led by "Booked: Villa Samaya Ubud" (a link to its booking), and the sub-navigation.
@@ -785,7 +861,9 @@ The save line sits under the title.
 | Bella adds a venue | `?state=sync` | "Bella added Bukit Jimbaran Lawn"; the row flashes |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `?stress` | 302 venues; a 125.000-guest, 13-digit venue with a long address |
-| Venue sheet | interaction | stage chips, Name, Location, Estimated cost, Most guests, Notes, Files. Add: Cancel · **Add venue** (with undo). Edit: saves as you go, **Done**. Marking Booked creates a booking ("… is now a booking · Open") |
+| Venue sheet | interaction | stage chips, Name, Location, Estimated cost, Most guests, Notes, Files. Add: Cancel · **Add venue** (with undo). Edit: saves as you go, **Done**, then a rose **Remove venue**. Marking Booked creates a booking ("… is now a booking · Open") |
+| Remove a venue (N10) | interaction (Remove venue in its sheet) | "Remove Puri Taman Sari?", "It leaves Venues, with its notes. Its file stays in Files › Venues › …. You can undo for a few seconds." (and "Its booking stays in the budget." when booked). **Remove venue**; the row goes, with an undo toast that brings it back flashing |
+| Removing couldn't finish (N14) | `?state=removefail` | open a venue, Remove venue: the confirm stays with **Try again** |
 
 ### 5.16 Documents: `documents.html` (R6)
 - "Documents", with "6 documents, newest first", and the sub-navigation. Then **Meeting notes** (primary) and **New document** (quiet).
@@ -815,12 +893,15 @@ The save line sits under the title.
 | Not saved yet | `?state=unsaved` | gold dot, "Not saved yet" |
 | Saving | `?state=saving` | spinner |
 | Couldn't save | `?state=savefail` | rose note, "…They're still here. Try again" |
+| Leaving after a change didn't save (N18) | `?state=leave-failed` | Back is tapped: "Your last changes aren't saved" with **Leave without them** · **Stay and try again** |
+| Leaving before it's saved (N18) | `?state=unsaved`, then Back | it saves first, then goes |
 | Went offline while writing | `?state=offline-edit` | "Not saved: you're offline. Keep this page open. Try again" |
 | Cursor in a table | `?state=table` | table bar showing |
 | Editing a total | `?state=formula` | the total cell shows `=SUM(C2:C5)` in monospace; the formula bar shows its address and formula |
 | A total with a mistake | `doc.html?id=scratch&state=formula-error` | "Bad reference" in the cell holding `=SUM(B2:B4, D9)`; the formula bar explains "D9 is outside this table, which has … columns and … rows." The same document has a total that includes itself, `=SUM(B2:B5, B7)` |
 | Bella is in it too | `?state=sync-edit` | gold banner with a gold dot |
 | Deleted by Bella | `doc.html?id=gone` | "This document was deleted", "Bella deleted it on another device. It can't be brought back." |
+| A link that leads nowhere (N2) | `doc.html?id=old-link` | "This document isn't here" |
 | Delete | interaction | "Delete “Meeting: Kebun Bunga Atelier”?", "This can't be undone. The document and everything in it, tables included, will be gone for you and Bella.", **Delete for good**, then in place "Document deleted / It's gone for both of you." No undo |
 | Loading / Couldn't load / Offline | shared | |
 | Demonstration mode | `?state=demo` | body not editable; "Demonstration mode: not saved" |
@@ -848,6 +929,8 @@ The save line sits under the title.
 | Delete a file | interaction | "…freeing 2,4 MB. It can't be brought back." **Delete for good**; toast without undo |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella uploads a file | `?state=sync` | "Bella uploaded Bella's dress fitting.jpg" |
+| Undo a move after Bella moved it again (N13) | `?state=undo-conflict` | Move a file, then Undo: "Can't move it back: Bella has since moved … to Files › Contracts. It stays there." |
+| Deleting couldn't finish (N14) | `?state=removefail` | Delete for good (a file or a folder): "Nothing was deleted…", **Try again** |
 | Stress | `files.html?folder=big&stress`; `files.html?stress&state=deep` | 3.000 photos and 40 folders in one folder; 30 levels deep with the middle folded; long and non-Latin names; 1 KB, 10 MB, very wide and very tall images |
 
 **Phone:** a file's size and date move under its name; the upload fields stack.
@@ -863,7 +946,15 @@ The save line sits under the title.
 | Nothing scheduled | `?state=empty` | "Nothing scheduled yet", "…Payments due on bookings and tasks with dates appear here by themselves.", **Add to the schedule** |
 | No results | `?state=noresults` | "Nothing matches “florist”" + **Show everything** |
 | With completed and cancelled | `?state=done` | struck-through rows appear |
-| An event's details | `?state=event` | event sheet: kind chips, Title, Date, All day / Starts–Ends, With, Where or a call link, Notes, Remind us; every change saves as you go; Mark completed · Cancel it · **Done**; rose Delete |
+| An event's details | `?state=event` | event sheet: kind chips, Title, Date, All day / Starts–Ends, With, Where or a call link, Notes, Remind us (No reminder · The morning before · A week before, in the morning, with "Reminders come once a day, in the morning."); every change saves as you go; Mark completed · Cancel it · **Done**; rose Delete |
+| Reminders that can't arrive (N11) | (normal data) | A rose box under the hero: "2 reminders you set before can't arrive, because reminders now come only in the morning: *Call with Laras about the arch*, *Organiser check-in*. Choose again for each." Each name opens its sheet. The rows also say "Its reminder can't arrive. Choose another" |
+| A reminder chosen before for a time of day (N11) | interaction (open one of those) | Remind us reads "Choose again", ringed rose: "You chose “1 hour before” when you set this up. That can't arrive: reminders come once a day, in the morning. Choose the morning before or no reminder." It names only the choices that can still arrive for that date. |
+| A morning that has gone (N11) | interaction (an event tomorrow or within the week) | the choice is greyed, "The morning before (that morning has gone)" |
+| Ends before it starts (N9) | `?state=invalid` | The end time is ringed rose with "It ends before it starts. Change the end time, or leave it empty."; the save line reads "1 change not saved yet: the end time"; the times typed stay; **Done** moves to the field instead of closing |
+| Adding without a title or date (N9) | `?state=new-invalid` | After **Add to the schedule**: "Give it a title so you can find it in the schedule." and "Choose the day it happens.", both ringed; the start time typed stays; focus goes to the first |
+| Cleared title or date on an existing event (N9) | interaction | "It needs a title. The schedule keeps “Tasting at Sendok Emas” until you give it one." / "It needs a date. The schedule keeps it on Friday 16 October until you choose one." The rest of the sheet keeps saving |
+| iPhone not on the home screen / browser can't (N6) | `?state=notif-install` / `notif-unsupported` | the note under Remind us (4.30) |
+| Deleting couldn't finish (N14) | `?state=removefail` | Delete in the sheet: the confirm stays with **Try again** |
 | Adding an event | `?state=new` | "Add to the schedule", "For example, Tasting at Sendok Emas" |
 | Notifications not yet allowed / turned off | `?state=notif-default` / `notif-denied` | the note under Remind us |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
@@ -880,7 +971,7 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 **Phone:** cells shrink to 5px padding with 16px numbers; the dots are 5px with no "+N"; the wedding day shows only its blush fill.
 
 ### 5.21 Tasks: `tasks.html` (S8, S9)
-- "Tasks", with "5 open, 1 done", and the sub-navigation.
+- "Tasks", with "5 open, 2 done", and the sub-navigation.
 - **Open** ("by due date, undated last"), then the disclosure of finished tasks, and **Add a task**.
 
 | State | URL | What changes |
@@ -893,6 +984,9 @@ The month head, the calendar, the legend, then the chosen day's list. **Normal:*
 | Everything done | `?state=alldone` | "Everything's done", "Finished tasks are kept below in case you need one back.", disclosure open |
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Stress | `?stress` | 401 tasks, one with 60 steps, 100 at a time with "Showing 100 of 400" and **Show 100 more** |
+| Finished on a day the planner doesn't know (N8) | (normal data: "Book the church") | reads "Done", never a due date or today; such tasks sit last among the finished |
+| Adding without a title (N9) | `?state=add-invalid` | "Say what needs doing, so you can find the task later.", ringed; the due date chosen stays |
+| Deleting couldn't finish (N14) | `?state=removefail` | Delete task: the confirm stays with **Try again** |
 
 Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't change the width.
 
@@ -901,7 +995,7 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 ### 5.22 Wedding items: `items.html` (T1–T10)
 - "Wedding items", with "Every piece of the day, and who provides it".
 - **Figure:** "12 *of 25*" confirmed, with "**6** marked to work on next" and the thread "48% confirmed · 13 to go".
-- Then the "To work on next" card, the tools, the filters, the column heads and the rows, with the floating **Add items**.
+- Then the "To work on next" card, the tools (search: "Search items, vendors and people"), the filters, the column heads and the rows, with the floating **Add items**.
 
 | State | URL | What changes |
 |---|---|---|
@@ -915,6 +1009,9 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 | Bella confirms an item | `?state=sync` | "Bella confirmed Wedding cake" |
 | Stress | `?stress` | 2.004 items, 150 at a time |
 | Row menu, remove, add several | interaction | "Remove Wedding cake?", "You can undo for a few seconds, and it goes back exactly where it was." |
+| For several people (N12) | (normal data) | "Makeup for both mothers" is for Bride's mother and Groom's mother; "Suits for the groom's father and brother" for both. Narrowing to either person, or searching either name, finds it |
+| Narrowed to one person (N12) | `?state=people` | Anyone set to Groom's brother: both his shirt and the suits for the father and brother |
+| Removing couldn't finish (N14) | `?state=removefail` | |
 
 **Under 860px:** stacked rows, no column heads.
 
@@ -937,8 +1034,23 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 | Loading / Couldn't load / Offline / Demonstration | shared | |
 | Bella records an RSVP | `?state=sync` | "Bella marked 王小明 as attending" (the first guest still waiting) |
 | Stress | `?stress` | 1.500 guests, 100 at a time |
+| Removing couldn't finish (N14) | `?state=removefail` | the guest confirm stays with **Try again** |
 
 **Phone:** the cards stack; the invitation and RSVP switch move under the name; the switch grows for thumbs.
+
+### 5.24 On your devices: `identity.html` (N1)
+Not a screen in the app: a sheet showing where the planner appears outside its pages. The mark at 200, 96, 60, 32 and 16px; the maskable icon in three masks; the monochrome icon themed light and dark; the full and short names and the tab pattern; iPhone home screens on light and dark wallpapers; an Android home screen with themed icons; the white opening screen; a morning reminder on the lock screen; a browser tab; the installed window's blush title bar; and the Dock. See 4.31 for the rules.
+
+### 5.25 A page that isn't here: `notfound.html` (N2)
+For an address that leads nowhere in the planner.
+
+| State | URL | What changes |
+|---|---|---|
+| Signed in | `notfound.html` (and `?path=…`) | The top bar and menu stay. Knot, "This page isn't here", "The address may be mistyped, or it points to something that has moved. Nothing has changed in the planner.", the address in a small pill, **Open the menu** (quiet) · **Go to the overview**, then three doors: Budget, Schedule, Guests |
+| Signed out | `?state=signedout` | No top bar and no names: "This page isn't here", "…Sign in and you'll start from the overview.", **Sign in** |
+| Something went wrong | `?state=crash` (any screen) | the shared state above |
+
+**Phone:** the same, with the doors' summaries under their names.
 
 ---
 
@@ -950,12 +1062,17 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
   - **A row that saves on one tap** (an RSVP, a task step, an item's star or tick) keeps the choice, rings the row in rose and puts a line under it: "Couldn't save the reply for Maria Goretti. Your choice is kept. **Try again**" (`guests.html?state=savefail`), "Couldn't save this step. What you typed is kept. **Try again**" (`tasks.html?state=savefail`).
   - **A sheet** shows the same words in its save line (see 4.14).
 - **Documents** autosave after a 0.9-second pause in typing: Not saved yet (gold) → Saving → Saved just now (sage). On failure the text stays and the note offers Try again. Offline says to keep the page open (R5).
+- **Leaving before it's saved** (N18): from a document, Back, the menu or the names wait while it's "Not saved yet" or "Saving" (it saves at once, then goes). If it couldn't save, a sheet asks: "Your last changes aren't saved", "If you leave now, they're lost. Stay and they're still here to save.", **Leave without them** (quiet) · **Stay and try again**. Closing the tab gets the browser's own question. On sheets, see 4.14.
 - **Forms that create** (Add a booking) save on a button press, because there's nothing to save into until the record exists. On failure they keep every field and turn the button into **Try again**.
 - **Sheets that edit** an existing record save as you go too, with the same save line, and close with **Done**. If a name is cleared, the old one comes back rather than saving an empty name.
+- **Dated things say what they need** (N9: events and tasks). A title and a date are required, and an end can't come before its start.
+  - **Adding:** pressing the add button with something missing rings each field rose with one line saying what to do ("Give it a title so you can find it in the schedule.", "Choose the day it happens.", "It ends before it starts. Change the end time, or leave it empty."). Everything typed stays; focus goes to the first problem. Nothing is added until it's fixed.
+  - **Editing:** a change that would leave it without a title or a date, or ending before it starts, isn't saved. The field keeps what you typed, says what the schedule still holds ("The schedule keeps “Tasting at Sendok Emas” until you give it one."), and the save line says "1 change not saved yet: the title". Other fields keep saving. **Done** moves to the field instead of closing.
+  - The fields get `aria-invalid` and the line is `role="alert"`.
 
 ### 6.2 Undo windows and permanent deletes
 - **Anything removed or changed in bulk** gets a toast with **Undo**, for as long as the toast shows (6 seconds), and undo puts it back in the same place:
-  - removing a booking, part, funder, price option, package, what-if item, item, guest, task, event, folder, category or table
+  - removing a booking, part, funder, price option, package, what-if item, item, guest, task, event, folder, category or table, and (N10) a vendor, a finalist or a venue
   - splitting a booking
   - recording a payment
   - marking an event completed or cancelled
@@ -969,11 +1086,16 @@ Tasks uses the wide column, like Agenda and Month, so switching tabs doesn't cha
 - **Confirm first** before anything that removes. The body names what goes with it and ends "You can undo for a few seconds."
 - **Permanent:** deleting a **document** (R7) and deleting a **file** (R13). The confirm says it can't be undone (and for files, how much storage it frees); the action reads **Delete for good**; there's no undo toast.
 - **Blocked:** a folder with anything in it can't be deleted until it's emptied (R8).
+- **Removing what came in by mistake** (N10): vendors, finalists and venues remove like everything else, with a confirm and a few seconds of undo. The confirm says what stays: a booking made from it stays in the budget, a shortlist copy stays (and a vendor stays when its finalist goes), and its files stay in Files. On a detail screen the page turns into "*Name* was removed" with a way to the list, and the undo puts everything back.
+- **When undo can't** (N13, `?state=undo-conflict`): if the partner has changed the same thing since (a payment recorded on it, a file moved again), Undo still shows "Restoring" for a moment, then nothing is taken back. A 9-second toast with the partner's initial says what they did and that it's kept: "Can't undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now.", "Can't move it back: Bella has since moved … to Files › Contracts. It stays there.", "Can't take the payment back: Bella has changed Villa Samaya Ubud since. It's kept as it is now." Nobody's change is lost quietly.
+- **When removing can't finish** (N14, `?state=removefail`): the confirm stays open and says "Nothing was removed." (or "Nothing was deleted.") with the reason, and the button becomes **Try again**. No toast and no undo, because nothing changed. **Keep it** leaves it as it was.
 
 ### 6.3 Live partner changes (A2)
 - A change from the partner arrives without refreshing. The changed row or card **flashes** (2.4s rose-wash fade), the numbers update in place, and a **partner toast** with the partner's initial says what happened, for 9 seconds: "Bella recorded Rp 55.500.000 for Dapur Lestari Catering", "Bella added Bunga Melati Florist", "Bella started “First dance shortlist”", "Bella uploaded …", "Bella added “Makeup trial with Kirana” tomorrow at 10:00", "Bella confirmed Wedding cake", "Bella marked 王小明 as attending", "Bella finished “Tasting at Sendok Emas”", "Bella added “Live band for the reception”" (what-if), "Bella added Lumina Wedding Photography to the shortlist", "Bella added Bukit Jimbaran Lawn" (venue).
 - **If the partner removes what you're looking at:** a full message ("This booking was removed", "Bella removed it on another device a moment ago.", or "This document was deleted… It can't be brought back.") with a way back to the list.
 - **If you're both in the same document:** a gold banner, "Bella is also in this document. Their changes appear as they type."
+- **Who's who** (N3): each of the two names belongs to one account, set the first time that account signs in ("Which of you is this?") and changeable in settings ("Swap them"). News of a change always names the person whose account made it.
+- **Your own other device:** a change you made on your other phone or computer arrives the same way (the flash, the numbers updating), but the toast is yours: your initial in champagne, "You recorded Rp 55.500.000 for Dapur Lestari Catering on your other phone". It's never reported as your partner's.
 
 ### 6.4 Demonstration mode (not connected)
 - Sign-in offers **Look around** instead of a form. Every screen then carries the gold banner, shows the empty data set, and disables saving. Nothing about the wedding shows: the top bar reads "Our wedding planner", there's no countdown, no funders, and the menu says "nobody is signed in".
@@ -1018,7 +1140,7 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Not assigned** is a funder row of its own. Removing a funder moves its costs to Not assigned, and recorded payments stay.
 - **The estimate is kept apart from the agreed price** (B12) and compared in a sentence; Bookings can be ordered by "Difference from estimate".
 - **What-if totals never mix into the budget.** The only combined number is the projected total on what-if.
-- **Money inputs** accept any digits and reformat to "Rp 12.500.000" on blur.
+- **Money inputs** accept digits, with or without "Rp", spaces and dots, and reformat to "Rp 12.500.000" on blur. Anything else is refused, never quietly turned into Rp 0 (N16, 4.9): the amount before is kept and the field says why. Up to 15 digits. In Record a payment the line under the amount reads "That isn't an amount yet" while typing, and **Record payment** refuses it the same way. `booking.html?state=badamount`, `booking-new.html?state=badamount`.
 
 ### 6.10 Formula rules (documents, R4)
 - **Cells** are addressed like a spreadsheet: columns A, B, C…; rows counted from 1, including the title row.
@@ -1042,9 +1164,13 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Edited times:** "just now" · "12 min ago" · "2 hours ago" · "yesterday" · then the short date, plus "by Bella" when it was the partner.
 - **Counts** group thousands with dots, like money: "1.206 bookings", "Showing 60 of 1.507". Decimals take a comma, so a dot always means thousands: "4,8" ratings, "33,1 MB", "98,8M followers" (decision 20).
 - **The wedding date** drives every countdown (O5). "Time gone" runs from the day the planner was set up (decision, stage 2 session 8).
+- **The day before, the day, and after** (N7): "1 day to go: tomorrow, …"; on the day, "Today" in place of a number; after it the count ends (decision 26): "Married" and the day, nothing counting. The countdown line becomes "**Today** is the wedding day" or "Married on Friday 2 October", and in a sentence "That's today" / "That day has passed".
+- **Dates the planner doesn't know** (N8): it says what it knows and leaves the date out, never guessing or using today: "Added directly" (not "… on Sunday 10 May"), "Booked from Venues", "Done" for a finished task. In orders by that date they go last, like every blank; in the spreadsheet the cell is empty. Without the day planning started, the overview leaves out the time thread.
 
 ### 6.12 Notifications (S10)
-A reminder is chosen per event (No reminder, When it starts, 15 minutes, 1 hour, 1 day or 1 week before). The device's permission state is explained right where you set it, and in settings: allowed, not yet allowed (with a way to allow), or turned off (where to turn it on).
+Reminders go out **once a day, in the morning** (N11), so an appointment or call offers only what can really arrive: **No reminder**, **The morning before**, **A week before, in the morning**. A morning that has already gone is greyed with "(that morning has gone)".
+- **Set before this rule:** "1 day before" and "1 week before" carry over as the morning before and a week before. "When it starts", "15 minutes" and "1 hour before" can't arrive: they're named in the event sheet ("Choose again", ringed rose), on the agenda row, in a rose box above the agenda listing them, and as a count in settings. Nothing silently switches to something else.
+- **The device** (S10, N6): the state is explained right where you set a reminder, and in settings: allowed, not yet allowed (with a way to allow), turned off (where to turn it on), not until the planner is on an iPhone's home screen (with how), or never in this browser (which browsers can). Each says whether reminders still reach your other devices.
 
 ### 6.13 Starting points
 - **"Meeting notes"** opens a ready layout: the date, "Who was there:", "What they said", a prices table with a growing total, and next steps. The cursor sits after "Meeting: ".
@@ -1089,6 +1215,15 @@ Say what happened, that nothing is lost, and what to do:
 - "Give the booking a name so you can find it later."
 - "This is Rp 2.000.000 more than what's left. It will show as overpaid."
 - "Includes itself: This total includes its own cell, B7. Change the range so it stops above it."
+- "It ends before it starts. Change the end time, or leave it empty." (N9)
+- "Nothing was removed. The planner couldn't reach its database, so everything is just as it was. Try again, or keep it for now." (N14)
+- "Can't undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now." (N13)
+- "Your browser blocked the Google window. Allow pop-ups for the planner in the browser's address bar, then continue with Google again." (N4)
+- "This page isn't here. The address may be mistyped, or it points to something that has moved." (N2)
+- "The planner ran into a problem it didn't expect. Everything you've saved is safe; only this screen didn't open." (N2)
+- "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." (N16)
+- "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." (N17)
+- "Your last change isn't saved yet. Try again or close without it." (N18)
 
 ### Empty-state wording
 Name the absence, then say how things arrive:
@@ -1143,6 +1278,10 @@ Threads and stage steps are below 3:1 too, but they always repeat their meaning 
 - Loading sets `aria-busy` with a hidden "Loading …" line; skeletons are hidden.
 - Search inputs have hidden labels; the date card in a due row is hidden because the meta line says the date in words.
 - Guest numbers read "Guest number 12".
+- An item's people picker reads "Who Wedding cake is for: General" (N12).
+- Fields that are missing what they need get `aria-invalid="true"`, and their line is `role="alert"` (N9). The "Couldn't finish" box in a confirm is `role="alert"` and focus moves to **Try again** (N14).
+- The waiting Google button is `aria-busy`, and the waiting note is `role="status"` (N4).
+- A refused amount gets `aria-invalid` and its line is `role="alert"` (N16). A sheet that holds moves focus to **Try again**, or back to the first field (N18).
 - Month cells read everything their marks show: "Wednesday 14 October, today, selected, 2 events", "Saturday 20 March 2027, the wedding day, nothing".
 
 ### Reduced motion
@@ -1198,7 +1337,12 @@ How the prototype handles extremes (`?stress` on any screen).
 
 ## 10. Open questions
 
-None. Questions 1–23 are all decided; see below. New questions go here and in `decisions.md`, and a change to anything decided bumps the version.
+None open. Questions 1–26 are decided; see below. New questions go here and in `decisions.md`, and a change to anything decided bumps the version.
+
+### Decided (2026-10-16, with the open needs)
+24. **The short name under the icon** is **"Greg & Bella"**.
+25. **Ratings in the spreadsheet** use a decimal point (4.8), so spreadsheets read them as numbers.
+26. **After the wedding the count ends.** The planner is hardly used by then, so the overview shows "Married" and the day, with no figure; the budget's closing line reads "Married on …".
 
 ### Decided (2026-10-14)
 The owner's answers to the first 19 questions. All are built into the prototype and described above.

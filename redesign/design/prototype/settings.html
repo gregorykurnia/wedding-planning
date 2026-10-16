@@ -32,11 +32,12 @@ function setSave(t, failed) { const el = V.$("#save"); if (el) { el.textContent 
 
 V.init({
   where: "Settings", section: "settings.html", noun: "your settings",
-  states: [["savefail", "A change didn't save"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["installed", "Installed on this phone"], ["loading", "Loading"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["savefail", "A change didn't save"], ["notif-default", "Notifications not yet allowed"], ["notif-denied", "Notifications turned off"], ["notif-install", "iPhone, not on the home screen yet"], ["notif-unsupported", "Browser can't show reminders"], ["installed", "Installed on this phone"], ["loading", "Loading"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render(main) {
-    const notif = d.notif === "granted" ? `<p class="note">Allowed on this ${phone ? "phone" : "computer"}. Reminders you set on appointments and calls arrive here even when the planner is closed.</p><p style="margin-top:12px"><button class="btn quiet small" id="test">Send a test reminder</button></p>`
-      : d.notif === "denied" ? `<p class="note" style="color:var(--rose-ink)">Turned off for the planner on this ${phone ? "phone" : "computer"}. Reminders can't arrive here until you turn them on in ${phone ? "your phone's Settings, under Notifications" : "the browser's site settings for the planner"}.</p>`
-      : `<p class="note">Not allowed yet on this ${phone ? "phone" : "computer"}. Allow them to get reminders when the planner is closed.</p><p style="margin-top:12px"><button class="btn small" id="allow">Allow notifications</button></p>`;
+    const notif = V.notifNote("settings");
+    /* N11: reminders set before for a time of day can't arrive; say how many and where to choose again */
+    const badRem = (d.events || []).filter(V.remindBad);
+    const remLine = badRem.length && !V.DEMO ? `<p class="note" style="color:var(--rose-ink)">${badRem.length === 1 ? "1 appointment or call has" : badRem.length + " appointments and calls have"} a reminder you set before for a time of day, which can't arrive. <a class="link rose" href="${V.href("schedule.html")}">Choose again in the schedule</a></p>` : "";
     main.innerHTML = `<section class="hero"><h1>Wedding settings</h1><p class="save-state ${S === "savefail" ? "failed" : ""}" id="save" role="status">${S === "savefail" ? "1 change not saved" : V.DEMO ? "Demonstration mode: changes aren't saved" : "Every change saves as you go"}</p></section>
 
       <h2 class="section-h">The two of you</h2>
@@ -50,9 +51,11 @@ V.init({
       ${V.DEMO ? `<p class="note">Demonstration mode: nobody is signed in. Once the planner is connected, only your two accounts can open it.</p>`
       : `<ul class="who"><li><b>${V.esc(d.me.name)}, you</b><span>${V.esc(d.me.email)}, signed in with Google</span></li><li><b>${V.esc(d.partner)}</b><span>${V.esc(d.partnerEmail || "")}</span></li></ul>
       <p class="note">Only these two accounts can see or change anything. Anyone else who signs in sees nothing.</p>
+      <p class="note">Each name belongs to one account, so the planner can say which of you changed something. Changes you make on your other ${phone ? "computer" : "phone"} show as yours. Names the wrong way round? <button class="link" id="swap">Swap them</button></p>`}
+      ${V.DEMO ? "" : `
       <p style="margin-top:14px"><a class="btn quiet small" href="signin.html?state=signedout">Sign out of this ${phone ? "phone" : "computer"}</a></p>`}
 
-      <h2 class="section-h">Reminders on this ${phone ? "phone" : "computer"}</h2>${notif}
+      <h2 class="section-h">Reminders on this ${phone ? "phone" : "computer"}</h2>${notif}${remLine}
 
       <h2 class="section-h" id="install">On your phone</h2>
       ${S === "installed" ? `<p class="note">Installed on this phone. Open it from your home screen like any app.</p>`
@@ -65,10 +68,12 @@ V.init({
         <li><a href="${V.href("vendors.html", { state: "categories" })}"><span class="t">Vendor categories</span><span class="v">Your own categories</span>${V.ICON.chev}</a></li>
       </ul>`;
     V.$$("[data-i]", main).forEach((el) => el.onchange = () => { if (V.DEMO) return setSave("Not saved: demonstration mode"); const v = el.value.trim(); if (!v) { el.value = d.couple[el.dataset.i]; return; } d.couple[el.dataset.i] = v; setSave("Saving"); setTimeout(() => { setSave("Saved"); V.$(".top .couple").innerHTML = `${V.esc(d.couple[0])} <span>&amp;</span> ${V.esc(d.couple[1])}`; }, 450); });
-    V.$("#wd", main).onchange = (e) => { if (!e.target.value) return; if (V.DEMO) return setSave("Not saved: demonstration mode"); d.wedding = e.target.value; setSave("Saving"); setTimeout(() => setSave(`Saved. ${V.daysLeft()} days to go.`), 450); };
+    V.$("#wd", main).onchange = (e) => { if (!e.target.value) return; if (V.DEMO) return setSave("Not saved: demonstration mode"); d.wedding = e.target.value; setSave("Saving"); setTimeout(() => setSave(`Saved. ${V.daysText()}.`), 450); };
     const r = V.$("#retry", main); if (r) r.onclick = () => { d.couple[1] = "Isabella"; V.$("#n2").closest(".field").classList.remove("failed"); r.closest(".err").remove(); setSave("Saving"); setTimeout(() => { setSave("Saved"); V.$(".top .couple").innerHTML = `${V.esc(d.couple[0])} <span>&amp;</span> ${V.esc(d.couple[1])}`; }, 450); };
     const al = V.$("#allow", main); if (al) al.onclick = () => { d.notif = "granted"; V.rerender(); V.toast("Notifications allowed on this device"); };
     const t = V.$("#test", main); if (t) t.onclick = () => V.toast("Test reminder sent. It should appear in a moment.");
+    /* N3: fix a mix-up of who's who; your own changes and your partner's are named from this */
+    const sw = V.$("#swap", main); if (sw) sw.onclick = () => { const swap = () => { [d.me.name, d.partner] = [d.partner, d.me.name]; V.rerender(); }; swap(); V.saved(`Swapped. You're ${V.esc(d.me.name)} now`, swap); };
   },
 });
 </script>

@@ -50,8 +50,17 @@ function venueSheet(v) {
       <div class="field"><label for="t">Notes</label><textarea id="t" dir="auto">${V.esc(v ? v.notes : "")}</textarea></div>
     </div>
     ${v ? `<h3 class="section-h" style="font-size:22px;margin-top:26px">Files</h3>${V.filesGrid(v.files, false, `Files › Venues › ${v.name}`)}` : ""}
-    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add venue</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div>`}`, (el) => {
+    ${isNew ? V.demoLine() + `<div class="acts"><button class="btn quiet" data-x>Cancel</button><button class="btn" data-ok ${V.DEMO ? "disabled" : ""}>Add venue</button></div>` : V.sheetSaveLine() + `<div class="acts"><button class="btn" data-x>Done</button></div><p style="text-align:center;margin-top:16px"><button class="link rose" data-del>Remove venue</button></p>`}`, (el) => {
     const save = isNew ? null : V.sheetSaver(el);
+    /* N10: a venue added by mistake or twice. Its booking (if booked) and its files in Files stay. */
+    const del = V.$("[data-del]", el);
+    if (del) del.onclick = async () => {
+      const bk = d.bookings.find((b) => b.id === v.id);
+      const stays = [v.files.length ? `${v.files.length === 1 ? "Its file stays" : `Its ${v.files.length} files stay`} in Files › Venues › ${V.esc(v.name)}.` : "", bk ? "Its booking stays in the budget." : ""].filter(Boolean).join(" ");
+      if (!await V.confirm({ title: `Remove ${v.name}?`, body: `It leaves Venues${v.notes ? ", with its notes" : ""}. ${stays ? stays + " " : ""}You can undo for a few seconds.`, action: "Remove venue", danger: true })) return;
+      const i = d.venues.indexOf(v); d.venues.splice(i, 1); V.rerender();
+      V.saved(`Removed ${V.esc(v.name)}`, () => { d.venues.splice(i, 0, v); V.rerender(); V.$$(`[data-id="${v.id}"]`).forEach((e) => e.classList.add("flash")); });
+    };
     V.$$("[data-st]", el).forEach((c) => c.onclick = () => { V.$$("[data-st]", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))); if (save) setStage(c.dataset.st); });
     V.$("#c", el).onblur = (e) => { if (e.target.value) e.target.value = V.rp(num(e.target.value)); };
     V.$("[data-x]", el).onclick = V.closeSheet;
@@ -82,7 +91,7 @@ function venueSheet(v) {
 
 V.init({
   where: "Vendors", section: "vendors.html", noun: "your venues", wide: true,
-  states: [["empty", "No venues yet"], ["noresults", "No results"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a venue"]],
+  states: [["empty", "No venues yet"], ["noresults", "No results"], ["savefail", "A change didn't save"], ["removefail", "Removing couldn't finish"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella adds a venue"]],
   sync() {
     setTimeout(() => {
       const v = { id: "vsync", name: "Bukit Jimbaran Lawn", location: "Jimbaran, Bali", cost: 295000000, capacity: 350, stage: "noted", notes: "Found by Bella; ask about the rain plan.", files: [] };

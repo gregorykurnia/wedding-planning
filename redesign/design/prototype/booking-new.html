@@ -22,7 +22,7 @@ const pending = [];
 
 V.init({
   where: "Budget", noun: "the budget",
-  states: [["busy", "Adding"], ["failed", "Couldn't add"], ["demo", "Demonstration mode"], ["offline", "Offline"]],
+  states: [["badamount", "Words typed into an amount"], ["busy", "Adding"], ["failed", "Couldn't add"], ["demo", "Demonstration mode"], ["offline", "Offline"]],
   render(main) {
     const v = (a, z) => prefill ? a : z;
     main.innerHTML = `<a class="back" href="${V.href("budget.html")}">${V.ICON.back}Budget</a>

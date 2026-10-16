@@ -2,7 +2,9 @@
 (function () {
   const { NORMAL, STRESS, EMPTY } = window.VEIL_DATA;
   const KINDS = [["vendor-call", "Vendor call"], ["organiser-call", "Organiser call"], ["appointment", "Appointment"], ["payment", "Payment"], ["deadline", "Deadline"], ["other", "Other"]];
-  const REMIND = [["", "No reminder"], ["0", "When it starts"], ["15", "15 minutes before"], ["60", "1 hour before"], ["1440", "1 day before"], ["10080", "1 week before"]];
+  /* N11: reminders come once a day, in the morning. Events set up before keep their old value; "1440" and
+     "10080" carry over as the morning before and a week before, and a time of day ("15", "60") can't arrive. */
+  const REMIND = [["", "No reminder"], ["1d", "The morning before"], ["7d", "A week before, in the morning"]];
   const ev = (id, title, kind, date, start, end, extra) => Object.assign({ id, title, kind, date, start, end, allDay: !start, related: null, where: "", notes: "", remind: "", status: "scheduled" }, extra || {});
   const events = [
     ev("e1", "Call with Laras about the arch", "vendor-call", "2026-10-14", "15:00", "15:30", { related: "kebun", where: "https://meet.google.com/kbn-arch-call", remind: "15" }),
@@ -27,6 +29,8 @@
     { id: "t4", title: "Order the sangjit trays", due: "2026-10-12", notes: "", done: false, steps: [] },
     { id: "t5", title: "Write our vows", due: null, notes: "", done: false, steps: [] },
     { id: "t6", title: "Send save-the-dates", due: "2026-09-30", notes: "", done: true, doneOn: "2026-09-29", steps: [step("s1", "Design", null, true), step("s2", "Print", null, true), step("s3", "Post", null, true)] },
+    /* N8: finished before the planner kept the day it was done */
+    { id: "t7", title: "Book the church", due: null, notes: "Paroki St. Fransiskus Xaverius, Kuta.", done: true, doneOn: null, steps: [] },
   ];
   /* S10: notification permission on this device: "default" (not asked), "granted", "denied" */
   Object.assign(NORMAL, { KINDS, REMIND, events, tasks, notif: "granted" });

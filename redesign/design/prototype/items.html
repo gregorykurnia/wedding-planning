@@ -44,8 +44,12 @@
   .evs { display: flex; flex-wrap: wrap; gap: 4px; }
   .ev { border: 1px solid var(--line-2); background: #fff; border-radius: var(--r-pill); padding: 4px 10px; min-height: 26px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
   .ev[aria-pressed="true"] { background: var(--blush); border-color: #f1b9c8; color: var(--ink); }
-  .irow select { border: 0; background: none; font-size: 14px; padding: 6px 4px; border-radius: 8px; cursor: pointer; width: 100%; min-width: 0; color: var(--ink); }
-  .irow select:hover { background: rgba(253,232,238,.4); }
+  .irow .who > summary { list-style: none; cursor: pointer; font-size: 14px; padding: 6px 6px; border-radius: 8px; min-height: 34px; display: flex; align-items: center; overflow-wrap: anywhere; line-height: 1.3; }
+  .irow .who > summary::-webkit-details-marker { display: none; }
+  .irow .who > summary:hover { background: rgba(253,232,238,.4); }
+  .irow .who > summary.general { color: var(--ink-2); }
+  .irow .who .menu { left: auto; right: 0; top: 38px; }
+  .irow .who .menu .sep { border-top: 1px solid var(--line); margin: 2px 0; }
   .tog { width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; cursor: pointer; display: grid; place-items: center; justify-self: center; color: var(--control-outline); }
   .tog svg { width: 20px; height: 20px; }
   .tog:hover { background: rgba(253,232,238,.6); }
@@ -63,7 +67,7 @@
     .ihead { display: none; }
     .irow { grid-template-columns: 26px 1fr 40px 40px 34px; grid-template-areas: "h n s c m" ". v v v v" ". e e e e" ". p p p p"; gap: 2px 6px; padding: 10px 4px; }
     .irow .handle { grid-area: h; } .irow .nm { grid-area: n; } .irow .vd { grid-area: v; } .irow .evs { grid-area: e; padding-left: 8px; }
-    .irow select { grid-area: p; width: auto; justify-self: start; } .irow .star { grid-area: s; } .irow .conf { grid-area: c; } .irow .more-btn { grid-area: m; }
+    .irow .who { grid-area: p; justify-self: start; } .irow .who .menu { left: 0; right: auto; } .irow .star { grid-area: s; } .irow .conf { grid-area: c; } .irow .more-btn { grid-area: m; }
     .irow input.nm { font-size: 19px; }
   }
 </style>
@@ -78,8 +82,11 @@ const V = Veil, S = V.STATE, d = V.data;
 if (S === "first") d.items = JSON.parse(JSON.stringify(window.VEIL_DATA.NORMAL.starter));
 const evName = (k) => d.EVENTS.find((e) => e[0] === k)[1];
 const personName = (k) => d.PEOPLE.find((p) => p[0] === k)[1];
+/* N12: an item can be for several people; none means General */
+const peopleText = (ps) => !ps.length ? "General" : ps.length <= 2 ? ps.map(personName).join(", ") : `${ps.slice(0, 2).map(personName).join(", ")} and ${ps.length - 2} more`;
+const forAny = (i, picked) => picked.some((k) => k === "general" ? !i.people.length : i.people.includes(k));
 const ORDERS = [["own", "Our order"], ["name", "Item"], ["vendor", "Vendor"], ["confirmed", "Confirmed"], ["events", "Events"], ["person", "Who it's for"], ["next", "Work on next"]];
-const ui = { q: S === "noresults" ? "photo booth" : "", conf: "", events: [], people: [], next: false, order: S === "sorted" ? "vendor" : "own", asc: true, shown: 150, menu: null, failed: S === "savefail" ? "i10" : null };
+const ui = { q: S === "noresults" ? "photo booth" : "", conf: "", events: [], people: S === "people" ? ["g-brother"] : [], next: false, order: S === "sorted" ? "vendor" : "own", asc: true, shown: 150, menu: null, failed: S === "savefail" ? "i10" : null };
 
 const ICO = {
   handle: '<svg viewBox="0 0 12 18" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.3"/><circle cx="9" cy="3" r="1.3"/><circle cx="3" cy="9" r="1.3"/><circle cx="9" cy="9" r="1.3"/><circle cx="3" cy="15" r="1.3"/><circle cx="9" cy="15" r="1.3"/></svg>',
@@ -89,11 +96,11 @@ const ICO = {
 
 function visible() {
   const s = ui.q.toLocaleLowerCase();
-  let list = d.items.filter((i) => (!s || (i.name + " " + (i.vendor || "")).toLocaleLowerCase().includes(s)) &&
+  let list = d.items.filter((i) => (!s || (i.name + " " + (i.vendor || "") + " " + (i.people.length ? i.people.map(personName).join(" ") : "General")).toLocaleLowerCase().includes(s)) &&
     (!ui.conf || (ui.conf === "yes") === i.confirmed) && (!ui.next || i.next) &&
-    (!ui.events.length || ui.events.some((e) => i.events.includes(e))) && (!ui.people.length || ui.people.includes(i.person)));
+    (!ui.events.length || ui.events.some((e) => i.events.includes(e))) && (!ui.people.length || forAny(i, ui.people)));
   if (ui.order !== "own") {
-    const key = { name: (i) => i.name.toLocaleLowerCase(), vendor: (i) => i.vendor ? i.vendor.toLocaleLowerCase() : null, confirmed: (i) => i.confirmed ? 0 : 1, events: (i) => i.events.length ? d.EVENTS.findIndex((e) => e[0] === i.events[0]) : null, person: (i) => d.PEOPLE.findIndex((p) => p[0] === i.person), next: (i) => i.next ? 0 : 1 }[ui.order];
+    const key = { name: (i) => i.name.toLocaleLowerCase(), vendor: (i) => i.vendor ? i.vendor.toLocaleLowerCase() : null, confirmed: (i) => i.confirmed ? 0 : 1, events: (i) => i.events.length ? d.EVENTS.findIndex((e) => e[0] === i.events[0]) : null, person: (i) => i.people.length ? d.PEOPLE.findIndex((p) => p[0] === i.people[0]) : 0, next: (i) => i.next ? 0 : 1 }[ui.order];
     list = list.map((i, ix) => ({ i, k: key(i), ix })).sort((a, z) => a.k == null && z.k == null ? a.ix - z.ix : a.k == null ? 1 : z.k == null ? -1 : ((typeof a.k === "number" ? a.k - z.k : a.k.localeCompare(z.k)) * (ui.asc ? 1 : -1)) || a.ix - z.ix).map((r) => r.i);
   }
   return list;
@@ -107,7 +114,8 @@ function row(i) {
     <input class="nm" data-k="name" value="${V.esc(i.name)}" aria-label="Item" dir="auto">
     <input class="vd" data-k="vendor" value="${ui.failed === i.id ? "Bespoke Tailor Bali" : V.esc(i.vendor || "")}" placeholder="Vendor not known yet" aria-label="Vendor for ${V.esc(i.name)}" dir="auto">
     <div class="evs" role="group" aria-label="Events">${d.EVENTS.map(([k, l]) => `<button class="ev" data-ev="${k}" aria-pressed="${i.events.includes(k)}">${l}</button>`).join("")}</div>
-    <select data-k="person" aria-label="Who it's for">${d.PEOPLE.map(([k, l]) => `<option value="${k}" ${k === i.person ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <details class="dd who"><summary class="${i.people.length ? "" : "general"}" aria-label="Who ${V.esc(i.name)} is for: ${V.esc(i.people.length ? i.people.map(personName).join(", ") : "General")}" dir="auto">${V.esc(peopleText(i.people))}</summary>
+      <div class="menu" role="group" aria-label="Who it's for"><label class="check"><input type="checkbox" data-pp="general" ${i.people.length ? "" : "checked"}>General, no one in particular</label><span class="sep"></span>${d.PEOPLE.filter(([k]) => k !== "general").map(([k, l]) => `<label class="check"><input type="checkbox" data-pp="${k}" ${i.people.includes(k) ? "checked" : ""}>${l}</label>`).join("")}</div></details>
     <button class="tog star" aria-pressed="${i.next}" aria-label="Work on next" title="Work on next">${ICO.star}</button>
     <button class="tog conf" aria-pressed="${i.confirmed}" aria-label="Confirmed" title="Confirmed">${ICO.conf}</button>
     <button class="more-btn" aria-label="More for ${V.esc(i.name)}" aria-haspopup="true">⋯</button>
@@ -137,7 +145,7 @@ function render(main) {
   main.innerHTML = hero()
     + (S === "first" ? `<p class="banner" style="margin-top:28px;border-radius:16px">The tracker starts with ${V.plural(d.items.length, "common item")}. Rename, fill in or remove any of them.</p>` : "")
     + (nexts.length && !filtering() ? `<section class="card nextcard"><h2>To work on next</h2><ul>${nexts.slice(0, 12).map((i) => `<li><a href="#" data-jump="${i.id}" dir="auto">${V.esc(i.name)}</a></li>`).join("")}${nexts.length > 12 ? `<li style="align-self:center;color:var(--ink-2);font-size:14px">and ${nexts.length - 12} more</li>` : ""}</ul></section>` : "")
-    + `<div class="tools"><label class="search">${V.ICON.search}<span class="sr">Search items and vendors</span><input id="q" type="search" placeholder="Search items and vendors" value="${V.esc(ui.q)}"></label>
+    + `<div class="tools"><label class="search">${V.ICON.search}<span class="sr">Search items, vendors and people</span><input id="q" type="search" placeholder="Search items, vendors and people" value="${V.esc(ui.q)}"></label>
         <span class="order"><label for="ord">Order by</label><select id="ord">${ORDERS.map(([k, l]) => `<option value="${k}" ${k === ui.order ? "selected" : ""}>${l}</option>`).join("")}</select>${ui.order !== "own" ? `<button class="dir" id="dir">${ui.asc ? "Ascending" : "Descending"}</button>` : ""}</span></div>
       <div class="filters">
         <span class="order"><label for="cf">Show</label><select id="cf"><option value="">Confirmed or not</option><option value="yes" ${ui.conf === "yes" ? "selected" : ""}>Confirmed</option><option value="no" ${ui.conf === "no" ? "selected" : ""}>Not confirmed yet</option></select></span>
@@ -158,7 +166,7 @@ function render(main) {
 function list() {
   const box = V.$("#list"), rows = visible();
   if (!rows.length) {
-    box.innerHTML = `<div class="message inline"><h1>${ui.q ? `Nothing matches “${V.esc(ui.q)}”` : "No items fit"}</h1><p>Search looks at item and vendor names. Narrowing by events or people shows items with any of the ones you pick.</p><div class="acts"><button class="btn quiet" id="reset2">Show everything</button></div></div>`;
+    box.innerHTML = `<div class="message inline"><h1>${ui.q ? `Nothing matches “${V.esc(ui.q)}”` : "No items fit"}</h1><p>Search looks at item and vendor names and who each item is for. Narrowing by events or people shows items with any of the ones you pick, so an item for both mothers shows for either.</p><div class="acts"><button class="btn quiet" id="reset2">Show everything</button></div></div>`;
     V.$("#reset2").onclick = reset; return;
   }
   box.innerHTML = `${filtering() ? `<p class="count">${V.plural(rows.length, "item")} of ${d.items.length.toLocaleString("id-ID")}</p>` : ""}<ul class="ilist">${rows.slice(0, ui.shown).map(row).join("")}</ul>
@@ -189,6 +197,13 @@ function wireRows(box) {
   V.$$(".irow", box).forEach((li) => {
     const i = d.items.find((x) => x.id === li.dataset.id);
     V.$$("[data-k]", li).forEach((el) => el.onchange = () => change(i, () => { i[el.dataset.k] = el.value.trim() || (el.dataset.k === "vendor" ? null : i.name); }));
+    /* N12: tick everyone it's for; General clears the rest, and clearing everyone means General */
+    V.$$("[data-pp]", li).forEach((c) => c.onchange = () => change(i, () => {
+      const k = c.dataset.pp;
+      i.people = k === "general" ? [] : V.$$("[data-pp]:checked", li).map((x) => x.dataset.pp).filter((x) => x !== "general");
+      V.$$("[data-pp]", li).forEach((x) => { x.checked = x.dataset.pp === "general" ? !i.people.length : i.people.includes(x.dataset.pp); });
+      const sm = V.$(".who summary", li); sm.textContent = peopleText(i.people); sm.classList.toggle("general", !i.people.length);
+    }));
     V.$$("[data-ev]", li).forEach((b) => b.onclick = () => change(i, () => { const k = b.dataset.ev; i.events = i.events.includes(k) ? i.events.filter((x) => x !== k) : i.events.concat(k); b.setAttribute("aria-pressed", String(i.events.includes(k))); }));
     V.$(".star", li).onclick = () => change(i, () => { i.next = !i.next; V.rerender(); });
     V.$(".conf", li).onclick = () => change(i, () => { i.confirmed = !i.confirmed; V.rerender(); }, null);
@@ -214,7 +229,7 @@ function move(i, dir) { const ix = d.items.indexOf(i), to = ix + dir; if (to < 0
 
 async function menuAction(m, i) {
   if (m === "up" || m === "down") return move(i, m === "up" ? -1 : 1);
-  if (m === "below") { const n = { id: "n" + Date.now(), name: "", vendor: null, events: i.events.slice(), person: i.person, confirmed: false, next: false }; d.items.splice(d.items.indexOf(i) + 1, 0, n); if (ui.order !== "own") ui.order = "own"; V.rerender(); const inp = V.$(`.irow[data-id="${n.id}"] input.nm`); if (inp) inp.focus(); return; }
+  if (m === "below") { const n = { id: "n" + Date.now(), name: "", vendor: null, events: i.events.slice(), people: i.people.slice(), confirmed: false, next: false }; d.items.splice(d.items.indexOf(i) + 1, 0, n); if (ui.order !== "own") ui.order = "own"; V.rerender(); const inp = V.$(`.irow[data-id="${n.id}"] input.nm`); if (inp) inp.focus(); return; }
   if (m === "several") return severalSheet(i);
   if (m === "remove") {
     if (!await V.confirm({ title: `Remove ${i.name || "this item"}?`, body: "You can undo for a few seconds, and it goes back exactly where it was.", action: "Remove item", danger: true })) return;
@@ -232,7 +247,7 @@ function severalSheet(after) {
     V.$("[data-x]", el).onclick = V.closeSheet;
     V.$("[data-ok]", el).onclick = () => {
       const names = V.$("#lines", el).value.split("\n").map((x) => x.trim()).filter(Boolean); if (!names.length) { V.$("#lines", el).focus(); return; }
-      const made = names.map((name, k) => ({ id: "n" + Date.now() + k, name, vendor: null, events: after ? after.events.slice() : [], person: after ? after.person : "general", confirmed: false, next: false }));
+      const made = names.map((name, k) => ({ id: "n" + Date.now() + k, name, vendor: null, events: after ? after.events.slice() : [], people: after ? after.people.slice() : [], confirmed: false, next: false }));
       const at = after ? d.items.indexOf(after) + 1 : d.items.length;
       d.items.splice(at, 0, ...made); ui.order = "own"; V.closeSheet(); V.rerender();
       V.saved(`Added ${V.plural(made.length, "item")}`, () => { d.items.splice(at, made.length); V.rerender(); });
@@ -242,9 +257,11 @@ function severalSheet(after) {
   });
 }
 
+document.addEventListener("click", (e) => V.$$(".irow .who[open]").forEach((dd) => { if (!dd.contains(e.target)) dd.open = false; }));
+
 V.init({
   where: "Wedding items", section: "items.html", noun: "your wedding items",
-  states: [["first", "First use, pre-filled"], ["empty", "Nothing tracked yet"], ["noresults", "No results"], ["sorted", "Sorted for now"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella confirms an item"]],
+  states: [["first", "First use, pre-filled"], ["empty", "Nothing tracked yet"], ["noresults", "No results"], ["sorted", "Sorted for now"], ["savefail", "A change didn't save"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella confirms an item"], ["people", "Narrowed to one person"], ["removefail", "Removing couldn't finish"]],
   render,
   sync() { setTimeout(() => { const i = d.items.find((x) => x.name === "Wedding cake"); if (!i) return; i.confirmed = true; i.next = false; V.rerender(); const li = V.$(`.irow[data-id="${i.id}"]`); if (li) li.classList.add("flash"); V.toast(`${V.esc(d.partner)} confirmed Wedding cake`, { from: d.partner, ms: 9000 }); }, 1600); },
 });

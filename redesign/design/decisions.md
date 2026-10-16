@@ -171,3 +171,98 @@ All 19 were answered in one message. Each one is carried into the prototype, `de
 - **23 A finalist keeps its own next step.** No change; the owner can drop "next step" from F16 in the inventory on their side.
 - **`design-guide.md` and `tokens.css` are v1.0 (2026-10-14).** Any later change bumps the version and is logged here. The open needs process (`needs.md`) is the way new stories arrive.
 
+
+## Open needs
+
+### v1.1 (2026-10-16): N1–N14
+Designed in one session at the owner's request ("Design the open needs N1 to N14"). N15–N18 are still open. `design-guide.md` and `tokens.css` are now **v1.1 (2026-10-16)**. Nothing was seen rendered (the browser is blocked here), so the owner should click through `prototype/index.html`, starting with `identity.html`.
+
+### N1: its own name, mark and colours on every device
+- **Mark:** the ribbon knot (the planner's quiet-moment mark) drawn heavier, in gold ink on a tile lit like the page (blush top right, champagne bottom left). Four files in `prototype/assets/identity/`: any-purpose icon, maskable, monochrome (Android themed icons, badges) and favicon. PNG sizes for the build are listed in the guide (4.31).
+- **Name:** "Gregory & Bella's Wedding" (the brief) where there's room; **"Greg & Bella"** under the icon and in the Dock (question 24). Tabs read "screen · what the top bar says", so they never show names before signing in or in demonstration mode.
+- **Colours:** blush `theme-color` for the browser and window bar, white opening screen. Never rose on the mark.
+- New: `prototype/identity.html` (where it shows: home screens light and dark, Android themed, opening screen, lock-screen reminder, tab, installed window, Dock), `prototype/manifest.webmanifest`, the icon links on every screen (`assets/app.js`), tokens section 15.
+
+### N2: an address that leads nowhere, or something unexpected
+- `prototype/notfound.html`: signed in, the shell stays, with **Open the menu** · **Go to the overview** and three doors; signed out, nothing about the wedding shows and the way back is **Sign in**.
+- A detail screen opened from an old link now says "This booking isn't here" (vendor, finalist, document likewise). Before, a booking or document from an unknown link said the partner had just removed it, which was made up. "Removed by Bella" now shows only when that just happened.
+- `?state=crash` on every screen: "Something went wrong… Everything you've saved is safe; only this screen didn't open." with **Go to the overview** and **Try again**.
+
+### N3: which name belongs to whom
+- Each name is tied to an account the first time it signs in: "Welcome… Which of you is this?" with the two names (`signin.html?state=whoami`), or the two name fields if none are set yet (`whoami-new`). Asked once; the second account gets the other name.
+- Settings explains the pairing under the two accounts and offers **Swap them** (with undo) for a mix-up.
+- A change from your own other device arrives in your name with your initial in champagne ("You recorded … on your other phone", `budget.html?state=sync-self`); the partner's stays blush. It's never reported as the partner's.
+
+### N4: the Google window closed, blocked or failed
+- `signin.html?state=google-waiting`: the button says "Waiting for Google", a note says to finish in the Google window (it may be behind this one), with **Cancel**; email stays usable, so nobody waits on nothing.
+- `google-closed` (calm), `google-blocked` (rose, how to allow pop-ups, or use email), `google-failed` (rose, nothing changed, try again or use email). The button reads **Continue with Google again**.
+
+### N5: the spreadsheet holds what we keep, named as the planner names it
+- 18 columns in the order of the vendor screen: Name, Category, Stage, Keen on, Contact person, Phone, WhatsApp, Rating (out of 5), Number of reviewers, Leaning towards, Its price (Rp), Price options, All price options, On the shortlist, Booked, Files, Notes, Date added.
+- Numbers stay numbers (whole rupiah, rating with a point, question 25), dates are year-month-day, empty fields are empty cells. UTF-8 with a byte-order mark for non-Latin names. Built into `vendors.html`.
+
+### N6: a device that can't receive reminders
+- Two new device states beside allowed, not yet allowed and turned off: **not until installed** (an iPhone in the browser: add it to the home screen first, with **Show me how**) and **never in this browser** (rose; which browsers can).
+- Every note, in settings and under Remind us, says whether reminders still reach your other devices. `settings.html` and `schedule.html` with `?state=notif-install` / `notif-unsupported`.
+
+### N7: the wedding day and the weeks after
+- Overview: the day before reads "1 day to go: tomorrow"; on the day, **Today** replaces the number and Coming up becomes "Today and next"; after it, the figure is what's **still to settle** (with "Married 12 days ago…" and how many payments are left or late) until everything is paid, then **Married for** N days (question 26). No negative countdown anywhere.
+- The budget's closing line: "Tomorrow is the wedding", "Today is the wedding day", "12 days since the wedding on …". Settings' date message: "That's today" / "That was 12 days ago". States `eve`, `day`, `after`, `settled` on the overview and the budget.
+
+### N8: dates the planner doesn't know
+- It says what it knows and leaves the date out: "Added directly", "Booked from Venues", "Done". Never today, never another date in its place. Blanks go last in orders and are empty cells in the spreadsheet; with no start day, the overview drops the time thread.
+- Fixed in the prototype: a finished task without a finishing day used to show its due date as the day it was done. Mock data: Rumah Cincin has no booked date; "Book the church" was finished on an unknown day.
+
+### N9: a dated thing missing what it needs
+- Events need a title and a date, and can't end before they start; tasks need a title. Adding with something missing rings each field with one line on what to do, keeps everything typed, and focuses the first problem.
+- Editing (save as you go): the bad change isn't saved, the field keeps what was typed and says what the schedule still holds, the save line says "1 change not saved yet: the end time", and **Done** goes to the field instead of closing. `schedule.html?state=invalid`, `new-invalid`; `tasks.html?state=add-invalid`.
+
+### N10: removing a vendor, finalist or venue added by mistake or twice
+- A rose **Remove this vendor** at the foot of a vendor, **Remove from the shortlist** at the foot of a finalist, **Remove venue** in the venue sheet. Each confirms, then gives a few seconds of undo, like every other remove.
+- The confirm names what stays: a booking made from it, a shortlist copy (or the vendor behind a finalist) and its files in Files. Nothing else is touched.
+
+### N11: only reminders that will really arrive
+- Remind us offers **No reminder**, **The morning before**, **A week before, in the morning**, with "Reminders come once a day, in the morning." A morning that has gone is greyed with the reason.
+- Reminders set before: a day or a week ahead carry over to the morning versions; a time of day ("1 hour before") is flagged, not silently changed: "Choose again" in the sheet with the old choice named, a line on the agenda row, a rose box above the agenda listing them, and a count in settings.
+
+### N12: one item for several people
+- "Who it's for" on a wedding item is now a people picker: tick everyone it's for; none means General. It reads as text ("Bride's mother, Groom's mother"; past two, "… and 2 more").
+- Narrowing to any of them finds it, and search now covers people too ("Search items, vendors and people"). Mock data: "Makeup for both mothers", "Suits for the groom's father and brother"; `items.html?state=people`.
+
+### N13: undo after the partner changed the same thing
+- Undo shows "Restoring", then if the partner has changed it since, nothing is taken back and a 9-second toast with their initial says what they did and that it's kept: the split after a payment on it, a file move after they moved it again, a payment after they changed the booking. `booking.html?id=ayu&state=undo-conflict`, `files.html?state=undo-conflict`.
+
+### N14: a remove or delete that couldn't finish
+- The confirm stays open after "Removing"/"Deleting": a rose box "Nothing was removed." (or deleted) with the reason, and the button becomes **Try again**, focused. **Keep it** leaves everything as it was. No toast, no undo. Built once in `Veil.confirm`, so every confirm does it; `?state=removefail` is listed on booking, vendor, finalist, venues, files, schedule, tasks, items and guests.
+
+### New open questions (v1.1)
+24. **Short name** under the icon: "Greg & Bella" (suggested) or "G & B Wedding".
+25. **Ratings in the spreadsheet:** a decimal point so spreadsheets read a number (suggested), or a comma to match the screen.
+26. **After the wedding:** lead with what's still to settle, then days married (suggested), or days married from the first day after.
+
+### v1.2 (2026-10-16): N15–N18 and the owner's answers to 24–26
+Same day, at the owner's request ("go do the N15-N18 too"). `design-guide.md` and `tokens.css` are now **v1.2 (2026-10-16)**. All 18 open needs are designed; nothing is open.
+
+**Answers:**
+- **24:** the short name is "Greg & Bella".
+- **25:** ratings in the spreadsheet use a decimal point.
+- **26:** "After wedding the count ends, basically the website is unused." So **N7 changes**: after the day, the overview shows the names, "Married" and the day, with no figure and no thread (the one state without a figure). The "still to settle" and "married for" versions are gone, and `?state=settled` with them. The budget's line reads "Married on Friday 2 October"; settings says "That day has passed". The day before and the day itself are unchanged.
+
+### N15: the couple's names as large on a phone as on a computer
+- The overview names are **44px at every width** (`--text-names`; before, 30px on a phone). Line height 1.1; long names wrap instead of shrinking. The top bar's names were already 24px everywhere, now named `--text-names-top` so a size is given for both.
+
+### N16: something typed into an amount that isn't an amount
+- Every money field: words, a minus, decimals or more than 15 digits are refused. The field puts back the amount it had, rings rose and says why, quoting what was typed: "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." Before, words quietly became Rp 0. Built once in `assets/app.js`, so every amount (bookings, parts, payments, prices, packages, venue costs, what-if) behaves the same. Record a payment refuses too. `booking.html?state=badamount`, `booking-new.html?state=badamount`.
+
+### N17: a PDF that is still too big after shrinking
+- Its own message, so it can't be confused with the first one: "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." In the upload sheet and on a record's tiles. In the prototype a PDF over about 18 MB ends this way.
+
+### N18: Done, Escape or a tap outside before a change has saved
+- **Saving:** it waits ("Saving, then this closes") and closes once saved.
+- **Didn't save, or can't yet** (N9): it stays open with "Your last change isn't saved yet. Try again or close without it"; closing without it says the change wasn't saved.
+- **An add sheet with typed text,** dismissed: it stays, says it isn't added, and offers "Close without adding it". Cancel still closes at once.
+- **Documents:** leaving while "Not saved yet" or "Saving" saves first, then goes; after a failed save it asks (Leave without them · Stay and try again); closing the tab gets the browser's question.
+- `schedule.html?state=done-unsaved`, `doc.html?id=kebun-meeting&state=leave-failed`, and `?state=savefail` on any screen with editing sheets.
+
+### Freeze of v1.2 (2026-10-16)
+- **The owner approved the design** after clicking through the prototype ("it's all good"). `design-guide.md` and `tokens.css` are frozen at **v1.2 (2026-10-16)**, covering the inventory and open needs N1–N18. Later changes bump the version and are logged here.

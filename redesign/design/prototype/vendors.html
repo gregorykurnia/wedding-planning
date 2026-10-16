@@ -70,13 +70,23 @@ function list() {
   });
 }
 
-/* F15: the vendors currently in view, as a CSV file */
+/* F15, N5: the vendors currently in view, as a CSV file. Columns are named the way the planner names them,
+   in the order of the vendor screen. Amounts are plain whole rupiah and dates are year-month-day, so a
+   spreadsheet reads them as numbers and dates; empty fields are empty cells, never "No rating yet". */
+const CSV_COLS = ["Name", "Category", "Stage", "Keen on", "Contact person", "Phone", "WhatsApp", "Rating (out of 5)", "Number of reviewers",
+  "Leaning towards", "Its price (Rp)", "Price options", "All price options", "On the shortlist", "Booked", "Files", "Notes", "Date added"];
+function csvRow(v) {
+  const p = v.prices.find((o) => o.preferred), stage = v.stage === "out" ? "Ruled out" : d.STAGES.find(([k]) => k === v.stage)[1];
+  const booked = d.bookings.some((b) => b.id === v.id), listed = (d.finalists || []).some((f) => f.vendor === v.id);
+  return [v.name, v.category, stage, v.keen ? "Yes" : "No", v.contact, v.phone, V.waHref(v.phone) || "", v.rating ?? "", v.reviewers ?? "",
+    p ? p.name : "", p ? p.price : "", v.prices.length, v.prices.map((o) => `${o.name}: ${V.rp(o.price)}${o.includes ? ` (${o.includes})` : ""}`).join("; "),
+    listed ? "Yes" : "No", booked ? "Yes" : "No", v.files.length, v.notes, v.added || ""];
+}
 function exportCsv(rows) {
-  const cols = ["Name", "Category", "Contact person", "Phone", "Stage", "Rating", "Reviewers", "Preferred price", "Notes"];
   const q = (x) => `"${String(x ?? "").replace(/"/g, '""')}"`;
-  const lines = [cols.map(q).join(",")].concat(rows.map((v) => [v.name, v.category, v.contact, v.phone, v.stage === "out" ? "Ruled out" : d.STAGES.find(([k]) => k === v.stage)[1], v.rating, v.reviewers, (preferred(v) || {}).price, v.notes].map(q).join(",")));
+  const lines = [CSV_COLS.map(q).join(",")].concat(rows.map((v) => csvRow(v).map(q).join(",")));
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv" }));
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv" }));
   a.download = `vendors-${(V.data.couple || ["our", "wedding"]).join("-").toLowerCase().replace(/\s+/g, "-")}.csv`;
   a.click();
   V.toast(`Exported ${V.plural(rows.length, "vendor")} to ${a.download}`);
