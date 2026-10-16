@@ -73,21 +73,23 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | [ ] 9.2 Remove the old UI · Sonnet 5.5 High | off | off |
 | 🛑 [ ] Phase 9 review · Opus 5.5 Medium | off | off |
 
-## Design gaps N1–N14: later, but before Phase 4
+## Design gaps N1–N18: designed 2026-10-16
 
-The studio round for needs N1–N14 (see `redesign/handoff/needs.md`) is put off until later. It runs in the studio window, not in a terminal lane, so it doesn't hold up any column. Do it **before Phase 4 starts** at the latest: 4.23 waits for N12 entirely, and Phase 4 screens use N4 and N7–N11.
+Done on 2026-10-16: one studio round designed N1–N18 (design-guide v1.1 and v1.2), and the import brought them into `redesign/design/`. The studio round for needs N1–N14 (see `redesign/handoff/needs.md`) was put off until then. It runs in the studio window, not in a terminal lane, so it doesn't hold up any column. Do it **before Phase 4 starts** at the latest: 4.23 waits for N12 entirely, and Phase 4 screens use N4 and N7–N11.
 
-Until it's done, tasks that touch a need build everything else and leave that part out (the §9.1 rule). Phases 2 and 3 have three such parts, which get a follow-up after the import:
+Until it's done, tasks that touch a need build everything else and leave that part out (the §9.1 rule). Phases 2 and 3 have these parts, which get a follow-up after the import:
 - 2.6 and 3.8 leave out what Undo says when it can't undo (N13), and 2.6 leaves out what a confirm says when its write fails (N14);
 - 2.7 names the partner with the second name in settings (N3);
 - 3.4's money field puts the old amount back for text that isn't an amount, without a message (N16);
-- 3.10 words a PDF that is still too big after shrinking with a provisional line (N17).
+- 3.10 words a PDF that is still too big after shrinking with a provisional line (N17);
+- 2.4 sets the couple's names in the top bar at 21px on a phone, not 24px (N15);
+- 3.8's Done, Escape and scrim rules while a change is unsaved are provisional (N18).
 
 | Task | Waits for | Model |
 |---|---|---|
-| [ ] Studio window: design N1–N14 (the owner runs it: `BASE_BRANCH=redesign redesign/studio.sh enter` after the banned-word scan, then `./start` and "Design the open needs in needs.md", then "I approve the design guide. Freeze it.") | nothing; before Phase 4 | Opus 5.5 High, since N1 and N2 add new screens |
-| [ ] Import the needs' design (main folder, "Import the approved design", with `BASE_BRANCH=redesign`) | the studio freezing the designs | Haiku 5.5 High |
-| [ ] Follow-up: N13 and N14 in 2.6 and 3.8, N3 in 2.7 (skip if those were built after the import) | the import | Sonnet 5.5 High |
+| [x] Studio window: design N1–N14 (done 2026-10-16, with N15–N18 in the same round; guide v1.2) (the owner runs it: `BASE_BRANCH=redesign redesign/studio.sh enter` after the banned-word scan, then `./start` and "Design the open needs in needs.md", then "I approve the design guide. Freeze it.") | nothing; before Phase 4 | Opus 5.5 High, since N1 and N2 add new screens |
+| [x] Import the needs' design (done 2026-10-16, commit 4682a5c) (main folder, "Import the approved design", with `BASE_BRANCH=redesign`) | the studio freezing the designs | Haiku 5.5 High |
+| [ ] Follow-up: N13 and N14 in 2.6 and 3.8, N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 (skip if those were built after the import) | the import | Sonnet 5.5 High |
 
 ## Any free terminal, once the needs are designed
 
