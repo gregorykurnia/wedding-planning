@@ -942,7 +942,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | b2ac54d; 20 model and 8 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | 0ed5446; 15 model and 7 demo e2e tests; real cost to log from `/cost` | [x] |
-| 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | d5db441; 31 model and 10 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit 9889de6); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
@@ -1210,7 +1210,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** create and edit sheet frames, inline confirm, blocked notice, gold, rose and calm boxes render.
 
 #### Task 3.9: Stage thread, keen heart, WhatsApp, install card, notification state · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t3, commit d5db441 · real cost to log from `/cost`). `StageThread` and `StageChips` (`parts/stage/`), `KeenHeart` (`parts/keen/`), `WhatsAppLink` (`parts/whatsapp/`), and `InstallCard` and `NotificationState` (`parts/device/`), with gallery section 3.9 showing every variant. `ChipGroup` gained `disabled` for demonstration mode. The install card's once-per-device rule and the install logic are Task 6.4's, the settings' accounts and install steps are 4.25's, and the unsupported notification state waits for N6 (G6). The allowed sentence follows the guide, not the settings prototype (AGENTS.md has the detail). No §5, §6 or §10 row is ticked by this task alone: the F7 and F11 rows and the §6 WhatsApp and install rows wait for their screens.
 - **Read:** guide §4.21–§4.23, §4.30; prototype `assets/app.js` (`stageThread`, `waLink`, `HEART`), `overview.html?state=install`, `settings.html` (all notification states).
 
 #### Task 3.10: File tiles, upload sheet and upload pipeline · Sonnet 5.5 High

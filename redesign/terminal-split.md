@@ -35,7 +35,7 @@ An optional way to run the Step 7 rebuild (`redesign/ui-implementation-plan.md` 
 | [x] 3.10 Uploads (after 3.3) · Sonnet 5.5 High | [x] 3.1 Hero · Haiku 5.5 Max | [x] 3.6 Parts · Haiku 5.5 Max |
 | [x] 3.12 Task, item and guest rows (after 3.3) · Sonnet 5.5 High | [x] 3.2 Next card · Haiku 5.5 Max | [x] 3.7 Search and filters · Haiku 5.5 Max |
 | — | [x] 3.5 Ledger rows (L) · Haiku 5.5 Max | [x] 3.8 Sheet patterns (after 3.3) · Haiku 5.5 Max |
-| — | — | [ ] 3.9 Stage thread, heart, WhatsApp · Haiku 5.5 Max |
+| — | — | [x] 3.9 Stage thread, heart, WhatsApp · Haiku 5.5 Max |
 | 🛑 [ ] Phase 3 review · Opus 5.5 Medium | wait | wait |
 | **Phase 4: screens** | | |
 | [ ] 4.9 Who pays · Sonnet 5.5 High | [ ] 4.11 Vendors · Sonnet 5.5 High | [ ] 4.1 Sign in · Sonnet 5.5 High |
