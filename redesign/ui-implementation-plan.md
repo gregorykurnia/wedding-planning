@@ -699,12 +699,12 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [ ] |
 | F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [ ] |
 | F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [ ] |
-| F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [ ] |
-| F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [ ] |
+| F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [x] |
+| F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [x] |
 | F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [ ] |
-| F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [ ] |
+| F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [x] |
 | F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [ ] |
-| F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [ ] |
+| F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
 | F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [ ] |
 | F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
 | F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [ ] |
@@ -958,7 +958,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | | [ ] |
 | 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | | [ ] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
-| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | | [ ] |
+| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
 | 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
 | 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | | [ ] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
@@ -1283,7 +1283,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.10. **Prototype:** `whatif.html`. Projected total, who would pay (8 + more), ordering, add and edit sheet with split into parts and merge back.
 
 #### Task 4.11: Vendors · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2, commit a8f26ea · real cost to log from `/cost`). `/new/vendors` (`src/veil/screens/vendors/`): hero and sub-navigation, focus chips with counts and Edit categories, search, the keen filter, six orders, category headings, 100 at a time, the add-vendor and categories sheets, the keen heart with its failed state, and the N5 export (`VENDOR_COLUMNS` in `src/lib/model/vendors.ts`, so nothing is left as a TODO N5). Data in `src/lib/data/vendors.ts` and `read.ts`. Not compared with the prototype by screenshot at 1440px and 390px yet; the phone layout is covered by an e2e test.
 - **Guide:** §5.11. **Prototype:** `vendors.html`. Focus chips with counts, search, keen filter, six orders, category headings, 100 at a time, add-vendor sheet (Add and start another), categories sheet (add, rename, remove with inline confirm and undo, 40 characters), export link (columns wait for N5; build with a placeholder set marked TODO N5).
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
