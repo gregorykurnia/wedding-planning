@@ -7,6 +7,7 @@ import { IconsDemo } from "./icons-demo";
 import { NextDemos } from "./next-demos";
 import { PartsDemos } from "./parts-demos";
 import { RowsDemos } from "./rows-demos";
+import { SheetsDemos } from "./sheets-demos";
 import { ToolsDemos } from "./tools-demos";
 import { UploadDemo } from "./upload-demos";
 
@@ -31,7 +32,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.5", title: "Ledger rows and row states" },
   { task: "3.6", title: "Parts, menu cards, tally", demo: <PartsDemos /> },
   { task: "3.7", title: "Search, ordering, filters, count line and paging", demo: <ToolsDemos /> },
-  { task: "3.8", title: "Sheet patterns, confirm variants, banners and problem boxes" },
+  { task: "3.8", title: "Sheet patterns, confirm variants, banners and problem boxes", demo: <SheetsDemos /> },
   { task: "3.9", title: "Stage thread, keen heart, WhatsApp, install card, notification state" },
   { task: "3.10", title: "File tiles, upload sheet and upload pipeline", demo: <UploadDemo /> },
   { task: "3.11", title: "Agenda rows and month calendar", demo: <AgendaDemos /> },

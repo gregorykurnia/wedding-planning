@@ -54,6 +54,25 @@
   flex-wrap: wrap;
 }
 
+/* A create sheet in demonstration mode: the line sits above the actions (guide §4.14). */
+.demo {
+  margin: var(--space-5) 0 0;
+  text-align: center;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+/* An edit sheet's save line, centred above Done. */
+.save {
+  margin-top: var(--space-4);
+}
+
+/* The optional rose link under a sheet's actions. */
+.link {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
 @media (max-width: 760px) /* --bp-phone */ {
   .scrim {
     place-items: end center;

@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { Btn } from "@/veil/parts/actions/btn";
+import { TextLink } from "@/veil/parts/actions/text-link";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
 import styles from "./confirm.module.css";
 
@@ -34,6 +35,12 @@ const GERUNDS: Record<string, string> = {
 function busyLabel(action: string) {
   return GERUNDS[action.split(/\s+/)[0].toLowerCase()] ?? "Working";
 }
+
+/**
+ * What a write that didn't land says (G14, N14). Provisional until the design
+ * studio writes it: a confirm's failure has no wording in the guide yet.
+ */
+export const CONFIRM_FAILED = "Couldn’t do that. Nothing was changed. Try again.";
 
 /**
  * Returns `confirm(options)`: opens the sheet and resolves `true` once the
@@ -94,7 +101,7 @@ export function ConfirmSheet({
     <Sheet title={title} sub={body}>
       {state === "failed" && (
         <p className={styles.error} role="alert">
-          Couldn’t do that. Nothing was changed. Try again.
+          {CONFIRM_FAILED}
         </p>
       )}
       <SheetActions>
@@ -111,5 +118,109 @@ export function ConfirmSheet({
         </Btn>
       </SheetActions>
     </Sheet>
+  );
+}
+
+export interface InlineConfirmProps {
+  /** The question with the name in it: "Remove Florist?" */
+  question: ReactNode;
+  /** What goes with it: "Its 4 vendors move to Other." */
+  body?: ReactNode;
+  /** The rose action: "Remove category". Its busy label is the gerund of its first word. */
+  action: string;
+  /** The write. The action stays busy until it resolves; a rejection keeps the question open. */
+  run: () => Promise<unknown>;
+  /** Keep it: the row goes back to what it was. */
+  onKeep: () => void;
+  /** The write landed: the row goes. */
+  onDone: () => void;
+}
+
+/**
+ * Guide §4.15: a row inside a sheet turns into its own confirm, with the question,
+ * Keep it first and the rose action. It must be shown inside a sheet, since its
+ * busy state holds that sheet open.
+ */
+export function InlineConfirm({ question, body, action, run, onKeep, onDone }: InlineConfirmProps) {
+  const sheet = useSheet();
+  const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
+  const working = useRef(false);
+
+  async function go() {
+    if (working.current) return;
+    working.current = true;
+    setState("busy");
+    sheet.setBusy(true);
+    try {
+      await run();
+    } catch {
+      working.current = false;
+      sheet.setBusy(false);
+      setState("failed");
+      return;
+    }
+    // The row goes with onDone, so the sheet is released first.
+    sheet.setBusy(false);
+    onDone();
+  }
+
+  const isBusy = state === "busy";
+
+  return (
+    <div className={styles.inline}>
+      <p className={styles.question}>
+        {question}
+        {body !== undefined && <> {body}</>}
+      </p>
+      {state === "failed" && (
+        <p className={styles.error} role="alert">
+          {CONFIRM_FAILED}
+        </p>
+      )}
+      <div className={styles.inlineActs}>
+        <TextLink autoFocus disabled={isBusy} onClick={onKeep}>
+          Keep it
+        </TextLink>
+        <TextLink tone="rose" busy={isBusy} busyLabel={busyLabel(action)} onClick={() => void go()}>
+          {action}
+        </TextLink>
+      </div>
+    </div>
+  );
+}
+
+export interface BlockedOptions {
+  /** Names the thing and what comes first: "Empty Catering first". */
+  title: string;
+  /** What is in the way and what to do about it. */
+  body: ReactNode;
+}
+
+/**
+ * Guide §4.15: a folder with contents can't be deleted yet. The notice says what
+ * is in the way, with OK as its one button.
+ */
+export function BlockedNotice({ title, body }: BlockedOptions) {
+  const sheet = useSheet();
+  return (
+    <Sheet title={title} sub={body}>
+      <SheetActions>
+        <Btn autoFocus onClick={sheet.close}>
+          OK
+        </Btn>
+      </SheetActions>
+    </Sheet>
+  );
+}
+
+/** Returns `blocked(options)`: opens the notice and resolves once it closes (OK, Escape or the scrim). */
+export function useBlocked() {
+  const sheets = useSheets();
+  return useCallback(
+    (options: BlockedOptions) =>
+      new Promise<void>((resolve) => {
+        sheets.open(<BlockedNotice {...options} />, { onClose: () => resolve() });
+      }),
+    [sheets],
   );
 }

@@ -15,3 +15,9 @@
   color: var(--accent-attention-text);
   text-decoration-color: currentColor;
 }
+
+/* A link whose write is running keeps its focus and says so, as Btn's busy state does. */
+.link[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.6;
+}
