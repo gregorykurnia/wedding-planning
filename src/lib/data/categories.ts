@@ -4,7 +4,7 @@ import { withElementIds, type Element } from "./array-ops";
 import { requireDb } from "./db";
 import { changeMany, listIds, type DocChange } from "./many";
 import type { Undoable } from "./undo";
-import { guarded, stamp, type WriteOptions } from "./write";
+import { create, guarded, stamp, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
@@ -144,4 +144,22 @@ export async function removeCategory(
       await undoReplace(changes, own.name, OTHER_CATEGORY, database);
     },
   };
+}
+
+/**
+ * Adds a category of our own. The name is checked against the list as it is now
+ * (built-ins, ours, Other), so a partner's category added a moment ago counts. The
+ * id is made by the caller when the form begins, so Try again never adds it twice.
+ */
+export async function addCategory(id: string, name: string, opts: WriteOptions = {}): Promise<string> {
+  const database = requireDb(opts.db);
+  const snap = await getDocs(collection(database, CATEGORIES));
+  const to = name.trim();
+  // A first try that landed after its timeout: this retry has nothing left to add.
+  if (snap.docs.some((d) => d.id === id && d.data().name === to)) return to;
+  const ours = snap.docs.map((d) => String(d.data().name ?? ""));
+  const problem = validateCategoryName(to, [...BUILT_IN_CATEGORIES, ...ours, OTHER_CATEGORY]);
+  if (problem) throw new WriteError("failed", problem);
+  await create(CATEGORIES, { name: to }, { db: database, id });
+  return to;
 }

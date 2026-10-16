@@ -149,6 +149,19 @@ describe("vendor rows", () => {
     expect(html).toContain("3 price options");
   });
 
+  it("keeps the choice and says so under a row whose change didn't save, with Try again", () => {
+    const html = markup(
+      <VendorRow
+        vendor={vendor}
+        href="/new/vendors/v1"
+        failed={{ message: "Couldn’t save the change to Pelaminan Ayu. Your choice is kept.", onRetry: () => {} }}
+      />,
+    );
+    expect(html).toMatch(/role="alert"[^>]*><span>Couldn’t save the change to Pelaminan Ayu\. Your choice is kept\.<\/span>/);
+    expect(html).toContain("Try again");
+    expect(markup(<VendorRow vendor={vendor} href="/new/vendors/v1" />)).not.toContain("Try again");
+  });
+
   it("says No price yet and No rating yet, and keeps the meta's height when empty", () => {
     const empty: VendorRowData = { id: "v2", name: "Studio Dimas", category: "Photography", contact: null, price: null, optionCount: 0, rating: null, reviewers: 0 };
     const html = markup(<VendorRow vendor={empty} href="/new/vendors/v2" />);

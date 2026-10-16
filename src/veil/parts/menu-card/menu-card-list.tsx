@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { rp } from "@/lib/model/format";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import styles from "./menu-card-list.module.css";
@@ -11,6 +12,12 @@ export interface MenuOption {
   includes?: string | null;
   /** The option the couple lean towards. It says so instead of offering the action. */
   preferred?: boolean;
+  /** Muted words at the end of the line, in the price's place: "Ours, 3 vendors". */
+  note?: string;
+  /** This option's own actions ("Rename", "Remove"), in place of the list-wide Lean, Edit and Remove. */
+  actions?: ReactNode;
+  /** Takes the card's whole place while it is open for a rename or a question. */
+  replace?: ReactNode;
 }
 
 export interface MenuCardListProps {
@@ -30,7 +37,8 @@ export function MenuCardList({ options, onLean, onEdit, onRemove }: MenuCardList
   return (
     <ul className={styles.menuCard}>
       {options.map((option) => {
-        const hasActions = Boolean(option.preferred || onLean || onEdit || onRemove);
+        if (option.replace) return <li key={option.id}>{option.replace}</li>;
+        const hasActions = Boolean(option.actions || option.preferred || onLean || onEdit || onRemove);
         return (
           <li key={option.id}>
             <div className={styles.line}>
@@ -42,6 +50,11 @@ export function MenuCardList({ options, onLean, onEdit, onRemove }: MenuCardList
                   <span className={styles.lead} aria-hidden="true" />
                   <span className={`${styles.op} num`}>{rp(option.price)}</span>
                 </>
+              ) : option.note ? (
+                <>
+                  <span className={styles.lead} aria-hidden="true" />
+                  <span className={styles.note}>{option.note}</span>
+                </>
               ) : null}
             </div>
             {option.includes ? (
@@ -51,17 +64,21 @@ export function MenuCardList({ options, onLean, onEdit, onRemove }: MenuCardList
             ) : null}
             {hasActions ? (
               <div className={styles.acts}>
-                {option.preferred ? (
-                  <span className={styles.pref}>The one we’re leaning towards</span>
-                ) : onLean ? (
-                  <TextLink onClick={() => onLean(option)}>Lean towards this one</TextLink>
-                ) : null}
-                {onEdit ? <TextLink onClick={() => onEdit(option)}>Edit</TextLink> : null}
-                {onRemove ? (
-                  <TextLink tone="rose" onClick={() => onRemove(option)}>
-                    Remove
-                  </TextLink>
-                ) : null}
+                {option.actions ?? (
+                  <>
+                    {option.preferred ? (
+                      <span className={styles.pref}>The one we’re leaning towards</span>
+                    ) : onLean ? (
+                      <TextLink onClick={() => onLean(option)}>Lean towards this one</TextLink>
+                    ) : null}
+                    {onEdit ? <TextLink onClick={() => onEdit(option)}>Edit</TextLink> : null}
+                    {onRemove ? (
+                      <TextLink tone="rose" onClick={() => onRemove(option)}>
+                        Remove
+                      </TextLink>
+                    ) : null}
+                  </>
+                )}
               </div>
             ) : null}
           </li>

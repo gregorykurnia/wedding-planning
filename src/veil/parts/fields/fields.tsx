@@ -6,6 +6,7 @@ import {
   useId,
   type InputHTMLAttributes,
   type ReactNode,
+  type Ref,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
@@ -142,6 +143,8 @@ type FieldInputProps = Bound<string> &
   InputAttributes & {
     id?: string;
     type?: "text" | "email" | "tel" | "url";
+    /** For a screen that moves focus into the field (React 19 passes it down as a prop). */
+    ref?: Ref<HTMLInputElement>;
   };
 
 /** A text field. Saves on blur and on Enter. */

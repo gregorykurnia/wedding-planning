@@ -115,6 +115,36 @@ describe("MenuCardList", () => {
     expect(html).not.toContain("aria-hidden");
   });
 
+  it("puts a note where a category's price would be, after the leader", () => {
+    const html = markup(<MenuCardList options={[{ id: "f", name: "Florist", note: "Ours, 3 vendors" }]} />);
+    expect(html).toContain("Ours, 3 vendors");
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).not.toContain("Rp");
+  });
+
+  it("draws an option's own actions instead of the list's", () => {
+    const html = markup(
+      <MenuCardList
+        options={[
+          { id: "f", name: "Florist", actions: <button>Rename</button> },
+          { id: "o", name: "Other" },
+        ]}
+        onEdit={() => {}}
+      />,
+    );
+    expect(html).toContain("Rename");
+    // The list-wide Edit shows only on the option with no actions of its own.
+    expect(count(html, />Edit</g)).toBe(1);
+  });
+
+  it("lets an option's card be replaced while it is open for a rename", () => {
+    const html = markup(
+      <MenuCardList options={[{ id: "f", name: "Florist", note: "Ours", replace: <input aria-label="Rename Florist" /> }]} />,
+    );
+    expect(html).toContain('aria-label="Rename Florist"');
+    expect(html).not.toContain("Ours");
+  });
+
   it("prints what's included under the name", () => {
     const html = markup(
       <MenuCardList options={[{ id: "s", name: "Silver", price: 1, includes: "Up to 150 guests" }]} />,
