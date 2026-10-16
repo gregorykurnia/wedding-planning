@@ -61,6 +61,17 @@ describe("TextLink", () => {
       /^<a [^>]*href="\/new\/vendors"/,
     );
   });
+
+  it("is busy with its gerund in place of the label, and says so (Task 3.8's inline confirm)", () => {
+    const busy = markup(
+      <TextLink tone="rose" busy busyLabel="Removing">
+        Remove category
+      </TextLink>,
+    );
+    expect(busy).toContain('aria-busy="true"');
+    expect(busy).toContain(">Removing<");
+    expect(busy).not.toContain("Remove category");
+  });
 });
 
 describe("DirectionWord", () => {

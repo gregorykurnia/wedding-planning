@@ -940,8 +940,8 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | 9383838; 35 model and 9 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
-| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
-| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | b2ac54d; 20 model and 8 demo e2e tests; real cost to log from `/cost` | [x] |
+| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | 0ed5446; 15 model and 7 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit 9889de6); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
@@ -1200,12 +1200,12 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Read:** guide §4.8; prototype `booking.html`, `vendor.html`, `finalist.html`, `guests.html` (tally), `whatif.html` (`.carry`), `veil.css` (`.parts`, `.part*`, `.menu-card`).
 
 #### Task 3.7: Search, ordering, filters, count line and paging · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t3, commit b2ac54d · real cost to log from `/cost`). `SearchField`, `OrderBy`, `FilterSelect`, `RangeField`, `FilterCheck`, `ShowEverything`, `CountLine`, `SortedNote` and `ShowMore` (`parts/tools/`) take the model's choices, paging counts and read and format functions as props; the screen runs the model's ordering and filtering. Focus stays in search while results change. Gallery section 3.7 shows every variant from fake data; 20 model and 8 demo e2e tests.
 - **Read:** guide §4.12, §6.8; prototype `vendors.html`, `venues.html`, `items.html` (`.sorted-note`, `.filters`), `veil.css` (`.tools`, `.search`, `.order`, `.count`, `.range`).
 - **Done when:** components take the model's ordering and filter functions as props; focus stays in search while results change.
 
 #### Task 3.8: Sheet patterns, confirm variants, banners and problem boxes · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t3, commit 0ed5446 · real cost to log from `/cost`). `CreateSheetActions` and `EditSheetActions` (`shell/sheet.tsx`), `InlineConfirm`, `BlockedNotice` and `useBlocked()` (`shell/confirm.tsx`), and busy support on `TextLink`. Done waits until every change has saved, and a save in flight holds Escape and the scrim (provisional, G18/N18). The banners and problem boxes are unchanged from 2.5 and shown in gallery section 3.8.
 - **Read:** guide §4.14 (create vs edit), §4.15 (inline confirm, blocked), §4.17; prototype `vendors.html?state=categories`, `files.html` (blocked folder), `booking-new.html?state=failed`, `signin.html` (`.problem`).
 - **Done when:** create and edit sheet frames, inline confirm, blocked notice, gold, rose and calm boxes render.
 
@@ -1525,6 +1525,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G15 | **N15** | Raised by Task 2.4. The prototype sets the couple's names in the top bar at 24px on a phone as well as on a computer. No token holds 24px at both widths: `--text-row-lg` is 24px and drops to 21px under 760px, its size for booking entries. Built with `--text-row-lg`, so the names are 21px on a phone until decided (`src/veil/shell/top-bar.module.css`). The rest of the top bar, the menu and the account line match the prototype at 390px and 1440px. | 2.4 (follow-up) | open |
 | G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | open |
 | G17 | **N17** | Raised by Task 3.10. The guide words a file that is too large ('Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.') and a PDF being shrunk, but not a PDF that is still over the limit after shrinking: the first message would say only PDFs are shrunk, which is wrong for it. Built with a provisional line, 'Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.' (`stillTooLargeText` in `src/lib/model/uploads.ts`). Also undesigned and built plainly: the name, category and description in the upload sheet stay editable after a file is uploaded and save when the field is left (a failure keeps the text and offers Try again); and a refused or failed tile stays on the record until the upload sheet is opened again, which clears refused and finished entries. | 3.10 (follow-up), 4.19 | open |
+| G18 | **N18** | Raised by Task 3.8. The guide says an edit sheet ends with Done, that a failed save keeps what was typed (§6.1, principle 7), and that Escape or a tap on the scrim closes a sheet (§4.14), but not what Done does while a change is unsaved, or what a dismissal does then. Built provisionally in `EditSheetActions` (`src/veil/shell/sheet.tsx`): Done is off while a change is saving or hasn't saved, and a save in flight holds Escape and the scrim (busy). A change that didn't save doesn't hold them, so Escape or a tap outside the sheet loses it. | 3.8; the edit sheets of 4.10, 4.12, 4.14, 4.15, 4.19, 4.20 and 4.24 | open |
 
 ### 9.2 Questions for the owner: decided
 

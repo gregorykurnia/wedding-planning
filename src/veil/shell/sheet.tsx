@@ -14,6 +14,10 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/data/session";
+import { SaveScopeContext } from "@/lib/data/use-autosave-field";
+import { Btn } from "@/veil/parts/actions/btn";
+import { SaveLine } from "@/veil/parts/fields/save-scope";
 import styles from "./sheet.module.css";
 
 /**
@@ -54,7 +58,8 @@ interface Entry {
 }
 
 const SheetsContext = createContext<Sheets | null>(null);
-const SheetContext = createContext<SheetControl | null>(null);
+/** Exported so the markup tests can render a sheet's parts without a host. */
+export const SheetContext = createContext<SheetControl | null>(null);
 
 export function useSheets(): Sheets {
   const sheets = useContext(SheetsContext);
@@ -328,4 +333,87 @@ export function Sheet({
 /** The centred row of actions at the foot of a sheet: quiet first, then the primary. */
 export function SheetActions({ children }: { children: ReactNode }) {
   return <div className={styles.acts}>{children}</div>;
+}
+
+/**
+ * While a write runs, Escape and a tap on the scrim don't close the sheet: the
+ * write has to report back (guide §6.2).
+ */
+function useBusy(sheet: SheetControl, busy: boolean) {
+  useEffect(() => {
+    sheet.setBusy(busy);
+    return () => sheet.setBusy(false);
+  }, [sheet, busy]);
+}
+
+/**
+ * The foot of a sheet that creates something (guide §4.14): a quiet Cancel, then
+ * the primary. In demonstration mode a line above says adding is turned off and
+ * the primary is disabled; `demo` overrides the session's mode, for the gallery.
+ */
+export function CreateSheetActions({
+  action,
+  onAction,
+  busy = false,
+  busyLabel,
+  demo,
+  link,
+}: {
+  /** The primary: "Add a booking". */
+  action: string;
+  onAction: () => void;
+  /** The primary shows `busyLabel` while the write runs, and the sheet holds on. */
+  busy?: boolean;
+  busyLabel?: string;
+  demo?: boolean;
+  /** An optional rose link under the row: "Delete". */
+  link?: ReactNode;
+}) {
+  const sheet = useSheet();
+  const { connection } = useSession();
+  const inDemo = demo ?? connection === "demo";
+  useBusy(sheet, busy);
+  return (
+    <>
+      {inDemo && <p className={styles.demo}>Demonstration mode: adding is turned off.</p>}
+      <SheetActions>
+        <Btn variant="quiet" disabled={busy} onClick={sheet.close}>
+          Cancel
+        </Btn>
+        <Btn disabled={inDemo} busy={busy} busyLabel={busyLabel} onClick={onAction}>
+          {action}
+        </Btn>
+      </SheetActions>
+      {link && <div className={styles.link}>{link}</div>}
+    </>
+  );
+}
+
+/**
+ * The foot of a sheet that edits something that exists (guide §4.14): the save
+ * line, then one Done, then an optional rose link. Done waits until every change
+ * has saved, so a change that didn't save keeps the sheet open with its Try again
+ * above it. While a save is in flight, Escape and the scrim hold the sheet.
+ */
+export function EditSheetActions({ link, onDone }: { link?: ReactNode; onDone?: () => void }) {
+  const sheet = useSheet();
+  const scope = useContext(SaveScopeContext);
+  const kind = scope?.line.kind ?? "idle";
+  const settled = kind === "idle" || kind === "saved" || kind === "demo";
+  useBusy(sheet, kind === "saving");
+  return (
+    <>
+      {scope && (
+        <div className={styles.save}>
+          <SaveLine />
+        </div>
+      )}
+      <SheetActions>
+        <Btn disabled={!settled} onClick={onDone ?? sheet.close}>
+          Done
+        </Btn>
+      </SheetActions>
+      {link && <div className={styles.link}>{link}</div>}
+    </>
+  );
 }

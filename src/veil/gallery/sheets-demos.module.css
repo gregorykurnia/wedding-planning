@@ -1,0 +1,35 @@
+/* Task 3.8's demo: the buttons that open each sheet, the categories rows, and a
+   stack of banners and problem boxes. Tokens only. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-buttons);
+  margin-top: var(--space-4);
+}
+
+.list {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-buttons);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* The problem box's own top margin is for a box inside a form; here the stack spaces them. */
+.stack > p {
+  margin: 0;
+}
