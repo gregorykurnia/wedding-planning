@@ -506,3 +506,7 @@ a.entry:hover { background: rgba(253,232,238,.3); }
 .rem-list { margin: 26px auto 0; max-width: 760px; border-radius: 16px; text-align: left; justify-content: flex-start; }
 .rem-list button.link { color: inherit; }
 @media (max-width: 760px) { .field .need { grid-column: 1; } }
+/* N16: a refused amount; N18: a sheet that asks before dropping what was typed */
+.need[data-amount] { margin-top: 4px; }
+.big-input + .need[data-amount] { text-align: center; grid-column: auto; margin-top: 8px; }
+.hold-line { color: var(--rose-ink); margin-top: 14px; }

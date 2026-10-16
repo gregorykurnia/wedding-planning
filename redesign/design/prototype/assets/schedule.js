@@ -120,8 +120,16 @@
       };
       V.$$("[data-k]", el).forEach((c) => c.onclick = () => { V.$$("[data-k]", el).forEach((x) => { x.setAttribute("aria-pressed", String(x === c)); x.setAttribute("aria-checked", String(x === c)); }); keep(); });
       if (save) V.$$("input, select, textarea", el).forEach((x) => x.addEventListener("change", keep));
+      /* N18 with N9: Escape or a tap outside, while a change can't be saved yet, keeps the sheet open and says so,
+         with "close without it" (the schedule keeps what it had). */
+      if (!isNew) el._extraHold = () => {
+        const bad = problems(el); if (!bad.length) return true;
+        showProblems(el, bad, e);
+        if (line) { line.classList.add("failed"); line.innerHTML = `${bad.length === 1 ? "1 change" : bad.length + " changes"} not saved yet. Fix it, or <button type="button" class="link" data-lose>close without it</button>`; V.$("[data-lose]", line).onclick = () => { V.closeSheet({ force: true }); V.toast("Closed without that change. The schedule keeps what it had."); }; }
+        V.$(bad[0][1], el).focus(); return false;
+      };
       /* Done waits while something can't be saved: it points at the field instead of closing. */
-      const dn = V.$("[data-done]", el); if (dn) dn.onclick = () => { const bad = problems(el); if (bad.length) { showProblems(el, bad, e); V.$(bad[0][1], el).focus(); return; } V.closeSheet(); };
+      const dn = V.$("[data-done]", el); if (dn) dn.onclick = () => V.closeSheet();
       V.$("#ea", el).onchange = (x) => V.$("#times", el).style.display = x.target.checked ? "none" : "flex";
       V.$("#ed", el).addEventListener("change", () => { const f = V.$("#rmf", el), cur = V.$("#rm", el).value; ev.date = V.$("#ed", el).value || ev.date; const nf = document.createElement("div"); nf.innerHTML = remindField(Object.assign({}, ev, { remind: cur || ev.remind })); f.replaceWith(nf.firstElementChild); if (save) V.$("#rm", el).addEventListener("change", keep); V.$("#rm", el).addEventListener("change", clearOld); });
       const clearOld = () => { const o = V.$("#rm-old", el); if (o && V.$("#rm", el).value !== "" ) { o.outerHTML = `<p class="hint">Reminders come once a day, in the morning.</p>`; V.$("#rmf", el).classList.remove("failed"); } };
@@ -138,7 +146,7 @@
         const n = Object.assign({ id: "e" + Date.now(), status: "scheduled" }, v); d.events.push(n); V.closeSheet(); V.rerender(); V.saved(`Added ${V.esc(n.title)}`, () => { d.events.splice(d.events.indexOf(n), 1); V.rerender(); });
       };
       if (opts && opts.check) { const bad = problems(el); showProblems(el, bad, e); if (!isNew && bad.length && line) { line.classList.add("failed"); line.textContent = `1 change not saved yet: the end time`; } }
-      V.$$("[data-st]", el).forEach((b) => b.onclick = () => { const old = e.status; e.status = b.dataset.st; V.closeSheet(); V.rerender(); V.saved(b.dataset.st === "completed" ? "Marked completed" : b.dataset.st === "cancelled" ? "Cancelled" : "Back to scheduled", () => { e.status = old; V.rerender(); }); });
+      V.$$("[data-st]", el).forEach((b) => b.onclick = () => { const old = e.status; e.status = b.dataset.st; V.closeSheet({ force: true }); V.rerender(); V.saved(b.dataset.st === "completed" ? "Marked completed" : b.dataset.st === "cancelled" ? "Cancelled" : "Back to scheduled", () => { e.status = old; V.rerender(); }); });
       const del = V.$("[data-del]", el);
       if (del) del.onclick = async () => {
         if (!await V.confirm({ title: `Delete ${e.title}?`, body: "It comes off the schedule for both of you. You can undo for a few seconds.", action: "Delete", danger: true })) return;

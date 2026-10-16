@@ -23,8 +23,7 @@
   const shiftDays = (n) => { const x = new Date(TODAY); x.setDate(x.getDate() + n); return isoOf(x); };
   if (data.wedding && STATE === "eve") data.wedding = shiftDays(1);
   if (data.wedding && STATE === "day") data.wedding = D.TODAY;
-  if (data.wedding && (STATE === "after" || STATE === "settled")) data.wedding = shiftDays(-12);
-  if (STATE === "settled") data.bookings.forEach((b) => (b.parts || [b]).forEach((p) => { p.paid = p.price; }));
+  if (data.wedding && STATE === "after") data.wedding = shiftDays(-12);
 
   /* ---------- formatting ---------- */
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -101,11 +100,12 @@
   const daysLine = () => {
     const w = wedding(); if (!w) return "";
     if (w.phase === "day") return `<p class="days"><b>Today</b> is the wedding day</p>`;
-    if (w.phase === "after") return `<p class="days"><b>${n0(w.n)}</b> ${w.n === 1 ? "day" : "days"} since the wedding on ${dateLong(data.wedding)}</p>`;
+    /* After the day the count ends (owner, question 26) */
+    if (w.phase === "after") return `<p class="days">Married on ${dateLong(data.wedding)}</p>`;
     return w.n === 1 ? `<p class="days"><b>Tomorrow</b> is the wedding, ${dateLong(data.wedding)}</p>` : `<p class="days"><b>${n0(w.n)}</b> days until ${dateLong(data.wedding)}</p>`;
   };
-  /* The same in a sentence: "157 days to go", "That's tomorrow", "That's today", "That was 12 days ago" */
-  const daysText = () => { const w = wedding(); if (!w) return ""; return w.phase === "day" ? "That's today" : w.phase === "after" ? `That was ${plural(w.n, "day")} ago` : w.n === 1 ? "That's tomorrow" : `${plural(w.n, "day")} to go`; };
+  /* The same in a sentence: "157 days to go", "That's tomorrow", "That's today", "That day has passed" */
+  const daysText = () => { const w = wedding(); if (!w) return ""; return w.phase === "day" ? "That's today" : w.phase === "after" ? "That day has passed" : w.n === 1 ? "That's tomorrow" : `${plural(w.n, "day")} to go`; };
 
   /* ---------- reminders on this device (S10, N6, N11) ---------- */
   /* Permission on this device: granted, default (not asked yet), denied (turned off), install (an iPhone that
@@ -212,7 +212,7 @@
     const idx = $("#index"), btn = $(".top .menu-btn");
     btn.addEventListener("click", () => { idx.hidden = false; btn.setAttribute("aria-expanded", "true"); $(".close-index").focus(); });
     $(".close-index").addEventListener("click", () => { idx.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!idx.hidden) $(".close-index").click(); else closeSheet(); } });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!idx.hidden) $(".close-index").click(); else closeSheet({ dismiss: true }); } });
     document.addEventListener("click", (e) => { const u = e.target.closest("[data-upload]"); if (u) { e.preventDefault(); const t = uploadTargets[+u.dataset.upload]; uploadSheet({ where: t.where, onDone: (f) => { t.files.push({ name: f.name, size: mbText(f.mb), type: f.type, src: f.src }); rerender(); } }); } });
     document.addEventListener("click", (e) => { const a = e.target.closest("[data-later]"); if (a) { e.preventDefault(); toast("The prototype stops here. In the app, this opens the file or the file picker."); } });
     if (DEMO) $(".top").insertAdjacentHTML("afterend", `<div class="banner-wrap"><p class="banner">Demonstration mode. The planner isn't connected to its database yet, so there's nothing to show and changes aren't saved.</p></div>`);
@@ -245,16 +245,41 @@
 
   /* ---------- sheets and dialogs ---------- */
   let lastFocus = null;
+  const typedIn = (el) => $$("input:not([type=checkbox]):not([type=radio]):not([type=file]), textarea", el).map((x) => x.value).join("\u0001");
   function openSheet(html, onMount) {
     const s = $(".scrim");
-    lastFocus = document.activeElement;
+    if (s.hidden) lastFocus = document.activeElement;
     s.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
     s.hidden = false;
-    s.onclick = (e) => { if (e.target === s) closeSheet(); };
-    if (onMount) onMount($(".sheet", s));
+    s.onclick = (e) => { if (e.target === s) closeSheet({ dismiss: true }); };
+    const sh = $(".sheet", s);
+    if (onMount) onMount(sh);
+    sh._typed = typedIn(sh);
     const f = $(".sheet [autofocus]", s) || $(".sheet button, .sheet input", s); if (f) f.focus();
   }
-  function closeSheet() { const s = $(".scrim"); if (!s || s.hidden) return; s.hidden = true; s.innerHTML = ""; if (lastFocus) lastFocus.focus(); }
+  /* N18: a sheet doesn't close on a change that hasn't saved.
+     - Saving: Done, Escape or a tap outside waits for it, then closes.
+     - Didn't save (or can't be saved yet): it stays open and says so, with Try again and "Close without it".
+       Closing without it says the change was lost.
+     - A sheet that adds something, dismissed with typed text in it (Escape, a tap outside): it asks first.
+       Cancel is a clear choice, so it closes at once. */
+  function closeSheet(opts = {}) {
+    const s = $(".scrim"); if (!s || s.hidden) return;
+    const sh = $(".sheet", s);
+    if (sh && !opts.force) {
+      if (sh._hold && sh._hold(opts) === false) return;
+      if (opts.dismiss && $("[data-ok]", sh) && !DEMO && typedIn(sh) !== sh._typed && !sh._asked) { askDrop(sh); return; }
+    }
+    s.hidden = true; s.innerHTML = ""; if (lastFocus) lastFocus.focus();
+  }
+  function askDrop(sh) {
+    sh._asked = true;
+    const acts = $(".acts", sh);
+    acts.insertAdjacentHTML("beforebegin", `<p class="sub hold-line" role="alert">You've started typing here. Close and it's not added, or keep going.</p>`);
+    acts.insertAdjacentHTML("afterend", `<p style="text-align:center;margin-top:12px"><button class="link rose" data-drop>Close without adding it</button></p>`);
+    $("[data-drop]", sh).onclick = () => closeSheet({ force: true });
+    const f = $("[autofocus]", sh) || $("input, textarea", sh); if (f) f.focus();
+  }
 
   /* Busy: the confirm button says what it is doing ("Removing", "Deleting") for a moment before the change lands. */
   const gerund = (a) => /^remove\b/i.test(a) ? "Removing" : /^delete\b/i.test(a) ? "Deleting" : /^empty\b/i.test(a) ? "Emptying" : "Working";
@@ -311,23 +336,33 @@
   function sheetSaver(el) {
     const line = $(".sheet-save", el); let t = null;
     /* ?state=savefail: the change didn't save. What was typed stays in the sheet and Try again applies it. */
-    let failing = STATE === "savefail", pending = null;
-    const fail = () => {
+    let failing = STATE === "savefail" || STATE === "done-unsaved", pending = null, saving = false, closeAfter = false;
+    const done = () => { saving = false; if (line && !line.classList.contains("failed")) line.textContent = "Saved"; if (closeAfter) { closeAfter = false; closeSheet({ force: true }); } };
+    const fail = (held) => {
       if (!line) return;
       line.classList.add("failed");
-      line.innerHTML = `Couldn't save. What you typed is kept. <button type="button" class="link rose" data-retry>Try again</button>`;
+      line.innerHTML = held ? `Your last change isn't saved yet. <button type="button" class="link rose" data-retry>Try again</button> or <button type="button" class="link" data-lose>close without it</button>`
+        : `Couldn't save. What you typed is kept. <button type="button" class="link rose" data-retry>Try again</button>`;
       $("[data-retry]", line).onclick = () => {
-        failing = false; line.classList.remove("failed"); line.textContent = "Saving";
+        failing = false; line.classList.remove("failed"); line.textContent = "Saving"; saving = true;
         if (pending) { pending(); pending = null; rerender(); }
-        t = setTimeout(() => (line.textContent = "Saved"), 450);
+        t = setTimeout(done, 450);
       };
+      const lose = $("[data-lose]", line);
+      if (lose) lose.onclick = () => { closeSheet({ force: true }); toast("Closed without your last change. It wasn't saved."); };
+      if (held) $("[data-retry]", line).focus();
     };
     if (failing) fail();
+    el._hold = () => {
+      if (failing) { fail(true); return false; }
+      if (saving) { closeAfter = true; if (line) line.textContent = "Saving, then this closes"; return false; }
+      return el._extraHold ? el._extraHold() : true;
+    };
     return (apply) => {
       if (DEMO) { if (line) line.textContent = "Demonstration mode: changes aren't saved"; return false; }
       if (failing) { pending = apply; fail(); return false; }
       apply(); rerender();
-      if (line) { line.textContent = "Saving"; clearTimeout(t); t = setTimeout(() => (line.textContent = "Saved"), 450); }
+      if (line) { line.classList.remove("failed"); line.textContent = "Saving"; saving = true; clearTimeout(t); t = setTimeout(done, 450); }
       return true;
     };
   }
@@ -340,6 +375,47 @@
     toast(msg, undo ? { action: "Undo", onAction: undo, conflict } : {});
     return true;
   }
+
+  /* ---------- amounts (N16) ---------- */
+  /* An amount is whole rupiah: digits, with or without "Rp", spaces and dots. Words, a minus, decimals or a
+     figure over 15 digits can't be used: the field says why and keeps the amount it had before. */
+  const MAX_DIGITS = 15;
+  function amountProblem(raw) {
+    const t = String(raw || "").trim(); if (!t) return null;
+    const core = t.replace(/^rp\.?\s*/i, "").replace(/[\s.]/g, "");
+    if (/^[-−–]/.test(core) || /^[-−–]?\d/.test(core) && /[-−–]/.test(core)) return "minus";
+    if (/^\d+,\d*$/.test(core)) return "decimals";
+    if (!/^\d+$/.test(core)) return "words";
+    if (core.replace(/^0+/, "").length > MAX_DIGITS) return "big";
+    return null;
+  }
+  function amountMessage(kind, typed, before) {
+    const stays = before ? `It stays ${esc(before)}.` : "Nothing was changed.";
+    const shown = esc(String(typed).trim().slice(0, 40)) + (String(typed).trim().length > 40 ? "…" : "");
+    return { words: `“${shown}” isn't an amount. Use digits, like 12500000. ${stays}`,
+      minus: `An amount can't be below zero, so “${shown}” can't be used. ${stays}`,
+      decimals: `Rupiah amounts have no decimals, so “${shown}” can't be used. ${stays}`,
+      big: `That's more than an amount can hold here: up to Rp 999.999.999.999.999. ${stays}` }[kind];
+  }
+  const amountNote = (inp) => { const f = inp.closest(".field"); return f ? $(".need[data-amount]", f) : inp.nextElementSibling && inp.nextElementSibling.matches(".need[data-amount]") ? inp.nextElementSibling : null; };
+  function clearAmount(inp) { const n = amountNote(inp); if (n) n.remove(); inp.removeAttribute("aria-invalid"); const f = inp.closest(".field"); if (f && !$(".need, .err", f)) f.classList.remove("failed"); inp.classList.remove("bad-amount"); }
+  function refuseAmount(inp, kind) {
+    const typed = inp.value, before = inp.dataset.before || "";
+    clearAmount(inp);
+    inp.value = before; inp.setAttribute("aria-invalid", "true"); inp.classList.add("bad-amount");
+    const html = `<p class="need" data-amount role="alert">${amountMessage(kind, typed, before)}</p>`;
+    const f = inp.closest(".field");
+    if (f) { f.classList.add("failed"); f.insertAdjacentHTML("beforeend", html); } else inp.insertAdjacentHTML("afterend", html);
+    inp.dispatchEvent(new CustomEvent("amount-refused"));
+  }
+  const isAmount = (el) => el && el.matches && el.matches("input.num, input[data-money]");
+  document.addEventListener("focusin", (e) => { if (isAmount(e.target)) e.target.dataset.before = e.target.value; }, true);
+  document.addEventListener("input", (e) => { if (isAmount(e.target) && !amountProblem(e.target.value)) clearAmount(e.target); }, true);
+  /* Capture runs before each screen's own handlers, so a refused amount never reaches them. */
+  const guardAmount = (e) => { const el = e.target; if (!isAmount(el)) return; const k = amountProblem(el.value); if (!k) return; e.stopImmediatePropagation(); refuseAmount(el, k); };
+  document.addEventListener("change", guardAmount, true);
+  document.addEventListener("focusout", guardAmount, true);
+  document.addEventListener("blur", guardAmount, true);
 
   /* ---------- record a payment (from any screen) ---------- */
   function recordPayment(bookingId, partId) {
@@ -361,15 +437,19 @@
       <div class="acts"><button class="btn quiet" data-cancel>Cancel</button><button class="btn" data-ok ${DEMO ? "disabled" : ""}>Record payment</button></div>`, (el) => {
       const amt = $("#pay-amt", el), after = $("#pay-after", el);
       const val = () => parseInt(amt.value.replace(/\D/g, "") || "0", 10);
-      amt.addEventListener("input", () => {
+      const update = () => {
+        if (amountProblem(amt.value)) { after.textContent = "That isn't an amount yet"; after.style.color = "var(--rose-ink)"; return; }
         const v = val(), rest = left - v;
         after.textContent = v === 0 ? "Enter the amount you paid" : rest === 0 ? "Pays this in full" : rest > 0 ? `${rp(rest)} still to pay after this` : `This is ${rp(-rest)} more than what's left. It will show as overpaid.`;
         after.style.color = rest < 0 ? "var(--rose-ink)" : "";
-      });
-      amt.addEventListener("blur", () => { amt.value = rp(val()); });
+      };
+      amt.addEventListener("input", update);
+      amt.addEventListener("amount-refused", update);
+      amt.addEventListener("blur", () => { amt.value = rp(val()); update(); });
       $$(".chip", el).forEach((c) => c.onclick = () => $$(".chip", el).forEach((x) => x.setAttribute("aria-pressed", String(x === c))));
       $("[data-cancel]", el).onclick = closeSheet;
       $("[data-ok]", el).onclick = (e) => {
+        const k = amountProblem(amt.value); if (k) { refuseAmount(amt, k); amt.focus(); return; }
         const v = val(); if (!v) { amt.focus(); return; }
         const btn = e.currentTarget; btn.classList.add("busy"); btn.textContent = "Recording";
         setTimeout(() => {
@@ -410,6 +490,8 @@
     cfg.render(main); retitle();
     if (STATE === "sync") (cfg.sync || liveSync)();
     if (STATE === "sync-self") liveSync(true);
+    /* N16 (?state=badamount): someone types words into an amount */
+    if (STATE === "badamount") setTimeout(() => { const i = $("main input.num, main input[data-money]"); if (!i) return; i.scrollIntoView({ block: "center" }); i.focus(); i.value = "12 juta"; i.dispatchEvent(new Event("change", { bubbles: true })); }, 300);
     if (added && sessionStorage.getItem("veil-added-new")) { sessionStorage.removeItem("veil-added-new"); toast(`Added ${esc(added.name)}`); $$(`[data-id="${added.id}"]`).forEach((el) => el.classList.add("flash")); }
   }
 
@@ -426,9 +508,11 @@
     const up = uploading ? `<li><div class="file"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Signed contract scan.pdf</div><div class="fs">Shrinking from 14,2 MB to fit under 10 MB</div><div class="bar"><span style="width:35%"></span></div></div></li>
       <li><div class="file"><div class="thumb"><span class="ext">jpg</span></div><div class="fn">Transfer receipt.jpg</div><div class="fs">Uploading, 1.3 of 2,1 MB</div><div class="bar"><span style="width:62%"></span></div></div></li>
       <li><div class="file bad"><div class="thumb"><span class="ext">zip</span></div><div class="fn">All photos.zip</div><div class="fs">Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.</div></div></li>
+      <li><div class="file bad"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Venue floor plans, scanned.pdf</div><div class="fs">${stillBig(41, 23.6)}</div></div></li>
       <li><div class="file bad"><div class="thumb"><span class="ext">pdf</span></div><div class="fn">Invoice.pdf</div><div class="fs">Upload failed. <button class="link rose">Try again</button></div></div></li>` : "";
     return `<ul class="files">${fl}${up}<li><button class="file drop" data-upload="${key}"><span><b>Add files</b>Quotes, contracts, photos. Up to 10 MB each; big PDFs are shrunk for you.</span></button></li></ul>`;
   }
+  const stillBig = (from, to) => `Shrunk from ${mbText(from)} to ${mbText(to)}, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts.`;
   /* R9, R10: one upload sheet everywhere (Files and every record). Several files at once, each with a name,
      category and description; PDFs over 10 MB are shrunk, other big files are refused. */
   const FILE_CATS = () => data.FILE_CATEGORIES || ["Contract", "Quote", "Receipt", "Invoice", "Brochure", "Moodboard", "Photo", "ID and legal", "Guest list", "Seating plan"];
@@ -460,12 +544,15 @@
         if (it.state === "failed") return fail(`Upload failed. <button class="link rose">Try again</button>`);
         if (big && !pdf) return fail(`Too large: ${mbText(it.mb)}. Files can be up to 10 MB; only PDFs are shrunk.`);
         if (DEMO) return fail("Not uploaded: demonstration mode");
+        /* N17: shrinking wasn't enough. Its own words, so it isn't mistaken for the first size message. */
+        if (it.state === "stillbig") return fail(stillBig(it.mb, it.to));
         if (frozen && it.state) { st.textContent = it.state === "shrinking" ? `Shrinking from ${mbText(it.mb)} to fit under 10 MB` : it.state === "done" ? "Uploaded" : `Uploading, ${it.pct}%`; if (it.state === "done") st.className = "qs ok"; bar.style.width = (it.state === "done" ? 100 : it.pct || 35) + "%"; return; }
         let pct = 0;
         if (big) st.textContent = `Shrinking from ${mbText(it.mb)} to fit under 10 MB`;
         setTimeout(() => {
           const tick = setInterval(() => {
             pct = Math.min(100, pct + 9 + n * 2); bar.style.width = pct + "%"; st.textContent = `Uploading, ${pct}%`;
+            if (pct >= 100 && pdf && big && it.mb * .55 > 10) { clearInterval(tick); return fail(stillBig(it.mb, it.mb * .55)); }
             if (pct >= 100) {
               clearInterval(tick); st.className = "qs ok"; st.textContent = big ? `Uploaded, shrunk to ${mbText(Math.min(9.4, it.mb * .55))}` : "Uploaded";
               const [nm, ct, ds] = $$(".qf input", li).map((i) => i.value.trim());
@@ -517,6 +604,6 @@
   const count = (n) => n == null ? "" : n.toLocaleString("id-ID");
 
   window.Veil = { data, STATE, STRESS, DEMO, TODAY, esc, rp, fig, longFig, n0, group, names, mbText, uploadSheet, sheetSaveLine, sheetSaver, demoLine, dateLong, dateShort, monthOf, daysFrom, relDue, urgency, plural, SOON,
-    funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, wedding, daysLine, daysText, shiftDays, notHere, unexpected, notifNote, device, REMINDERS, OLD_REMIND, remindKey, remindBad, remindPast, href, ICON, $, $$,
+    funderName, paidBy, andList, partsOf, totals, budget, dues, byFunder, wiParts, wiTotal, whatif, daysLeft, amountProblem, wedding, daysLine, daysText, shiftDays, notHere, unexpected, notifNote, device, REMINDERS, OLD_REMIND, remindKey, remindBad, remindPast, href, ICON, $, $$,
     dec, filesGrid, stageThread, waHref, waLink, HEART, subnav, ago, linkify, compact, count, init, rerender, openSheet, closeSheet, confirm, toast, saved, recordPayment };
 })();

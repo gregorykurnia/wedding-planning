@@ -18,7 +18,7 @@
 const V = Veil;
 V.init({
   where: "Budget", noun: "the budget",
-  states: [["empty", "Nothing booked yet"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"], ["sync-self", "Your own change from your phone"], ["eve", "The day before the wedding"], ["day", "The wedding day"], ["after", "After the wedding, payments left"], ["settled", "After the wedding, all settled"]],
+  states: [["empty", "Nothing booked yet"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"], ["sync-self", "Your own change from your phone"], ["eve", "The day before the wedding"], ["day", "The wedding day"], ["after", "After the wedding"]],
   render(main) {
     const d = V.data, B = V.budget(), dues = V.dues();
     const add = `<a class="btn add-fab" href="${V.href("booking-new.html")}">Add booking</a>`;

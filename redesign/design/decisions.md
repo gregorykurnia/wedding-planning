@@ -239,3 +239,27 @@ Designed in one session at the owner's request ("Design the open needs N1 to N14
 24. **Short name** under the icon: "Greg & Bella" (suggested) or "G & B Wedding".
 25. **Ratings in the spreadsheet:** a decimal point so spreadsheets read a number (suggested), or a comma to match the screen.
 26. **After the wedding:** lead with what's still to settle, then days married (suggested), or days married from the first day after.
+
+### v1.2 (2026-10-16): N15–N18 and the owner's answers to 24–26
+Same day, at the owner's request ("go do the N15-N18 too"). `design-guide.md` and `tokens.css` are now **v1.2 (2026-10-16)**. All 18 open needs are designed; nothing is open.
+
+**Answers:**
+- **24:** the short name is "Greg & Bella".
+- **25:** ratings in the spreadsheet use a decimal point.
+- **26:** "After wedding the count ends, basically the website is unused." So **N7 changes**: after the day, the overview shows the names, "Married" and the day, with no figure and no thread (the one state without a figure). The "still to settle" and "married for" versions are gone, and `?state=settled` with them. The budget's line reads "Married on Friday 2 October"; settings says "That day has passed". The day before and the day itself are unchanged.
+
+### N15: the couple's names as large on a phone as on a computer
+- The overview names are **44px at every width** (`--text-names`; before, 30px on a phone). Line height 1.1; long names wrap instead of shrinking. The top bar's names were already 24px everywhere, now named `--text-names-top` so a size is given for both.
+
+### N16: something typed into an amount that isn't an amount
+- Every money field: words, a minus, decimals or more than 15 digits are refused. The field puts back the amount it had, rings rose and says why, quoting what was typed: "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." Before, words quietly became Rp 0. Built once in `assets/app.js`, so every amount (bookings, parts, payments, prices, packages, venue costs, what-if) behaves the same. Record a payment refuses too. `booking.html?state=badamount`, `booking-new.html?state=badamount`.
+
+### N17: a PDF that is still too big after shrinking
+- Its own message, so it can't be confused with the first one: "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." In the upload sheet and on a record's tiles. In the prototype a PDF over about 18 MB ends this way.
+
+### N18: Done, Escape or a tap outside before a change has saved
+- **Saving:** it waits ("Saving, then this closes") and closes once saved.
+- **Didn't save, or can't yet** (N9): it stays open with "Your last change isn't saved yet. Try again or close without it"; closing without it says the change wasn't saved.
+- **An add sheet with typed text,** dismissed: it stays, says it isn't added, and offers "Close without adding it". Cancel still closes at once.
+- **Documents:** leaving while "Not saved yet" or "Saving" saves first, then goes; after a failed save it asks (Leave without them · Stay and try again); closing the tab gets the browser's question.
+- `schedule.html?state=done-unsaved`, `doc.html?id=kebun-meeting&state=leave-failed`, and `?state=savefail` on any screen with editing sheets.

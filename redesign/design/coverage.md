@@ -237,7 +237,7 @@ Every screen takes `?stress` except sign-in and the add-a-booking form (nothing 
 | N4 Google window | `signin.html?state=google-waiting`, `google-closed`, `google-blocked`, `google-failed` |
 | N5 export columns | `vendors.html`, Export (interaction); columns in guide 5.11 |
 | N6 can't receive reminders | `settings.html?state=notif-install`, `notif-unsupported`; `schedule.html` with the same states (event sheet) |
-| N7 the day and after | `overview.html?state=eve`, `day`, `after`, `settled`; `budget.html` with the same |
+| N7 the day and after | `overview.html?state=eve`, `day`, `after`; `budget.html` with the same |
 | N8 unknown dates | `booking.html?id=cincin`; `tasks.html` ("Book the church" under finished) |
 | N9 missing title or date, end before start | `schedule.html?state=invalid`, `new-invalid`; `tasks.html?state=add-invalid` |
 | N10 remove vendor, finalist, venue | `vendor.html?id=kebun`, `finalist.html?id=f-kebun` (rose link at the foot); `venues.html` (Remove venue in a venue's sheet) |
@@ -245,3 +245,7 @@ Every screen takes `?stress` except sign-in and the add-a-booking form (nothing 
 | N12 several people | `items.html` (Who it's for picker), `items.html?state=people` |
 | N13 undo refused | `booking.html?id=ayu&state=undo-conflict` (split, then Undo); `files.html?state=undo-conflict` (move, then Undo) |
 | N14 remove couldn't finish | `?state=removefail` on booking, vendor, finalist, venues, files, schedule, tasks, items, guests |
+| N15 names on a phone | `overview.html` at phone width (44px, like a computer) |
+| N16 not an amount | `booking.html?state=badamount`, `booking-new.html?state=badamount`; any money field (interaction); Record a payment |
+| N17 PDF still too big | `files.html?state=uploading`, `booking.html?state=uploading` |
+| N18 Done or dismiss before saving | `schedule.html?state=done-unsaved`; `?state=savefail` then Done or Escape on any editing sheet; an add sheet with typed text, then Escape; `doc.html?id=kebun-meeting&state=leave-failed`, and `?state=unsaved` then Back |

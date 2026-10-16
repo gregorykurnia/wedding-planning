@@ -182,7 +182,7 @@ function wire(main) {
 
 V.init({
   where: "Budget", noun: "this booking",
-  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["gone", "Removed by Bella"], ["removefail", "Removing couldn't finish"], ["undo-conflict", "Undo after Bella's change"], ["sync-self", "Your own change from your phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
+  states: [["savefail", "A change didn't save"], ["uploading", "Uploading files"], ["gone", "Removed by Bella"], ["removefail", "Removing couldn't finish"], ["badamount", "Words typed into an amount"],  ["undo-conflict", "Undo after Bella's change"], ["sync-self", "Your own change from your phone"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"], ["sync", "Bella's change arrives"]],
   render,
 });
 </script>

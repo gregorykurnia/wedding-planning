@@ -1,8 +1,8 @@
 # Veil design guide
 
-**v1.1 (2026-10-16).** Frozen at v1.0 on 2026-10-14; v1.1 adds the open needs **N1–N14** from `redesign/handoff/needs.md` (each answer is logged under its ID in `decisions.md`, "Open needs"). This guide describes the prototype as it is. Questions 1–23 are decided; 24–26 are new (see [Open questions](#10-open-questions)).
+**v1.2 (2026-10-16).** Frozen at v1.0 on 2026-10-14. v1.1 added the open needs **N1–N14** and v1.2 adds **N15–N18**, from `redesign/handoff/needs.md`, with the owner's answers to questions 24–26 (each answer is logged under its ID in `decisions.md`, "Open needs"). This guide describes the prototype as it is. All 26 questions are decided.
 
-What v1.1 adds, by need: **N1** the app mark, name and colours (4.31, 5.24) · **N2** pages and records that aren't there, and the unexpected (5.25, shared states) · **N3** who's who (5.1, 5.3, 6.3) · **N4** the Google window (5.1) · **N5** export columns (5.11) · **N6** devices that can't get reminders (4.30, 6.12) · **N7** the wedding day and after (5.2, 5.4, 6.11) · **N8** dates the planner doesn't know (6.11) · **N9** dated things missing what they need (6.1, 5.19, 5.21) · **N10** removing vendors, finalists and venues (5.12, 5.14, 5.15) · **N11** morning reminders (6.12, 5.19) · **N12** an item for several people (4.28, 5.22) · **N13** undo after the partner's change (6.2) · **N14** a remove that couldn't finish (4.15, 6.2).
+What v1.1 adds, by need: **N1** the app mark, name and colours (4.31, 5.24) · **N2** pages and records that aren't there, and the unexpected (5.25, shared states) · **N3** who's who (5.1, 5.3, 6.3) · **N4** the Google window (5.1) · **N5** export columns (5.11) · **N6** devices that can't get reminders (4.30, 6.12) · **N7** the wedding day and after (5.2, 5.4, 6.11) · **N8** dates the planner doesn't know (6.11) · **N9** dated things missing what they need (6.1, 5.19, 5.21) · **N10** removing vendors, finalists and venues (5.12, 5.14, 5.15) · **N11** morning reminders (6.12, 5.19) · **N12** an item for several people (4.28, 5.22) · **N13** undo after the partner's change (6.2) · **N14** a remove that couldn't finish (4.15, 6.2) · **N15** the names the same size on a phone (4.4, 5.2) · **N16** amounts that aren't amounts (4.9, 6.9) · **N17** a PDF still too big after shrinking (4.20) · **N18** Done and dismissing before a change has saved (4.14, 6.1, 5.17).
 
 - Tokens: `tokens.css`, beside this file.
 - Prototype: `prototype/`. Every URL below is relative to that folder. Open `index.html` for the list of screens. The dashed "Prototype" tab on each screen switches states (`?state=…`) and swaps in the stress data (`?stress`). The tab itself is not part of the design.
@@ -132,7 +132,7 @@ Each entry gives its purpose, its anatomy, its variants and states, and its rule
 - **Anatomy:** the couple's names on the left ("Greg *&* Bella", serif 24px, the "&" in champagne italic), a link to the overview, and **Menu** on the right (two short lines and the word).
 - **Same on every screen.** No page name in the middle (owner feedback, 2026-10-14: the label repeated the big title). The `.where` style is left over and no longer used.
 - **States:** normal. In demonstration mode the names give way to "Our wedding planner" and a gold banner follows directly beneath. On the menu itself, the right-hand button reads **Close**.
-- **Phone:** 20px padding.
+- **Phone:** 20px padding. The names stay 24px (`--text-names-top`), the same as on a computer (N15).
 - **Stress:** long names (Gregorius Alexander Wijayakusuma & Isabella Margaretha Setyaningsih) wrap onto several lines. Menu stays on the right.
 
 ### 4.2 Menu index (`.index`)
@@ -239,7 +239,7 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
   - **placeholder:** full muted ink, italic where it carries meaning ("What has to happen next", "No estimate", "Rp 0")
 - **Types:**
   - text
-  - money (`.num`, numeric keyboard, reformatted to "Rp 12.500.000" on blur)
+  - money (`.num`, numeric keyboard, reformatted to "Rp 12.500.000" on blur). **Not an amount** (N16): words, a minus, decimals or more than 15 digits can't be used. The field puts back the amount it had, rings rose and says why, quoting what was typed: "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." / "An amount can't be below zero, so “−5.000.000” can't be used." / "Rupiah amounts have no decimals, so “12,5” can't be used." / "That's more than an amount can hold here: up to Rp 999.999.999.999.999." With nothing before: "Nothing was changed." The line goes as soon as a usable amount is typed
   - date (native)
   - select (no arrow, reads as text)
   - textarea
@@ -301,8 +301,13 @@ All lists share one form: hairline-separated rows, the name in serif, meta in mu
 - **Behaviour:**
   - `role="dialog"` and `aria-modal`
   - focus goes to the `autofocus` field, or else the first button or input
-  - Escape or a click on the scrim closes it
+  - Escape or a click on the scrim closes it, unless a change hasn't saved (below)
   - focus returns to what opened it
+- **Before a change has saved** (N18):
+  - **Saving:** Done, Escape or a tap outside waits; the save line reads "Saving, then this closes", and it closes when saved.
+  - **Didn't save, or can't be saved yet** (a failed save, or a dated thing missing a title or date, N9): it stays open. The save line says "Your last change isn't saved yet. **Try again** or **close without it**" (focus on Try again), or "1 change not saved yet. Fix it, or close without it". Closing without it says so: "Closed without your last change. It wasn't saved."
+  - **A sheet that adds something,** dismissed with typed text in it (Escape or a tap outside): it stays, with "You've started typing here. Close and it's not added, or keep going." and a rose **Close without adding it**. A second Escape closes. **Cancel** is a clear choice, so it closes at once.
+  - `schedule.html?state=done-unsaved` (Done while a change didn't save); `?state=savefail` on any screen with editing sheets, then Done or Escape.
 - **Sheets in the prototype:**
   - Record a payment
   - Add a vendor (with "Add and start another")
@@ -386,6 +391,7 @@ All shimmer on a 1.6s loop, are `aria-hidden`, and sit beside a screen-reader li
     - "Shrinking from 14,2 MB to fit under 10 MB"
     - "Uploaded" (sage) or "Uploaded, shrunk to 7,8 MB"
     - "Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk." (rose)
+    - **Still too big after shrinking** (N17, a PDF): "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." (rose). Its own words, so it isn't read as the first size message. Shown in the upload sheet and on a record's tiles (`files.html?state=uploading`, `booking.html?state=uploading`)
     - "Upload failed. Try again" (rose)
     - "Not uploaded: demonstration mode"
 - **Envelope folder** (`.frow.folder`): the icon is an envelope with a V flap on champagne-soft. The meta reads "2 folders, 14 files" or "Empty".
@@ -560,6 +566,7 @@ No top bar, no data: a centred gate, 440px wide, with the knot, "Our wedding pla
 ### 5.2 Overview: `overview.html` (O1–O6)
 The home screen; the names in the top bar lead here.
 - **Hero:** names in gold italic, **157** (the days figure), "days until Saturday 20 March 2027", and the thread "Started 1 Mar · 59% of the time gone".
+- **The names are 44px on a phone and on a computer** (`--text-names`, N15), line height 1.1. Long names wrap onto more lines rather than shrink.
 - **Coming up:** the next five dated things of any kind, as agenda rows, then "See the whole schedule".
 - **Doors:**
   - Budget: "Rp 473.150.000 paid of Rp 882.800.000"
@@ -579,12 +586,11 @@ The home screen; the names in the top bar lead here.
 | Stress | `?stress` | Long names wrap; thousands in the doors, grouped with dots |
 | The day before (N7) | `?state=eve` | **1**, "day to go: tomorrow, Thursday 15 October" |
 | The wedding day (N7) | `?state=day` | Kicker "The wedding day", the word **Today** at the days size, "Wednesday 14 October. Everything for today is below.", the thread full, "The day is here". Coming up is titled "Today and next" |
-| After, with payments left (N7) | `?state=after` | Kicker "Still to settle", the amount still to pay as the figure, "Married 12 days ago, on Friday 2 October. 10 payments left, **1 late**." (or "the next on …"), the payment thread "54% paid · 46% to settle". Coming up is titled "Still to do" |
-| After, all settled (N7) | `?state=settled` | Kicker "Married for", the days since as the figure, "days, since Friday 2 October. Every payment is settled.", the thread full, "All settled" |
+| After the wedding (N7) | `?state=after` | The count ends (decision 26): the names, the kicker "Married" and the day in serif ("Friday 2 October"). No figure, no thread. Coming up and the doors stay as they are |
 
 **Phone:** the days figure scales down (clamped at 96px); door summaries move under their names.
 
-**No negative countdown, ever.** Before the day the figure counts down; on the day it's the word; after it, what's left to pay leads until it's settled, then the days married. Without a start date (N8), the time thread is left out rather than guessed.
+**No negative countdown, ever.** Before the day the figure counts down; on the day it's the word; after it the count simply ends, because the planner is hardly used by then (decision 26). This is the one screen state with no figure. Without a start date (N8), the time thread is left out rather than guessed.
 
 ### 5.3 Wedding settings: `settings.html` (O5, O6, A3, A5, S10)
 Sections:
@@ -626,7 +632,7 @@ The save line sits under the title.
 | Overpaid | (data: paid more than committed) | kicker "Overpaid by", the amount over in rose, context "Rp X paid against Rp Y committed. Check the overpaid bookings.", a rose thread ending "overpaid" |
 | Stress | `?stress` | 1.206 bookings; the figure shrinks when it passes 13 digits; "15 funders" in the Who pays door |
 | Your own change from your other device (N3) | `?state=sync-self` | As Bella's change, but the toast carries your initial in champagne: "You recorded … on your other phone" |
-| The day before, the day, after (N7) | `?state=eve` / `day` / `after` / `settled` | The closing line reads "**Tomorrow** is the wedding, …", "**Today** is the wedding day", or "**12** days since the wedding on Friday 2 October" |
+| The day before, the day, after (N7) | `?state=eve` / `day` / `after` | The closing line reads "**Tomorrow** is the wedding, …", "**Today** is the wedding day", or "Married on Friday 2 October" |
 | Record a payment | interaction (**Record payment**) | Sheet: big amount pre-filled with what's left, "Pays this in full" / "Rp X still to pay after this" / rose "This is Rp X more than what's left. It will show as overpaid.", Paid on, Paid by chips, Attach a receipt; **Record payment** busy "Recording"; undo toast |
 | Menu | interaction (**Menu**) | the full-page menu |
 
@@ -887,6 +893,8 @@ The save line sits under the title.
 | Not saved yet | `?state=unsaved` | gold dot, "Not saved yet" |
 | Saving | `?state=saving` | spinner |
 | Couldn't save | `?state=savefail` | rose note, "…They're still here. Try again" |
+| Leaving after a change didn't save (N18) | `?state=leave-failed` | Back is tapped: "Your last changes aren't saved" with **Leave without them** · **Stay and try again** |
+| Leaving before it's saved (N18) | `?state=unsaved`, then Back | it saves first, then goes |
 | Went offline while writing | `?state=offline-edit` | "Not saved: you're offline. Keep this page open. Try again" |
 | Cursor in a table | `?state=table` | table bar showing |
 | Editing a total | `?state=formula` | the total cell shows `=SUM(C2:C5)` in monospace; the formula bar shows its address and formula |
@@ -1054,6 +1062,7 @@ For an address that leads nowhere in the planner.
   - **A row that saves on one tap** (an RSVP, a task step, an item's star or tick) keeps the choice, rings the row in rose and puts a line under it: "Couldn't save the reply for Maria Goretti. Your choice is kept. **Try again**" (`guests.html?state=savefail`), "Couldn't save this step. What you typed is kept. **Try again**" (`tasks.html?state=savefail`).
   - **A sheet** shows the same words in its save line (see 4.14).
 - **Documents** autosave after a 0.9-second pause in typing: Not saved yet (gold) → Saving → Saved just now (sage). On failure the text stays and the note offers Try again. Offline says to keep the page open (R5).
+- **Leaving before it's saved** (N18): from a document, Back, the menu or the names wait while it's "Not saved yet" or "Saving" (it saves at once, then goes). If it couldn't save, a sheet asks: "Your last changes aren't saved", "If you leave now, they're lost. Stay and they're still here to save.", **Leave without them** (quiet) · **Stay and try again**. Closing the tab gets the browser's own question. On sheets, see 4.14.
 - **Forms that create** (Add a booking) save on a button press, because there's nothing to save into until the record exists. On failure they keep every field and turn the button into **Try again**.
 - **Sheets that edit** an existing record save as you go too, with the same save line, and close with **Done**. If a name is cleared, the old one comes back rather than saving an empty name.
 - **Dated things say what they need** (N9: events and tasks). A title and a date are required, and an end can't come before its start.
@@ -1131,7 +1140,7 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Not assigned** is a funder row of its own. Removing a funder moves its costs to Not assigned, and recorded payments stay.
 - **The estimate is kept apart from the agreed price** (B12) and compared in a sentence; Bookings can be ordered by "Difference from estimate".
 - **What-if totals never mix into the budget.** The only combined number is the projected total on what-if.
-- **Money inputs** accept any digits and reformat to "Rp 12.500.000" on blur.
+- **Money inputs** accept digits, with or without "Rp", spaces and dots, and reformat to "Rp 12.500.000" on blur. Anything else is refused, never quietly turned into Rp 0 (N16, 4.9): the amount before is kept and the field says why. Up to 15 digits. In Record a payment the line under the amount reads "That isn't an amount yet" while typing, and **Record payment** refuses it the same way. `booking.html?state=badamount`, `booking-new.html?state=badamount`.
 
 ### 6.10 Formula rules (documents, R4)
 - **Cells** are addressed like a spreadsheet: columns A, B, C…; rows counted from 1, including the title row.
@@ -1155,7 +1164,7 @@ A skeleton in the shape of the hero, never a spinner on a blank page. `aria-busy
 - **Edited times:** "just now" · "12 min ago" · "2 hours ago" · "yesterday" · then the short date, plus "by Bella" when it was the partner.
 - **Counts** group thousands with dots, like money: "1.206 bookings", "Showing 60 of 1.507". Decimals take a comma, so a dot always means thousands: "4,8" ratings, "33,1 MB", "98,8M followers" (decision 20).
 - **The wedding date** drives every countdown (O5). "Time gone" runs from the day the planner was set up (decision, stage 2 session 8).
-- **The day before, the day, and after** (N7): "1 day to go: tomorrow, …"; on the day, "Today" in place of a number; after it, never a negative countdown. The overview leads with what's still to settle until every payment is made, then "Married for 12 days". Everywhere else the countdown line becomes "**Today** is the wedding day" or "**12** days since the wedding on …", and in a sentence "That's today" / "That was 12 days ago".
+- **The day before, the day, and after** (N7): "1 day to go: tomorrow, …"; on the day, "Today" in place of a number; after it the count ends (decision 26): "Married" and the day, nothing counting. The countdown line becomes "**Today** is the wedding day" or "Married on Friday 2 October", and in a sentence "That's today" / "That day has passed".
 - **Dates the planner doesn't know** (N8): it says what it knows and leaves the date out, never guessing or using today: "Added directly" (not "… on Sunday 10 May"), "Booked from Venues", "Done" for a finished task. In orders by that date they go last, like every blank; in the spreadsheet the cell is empty. Without the day planning started, the overview leaves out the time thread.
 
 ### 6.12 Notifications (S10)
@@ -1212,6 +1221,9 @@ Say what happened, that nothing is lost, and what to do:
 - "Your browser blocked the Google window. Allow pop-ups for the planner in the browser's address bar, then continue with Google again." (N4)
 - "This page isn't here. The address may be mistyped, or it points to something that has moved." (N2)
 - "The planner ran into a problem it didn't expect. Everything you've saved is safe; only this screen didn't open." (N2)
+- "“12 juta” isn't an amount. Use digits, like 12500000. It stays Rp 12.500.000." (N16)
+- "Shrunk from 41 MB to 23,6 MB, still over 10 MB. Shrinking wasn't enough, so it wasn't uploaded. Choose a smaller PDF, or split it into parts." (N17)
+- "Your last change isn't saved yet. Try again or close without it." (N18)
 
 ### Empty-state wording
 Name the absence, then say how things arrive:
@@ -1269,6 +1281,7 @@ Threads and stage steps are below 3:1 too, but they always repeat their meaning 
 - An item's people picker reads "Who Wedding cake is for: General" (N12).
 - Fields that are missing what they need get `aria-invalid="true"`, and their line is `role="alert"` (N9). The "Couldn't finish" box in a confirm is `role="alert"` and focus moves to **Try again** (N14).
 - The waiting Google button is `aria-busy`, and the waiting note is `role="status"` (N4).
+- A refused amount gets `aria-invalid` and its line is `role="alert"` (N16). A sheet that holds moves focus to **Try again**, or back to the first field (N18).
 - Month cells read everything their marks show: "Wednesday 14 October, today, selected, 2 events", "Saturday 20 March 2027, the wedding day, nothing".
 
 ### Reduced motion
@@ -1324,13 +1337,12 @@ How the prototype handles extremes (`?stress` on any screen).
 
 ## 10. Open questions
 
-Questions 1–23 are decided; see below. Three small ones came with the open needs (v1.1). The prototype follows the suggestion in each until the owner says otherwise.
+None open. Questions 1–26 are decided; see below. New questions go here and in `decisions.md`, and a change to anything decided bumps the version.
 
-24. **The short name under the icon** (N1). The brief's name is "Gregory & Bella's Wedding", which doesn't fit under a home-screen icon. Suggest **"Greg & Bella"**, matching the top bar. Or "G & B Wedding".
-25. **Ratings in the spreadsheet** (N5). On screen a rating is "4,8"; in the file it's 4.8 so spreadsheets read it as a number. Suggest keeping the point in the file. Or match the screen, at the cost of it reading as text in some spreadsheets.
-26. **After the wedding** (N7). Suggest the overview leads with what's still to settle until everything is paid, then the days married. Or keep the days married from the first day after, with what's left to settle as the context line.
-
-A change to anything decided bumps the version.
+### Decided (2026-10-16, with the open needs)
+24. **The short name under the icon** is **"Greg & Bella"**.
+25. **Ratings in the spreadsheet** use a decimal point (4.8), so spreadsheets read them as numbers.
+26. **After the wedding the count ends.** The planner is hardly used by then, so the overview shows "Married" and the day, with no figure; the budget's closing line reads "Married on …".
 
 ### Decided (2026-10-14)
 The owner's answers to the first 19 questions. All are built into the prototype and described above.

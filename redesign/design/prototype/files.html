@@ -232,6 +232,7 @@ if (S === "uploading") uploadSheet([
   { name: "Transfer receipt.jpg", mb: 2.1, state: "uploading", pct: 62, image: true, cat: "Receipt" },
   { name: "Scanned brochure.pdf", mb: 14.2, state: "shrinking", pct: 20 },
   { name: "All photos.zip", mb: 48 },
+  { name: "Venue floor plans, scanned.pdf", mb: 41, to: 23.6, state: "stillbig" },
   { name: "Invoice.pdf", mb: 0.3, state: "failed" },
 ]);
 if (S === "file") { const x = d.files.find((y) => y.folder === here) || d.files[0]; if (x) fileSheet(x); }

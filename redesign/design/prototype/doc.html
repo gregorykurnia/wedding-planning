@@ -66,8 +66,10 @@ function toolbar() {
 }
 
 /* ---------- saving (R5): unsaved, saving, saved, failed ---------- */
-let saveTimer = null, failing = S === "savefail" || S === "offline-edit";
+let saveTimer = null, failing = S === "savefail" || S === "offline-edit" || S === "leave-failed";
+let saveKind = "saved";
 function setSave(kind, extra) {
+  saveKind = kind;
   const el = V.$("#save"); if (!el) return;
   const msg = {
     saved: `Saved${extra ? " " + extra : ""}`,
@@ -79,6 +81,26 @@ function setSave(kind, extra) {
   el.className = "save-state " + kind; el.innerHTML = (kind === "saved" ? '<span class="tick" aria-hidden="true"></span>' : kind === "saving" ? '<span class="spin" aria-hidden="true"></span>' : kind === "unsaved" ? '<span class="dot" aria-hidden="true"></span>' : "") + msg;
   const r = V.$("#retry"); if (r) r.onclick = () => { failing = false; attempt(); };
 }
+/* N18: leaving the document (Back, the menu, the names) before the last change has saved.
+   Not saved yet or saving: it saves first, then goes. Couldn't save: it asks, so nothing is lost without knowing.
+   Closing the tab or window gets the browser's own "leave this page?" question. */
+addEventListener("beforeunload", (e) => { if (doc && ["unsaved", "saving", "failed"].includes(saveKind)) { e.preventDefault(); e.returnValue = ""; } });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[href]"); if (!a || !doc || a.closest(".proto") || a.getAttribute("href").startsWith("#") || a.target === "_blank" || a.closest("#ed")) return;
+  if (saveKind === "unsaved" || saveKind === "saving") {
+    e.preventDefault(); clearTimeout(saveTimer); if (saveKind === "unsaved") attempt();
+    const go = setInterval(() => { if (saveKind === "saved") { clearInterval(go); location.href = a.href; } if (saveKind === "failed") clearInterval(go); }, 100);
+    return;
+  }
+  if (saveKind === "failed") {
+    e.preventDefault();
+    V.openSheet(`<h2>Your last changes aren't saved</h2><p class="sub">${S === "offline-edit" ? "You're offline, so the planner couldn't save them." : "The planner couldn't save them."} If you leave now, they're lost. Stay and they're still here to save.</p>
+      <div class="acts"><button class="btn quiet" data-leave>Leave without them</button><button class="btn" data-stay>Stay and try again</button></div>`, (el) => {
+      V.$("[data-stay]", el).onclick = () => { V.closeSheet({ force: true }); failing = S === "offline-edit"; attempt(); };
+      V.$("[data-leave]", el).onclick = () => { saveKind = "left"; location.href = a.href; };
+    });
+  }
+}, true);
 function dirty() {
   if (V.DEMO) { setSave("demo"); return; }
   setSave("unsaved"); clearTimeout(saveTimer); saveTimer = setTimeout(attempt, 900);
@@ -301,7 +323,7 @@ function render(main) {
 
   /* starting states */
   if (V.DEMO) setSave("demo");
-  else if (S === "savefail" || S === "offline-edit") setSave("failed");
+  else if (S === "savefail" || S === "offline-edit" || S === "leave-failed") setSave("failed");
   else if (S === "unsaved") setSave("unsaved");
   else if (S === "saving") setSave("saving");
   else setSave("saved", doc.fresh ? "" : V.ago(doc.updated));
@@ -314,9 +336,10 @@ function render(main) {
 
 V.init({
   where: "Documents", section: "documents.html", noun: "this document",
-  states: [["unsaved", "Not saved yet"], ["saving", "Saving"], ["savefail", "Couldn't save"], ["offline-edit", "Went offline while writing"], ["table", "Cursor in a table"], ["formula", "Editing a total"], ["formula-error", "A total with a mistake"], ["sync-edit", "Bella is in it too"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
+  states: [["unsaved", "Not saved yet (try Back)"], ["leave-failed", "Leaving after a change didn't save"], ["saving", "Saving"], ["savefail", "Couldn't save"], ["offline-edit", "Went offline while writing"], ["table", "Cursor in a table"], ["formula", "Editing a total"], ["formula-error", "A total with a mistake"], ["sync-edit", "Bella is in it too"], ["loading", "Loading"], ["error", "Couldn't load"], ["offline", "Offline"], ["demo", "Demonstration mode"]],
   render,
 });
+if (S === "leave-failed" && doc) setTimeout(() => { const b = V.$("a.back"); if (b) b.click(); }, 300);
 </script>
 </body>
 </html>

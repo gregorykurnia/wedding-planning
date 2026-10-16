@@ -103,4 +103,4 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - New shared behaviour in `assets/app.js`: tab titles and icons, `?state=crash`, "isn't here" for unknown records, the self toast, undo that can't, confirms that couldn't finish, the wedding day and after, and the reminder rules.
   - Three new questions (24–26) with suggestions, built in the suggested way.
   - Not seen rendered (the browser is blocked here). Open `prototype/index.html`, then `identity.html` first.
-- Still open: N15–N18.
+- 2026-10-16: the owner answered 24–26 (after the wedding the count simply ends). **N15–N18 designed**; the guide and tokens are **v1.2 (2026-10-16)**. All 18 open needs are done and nothing is open. Still not seen rendered: click through `prototype/index.html`.
