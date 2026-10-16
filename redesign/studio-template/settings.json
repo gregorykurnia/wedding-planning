@@ -27,6 +27,8 @@
       "Edit(//Users/gregorykurnia/projects/wedding-planning/**)",
       "Read(//Users/gregorykurnia/projects/wedding-planning-lanes/**)",
       "Edit(//Users/gregorykurnia/projects/wedding-planning-lanes/**)",
+      "Read(~/.local/share/kilo/**)",
+      "Edit(~/.local/share/kilo/**)",
       "Read(~/.claude/history.jsonl)",
       "Read(~/.claude/projects/**)",
       "Read(~/.claude/file-history/**)",
@@ -50,6 +52,7 @@
       "denyRead": [
         "/Users/gregorykurnia/projects/wedding-planning",
         "/Users/gregorykurnia/projects/wedding-planning-lanes",
+        "~/.local/share/kilo",
         "~/.claude/history.jsonl",
         "~/.claude/projects",
         "~/.claude/file-history",
