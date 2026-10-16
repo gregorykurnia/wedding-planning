@@ -908,7 +908,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
-- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to three terminals, and the setup that needs first.
+- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
 
 **Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the "Real cost / changes" column and tick **Done** when the task is finished.
 

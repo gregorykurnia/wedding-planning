@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run --project model",
     "test:watch": "vitest --project model",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/test-e2e.mjs",
     "test:emulator": "node scripts/test-emulator.mjs",
     "migrate:backup": "tsx scripts/migrate/backup.ts",
     "migrate": "tsx scripts/migrate/run.ts"
