@@ -1,4 +1,4 @@
-Open needs: none. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -20,3 +20,4 @@ Open needs: none. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N1
 | N16 | When I type something into an amount that isn't an amount (words, a minus sign, or a figure too big to hold), I want to be told it can't be used and have the amount I had before kept, so that I never wonder why what I entered disappeared. | Step 7 | designed (v1.2) |
 | N17 | When I add a PDF that is too big and the planner shrinks it but it is still over the size we can keep, I want to be told that shrinking wasn't enough and how big it still is, so that I know to choose a smaller file and don't think the first message about size applies. | Step 7 | designed (v1.2) |
 | N18 | When I finish editing something and a change hasn't saved yet, I want Done to wait until it has saved, or to tell me what to do first, and when I dismiss what I'm editing (Escape, a tap outside it) while a change hasn't saved, I want to be told it was lost or be kept there, so that I never lose what I typed without knowing it. | Step 7 | designed (v1.2) |
+| N19 | When I add someone who pays and the planner can't finish adding them, I want to be told that they weren't added and be able to try again with the name I typed kept, so that I never wonder whether they were added or end up with them twice. | Step 7 | open |

@@ -3,8 +3,7 @@
 import { useRef, useState } from "react";
 import { addCategory, removeCategory, renameCategory } from "@/lib/data/categories";
 import { usePartnerName } from "@/lib/data/partner";
-import { mergeReads } from "@/lib/data/read";
-import { useCategories, useVendors } from "@/lib/data/vendors";
+import { useVendorsAndCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
 import {
   buildCategories,
@@ -50,7 +49,7 @@ export function CategoriesSheet({
 }) {
   const toast = useToast();
   const partner = usePartnerName().name;
-  const read = mergeReads(useVendors(), useCategories());
+  const read = useVendorsAndCategories();
   const [vendors, categories] = read.data ?? [[], { custom: [], list: buildCategories([]) }];
 
   const [mode, setMode] = useState<Mode>(null);

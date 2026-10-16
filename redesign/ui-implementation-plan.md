@@ -703,7 +703,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [x] |
 | F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [ ] |
 | F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [x] |
-| F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [ ] |
+| F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [x] |
 | F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
 | F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [ ] |
 | F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
@@ -718,11 +718,11 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | B4 parts | A booking | `PartDisclosure`, split | model `money.ts` (`totals`, `splitBooking`), write `splitBooking`, `addPart`, `removePart`, `mergeLastPart` | 1.4, 1.10, 4.6 | [ ] |
 | B5 committed, paid, to pay | Budget, Bookings | `Hero`, `Thread`, `.over` | model `money.ts` (`budget`, overpaid) | 1.4, 4.3 | [ ] |
 | B6 payments due | Payments due | `DueRow`, groups | model `money.ts` (`dues`, `urgency`, `SOON = 14`) | 1.4, 4.8 | [ ] |
-| B7 per funder | Who pays | funder rows | model `money.ts` (`byFunder`, Not assigned) | 1.4, 4.9 | [ ] |
+| B7 per funder | Who pays | funder rows | model `money.ts` (`byFunder`, Not assigned) | 1.4, 4.9 | [x] |
 | B8 what-if items | What-if | `WhatIfEntry`, sheet with parts | model `money.ts` (`whatIfTotals`, `projected`) | 1.4, 4.10 | [ ] |
 | B9 order bookings and what-ifs | Bookings, What-if | `OrderBy` | model `order.ts` (parts stay with their booking) | 1.4, 4.5, 4.10 | [ ] |
 | B10 who would pay | What-if | sheet funder select, carry lines | `hypotheticalItems.funder`, `subEntries[].funder` | 1.9, 4.10 | [ ] |
-| B11 manage funders | Who pays | `InlineRename`, `ConfirmSheet` | `funders` collection; write `removeFunder` (records → null, undo) | 1.8, 1.9, 4.9 | [ ] |
+| B11 manage funders | Who pays | `InlineRename`, `ConfirmSheet` | `funders` collection; write `removeFunder` (records → null, undo) | 1.8, 1.9, 4.9 | [x] |
 | B12 estimate apart from price | A booking, Bookings | estimate field and sentence, Order by difference | `vendors.estimate`, `venues.agreedPrice`; model `estimateDifference` | 1.4, 1.11, 4.6 | [ ] |
 | G1 guest details | Guests (guest sheet) | `Fields`, chips, `RsvpSwitch`, `Stepper` | `collections/guests.ts` | 4.24 | [ ] |
 | G2 event options | Guest sheet | chips (radiogroup) | model `labels.ts` (`eventType`) | 1.5, 4.24 | [ ] |
@@ -908,7 +908,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
-- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to three terminals, and the setup that needs first.
+- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
 
 **Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the "Real cost / changes" column and tick **Done** when the task is finished.
 
@@ -956,7 +956,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
 | 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | | [ ] |
 | 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | | [ ] |
-| 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | | [ ] |
+| 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | 4bbbc7e; real cost to log from `/cost`; the Haiku second build is a separate row | [x] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
 | 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
 | 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
@@ -987,7 +987,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | 47806c1, 14ef42e; the real-Cloudinary test passed once the server key had the Master Admin role (a Media Library User key can't delete). R13's screen comes with 4.19 | [x] |
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
-| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
+| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | built inside Task 4.11 (a8f26ea) on Sonnet 5.5, since the export needed them; `VENDOR_COLUMNS` and 9 model tests | [x] |
 | 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
 | 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
@@ -1275,7 +1275,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.8. **Prototype:** `payments.html`. Groups Late, next 14 days, then months; 60 at a time.
 
 #### Task 4.9: Who pays · Sonnet 5.5 High (calibration trial)
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · 4bbbc7e · real cost to log from `/cost`). The Sonnet build; the Haiku 5.5 Max second build and the comparison are still open. Gap G19/N19 (failed add line) added.
 - **Guide:** §5.9, §6.9. **Prototype:** `funders.html`. Add, rename (Enter, Escape, undo), remove (confirm naming costs, undo), Not assigned row linking to Bookings searched for "Not assigned". Build twice per §7.0.
 
 #### Task 4.10: What-if items · Sonnet 5.5 High
@@ -1421,7 +1421,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Waits for:** need N2. **Files:** `src/app/(veil)/new/not-found.tsx`, `error.tsx` (and `global-error.tsx` if the design covers it); read `not-found.md`, `error.md` in the Next docs.
 
 #### Task 6.6: Vendor CSV columns · Haiku 5.5 xHigh
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2, commit a8f26ea, inside Task 4.11 · real cost counted there). `VENDOR_COLUMNS` and `vendorsCsv` in `src/lib/model/vendors.ts` hold the guide's N5 columns in order (the file name comes from `exportFileName` in `csv.ts` and the settings names); `toCsv` gained `quoteAll`. Checked by `tests/model/vendors.test.ts` and the export e2e in `tests/e2e/emulator/veil-vendors.spec.ts`.
 - **Waits for:** need N5. **Files:** `src/lib/model/csv.ts` columns; filename `vendors-<first>-<second>.csv` from settings (guide §5.11).
 
 #### Task 6.7: Old-names check · Haiku 5.5 Max
@@ -1513,7 +1513,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G2 | **N2** | No design for an address that matches no screen, or for an unexpected crash. Today there is no `not-found.tsx` or `error.tsx` at all. A record that's gone is designed (§5.6, §5.17), but only as "removed by Bella". | 6.5 | designed (v1.1); build open |
 | G3 | **N3** | The design names the partner in toasts, banners and "removed by Bella", and settings lists "Greg, you" and "Bella". The code knows only the signed-in account's email; nothing links an account to one of the two names in settings (`yourName`, `partnerName`). Also undesigned: a change made by *me* on my other device arrives like a partner's change (same `activity` feed). | 2.7 (uses the second name until then) | designed (v1.1); build open |
 | G4 | **N4** | Google sign-in uses a popup (`signInWithPopup`). The popup can be closed, blocked by the browser, or fail (`auth/popup-closed-by-user`, `auth/popup-blocked`, `auth/cancelled-popup-request`, network). The design covers wrong password, not allowed and offline only. | 4.1 (that state only) | designed (v1.1); build open |
-| G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); build open |
+| G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); built (4.11) |
 | G6 | **N6** | The design has allowed, not yet allowed and turned off. Web push also has "not supported here": an iPhone only receives web push once the app is installed to the home screen (iOS 16.4+), and some browsers have no push at all (`'PushManager' in window` is false). | 6.2 (that state only) | designed (v1.1); build open |
 | G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | designed (v1.1); build open |
 | G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | designed (v1.1); build open |
@@ -1527,6 +1527,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | designed (v1.2); build open |
 | G17 | **N17** | Raised by Task 3.10. The guide words a file that is too large ('Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.') and a PDF being shrunk, but not a PDF that is still over the limit after shrinking: the first message would say only PDFs are shrunk, which is wrong for it. Built with a provisional line, 'Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.' (`stillTooLargeText` in `src/lib/model/uploads.ts`). Also undesigned and built plainly: the name, category and description in the upload sheet stay editable after a file is uploaded and save when the field is left (a failure keeps the text and offers Try again); and a refused or failed tile stays on the record until the upload sheet is opened again, which clears refused and finished entries. | 3.10 (follow-up), 4.19 | designed (v1.2); build open |
 | G18 | **N18** | Raised by Task 3.8. The guide says an edit sheet ends with Done, that a failed save keeps what was typed (§6.1, principle 7), and that Escape or a tap on the scrim closes a sheet (§4.14), but not what Done does while a change is unsaved, or what a dismissal does then. Built provisionally in `EditSheetActions` (`src/veil/shell/sheet.tsx`): Done is off while a change is saving or hasn't saved, and a save in flight holds Escape and the scrim (busy). A change that didn't save doesn't hold them, so Escape or a tap outside the sheet loses it. | 3.8; the edit sheets of 4.10, 4.12, 4.14, 4.15, 4.19, 4.20 and 4.24 | designed (v1.2); build open |
+| G19 | **N19** | Raised by Task 4.9. The guide gives a form that creates its Try again button (§6.1) but no line for a funder that wasn't added. Built provisionally in `src/veil/screens/who-pays/add-funder-row.tsx`: the booking form's wording without its reason, "The funder wasn’t added. What you typed is still here." (`ADD_FAILED` in `funder-text.ts`). The add keeps one id per row, so Try again never makes two funders. | 4.9 | open |
 
 ### 9.2 Questions for the owner: decided
 

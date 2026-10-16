@@ -12,7 +12,7 @@ import { vendorListItem, type VendorListItem } from "@/lib/model/vendors";
 import { isListedVendor } from "@/lib/model/search";
 import { logActivity } from "./activity";
 import { removeWithUndo, type Undoable } from "./undo";
-import { composeRead } from "./read";
+import { mergeStatus, readOf } from "./read";
 import { useSession } from "./session";
 import type { Loaded } from "./settings";
 import { create, update, type WriteOptions } from "./write";
@@ -51,7 +51,7 @@ export function useVendors(): Loaded<VendorListItem[]> {
     );
   }, [vendors.data, finalists.data, files.data]);
 
-  return composeRead(connection, [vendors, finalists, files], items);
+  return readOf(connection, [vendors, finalists, files], items);
 }
 
 export interface CategoriesData {
@@ -69,7 +69,19 @@ export function useCategories(): Loaded<CategoriesData> {
     () => ({ custom: custom.data, list: buildCategories(custom.data.map((c) => c.name)) }),
     [custom.data],
   );
-  return composeRead(connection, [custom], data);
+  return readOf(connection, [custom], data);
+}
+
+/** The vendors and the category list as one read, for the screen and the categories sheet. */
+export function useVendorsAndCategories(): Loaded<[VendorListItem[], CategoriesData]> {
+  const vendors = useVendors();
+  const categories = useCategories();
+  const status = mergeStatus(vendors, categories);
+  const data = useMemo<[VendorListItem[], CategoriesData] | null>(
+    () => (vendors.data && categories.data ? [vendors.data, categories.data] : null),
+    [vendors.data, categories.data],
+  );
+  return { status, data: status === "demo" ? null : data };
 }
 
 export interface NewVendor {

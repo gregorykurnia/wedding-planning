@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCategories, useVendors, setVendorKeen } from "@/lib/data/vendors";
-import { mergeReads } from "@/lib/data/read";
+import { setVendorKeen, useVendorsAndCategories } from "@/lib/data/vendors";
 import { useSettings } from "@/lib/data/settings";
 import { buildCategories } from "@/lib/model/categories";
 import { exportFileName } from "@/lib/model/csv";
@@ -52,7 +51,7 @@ const PAGE = 100;
 
 /** Vendors (guide §5.11, F6, F9, F11–F15, F23). */
 export function VendorsScreen() {
-  const read = mergeReads(useVendors(), useCategories());
+  const read = useVendorsAndCategories();
   return (
     <PageColumn width="wide">
       <ScreenState read={read} what="the vendors" onRetry={() => window.location.reload()}>
