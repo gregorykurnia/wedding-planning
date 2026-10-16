@@ -40,9 +40,9 @@ Replace `N` with the terminal's number (1 to 4).
 
 ## Terminal 4's first job: the calibration trial
 
-§7.0 says to build Task 4.9 twice from the same starting commit. Terminal 1 builds it with Sonnet 5.5 High from `19befeb`; Terminal 4 builds the second one at the same time, from the same commit, with Haiku 5.5 Max:
+§7.0 says to build Task 4.9 twice from the same starting commit. Terminal 1 builds it with Sonnet 5.5 High from `19befeb`; Terminal 4 builds the second one at the same time with Haiku 5.5 Max, from `3f47f9f`, which has the same app code as `19befeb` plus this file's four-lane split and the e2e lock:
 
-1. `t4`, then `git switch -c trial/4.9-haiku 19befeb`. This branch is thrown away: never merge it into `redesign` and never push it.
+1. `t4`, then `git switch -c trial/4.9-haiku 3f47f9f`. This branch is thrown away: never merge it into `redesign` and never push it.
 2. `/model` Haiku 5.5 Max. "Do Task 4.9 from `redesign/ui-implementation-plan.md` as the calibration trial's second build. Don't tick anything, don't merge, and don't push." Commit on the trial branch, then run `/cost` and note the real cost.
 3. `git switch lane/t4`. The trial is done; the comparison waits for Terminal 1's 4.9 to be in `redesign`.
 4. **Calibration result** (its own session in t4, Sonnet 5.5 High, once Terminal 1's 4.9 is in `redesign`): `git merge --ff-only redesign`, then compare both builds against `redesign/design/prototype/funders.html` in every state at 1440px and 390px (`git switch trial/4.9-haiku` and `npm run dev -- -p 3040` for one, `git switch lane/t4` for the other). Terminal 1's build stays in `redesign` either way, since later tasks build on it; the trial only decides the model. If Haiku's build is as good, move the single-screen Sonnet tasks that only display model data down to Haiku 5.5 Max and log it under §7.0, as the plan says. Either way, write the result and both real costs in the §7.0 "Calibration trial" row, tick it, and set the model in every ★ cell here. Deliver the ticks like any task (step 6 above), then `git branch -D trial/4.9-haiku`.
@@ -73,7 +73,7 @@ Phase 4 keeps each terminal on one part of the app, so two lanes rarely touch th
 | 🛑 [x] Phase 3 review · Opus 5.5 Medium | wait | wait | — |
 | **Phase 4: screens** | | | |
 | [x] Before 4.1 and 4.2: Phase 2 review S5 and S6, the top bar outside `main` and a page column (see `redesign/reviews/phase-3-review.md`) · Sonnet 5.5 High (done 2026-10-16, lane t1, on Opus 5.5) | | | |
-| [ ] 4.9 Who pays · Sonnet 5.5 High | [ ] 4.11 Vendors · Sonnet 5.5 High | [ ] 4.1 Sign in · Sonnet 5.5 High | [ ] 4.9 second build, calibration trial, on `trial/4.9-haiku` from `19befeb` (see above) · Haiku 5.5 Max |
+| [ ] 4.9 Who pays · Sonnet 5.5 High | [ ] 4.11 Vendors · Sonnet 5.5 High | [ ] 4.1 Sign in · Sonnet 5.5 High | [ ] 4.9 second build, calibration trial, on `trial/4.9-haiku` from `3f47f9f` (see above) · Haiku 5.5 Max |
 | [ ] 4.4 Record a payment · Sonnet 5.5 High | [ ] Follow-up: N13 and N14 in 2.6 and 3.8, N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 · Sonnet 5.5 High | [ ] 4.2 Overview · Sonnet 5.5 High | [ ] 4.17 Editor core (L) · Opus 5.5 High |
 | [ ] 4.3 Budget ★ · Haiku 5.5 Max | [ ] 4.12 A vendor · Sonnet 5.5 High | [ ] 4.20 Schedule · Sonnet 5.5 High | [ ] 4.9 calibration result (after Terminal 1's 4.9 is in `redesign`; see above) · Sonnet 5.5 High |
 | [ ] 4.5 Bookings ★ · Haiku 5.5 Max | [ ] 4.13 Shortlist ★ · Haiku 5.5 Max | [ ] 4.21 Month ★ · Haiku 5.5 Max | [ ] 4.18 Tables and formulas (L, after 4.17) · Opus 5.5 Medium |
