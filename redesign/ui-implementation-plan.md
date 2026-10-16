@@ -938,7 +938,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.2 Next card, after line, doors | Haiku 5.5 Max | $0.21 | Port | a977160; real cost to log from `/cost`; the doors' row padding is the 16px token, where the prototype has 15px | [x] |
 | 3 | 3.3 Buttons, links, chips, focus chips | Haiku 5.5 Max | $0.21 | Port | d250864, 9542b82; real cost to log from `/cost`; the local button copies in the confirm sheet, screen states, messages and the add button now use Btn | [x] |
 | 3 | 3.4 Fields and save-as-you-go | Sonnet 5.5 High | $0.88 | Failure and retry behaviour on top of the port | 2026-10-15 (lane t1, 8295ea0); a money field's reply to text that isn't an amount is G16/N16; real cost to log from `/cost` | [x] |
-| 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
+| 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | 9383838; 35 model and 9 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | | [ ] |
 | 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
@@ -1191,7 +1191,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** a gallery form saves to the emulator, and a forced failure (5.1's harness, or a stubbed save in the gallery) keeps the input.
 
 #### Task 3.5: Ledger rows and row states (L) · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t2, commit 9383838 · real cost to log from `/cost`). The rows are in `parts/rows/`: `BookingEntry`, `WhatIfEntry`, `VendorRow`, `DueRow`, `DocumentRow`, `FileRow`, `FolderRow` and `Ledger`, with their words in `ledger-text.ts`. The guest row shell is 3.12's `GuestRow`. Gallery section 3.5 shows every row type and each state from fake data; the completed, cancelled, done, next and failed states come from the 3.11 and 3.12 rows. The keen heart, stage thread and WhatsApp link are slots on `VendorRow` until 3.9. Vendor and due rows have no hover wash, as the prototype's.
 - **Read:** guide §4.7; prototype `bookings.html`, `whatif.html`, `vendors.html`, `payments.html`, `documents.html`, `files.html`, `guests.html` (row markup only), `veil.css` (`.ledger`, `.entry`, `.vrow`, `.due`, `.date-card`, `.flash`, `.ruled`), the screens' `<style>` blocks (`.drow`, `.frow`, `.grow`).
 - **Done when:** each row type and each row state (flash, ruled, completed, cancelled, done, next, failed, empty meta) renders with stress names.
 
