@@ -57,7 +57,7 @@ Gallery (Task 3.0):
 - **S13.** Nothing tests that the gallery is absent when `NEXT_PUBLIC_VEIL_GALLERY` is off (it was checked by hand in 3.0). Add a model test of `next.config.ts`'s rewrite, and confirm the variable isn't set in Vercel's production environment.
 
 Carried from the Phase 2 review, still open:
-- **Phase 2 S5 and S6** (the top bar inside `main`, no shared page column) were moved to Task 3.1, which didn't take them. **Do them before Tasks 4.1 and 4.2**, the first screens.
+- **Phase 2 S5 and S6** (the top bar inside `main`, no shared page column) were moved to Task 3.1, which didn't take them. **Do them before Tasks 4.1 and 4.2**, the first screens. *Done 2026-10-16 (lane t1): the gate draws the top bar and the demonstration banner before `main`, and screens sit in `PageColumn` (`src/veil/shell/page-column.tsx`).*
 - Phase 2 S1–S4 (session re-probe, partner and presence clocks, a removal the partner undoes) are unchanged.
 
 ## Minor
@@ -93,7 +93,7 @@ Carried from the Phase 2 review, still open:
 The review rejects Tasks 3.3 (B2), 3.4 (B1) and 3.12 (B3, B4). Their fixes move one row up: 3.3 from Haiku 5.5 Max to **Sonnet 5.5 High**, 3.4 and 3.12 from Sonnet 5.5 High to **Opus 5.5 Medium**. All three were fixed in this session on Opus 5.5 High.
 
 Suggested follow-up sessions, before the Phase 4 tasks that use them:
-1. Phase 2 S5 and S6 (layout slot for the top bar, a page column part) · Sonnet 5.5 High. Before 4.1 and 4.2.
+1. ~~Phase 2 S5 and S6 (layout slot for the top bar, a page column part) · Sonnet 5.5 High. Before 4.1 and 4.2.~~ Done 2026-10-16.
 2. S1–S3, S5–S7 (sheets, notes and confirms) · Opus 5.5 Medium, since it's save and focus timing. Before 4.6, 4.9 and the other edit-sheet screens; S7 after N18 is designed.
 3. S4 with the N16 follow-up (money input); S9 with the N17 follow-up (uploads).
 4. S8, S10–S12 (focus and local copies) · Sonnet 5.5 High, or inside the screen tasks that first use them (4.11, 4.20, 4.23).

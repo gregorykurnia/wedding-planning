@@ -3,7 +3,7 @@ import { withElementIds, type Element } from "./array-ops";
 import { requireDb } from "./db";
 import { changeMany, listIds } from "./many";
 import { patchWithUndo, type Undoable } from "./undo";
-import { guarded, stamp, type WriteOptions } from "./write";
+import { create, guarded, newId, stamp, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
@@ -86,4 +86,25 @@ export async function renameFunderWithUndo(funderId: string, name: string, opts:
   const trimmed = name.trim();
   if (!trimmed) throw new WriteError("failed", "A funder needs a name");
   return patchWithUndo("funders", funderId, (data) => (data.name === trimmed ? null : { patch: { name: trimmed } }), opts);
+}
+
+/** A funder id made on this device, so a retried add writes the same document (guide §6.1). */
+export const newFunderId = (opts: WriteOptions = {}) => newId("funders", opts);
+
+/**
+ * Adds a funder with the id from `newFunderId`, at the end of the list, with
+ * undo (guide §6.2). Adding the same id again rewrites the same document, so
+ * Try again after a timeout never makes two. Undo is `removeFunder`, which also
+ * moves any cost the funder was given in the few seconds since to Not assigned.
+ */
+export async function addFunderWithUndo(
+  id: string,
+  name: string,
+  order: number,
+  opts: WriteOptions = {},
+): Promise<Undoable> {
+  const trimmed = name.trim();
+  if (!trimmed) throw new WriteError("failed", "A funder needs a name");
+  await create("funders", { name: trimmed, order }, { ...opts, id });
+  return { undo: () => removeFunder(id, opts).then(() => undefined) };
 }

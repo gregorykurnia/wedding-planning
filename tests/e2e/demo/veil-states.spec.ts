@@ -54,13 +54,10 @@ test("offline with data keeps the data on screen", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "You’re offline" })).toHaveCount(0);
 });
 
-test("demonstration mode shows the gold banner above the empty data set", async ({ page }) => {
+// The gold banner is the shell's, above main; veil-frame.spec.ts checks it.
+test("demonstration mode shows the empty data set", async ({ page }) => {
   await openDemos(page);
   await choose(page, "Demonstration mode");
-  // The gallery also shows a static copy of this banner further down, so take the first.
-  await expect(
-    page.getByText("Demonstration mode. The planner", { exact: false }).first(),
-  ).toBeVisible();
   await expect(page.getByText("The empty data set.")).toBeVisible();
 });
 

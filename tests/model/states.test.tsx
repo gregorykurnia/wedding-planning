@@ -1,9 +1,11 @@
+import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { Loaded } from "@/lib/data/settings";
 import { Message, type MessageKind } from "@/veil/parts/message/message";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
-import { Banner, Problem } from "@/veil/shell/banner";
+import { Banner, DemoBanner, Problem } from "@/veil/shell/banner";
+import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
 
 // Task 2.5: the messages, banners, skeleton and screen states, checked as
@@ -74,10 +76,10 @@ describe("screen states", () => {
     expect(show({ status: "error", data: "Cached" })).toContain("<p>Cached</p>");
   });
 
-  it("demonstration mode shows the banner above the empty data set", () => {
+  // The banner is the shell's, drawn above main (Phase 2 review S5).
+  it("demonstration mode shows the empty data set, without a banner of its own", () => {
     const html = show({ status: "demo", data: null });
-    expect(html).toContain("Demonstration mode. The planner isn’t connected");
-    expect(html).toContain("<p>The empty set</p>");
+    expect(html).toBe("<p>The empty set</p>");
   });
 
   it("ready shows the screen with its data", () => {
@@ -98,9 +100,39 @@ describe("banners, problem boxes and the skeleton", () => {
     expect(renderToStaticMarkup(<Banner inline>Box</Banner>).startsWith("<p")).toBe(true);
   });
 
+  it("the demonstration banner is the gold pill with the guide's sentence", () => {
+    const html = renderToStaticMarkup(<DemoBanner />);
+    expect(html.startsWith("<div")).toBe(true);
+    expect(html).toContain(
+      "Demonstration mode. The planner isn’t connected to its database yet, so there’s nothing to show and changes aren’t saved.",
+    );
+  });
+
   it("the skeleton is one hidden block of seven shapes", () => {
     const html = renderToStaticMarkup(<Shimmer />);
     expect(html.match(/<div/g)).toHaveLength(8);
     expect(html).toContain('aria-hidden="true"');
+  });
+});
+
+// Phase 2 review S6: the page column every screen sits in.
+describe("page column", () => {
+  const classOf = (node: ReactElement) =>
+    renderToStaticMarkup(node).match(/^<div class="([^"]*)">/)?.[1].split(" ") ?? [];
+
+  it("is one div around the screen, with the default measure unless asked", () => {
+    expect(renderToStaticMarkup(<PageColumn><p>Screen</p></PageColumn>)).toMatch(
+      /^<div class="[^"]+"><p>Screen<\/p><\/div>$/,
+    );
+    expect(classOf(<PageColumn>x</PageColumn>)).toHaveLength(1);
+  });
+
+  it("adds one class for each wider measure, each its own", () => {
+    const widths = (["wide", "doc", "table"] as const).map((width) => {
+      const classes = classOf(<PageColumn width={width}>x</PageColumn>);
+      expect(classes).toHaveLength(2);
+      return classes[1];
+    });
+    expect(new Set(widths).size).toBe(3);
   });
 });

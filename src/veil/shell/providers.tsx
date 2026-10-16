@@ -5,12 +5,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
-import { safeNext, veilHref } from "../href";
+import { safeNext, sectionOf, showsTopBar, veilHref } from "../href";
+import { DemoBanner } from "./banner";
 import { BusyProvider, useBusy } from "./busy";
 import { FlashProvider } from "./flash";
+import { PageColumn } from "./page-column";
 import { PartnerNewsListener } from "./partner-news";
 import { SheetHost } from "./sheet";
 import { ToastHost } from "./toasts";
+import { TopBar } from "./top-bar";
 
 const HOME = veilHref("/");
 const SIGN_IN = veilHref("/sign-in");
@@ -53,6 +56,10 @@ function useServiceWorker() {
  * around) go to sign-in, with the address they wanted kept in `next`. Signed-in
  * visitors on sign-in go on to it. Nothing behind the gate renders until the
  * session is known, and `main` stays `aria-busy` meanwhile.
+ *
+ * Once admitted, the top bar and (in demonstration mode) the gold banner come
+ * first, outside `main`, as the prototype has them: the top bar is the page's
+ * banner landmark, and a loading screen's `aria-busy` doesn't cover the menu.
  */
 function Gate({ children }: { children: ReactNode }) {
   const session = useSession();
@@ -82,10 +89,15 @@ function Gate({ children }: { children: ReactNode }) {
   }, [target, router]);
 
   if (resolving || target !== null) return <Busy />;
+  const framed = showsTopBar(pathname);
   return (
-    <main id="main" tabIndex={-1} aria-busy={busy || undefined}>
-      {children}
-    </main>
+    <>
+      {framed && <TopBar section={sectionOf(pathname)} />}
+      {framed && session.status === "demo" && <DemoBanner />}
+      <main id="main" tabIndex={-1} aria-busy={busy || undefined}>
+        {children}
+      </main>
+    </>
   );
 }
 
@@ -94,7 +106,9 @@ function Busy() {
   return (
     <main id="main" aria-busy="true">
       <p className="sr">Checking who’s signed in</p>
-      <Shimmer column />
+      <PageColumn>
+        <Shimmer />
+      </PageColumn>
     </main>
   );
 }

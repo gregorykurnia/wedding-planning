@@ -20,7 +20,7 @@ import {
   splitBooking,
   splitWhatIf,
 } from "@/lib/data/bookings";
-import { removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
+import { addFunderWithUndo, newFunderId, removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
 import { removeCategory, renameCategory } from "@/lib/data/categories";
 import { bookFinalist, copyToShortlist, moveFinalistToVendors, removeFinalist } from "@/lib/data/shortlist";
 import { moveFile, moveFolder } from "@/lib/data/files";
@@ -382,6 +382,22 @@ describe("funders", () => {
     await renamed.undo();
     expect((await read("funders", "Bella Fam"))?.name).toBe("Bella Fam");
     await expect(renameFunderWithUndo("Bella Fam", " ", g())).rejects.toMatchObject({ code: "failed" });
+  });
+
+  it("adds a funder under an id made first, so a retry never makes two, and undo removes it", async () => {
+    const id = newFunderId(g());
+    const added = await addFunderWithUndo(id, " Tante Lily ", 4, g());
+    expect(await read("funders", id)).toMatchObject({ name: "Tante Lily", order: 4, createdBy: expect.any(String) });
+    // Try again after a timeout writes the same document.
+    await addFunderWithUndo(id, "Tante Lily", 4, g());
+    expect((await getDocs(collection(gregory.db, "funders"))).size).toBe(1);
+    await expect(addFunderWithUndo(newFunderId(g()), "  ", 5, g())).rejects.toMatchObject({ code: "failed" });
+
+    // A cost given to her in the few seconds since moves to Not assigned with her.
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ funder: id }));
+    await added.undo();
+    expect(await exists("funders", id)).toBe(false);
+    expect((await read("vendors", "v1"))?.funder).toBeNull();
   });
 });
 

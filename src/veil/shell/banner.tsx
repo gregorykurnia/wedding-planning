@@ -22,6 +22,19 @@ export function Banner({ tone = "gold", inline = false, children }: BannerProps)
   return inline ? banner : <div className={styles.wrap}>{banner}</div>;
 }
 
+/**
+ * The demonstration-mode banner directly under the top bar (guide §4.1, §6.4).
+ * The shell draws it on every screen, so screens don't.
+ */
+export function DemoBanner() {
+  return (
+    <Banner>
+      Demonstration mode. The planner isn’t connected to its database yet, so there’s nothing
+      to show and changes aren’t saved.
+    </Banner>
+  );
+}
+
 type ProblemProps = {
   /** Rose for errors; calm (gold) for signed-out, offline and not-connected notes. */
   tone?: "rose" | "calm";

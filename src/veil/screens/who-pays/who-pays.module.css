@@ -1,0 +1,124 @@
+/* Guide §5.9. Ported from the prototype's .funders and .funder (veil.css); colours, sizes and spacing come from tokens. The row's 22px padding has no token, so it is 20px plus the hairline step. */
+
+.funders {
+  list-style: none;
+  margin: calc(var(--space-8) + var(--space-1)) 0 0; /* 40px, as the prototype */
+  padding: 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+.funder {
+  padding: calc(var(--space-5) + var(--space-hair)) var(--space-row-x);
+  border-bottom: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-6);
+  align-items: baseline;
+}
+
+.who {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-row);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.unassigned .who {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.rest {
+  font-family: var(--font-display);
+  font-size: var(--text-amount);
+  font-weight: var(--weight-display);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.over {
+  color: var(--accent-attention-text);
+}
+
+.meta {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.metaRight {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The thread fills the row under the figures. */
+.thread {
+  grid-column: 1 / -1;
+}
+
+.acts {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--gap-actions);
+  font-size: var(--text-label);
+  margin-top: var(--space-2);
+}
+
+/* The new funder's row: an input, then Add funder and Cancel. */
+.adding {
+  grid-template-columns: 1fr;
+}
+
+.addInput {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  border: 0;
+  border-bottom: 1px solid var(--accent-attention);
+  background: none;
+  outline: none;
+  padding: var(--space-hair) 0;
+}
+
+.addInput::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.line {
+  grid-column: 1 / -1;
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+.failed {
+  color: var(--accent-attention-text);
+}
+
+.addRow {
+  margin: calc(var(--space-5) + var(--space-hair)) 0 0;
+}
+
+.note {
+  margin: calc(var(--space-3) + var(--space-hair)) 0 0;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.note b {
+  font-weight: var(--weight-emphasis);
+  color: var(--color-text);
+}
+
+.centred {
+  text-align: center;
+}
+
+@media (max-width: 760px) { /* --bp-phone */
+  .who {
+    font-size: var(--text-row-xl); /* 23px in the prototype; the nearest token, ties going up */
+  }
+}

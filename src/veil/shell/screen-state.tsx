@@ -5,7 +5,6 @@ import type { Loaded } from "@/lib/data/settings";
 import { Btn } from "@/veil/parts/actions/btn";
 import { Message } from "@/veil/parts/message/message";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
-import { Banner } from "./banner";
 import { useBusyClaim } from "./busy";
 import styles from "./screen-state.module.css";
 
@@ -28,6 +27,7 @@ type ScreenStateProps<T> = {
  * What a screen shows while its read is loading, has failed, is offline, or is
  * in demonstration mode (guide §5 and §6.4 to §6.6). A whole-screen message
  * only appears when no data has arrived; data already on screen stays there.
+ * The demonstration banner isn't here: the shell draws it above `main`.
  */
 export function ScreenState<T>({ read, what, onRetry, children }: ScreenStateProps<T>) {
   const { status, data } = read;
@@ -69,17 +69,7 @@ export function ScreenState<T>({ read, what, onRetry, children }: ScreenStatePro
       </Message>
     );
   }
-  return (
-    <>
-      {status === "demo" ? (
-        <Banner>
-          Demonstration mode. The planner isn’t connected to its database yet, so there’s
-          nothing to show and changes aren’t saved.
-        </Banner>
-      ) : null}
-      {children(data)}
-    </>
-  );
+  return <>{children(data)}</>;
 }
 
 function capitalise(text: string): string {

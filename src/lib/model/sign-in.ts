@@ -44,7 +44,7 @@ export const PROBLEM_LINES: Record<SignInProblemKind, ProblemLine> = {
     tone: "rose",
     text: "Google couldn’t finish signing you in. Nothing was changed. Try again in a moment, or sign in with your email below.",
   },
-  // Not in the guide (G19/N19): too many tries, a disabled account, anything unexpected.
+  // Not in the guide (G20/N20): too many tries, a disabled account, anything unexpected.
   other: {
     tone: "rose",
     text: "Couldn’t sign you in. Nothing was changed. Try again in a moment, or continue with Google.",
