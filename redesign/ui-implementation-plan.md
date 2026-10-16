@@ -941,7 +941,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.5 Ledger rows and row states (L) | Haiku 5.5 Max | $0.42 | Port, many variants | | [ ] |
 | 3 | 3.6 Parts, menu cards, tally | Haiku 5.5 Max | $0.21 | Port | ca91830; 26 model and 6 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.7 Search, ordering, filters, count line, paging | Haiku 5.5 Max | $0.21 | Port; logic comes from the model | b2ac54d; 20 model and 8 demo e2e tests; real cost to log from `/cost` | [x] |
-| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | | [ ] |
+| 3 | 3.8 Sheet patterns, confirm variants, banners, problem boxes | Haiku 5.5 Max | $0.21 | Port | 0ed5446; 15 model and 7 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | 3.9 Stage thread, keen heart, WhatsApp, install card, notification state | Haiku 5.5 Max | $0.21 | Port | | [ ] |
 | 3 | 3.10 File tiles, upload sheet and pipeline | Sonnet 5.5 High | $0.88 | Upload, shrink and failure states with real Cloudinary calls; reference `uploadSheet()` | 2026-10-15 (lane t1, commit 9889de6); a PDF still too big after shrinking, post-upload edits and lingering refused tiles are G17/N17; real cost to log from `/cost` | [x] |
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
@@ -1205,7 +1205,7 @@ Built in a dev-only gallery so every variant can be seen and screenshotted befor
 - **Done when:** components take the model's ordering and filter functions as props; focus stays in search while results change.
 
 #### Task 3.8: Sheet patterns, confirm variants, banners and problem boxes · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-16 · lane t3, commit 0ed5446 · real cost to log from `/cost`). `CreateSheetActions` and `EditSheetActions` (`shell/sheet.tsx`), `InlineConfirm`, `BlockedNotice` and `useBlocked()` (`shell/confirm.tsx`), and busy support on `TextLink`. Done waits until every change has saved, and a save in flight holds Escape and the scrim (provisional, G18/N18). The banners and problem boxes are unchanged from 2.5 and shown in gallery section 3.8.
 - **Read:** guide §4.14 (create vs edit), §4.15 (inline confirm, blocked), §4.17; prototype `vendors.html?state=categories`, `files.html` (blocked folder), `booking-new.html?state=failed`, `signin.html` (`.problem`).
 - **Done when:** create and edit sheet frames, inline confirm, blocked notice, gold, rose and calm boxes render.
 
