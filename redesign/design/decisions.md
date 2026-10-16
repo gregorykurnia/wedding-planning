@@ -263,3 +263,6 @@ Same day, at the owner's request ("go do the N15-N18 too"). `design-guide.md` an
 - **An add sheet with typed text,** dismissed: it stays, says it isn't added, and offers "Close without adding it". Cancel still closes at once.
 - **Documents:** leaving while "Not saved yet" or "Saving" saves first, then goes; after a failed save it asks (Leave without them · Stay and try again); closing the tab gets the browser's question.
 - `schedule.html?state=done-unsaved`, `doc.html?id=kebun-meeting&state=leave-failed`, and `?state=savefail` on any screen with editing sheets.
+
+### Freeze of v1.2 (2026-10-16)
+- **The owner approved the design** after clicking through the prototype ("it's all good"). `design-guide.md` and `tokens.css` are frozen at **v1.2 (2026-10-16)**, covering the inventory and open needs N1–N18. Later changes bump the version and are logged here.

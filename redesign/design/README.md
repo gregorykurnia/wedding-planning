@@ -104,3 +104,4 @@ Open `prototype/index.html` in a browser: it lists every screen and state. The d
   - Three new questions (24–26) with suggestions, built in the suggested way.
   - Not seen rendered (the browser is blocked here). Open `prototype/index.html`, then `identity.html` first.
 - 2026-10-16: the owner answered 24–26 (after the wedding the count simply ends). **N15–N18 designed**; the guide and tokens are **v1.2 (2026-10-16)**. All 18 open needs are done and nothing is open. Still not seen rendered: click through `prototype/index.html`.
+- 2026-10-16: **v1.2 approved and frozen** by the owner.
