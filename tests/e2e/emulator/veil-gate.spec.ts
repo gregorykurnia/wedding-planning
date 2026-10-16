@@ -27,7 +27,7 @@ test("an allowed account signs in to /new, and signing out says so", async ({ pa
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/new/sign-in");
-  await expect(page.getByText("You’ve signed out.")).toBeVisible();
+  await expect(page.getByText("You’ve signed out. Nothing is shown on this device")).toBeVisible();
 });
 
 test("a third account is signed out and told it isn't allowed", async ({ page }) => {
@@ -36,9 +36,11 @@ test("a third account is signed out and told it isn't allowed", async ({ page })
 
   await page.goto("/new/sign-in");
   await signInAt(page, email, "test-password-3");
-  await expect(
-    page.getByText(`${email} isn’t one of the two accounts that can open this planner.`),
-  ).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.locator("main").getByRole("alert")).toContainText(
+    `You’re signed in as ${email}, which isn’t one of the two accounts that can open this planner.`,
+    { timeout: COMPILE_TIMEOUT },
+  );
+  await expect(page.getByRole("button", { name: "Use a different Google account" })).toBeVisible();
   await expect(page).toHaveURL("/new/sign-in");
 
   // Signed out for real: a reload doesn't let the account in.
