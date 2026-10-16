@@ -91,14 +91,14 @@ test("a forced failure keeps the input and writes nothing, and Try again writes 
   const second = screen.getByLabel("Second name", { exact: true });
   await expect(second).toHaveValue("Bella");
 
-  await page.getByRole("group", { name: "Demo switches" }).getByLabel("Make saves fail").check();
+  await page.locator("#section-3-4").getByRole("group", { name: "Demo switches" }).getByLabel("Make saves fail").check();
   await second.fill("Izzy");
   await second.blur();
   await expect(line).toHaveText("1 change not saved");
   await expect(second).toHaveValue("Izzy");
   expect((await readSettings()).partnerName).toBe("Bella");
 
-  await page.getByRole("group", { name: "Demo switches" }).getByLabel("Make saves fail").uncheck();
+  await page.locator("#section-3-4").getByRole("group", { name: "Demo switches" }).getByLabel("Make saves fail").uncheck();
   await screen.getByRole("button", { name: "Try again" }).click();
   await expect(line).toHaveText("Saved");
   await expect.poll(async () => (await readSettings()).partnerName).toBe("Izzy");

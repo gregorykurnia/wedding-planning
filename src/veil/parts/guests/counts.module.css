@@ -1,0 +1,84 @@
+/*
+ * Headcounts and Both sides (guide §4.29; the prototype guests.html's .counts,
+ * .sides and .unclear). The cards use the shared card look. The prototype's
+ * 18px gap between the cards, 19px side titles and 6px figure gap have no token
+ * and take the nearest one, as other ports do.
+ */
+
+.counts {
+  margin-top: var(--space-8);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.card {
+  padding: var(--space-card-y) var(--space-card-x);
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-card));
+  -webkit-backdrop-filter: blur(var(--blur-card));
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-card);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-row-lg);
+  font-weight: var(--weight-display);
+  text-align: center;
+}
+
+.sub {
+  margin-top: var(--space-hair);
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  text-align: center;
+}
+
+.rule {
+  background: var(--color-rule);
+}
+
+.side {
+  font-family: var(--font-display);
+  font-size: var(--text-row-sm);
+  font-weight: var(--weight-display);
+  font-style: italic;
+  color: var(--accent-gold-text);
+}
+
+.figure {
+  margin-top: var(--space-2);
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+}
+
+.figure b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-display);
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.unclear {
+  margin-top: var(--space-3);
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .counts {
+    grid-template-columns: 1fr;
+  }
+}

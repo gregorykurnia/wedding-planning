@@ -7,6 +7,7 @@ import { compressPdf } from "@/lib/compress-pdf";
 import { savedName, type FileFields } from "@/lib/model/uploads";
 import { legacyPlace, recordRef, sameRecord, type RecordRef } from "./adapters/files";
 import { isObject } from "./adapters/common";
+import { logActivity } from "./activity";
 import { addElement, mutateArray } from "./array-ops";
 import { requireDb, uidOf } from "./db";
 import { useSession } from "./session";
@@ -91,41 +92,55 @@ async function foldersWhere(database: Firestore, field: string, value: string | 
   }));
 }
 
-/** Two uploads started together for the same record both need its folder; the second waits for the first to make it. */
+/**
+ * Uploads started together that need the same folder share one lookup, so the
+ * folder is made once: one per root ("Vendors"), one per record, one per part.
+ */
 const folderWork = new Map<string, Promise<string>>();
+
+function once(key: string, work: () => Promise<string>): Promise<string> {
+  const running = folderWork.get(key);
+  if (running) return running;
+  const started = work().finally(() => folderWork.delete(key));
+  folderWork.set(key, started);
+  return started;
+}
 
 /**
  * The folder a record's files go in (guide §4.20): `Files › Vendors › <name>`,
  * and for a part `… › <part name>`, each made the first time it's needed. A
  * folder is found by what it belongs to (`recordRef`), not by its name, so one
  * that was moved or renamed in Files, or made by the migration, is still the one.
+ * A part's folder goes through its record's, so a first upload to the booking
+ * and one to its part, started together, don't make the record's folder twice.
  */
 export function recordFolder(
   ref: RecordRef,
   path: readonly string[],
   opts: WriteOptions = {},
 ): Promise<string> {
-  const key = `${ref.kind}:${ref.id}:${ref.partId ?? ""}`;
-  const running = folderWork.get(key);
-  if (running) return running;
-  const work = (async () => {
-    const database = requireDb(opts.db);
-    const make = (name: string, parentId: string | null, owner: RecordRef | null) =>
-      create(FOLDERS, { name, parentId, ...(owner ? { recordRef: owner } : {}) }, opts);
+  const make = (name: string, parentId: string | null, owner: RecordRef | null) =>
+    create(FOLDERS, { name, parentId, ...(owner ? { recordRef: owner } : {}) }, opts);
+  const ownedBy = async (owner: RecordRef) =>
+    (await foldersWhere(requireDb(opts.db), "recordRef.id", owner.id)).find((f) => f.ref && sameRecord(f.ref, owner))?.id;
 
-    const roots = await foldersWhere(database, "parentId", null);
-    const rootId = roots.find((f) => !f.ref && f.name === path[0])?.id ?? (await make(path[0], null, null));
-
-    const ownRef: RecordRef = { kind: ref.kind, id: ref.id };
-    const owned = (await foldersWhere(database, "recordRef.id", ref.id)).filter((f) => f.ref && sameRecord(f.ref, ownRef));
-    const recordId = owned[0]?.id ?? (await make(path[1], rootId, ownRef));
-    if (!ref.partId) return recordId;
-
-    const parts = (await foldersWhere(database, "recordRef.id", ref.id)).filter((f) => f.ref && sameRecord(f.ref, ref));
-    return parts[0]?.id ?? (await make(path[2], recordId, ref));
-  })().finally(() => folderWork.delete(key));
-  folderWork.set(key, work);
-  return work;
+  if (ref.partId) {
+    return once(`${ref.kind}:${ref.id}:${ref.partId}`, async () => {
+      const recordId = await recordFolder({ kind: ref.kind, id: ref.id }, path.slice(0, 2), opts);
+      return (await ownedBy(ref)) ?? (await make(path[2], recordId, ref));
+    });
+  }
+  const own: RecordRef = { kind: ref.kind, id: ref.id };
+  return once(`${ref.kind}:${ref.id}:`, async () => {
+    const found = await ownedBy(own);
+    if (found) return found;
+    // The root is only looked for (and made) when the record's folder is new.
+    const rootId = await once(`root:${path[0]}`, async () => {
+      const roots = await foldersWhere(requireDb(opts.db), "parentId", null);
+      return roots.find((f) => !f.ref && f.name === path[0])?.id ?? (await make(path[0], null, null));
+    });
+    return make(path[1], rootId, own);
+  });
 }
 
 type LegacyFile = { id: string; name: string; url: string };
@@ -190,6 +205,8 @@ export async function saveUploadedFile(request: SaveRequest, opts: WriteOptions 
     { ...opts, id: docId },
   );
   if (target.kind === "record") await appendToLegacyList(target.ref, { id: docId, name, url: asset.url }, opts);
+  // The partner's "Bella uploaded …" (guide §6.3). Never fails the upload.
+  void logActivity("file.uploaded", { name }, { kind: "file", id: docId }, opts);
   return docId;
 }
 

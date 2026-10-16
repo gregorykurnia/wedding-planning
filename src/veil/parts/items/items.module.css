@@ -105,6 +105,15 @@ button.handle:focus-visible {
   box-shadow: var(--ring-field-failed);
 }
 
+/* A one-tap change that didn't save rings its control, as the RSVP switch is ringed. */
+.ringed {
+  box-shadow: 0 0 0 1px var(--accent-attention);
+}
+
+.evs.ringed {
+  border-radius: var(--radius-input-sm);
+}
+
 .err {
   grid-column: 2 / -1;
   display: flex;

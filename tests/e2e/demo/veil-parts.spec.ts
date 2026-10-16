@@ -52,7 +52,8 @@ test("the preferred option says so in gold; leaning towards another moves it", a
   await silver.getByRole("button", { name: "Lean towards this one" }).click();
   await expect(silver.getByText("The one we’re leaning towards")).toBeVisible();
   await expect(gold.getByRole("button", { name: "Lean towards this one" })).toBeVisible();
-  await expect(section.getByText("The one we’re leaning towards")).toHaveCount(1);
+  // Exact: the preferred package's hidden ", the one we’re leaning towards" isn't this line.
+  await expect(section.getByText("The one we’re leaning towards", { exact: true })).toHaveCount(1);
 });
 
 test("remove takes a price option away, and edit says which one", async ({ page }) => {

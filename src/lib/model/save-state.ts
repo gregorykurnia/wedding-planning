@@ -82,6 +82,11 @@ export function fieldReducer<T>(equals: (a: T, b: T) => boolean) {
       case "save":
         return { status: "saving", pending: { value: action.value }, attempt: { value: action.value } };
       case "saved":
+        // Typed on after Enter, while this save ran: that newer text stays, and
+        // the field saves it when it's left or Enter is pressed again.
+        if (state.pending && !equals(state.pending.value, action.value)) {
+          return { status: "saved", pending: { value: state.pending.value }, attempt: null };
+        }
         return {
           status: "saved",
           // Firestore usually shows its own write before confirming it. If the

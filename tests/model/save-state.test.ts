@@ -81,6 +81,19 @@ describe("one field", () => {
     expect(draftOf(done, "Izzy", Object.is)).toBe("Izzy");
   });
 
+  it("keeps text typed after Enter while that save ran", () => {
+    const done = run([
+      { type: "type", value: "abc" },
+      { type: "save", value: "abc" },
+      { type: "type", value: "abcdef" },
+      { type: "saved", value: "abc", current: "abc" },
+    ]);
+    expect(done.status).toBe("saved");
+    expect(draftOf(done, "abc", Object.is)).toBe("abcdef");
+    // A partner's later change doesn't wipe it either: it's still unsaved typing.
+    expect(draftOf(done, "Izzy", Object.is)).toBe("abcdef");
+  });
+
   it("keeps the typed value and the attempt when a save fails", () => {
     const failed = run([{ type: "save", value: "Isabella" }, { type: "failed" }]);
     expect(failed.status).toBe("failed");

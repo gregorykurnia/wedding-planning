@@ -18,6 +18,12 @@ export const movedAnnouncement = (name: string, place: number, total: number) =>
 /** The line under a failed field. `typed` is what was typed and is kept. */
 export const itemFailed = (typed: string) => (typed ? `Couldn’t save “${typed}”. What you typed is kept.` : "Couldn’t save this change. What you typed is kept.");
 
+/** The line under a row whose one-tap change (an event, who it's for, the star or the tick) didn't save; the choice stays shown. */
+export const itemChoiceFailed = (name: string) => `Couldn’t save the change to ${name}. Your choice is kept.`;
+
+/** What part of an item row a change that didn't save was in. */
+export type ItemField = "name" | "vendor" | "events" | "person" | "next" | "confirmed";
+
 export type ItemMenuAction = "below" | "several" | "up" | "down" | "remove";
 
 /** The ⋯ menu: moving is only for our own order, so a sort or a filter takes Move up and Move down away. */

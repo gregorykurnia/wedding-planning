@@ -83,6 +83,8 @@ export class UploadQueue {
   private shrunk = new Map<string, File>();
   private assets = new Map<string, UploadedAsset>();
   private docIds = new Map<string, string>();
+  /** Where each file goes, fixed when it's added, so moving to another folder mid-upload doesn't move it. */
+  private targets = new Map<string, UploadTarget>();
   /** What the document holds, to know whether a field changed since. */
   private written = new Map<string, FileFields>();
   private shrinking: Promise<unknown> = Promise.resolve();
@@ -135,6 +137,7 @@ export class UploadQueue {
       const id = `u${++counter}-${Math.random().toString(36).slice(2, 7)}`;
       const item = newItem(id, file, this.demo);
       this.files.set(id, file);
+      this.targets.set(id, this.target);
       this.set({
         fields: { ...this.snapshot.fields, [id]: { name: baseName(file.name), category: "", description: "" } },
         items: uploadReducer(this.snapshot.items, { type: "add", item }),
@@ -182,7 +185,7 @@ export class UploadQueue {
       const fields = this.snapshot.fields[id];
       const fileId = await this.deps.save({
         docId,
-        target: this.target,
+        target: this.targets.get(id) ?? this.target,
         asset: this.assets.get(id)!,
         originalName: file.name,
         mime: file.type,

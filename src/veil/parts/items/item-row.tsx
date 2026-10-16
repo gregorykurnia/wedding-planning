@@ -14,9 +14,11 @@ import {
   PERSON_OPTIONS,
   VENDOR_PLACEHOLDER,
   handleLabel,
+  itemChoiceFailed,
   itemFailed,
   menuEntries,
   personOf,
+  type ItemField,
   type ItemMenuAction,
 } from "./item-text";
 import styles from "./items.module.css";
@@ -40,8 +42,11 @@ export interface ItemRowProps {
   actions: ItemActions;
   /** Our own order, with no sort or filter on: the handle shows and Move up and Move down are in the menu. */
   reorderable: boolean;
-  /** The field whose last change didn't save. What was typed stays in it. */
-  failedField?: "name" | "vendor" | null;
+  /**
+   * The control whose last change didn't save. A typed field keeps what was
+   * typed; a one-tap control keeps the choice, which the screen goes on showing.
+   */
+  failedField?: ItemField | null;
   /** Demonstration mode: every control is inert. */
   demo?: boolean;
   /** A row being dragged fades to 40%. */
@@ -140,6 +145,9 @@ export function ItemRow({
   const failedName = failedField === "name";
   const failedVendor = failedField === "vendor";
   const typedFailure = failedName ? name : vendor;
+  const failedLine =
+    failedName || failedVendor ? itemFailed(typedFailure) : itemChoiceFailed(item.item);
+  const ringed = (field: ItemField) => (failedField === field ? styles.ringed : undefined);
 
   return (
     <li
@@ -199,7 +207,7 @@ export function ItemRow({
           if (event.key === "Enter") commitVendor(event.currentTarget.value);
         }}
       />
-      <div className={styles.evs} role="group" aria-label={`Events for ${item.item}`}>
+      <div className={join(styles.evs, ringed("events"))} role="group" aria-label={`Events for ${item.item}`}>
         {ITEM_EVENTS.map((event) => (
           <button
             key={event.value}
@@ -214,7 +222,7 @@ export function ItemRow({
         ))}
       </div>
       <select
-        className={styles.person}
+        className={join(styles.person, ringed("person"))}
         value={personOf(item)}
         disabled={demo}
         aria-label={`Who ${item.item} is for`}
@@ -228,7 +236,7 @@ export function ItemRow({
       </select>
       <button
         type="button"
-        className={join(styles.tog, styles.star)}
+        className={join(styles.tog, styles.star, ringed("next"))}
         aria-pressed={item.next}
         aria-label={`Work on next: ${item.item}`}
         title="Work on next"
@@ -239,7 +247,7 @@ export function ItemRow({
       </button>
       <button
         type="button"
-        className={join(styles.tog, styles.conf)}
+        className={join(styles.tog, styles.conf, ringed("confirmed"))}
         aria-pressed={item.confirmed}
         aria-label={`Confirmed: ${item.item}`}
         title="Confirmed"
@@ -262,7 +270,7 @@ export function ItemRow({
       </button>
       {failedField ? (
         <p className={styles.err} role="alert">
-          <span>{itemFailed(typedFailure)}</span>
+          <span>{failedLine}</span>
           <TextLink tone="rose" onClick={() => actions.onRetry?.(item)}>
             Try again
           </TextLink>

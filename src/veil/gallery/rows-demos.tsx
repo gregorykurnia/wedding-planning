@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { GuestRecord } from "@/lib/model/guests";
+import { headcounts, sides, type GuestRecord } from "@/lib/model/guests";
 import type { ItemRecord } from "@/lib/model/items";
 import { workOnNext } from "@/lib/model/items";
 import type { ItemEvent, ItemPerson, Rsvp } from "@/lib/model/labels";
 import { finishedTasks, openTasks, type SubtaskRecord, type TaskRecord } from "@/lib/model/tasks";
+import { CountCards, HeadcountsCard, SidesCard } from "@/veil/parts/guests/counts";
 import { GuestRow } from "@/veil/parts/guests/guest-row";
 import { rsvpToast } from "@/veil/parts/guests/guest-text";
 import { ItemList } from "@/veil/parts/items/item-list";
 import type { ItemActions } from "@/veil/parts/items/item-row";
+import type { ItemField } from "@/veil/parts/items/item-text";
 import { WorkOnNextCard } from "@/veil/parts/items/work-on-next-card";
 import { FinishedTasks } from "@/veil/parts/tasks/finished-tasks";
 import { TaskRow, type TaskActions } from "@/veil/parts/tasks/task-row";
@@ -91,7 +93,7 @@ export function RowsDemos() {
   const [sorted, setSorted] = useState(false);
   const [demo, setDemo] = useState(false);
   const [failedStep, setFailedStep] = useState<{ task: string; step: string; retry: () => void } | null>(null);
-  const [failedItem, setFailedItem] = useState<{ id: string; field: "name" | "vendor"; retry: () => void } | null>(null);
+  const [failedItem, setFailedItem] = useState<{ id: string; field: ItemField; retry: () => void } | null>(null);
   const [failedGuest, setFailedGuest] = useState<{ id: string; retry: () => void } | null>(null);
   const [focusStep, setFocusStep] = useState<string | null>(null);
   const [counter, setCounter] = useState(0);
@@ -148,13 +150,15 @@ export function RowsDemos() {
     onRetryStep: () => failedStep?.retry(),
   };
 
-  const changeItem = (target: ItemRecord, change: Partial<ItemRecord>, message: string, field?: "name" | "vendor") => {
+  const changeItem = (target: ItemRecord, change: Partial<ItemRecord>, message: string, field: ItemField) => {
     const apply = () => {
       setItems((list) => replace(list, target.id, change));
       setFailedItem(null);
       say(message);
     };
-    if (failing && field) {
+    if (failing) {
+      // A one-tap choice is kept and shown, as the screen would; a typed field keeps its own text.
+      if (field !== "name" && field !== "vendor") setItems((list) => replace(list, target.id, change));
       setFailedItem({ id: target.id, field, retry: apply });
       say(`“${target.item}” didn’t save`);
     } else apply();
@@ -164,10 +168,10 @@ export function RowsDemos() {
     onName: (i, name) => changeItem(i, { item: name }, `Renamed to ${name}`, "name"),
     onVendor: (i, vendor) => changeItem(i, { vendor }, `Vendor for ${i.item}: ${vendor || "none"}`, "vendor"),
     onToggleEvent: (i, event: ItemEvent) =>
-      changeItem(i, { types: i.types.includes(event) ? i.types.filter((e) => e !== event) : [...i.types, event] }, `Toggled ${event} on ${i.item}`),
-    onPerson: (i, person: ItemPerson) => changeItem(i, { persons: [person] }, `${i.item} is for ${person}`),
-    onMark: (i, next) => changeItem(i, { next }, `${i.item}: work on next ${next ? "on" : "off"}`),
-    onConfirmed: (i, confirmed) => changeItem(i, { confirmed }, `${i.item}: ${confirmed ? "confirmed" : "not confirmed"}`),
+      changeItem(i, { types: i.types.includes(event) ? i.types.filter((e) => e !== event) : [...i.types, event] }, `Toggled ${event} on ${i.item}`, "events"),
+    onPerson: (i, person: ItemPerson) => changeItem(i, { persons: [person] }, `${i.item} is for ${person}`, "person"),
+    onMark: (i, next) => changeItem(i, { next }, `${i.item}: work on next ${next ? "on" : "off"}`, "next"),
+    onConfirmed: (i, confirmed) => changeItem(i, { confirmed }, `${i.item}: ${confirmed ? "confirmed" : "not confirmed"}`, "confirmed"),
     onMenu: (i, action) => {
       if (action === "remove") {
         setItems((list) => list.filter((x) => x.id !== i.id));
@@ -261,6 +265,10 @@ export function RowsDemos() {
       />
 
       <h3>Guest rows</h3>
+      <CountCards>
+        <HeadcountsCard counts={headcounts(guests)} />
+        <SidesCard sides={sides(guests)} />
+      </CountCards>
       <ul aria-label="Guests" style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {guests.map((g) => (
           <GuestRow

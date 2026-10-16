@@ -39,7 +39,7 @@ export function FocusChips({ label, chips, value, onChoose, onEdit }: FocusChips
         </Chip>
       ))}
       {onEdit !== undefined ? (
-        <Chip dashed onClick={onEdit}>
+        <Chip dashed className={styles.chip} onClick={onEdit}>
           Edit categories
         </Chip>
       ) : null}

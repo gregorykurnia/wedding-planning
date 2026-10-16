@@ -3,7 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type DragEvent } from "react";
 import type { ItemRecord } from "@/lib/model/items";
 import { dropEdge, dropId, moveId, type DropEdge } from "@/lib/model/row-moves";
-import { movedAnnouncement } from "./item-text";
+import { movedAnnouncement, type ItemField } from "./item-text";
 import { ItemRow, type ItemActions } from "./item-row";
 import styles from "./items.module.css";
 
@@ -15,7 +15,7 @@ export interface ItemListProps {
   reorderable: boolean;
   /** The new order of every id, after a drag or Alt+↑/↓, and the one that moved. The screen writes it. */
   onReorder: (ids: string[], movedId: string) => void;
-  failed?: { id: string; field: "name" | "vendor" } | null;
+  failed?: { id: string; field: ItemField } | null;
   demo?: boolean;
 }
 

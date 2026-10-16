@@ -56,6 +56,28 @@ describe("UploadQueue", () => {
     expect(new Set(deps.saved.map((s) => s.docId)).size).toBe(2);
   });
 
+  it("files each upload where it was added, even after the screen moves to another folder", async () => {
+    let release = () => {};
+    const gate = new Promise<void>((r) => (release = r));
+    const deps = makeDeps({
+      send: async (f) => {
+        await gate;
+        return asset(f.size);
+      },
+    });
+    const contracts: UploadTarget = { kind: "folder", folderId: "f-contracts", path: ["Contracts"] };
+    const photos: UploadTarget = { kind: "folder", folderId: "f-photos", path: ["Photos"] };
+    const queue = new UploadQueue(contracts, deps);
+    queue.add([file("a.jpg", 2 * MB, "image/jpeg")]);
+    queue.configure(photos, false);
+    queue.add([file("b.jpg", 2 * MB, "image/jpeg")]);
+    release();
+    await settled(queue);
+    const where = Object.fromEntries(deps.saved.map((s) => [s.originalName, s.target]));
+    expect(where["a.jpg"]).toEqual(contracts);
+    expect(where["b.jpg"]).toEqual(photos);
+  });
+
   it("shrinks a PDF over the limit, then sends the shrunk file", async () => {
     const send = vi.fn(makeDeps().send);
     const queue = new UploadQueue(TARGET, makeDeps({ send }));

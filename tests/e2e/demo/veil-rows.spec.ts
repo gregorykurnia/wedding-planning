@@ -235,6 +235,23 @@ test.describe("item rows", () => {
     await expect(log(section)).toHaveText("Vendor for Photo booth: Bespoke Tailor Bali Ltd");
   });
 
+  test("a star that doesn't save keeps the choice, rings it and saves on Try again", async ({ page }) => {
+    const section = await openSection(page);
+    const row = section.locator('[data-item-id="i6"]');
+    await section.getByLabel("Make saves fail").check();
+    const star = row.getByRole("button", { name: "Work on next: Ring bearer’s pillow" });
+    await star.click();
+    await expect(row.getByRole("alert")).toContainText("Couldn’t save the change to Ring bearer’s pillow. Your choice is kept.");
+    await expect(star).toHaveAttribute("aria-pressed", "true");
+    await expect(star).toHaveCSS("box-shadow", /1px/);
+
+    await section.getByLabel("Make saves fail").uncheck();
+    await row.getByRole("button", { name: "Try again" }).click();
+    await expect(row.getByRole("alert")).toHaveCount(0);
+    await expect(star).toHaveAttribute("aria-pressed", "true");
+    await expect(log(section)).toHaveText("Ring bearer’s pillow: work on next on");
+  });
+
   test("an emptied name comes back instead of saving nothing", async ({ page }) => {
     const section = await openSection(page);
     const name = section.locator('[data-item-id="i6"] [data-item-name]');

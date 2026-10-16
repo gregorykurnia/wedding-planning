@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import type { GuestRecord } from "@/lib/model/guests";
 import type { ItemRecord } from "@/lib/model/items";
 import type { TaskRecord } from "@/lib/model/tasks";
+import { HeadcountsCard, SidesCard } from "@/veil/parts/guests/counts";
 import { GuestRow, RsvpSwitch } from "@/veil/parts/guests/guest-row";
-import { inviteLine, metaParts, plusText, rsvpToast } from "@/veil/parts/guests/guest-text";
+import { headcountRows, inviteLine, metaParts, notCountedLine, plusText, rsvpToast } from "@/veil/parts/guests/guest-text";
 import { ItemList } from "@/veil/parts/items/item-list";
 import { ItemRow } from "@/veil/parts/items/item-row";
 import { menuEntries, personOf } from "@/veil/parts/items/item-text";
@@ -181,6 +182,15 @@ describe("ItemRow", () => {
     expect(html).toContain("Try again");
   });
 
+  it("rings a one-tap control whose change didn't save and says the choice is kept", () => {
+    const html = draw({ item: item({ confirmed: true }), failedField: "confirmed" });
+    expect(html).toMatch(/class="[^"]*ringed[^"]*"[^>]*aria-pressed="true"[^>]*aria-label="Confirmed: Wedding cake"/);
+    expect(count(html, /ringed/g)).toBe(1);
+    expect(html).toContain("Couldn’t save the change to Wedding cake. Your choice is kept.");
+    expect(html).not.toContain('aria-invalid="true"');
+    expect(html).toContain("Try again");
+  });
+
   it("fades while dragged and shows the drop line on the edge it will land on", () => {
     expect(draw({ dragging: true })).toMatch(/class="[^"]*dragging/);
     expect(draw({ dropEdge: "above" })).toMatch(/class="[^"]*dropAbove/);
@@ -311,5 +321,35 @@ describe("GuestRow", () => {
 
   it("has no failure line otherwise", () => {
     expect(draw(guest())).not.toContain("Try again");
+  });
+});
+
+describe("HeadcountsCard and SidesCard", () => {
+  const counts = { guests: 9, people: 14, attending: 6, waiting: 5, both: 8, reception: 11, receptionIfSpace: 2, ceremony: 9, unsure: 1 };
+
+  it("lists each event, with if space allows under the reception only when someone is", () => {
+    expect(headcountRows(counts).map((r) => r.label)).toEqual([
+      "Both events",
+      "Reception",
+      "of which, if space allows",
+      "Ceremony",
+      "Unsure, living abroad",
+    ]);
+    expect(headcountRows({ ...counts, receptionIfSpace: 0 }).map((r) => r.label)).not.toContain("of which, if space allows");
+    const html = markup(<HeadcountsCard counts={counts} />);
+    expect(html).toContain("<h2");
+    expect(html).toContain("Headcounts");
+    expect(html).toContain("Plus-ones included; anyone not attending left out");
+  });
+
+  it("shows family and business on both sides, and a line for people on neither", () => {
+    const sides = { groomFamily: 40, groomBusiness: 12, brideFamily: 1250, brideBusiness: 0, notCounted: 3 };
+    const html = markup(<SidesCard sides={sides} />);
+    expect(html).toContain("Groom’s side");
+    expect(html).toContain("Bride’s side");
+    expect(html).toMatch(/>1\.250<\/b> family/);
+    expect(html).toContain(notCountedLine(3));
+    expect(notCountedLine(1)).toBe("1 person not counted: their connection doesn’t say groom’s or bride’s.");
+    expect(markup(<SidesCard sides={{ ...sides, notCounted: 0 }} />)).not.toContain("not counted");
   });
 });

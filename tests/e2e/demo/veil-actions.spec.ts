@@ -194,4 +194,9 @@ test("on a phone the focus row scrolls sideways instead of wrapping", async ({ p
     .getByRole("button")
     .evaluateAll((els) => new Set(els.map((el) => Math.round(el.getBoundingClientRect().top))).size);
   expect(rows).toBe(1);
+  // Every chip keeps its one line, Edit categories too: none is squeezed into a tall column.
+  const heights = await focus
+    .getByRole("button")
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
+  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(2);
 });

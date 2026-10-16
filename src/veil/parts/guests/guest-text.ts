@@ -1,6 +1,7 @@
-import { cut } from "@/lib/model/format";
+import { cut, plural } from "@/lib/model/format";
 import { GUEST_EVENTS, RSVPS, labelOf, type Rsvp } from "@/lib/model/labels";
-import type { GuestRecord } from "@/lib/model/guests";
+import type { GuestRecord, Headcounts } from "@/lib/model/guests";
+import type { TallyRow } from "@/veil/parts/menu-card/tally";
 
 /**
  * The words of a guest row (guide §4.29), ported from the prototype's
@@ -26,3 +27,18 @@ export const rsvpToast = (name: string, rsvp: Rsvp) => `${name}: ${labelOf(RSVPS
 export const plusText = (plusOnes: number) => (plusOnes > 0 ? `+${plusOnes}` : "");
 
 export const rsvpFailed = (name: string) => `Couldn’t save the reply for ${name}. Your choice is kept.`;
+
+/** The headcounts card's lines (guide §5.23): "if space allows" only when someone is. */
+export function headcountRows(c: Headcounts): TallyRow[] {
+  return [
+    { label: "Both events", count: c.both },
+    { label: "Reception", count: c.reception },
+    ...(c.receptionIfSpace ? [{ label: "of which, if space allows", count: c.receptionIfSpace, tone: "of-which" as const }] : []),
+    { label: "Ceremony", count: c.ceremony },
+    { label: "Unsure, living abroad", count: c.unsure, tone: "apart" as const },
+  ];
+}
+
+/** Under the two sides, for people whose connection names neither. */
+export const notCountedLine = (people: number) =>
+  `${plural(people, "person", "people")} not counted: their connection doesn’t say groom’s or bride’s.`;

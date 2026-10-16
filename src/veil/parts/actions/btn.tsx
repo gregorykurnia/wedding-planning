@@ -78,7 +78,8 @@ export function Btn({
       className={classes}
       disabled={disabled}
       autoFocus={autoFocus}
-      onClick={busy ? undefined : onClick}
+      // preventDefault too, so a busy submit button can't send its form a second time.
+      onClick={busy ? holdNavigation : onClick}
       {...busyAria}
     >
       {content}

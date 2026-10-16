@@ -20,6 +20,7 @@ export function PackageLines({ packages }: { packages: PackageLine[] }) {
         <li key={pkg.id} className={pkg.preferred ? styles.preferred : undefined}>
           <span className={styles.pn} dir="auto">
             {pkg.name}
+            {pkg.preferred ? <span className="sr">, the one we’re leaning towards</span> : null}
           </span>
           <span className={styles.lead} aria-hidden="true" />
           <span className={`${styles.pv} num`}>{rp(pkg.price)}</span>

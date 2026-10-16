@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { recordFolder, saveUploadedFile } from "@/lib/data/uploads";
 import type { SaveRequest } from "@/lib/data/upload-queue";
@@ -88,6 +88,17 @@ describe("recordFolder", () => {
     });
     expect(record).toMatchObject({ recordRef: { kind: "booking", id: "vendor-v1" } });
   });
+
+  it("makes each folder once when a booking, its part and another record all start their first upload together", async () => {
+    const booking = { kind: "booking" as const, id: "vendor-v1" };
+    await Promise.all([
+      recordFolder(booking, ["Bookings", "Catering"], opts()),
+      recordFolder({ ...booking, partId: "p1" }, ["Bookings", "Catering", "Deposit"], opts()),
+      recordFolder({ kind: "booking", id: "venue-ve1" }, ["Bookings", "Bukit Jimbaran Lawn"], opts()),
+    ]);
+    const names = (await all("fileFolders")).map((f) => f.name).sort();
+    expect(names).toEqual(["Bookings", "Bukit Jimbaran Lawn", "Catering", "Deposit"]);
+  });
 });
 
 describe("saveUploadedFile", () => {
@@ -112,6 +123,17 @@ describe("saveUploadedFile", () => {
       folderId: folders.find((f) => f.name === "Kebun Bunga Atelier")!.id,
     });
     expect(file.uploadedBy).toBe(gregory.auth.currentUser?.email);
+  });
+
+  it("tells the partner: an activity entry names the file", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), { name: "Kebun Bunga Atelier", files: [] });
+    await saveUploadedFile(request(), opts());
+    await vi.waitFor(async () => {
+      const entries = await all("activity");
+      expect(entries).toEqual([
+        expect.objectContaining({ kind: "file.uploaded", params: { name: "Florist quote.pdf" }, target: { kind: "file", id: "file-1" } }),
+      ]);
+    });
   });
 
   it("also puts the file on the record's old list, once, even when the same upload is filed again", async () => {

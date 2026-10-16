@@ -9,7 +9,12 @@ import { useFlash } from "@/veil/shell/flash";
  * Dev-only demos of live partner changes (Task 2.7). Open it as both accounts:
  * each button writes an `activity` entry as the signed-in account, so the
  * other account sees the toast and the flash. The "booking" is fake.
+ *
+ * It writes only against the Firebase emulators (NEXT_PUBLIC_USE_EMULATORS=1):
+ * against the real database the partner would get a made-up toast.
  */
+
+const USE_EMULATOR = process.env.NEXT_PUBLIC_USE_EMULATORS === "1";
 
 const BOOKING = { kind: "booking", id: "catering" };
 const NAME = "Dapur Lestari Catering";
@@ -17,7 +22,7 @@ const NAME = "Dapur Lestari Catering";
 export function PartnerDemos() {
   const flash = useFlash(BOOKING);
   const removed = useRemovedByPartner(BOOKING);
-  const { partnerHere, partner } = useDocumentPresence("demo-document");
+  const { partnerHere, partner } = useDocumentPresence(USE_EMULATOR ? "demo-document" : null);
 
   return (
     <div style={{ padding: "var(--space-page, 24px)" }}>
@@ -38,16 +43,21 @@ export function PartnerDemos() {
         </ul>
       )}
 
+      {!USE_EMULATOR && <p role="note">This demo writes only when the page runs against the emulators.</p>}
       <p>
         <button
           type="button"
+          disabled={!USE_EMULATOR}
           onClick={() =>
             void logActivity("payment.recorded", { amount: 55500000, name: NAME }, BOOKING)
           }
         >
           Record a payment as me
         </button>{" "}
-        <button type="button" onClick={() => void logActivity("booking.removed", { name: NAME }, BOOKING)}>
+        <button
+          type="button"
+          disabled={!USE_EMULATOR}
+          onClick={() => void logActivity("booking.removed", { name: NAME }, BOOKING)}>
           Remove the booking as me
         </button>
       </p>
