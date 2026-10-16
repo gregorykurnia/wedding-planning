@@ -59,6 +59,10 @@ type FieldRowProps = {
   field?: { failed: boolean; retry: () => void; disabled: boolean };
   /** A value that can't be saved ("Give the booking a name…"): the same look as a failure. */
   problem?: ReactNode;
+  /** The rose ring and `aria-invalid` with no line of its own, when a box elsewhere says what's wrong (sign-in). */
+  invalid?: boolean;
+  /** The label above the value at every width, as on a phone: the sign-in form. */
+  stacked?: boolean;
   children: ReactNode;
 };
 
@@ -66,7 +70,17 @@ type FieldRowProps = {
  * One row: a muted label column and the value, a hairline below and 56px at
  * least; the label sits above the value on a phone (guide §4.9).
  */
-export function FieldRow({ label, hideLabel = false, group = false, hint, field, problem, children }: FieldRowProps) {
+export function FieldRow({
+  label,
+  hideLabel = false,
+  group = false,
+  hint,
+  field,
+  problem,
+  invalid = false,
+  stacked = false,
+  children,
+}: FieldRowProps) {
   const id = useId();
   const controlId = `${id}-control`;
   const labelId = `${id}-label`;
@@ -81,8 +95,9 @@ export function FieldRow({ label, hideLabel = false, group = false, hint, field,
   const classes = [
     styles.field,
     hideLabel ? styles.single : "",
+    stacked ? styles.stacked : "",
     failed ? styles.failed : "",
-    problem ? styles.problem : "",
+    problem || invalid ? styles.problem : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -99,7 +114,7 @@ export function FieldRow({ label, hideLabel = false, group = false, hint, field,
         </label>
       )}
       <FieldContext.Provider
-        value={{ controlId, labelId, describedBy: note ? noteId : undefined, invalid: failed || Boolean(problem), disabled }}
+        value={{ controlId, labelId, describedBy: note ? noteId : undefined, invalid: failed || invalid || Boolean(problem), disabled }}
       >
         {children}
       </FieldContext.Provider>
@@ -141,7 +156,7 @@ type InputAttributes = Omit<
 type FieldInputProps = Bound<string> &
   InputAttributes & {
     id?: string;
-    type?: "text" | "email" | "tel" | "url";
+    type?: "text" | "email" | "tel" | "url" | "password";
   };
 
 /** A text field. Saves on blur and on Enter. */

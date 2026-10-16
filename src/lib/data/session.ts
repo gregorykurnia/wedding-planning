@@ -56,7 +56,8 @@ export interface Session {
   connection: Connection;
   /** Demo only: the visitor chose Look around on the sign-in screen. */
   lookingAround: boolean;
-  signInWithGoogle: () => Promise<void>;
+  /** `chooseAccount` makes Google ask which account, instead of reusing the last one. */
+  signInWithGoogle: (options?: { chooseAccount?: boolean }) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   lookAround: () => void;
@@ -191,9 +192,11 @@ export function useSessionSource(): Session {
     if (online && unconfirmed.current) void probe(unconfirmed.current, generation.current);
   }, [online, probe]);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (options?: { chooseAccount?: boolean }) => {
     if (!auth) throw new Error("Firebase is not configured.");
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    if (options?.chooseAccount) provider.setCustomParameters({ prompt: "select_account" });
+    await signInWithPopup(auth, provider);
   }, []);
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {

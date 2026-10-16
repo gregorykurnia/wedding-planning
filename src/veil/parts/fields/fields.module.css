@@ -264,6 +264,18 @@
   grid-column: 1;
 }
 
+/* The label above the value at every width (the sign-in form). */
+.field.stacked {
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+  padding: 10px var(--space-row-x);
+}
+
+.stacked .hint,
+.stacked .err {
+  grid-column: 1;
+}
+
 .single .textarea {
   min-height: 160px;
 }
