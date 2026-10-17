@@ -683,10 +683,10 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 
 | Story | Screen | Components | Code | Tasks | Done |
 |---|---|---|---|---|---|
-| O1 days and time gone | Overview | `Hero` (days), `Thread` | model `dates.ts` (`daysUntil`, `timeGone(startedOn, wedding)`); `settings.startedOn` | 1.6, 1.11, 4.2 | [ ] |
+| O1 days and time gone | Overview | `Hero` (days), `Thread` | model `dates.ts` (`daysUntil`, `timeGone(startedOn, wedding)`); `settings.startedOn` | 1.6, 1.11, 4.2 | [x] |
 | O2 coming up | Overview, Budget, Payments due | agenda rows, `NextCard`, `DueRow` | model `agenda.ts` (`comingUp(5)`), `money.ts` (`dues`) | 1.4, 1.6, 4.2, 4.3, 4.8 | [ ] |
-| O3 pulse check | Overview | `Doors` | data `useBudget`, `useTasks`, `useGuests`, `useItems` | 4.2 | [ ] |
-| O4 one step to detail | Overview, Budget, Settings | `Doors` | routes | 4.2 | [ ] |
+| O3 pulse check | Overview | `Doors` | data `useBudget`, `useTasks`, `useGuests`, `useItems` | 4.2 | [x] |
+| O4 one step to detail | Overview, Budget, Settings | `Doors` | routes | 4.2 | [x] |
 | O5 wedding date once | Overview (no date), Settings | date field, `FieldRow` | `settings.weddingDate`; every countdown reads `useSettings` | 4.2, 4.25 | [ ] |
 | O6 our two names | Settings, top bar, overview | `FieldRow`, `TopBar` | `settings.yourName`, `settings.partnerName` | 2.4, 4.25 | [ ] |
 | F1 capture a venue | Venues | venue sheet | `collections/venues.ts`; data `useVenues` | 4.15 | [ ] |
@@ -782,7 +782,7 @@ Every place in the current code that produces something visible, from a full swe
 | Old surface (file:line) | New counterpart | Status |
 |---|---|---|
 | **Routes and pages** | | |
-| `app/page.tsx` dashboard (countdown, spend, to-dos, next items, guests, shortcuts, "Welcome back") | Overview §5.2; greeting and seating shortcut dropped (§4 #15, #16) | [ ] |
+| `app/page.tsx` dashboard (countdown, spend, to-dos, next items, guests, shortcuts, "Welcome back") | Overview §5.2; greeting and seating shortcut dropped (§4 #15, #16) | [x] |
 | `app/venues`, `vendors`, `shortlist` pages | Venues §5.15, Vendors §5.11, Shortlist §5.13, plus vendor and finalist detail screens | [ ] |
 | `app/confirmed/page.tsx` (rows, totals, reminders, funder recap, hypothetical table) | Budget, Bookings, A booking, Payments due, Who pays, What-if (§5.4–§5.10) | [ ] |
 | `app/master-list/page.tsx` | Wedding items §5.22 | [ ] |
@@ -949,7 +949,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; the Phase 3 review rejected it (B3, no failed state for an item's one-tap changes; B4, `HeadcountsCard` and `SidesCard` not built), so the fix moved one row up; fixed 2026-10-16 in the review session on Opus 5.5 High; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-16 (lane t1, run on Opus 5.5 High): first pass found 4 blockers (B1 in 3.4, B2 in 3.3, B3 and B4 in 3.12), all fixed in the same session with six should-fix items; 13 should-fix items stay open (S1–S13), and Phase 2 S5–S6 (top bar inside `main`, no page column) must be done before 4.1 and 4.2; see `redesign/reviews/phase-3-review.md`; real cost to log from `/cost` | [x] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | 2026-10-17 (lane t3, 7dd2e9a): built; raised G20/N20; real cost to log from `/cost` | [x] |
-| 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
+| 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | 2026-10-17 (lane t3, 1cbc978): built; the wedding day and after (N7) are in; real cost to log from `/cost` | [x] |
 | 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
 | 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | | [ ] |
 | 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
@@ -1244,7 +1244,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Do:** Google sign-in (popup, as today), email and password, and no registration (§9.2 Q2); Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
 
 #### Task 4.2: Overview · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t3, commit 1cbc978 · real cost to log from `/cost`). `/new` is the overview (`src/veil/screens/overview/`, reads in `src/lib/data/use-overview.ts`, words and numbers pure in `src/lib/model/overview.ts`), including the wedding day and after (N7, already designed). Record payment on a coming-up payment waits for 4.4 to wire its sheet; the install card has a basic gate (phone, not installed, not dismissed) that 6.4 completes.
 - **Guide:** §5.2. **Prototype:** `overview.html`.
 - **Do:** names, days figure, time-gone thread, coming up (5), doors, no-date form (saves `weddingDate`), install card (6.4 completes the install logic). The day itself and after wait for N7.
 
@@ -1255,7 +1255,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 #### Task 4.4: Record a payment sheet · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.4 (Record a payment row), §6.9. **Prototype:** `assets/app.js` `recordPayment`.
-- **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast.
+- **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast. Also wire Record payment on the payment rows of the overview's Coming up (`src/veil/screens/overview/overview.tsx`, `onRecordPayment` on `AgendaRow`), which does nothing until then.
 
 #### Task 4.5: Bookings · Haiku 5.5 Max
 - [ ] **Done** (date · commit · real cost)
@@ -1515,7 +1515,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G4 | **N4** | Google sign-in uses a popup (`signInWithPopup`). The popup can be closed, blocked by the browser, or fail (`auth/popup-closed-by-user`, `auth/popup-blocked`, `auth/cancelled-popup-request`, network). The design covers wrong password, not allowed and offline only. | 4.1 (that state only) | designed (v1.1); built in 4.1 (2026-10-16) |
 | G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); built (4.11) |
 | G6 | **N6** | The design has allowed, not yet allowed and turned off. Web push also has "not supported here": an iPhone only receives web push once the app is installed to the home screen (iOS 16.4+), and some browsers have no push at all (`'PushManager' in window` is false). | 6.2 (that state only) | designed (v1.1); build open |
-| G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | designed (v1.1); build open |
+| G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | designed (v1.1); built in 4.2 (2026-10-17), closes with the Phase 8 screenshots |
 | G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | designed (v1.1); build open |
 | G9 | **N9** | The event sheet saves as you go, but an event needs a title and a date, and an end can't come before its start (today's checks in `schedule/page.tsx:250-270`; `scheduleEvents` without `startAt` vanish from the query). The design words only two validation messages (a booking's name, a taken category). | 4.20 (validation only) | designed (v1.1); build open |
 | G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | designed (v1.1); build open |
