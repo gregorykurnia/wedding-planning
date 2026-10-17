@@ -9,6 +9,7 @@ import { LedgerDemos } from "./ledger-demos";
 import { NextDemos } from "./next-demos";
 import { PartsDemos } from "./parts-demos";
 import { RowsDemos } from "./rows-demos";
+import { PaymentDemos } from "./payment-demos";
 import { SheetsDemos } from "./sheets-demos";
 import { StageDemos } from "./stage-demos";
 import { ToolsDemos } from "./tools-demos";
@@ -49,6 +50,7 @@ export const GALLERY_SECTIONS: GallerySection[] = [
   { task: "3.10", title: "File tiles, upload sheet and upload pipeline", demo: <UploadDemo /> },
   { task: "3.11", title: "Agenda rows and month calendar", demo: <AgendaDemos /> },
   { task: "3.12", title: "Task, item and guest rows", demo: <RowsDemos /> },
+  { task: "4.4", title: "Record a payment", demo: <PaymentDemos /> },
 ];
 
 /**

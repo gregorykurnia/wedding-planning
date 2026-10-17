@@ -36,7 +36,7 @@ test("confirm, remove and undo put the record back where it was", async ({ page 
   // The toast carries Undo; undo is busy until the restore resolves.
   const toast = page.getByRole("status").getByText("Removed Dapur Lestari Catering");
   await expect(toast).toBeVisible();
-  await page.getByRole("button", { name: "Undo" }).click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(page.getByRole("button", { name: "Restoring" })).toBeDisabled();
   await expect(records(page)).toHaveCount(3);
   await expect(toast).toHaveCount(0);
@@ -75,13 +75,45 @@ test("a write that fails keeps the confirm open, and trying again works", async 
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Remove booking" }).click();
 
-  await expect(dialog.getByRole("alert")).toBeVisible();
-  await expect(dialog.getByRole("button", { name: "Remove booking" })).toBeVisible();
+  // N14: nothing changed, and the box says so; the button asks again and has focus.
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "Nothing was removed. The planner couldn’t reach its database, so everything is just as it was. Try again, or keep it for now.",
+  );
+  const again = dialog.getByRole("button", { name: "Try again" });
+  await expect(again).toBeFocused();
+  await expect(dialog.getByRole("button", { name: "Keep it" })).toBeEnabled();
   await expect(records(page)).toHaveCount(3);
 
-  await dialog.getByRole("button", { name: "Remove booking" }).click();
+  await again.click();
   await expect(dialog).toHaveCount(0);
   await expect(records(page)).toHaveCount(2);
+  // The removal landed this time, so it has its undo as usual.
+  await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeVisible();
+});
+
+test("an undo that finds the thing changed says so, in the partner's circle, and takes nothing back", async ({
+  page,
+}) => {
+  await openDemos(page);
+  const status = page.getByRole("status");
+
+  await page.getByRole("button", { name: "Show a split that can’t be undone" }).click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Restoring" })).toBeDisabled();
+  const conflict = status.getByText(
+    "Can’t undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now.",
+  );
+  await expect(conflict).toBeVisible();
+  // The undo toast is gone and the new one has no action: there is nothing left to try.
+  await expect(status.getByText("Split Villa Samaya Ubud")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Undo", exact: true })).toHaveCount(0);
+
+  // Without a sentence of its own, the generic line names the partner.
+  await page.getByRole("button", { name: "Show an undo that can’t" }).click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(
+    status.getByText("Can’t undo: Your partner has changed this since. It’s kept as it is now."),
+  ).toBeVisible();
 });
 
 test("a sheet opened over a sheet stacks, and the one underneath keeps what was typed", async ({ page }) => {
@@ -165,7 +197,7 @@ test("leaving while Removing keeps the sheet until the write lands, then offers 
 
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole("status").getByText("Removed Villa Samaya Ubud")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeVisible();
 });
 
 test("leaving the screen closes an idle sheet", async ({ page }) => {

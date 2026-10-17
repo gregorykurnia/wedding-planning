@@ -29,6 +29,7 @@ import { Context, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { Thread } from "@/veil/parts/hero/thread";
 import { InstallCard } from "@/veil/parts/device/install-card";
 import { veilHref } from "@/veil/href";
+import { useRecordPayment } from "@/veil/parts/payment/use-record-payment";
 import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
 import { useToast } from "@/veil/shell/toasts";
@@ -181,6 +182,7 @@ function Installable() {
 /** The next five dated things of any kind (O2). */
 function ComingUp({ data, count, today }: { data: OverviewData | null; count: Countdown | null; today: IsoDate }) {
   const router = useRouter();
+  const recordPayment = useRecordPayment();
   const items = data ? comingFor(data.events, data.bookings, data.tasks, today) : [];
   const relatedOf = (item: AgendaItem) => {
     const found = item.relatedId ? data?.related.get(item.relatedId) : undefined;
@@ -205,6 +207,10 @@ function ComingUp({ data, count, today }: { data: OverviewData | null; count: Co
                 related={relatedOf(item)}
                 funderName={item.funder ? (data?.funderNames.get(item.funder) ?? null) : null}
                 onOpen={(event) => router.push(`${veilHref("/schedule")}?event=${event.id}`)}
+                onRecordPayment={(payment) => {
+                  const booking = data?.bookings.find((b) => b.id === payment.id);
+                  if (booking) recordPayment(booking, payment.partId);
+                }}
               />
             ))}
           </ul>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
+import { confirmFailure, TRY_AGAIN } from "@/lib/model/confirm-text";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
@@ -37,10 +38,18 @@ function busyLabel(action: string) {
 }
 
 /**
- * What a write that didn't land says (G14, N14). Provisional until the design
- * studio writes it: a confirm's failure has no wording in the guide yet.
+ * What a removal that couldn't finish says (guide §4.15, N14): the rose box
+ * under the body, "Nothing was removed." in bold and why. It is an alert, so
+ * it is read out when it appears.
  */
-export const CONFIRM_FAILED = "Couldn’t do that. Nothing was changed. Try again.";
+function Failure({ action }: { action: string }) {
+  const failure = confirmFailure(action);
+  return (
+    <p className={styles.error} role="alert">
+      <b>{failure.lead}</b> {failure.reason}
+    </p>
+  );
+}
 
 /**
  * Returns `confirm(options)`: opens the sheet and resolves `true` once the
@@ -71,6 +80,9 @@ export function ConfirmSheet({
 }: ConfirmOptions & { onAnswer: (confirmed: boolean) => void }) {
   const sheet = useSheet();
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
+  // Once a try has failed the button asks again. It stays that way through the
+  // next try, so the same button keeps focus while it is busy.
+  const [failedOnce, setFailedOnce] = useState(false);
   const working = useRef(false);
 
   async function go() {
@@ -83,6 +95,7 @@ export function ConfirmSheet({
     } catch {
       working.current = false;
       sheet.setBusy(false);
+      setFailedOnce(true);
       setState("failed");
       return;
     }
@@ -99,22 +112,21 @@ export function ConfirmSheet({
 
   return (
     <Sheet title={title} sub={body}>
-      {state === "failed" && (
-        <p className={styles.error} role="alert">
-          {CONFIRM_FAILED}
-        </p>
-      )}
+      {state === "failed" && <Failure action={action} />}
       <SheetActions>
         <Btn variant="quiet" autoFocus disabled={isBusy} onClick={keep}>
           Keep it
         </Btn>
+        {/* A new element after a failure, so Try again takes focus (guide §6.5). */}
         <Btn
+          key={failedOnce ? "again" : "first"}
           variant={danger ? "danger" : "primary"}
+          autoFocus={failedOnce}
           busy={isBusy}
           busyLabel={busy ?? busyLabel(action)}
           onClick={() => void go()}
         >
-          {action}
+          {failedOnce ? TRY_AGAIN : action}
         </Btn>
       </SheetActions>
     </Sheet>
@@ -144,6 +156,7 @@ export interface InlineConfirmProps {
 export function InlineConfirm({ question, body, action, run, onKeep, onDone }: InlineConfirmProps) {
   const sheet = useSheet();
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
+  const [failedOnce, setFailedOnce] = useState(false);
   const working = useRef(false);
 
   async function go() {
@@ -156,6 +169,7 @@ export function InlineConfirm({ question, body, action, run, onKeep, onDone }: I
     } catch {
       working.current = false;
       sheet.setBusy(false);
+      setFailedOnce(true);
       setState("failed");
       return;
     }
@@ -172,17 +186,20 @@ export function InlineConfirm({ question, body, action, run, onKeep, onDone }: I
         {question}
         {body !== undefined && <> {body}</>}
       </p>
-      {state === "failed" && (
-        <p className={styles.error} role="alert">
-          {CONFIRM_FAILED}
-        </p>
-      )}
+      {state === "failed" && <Failure action={action} />}
       <div className={styles.inlineActs}>
         <TextLink autoFocus disabled={isBusy} onClick={onKeep}>
           Keep it
         </TextLink>
-        <TextLink tone="rose" busy={isBusy} busyLabel={busyLabel(action)} onClick={() => void go()}>
-          {action}
+        <TextLink
+          key={failedOnce ? "again" : "first"}
+          tone="rose"
+          autoFocus={failedOnce}
+          busy={isBusy}
+          busyLabel={busyLabel(action)}
+          onClick={() => void go()}
+        >
+          {failedOnce ? TRY_AGAIN : action}
         </TextLink>
       </div>
     </div>

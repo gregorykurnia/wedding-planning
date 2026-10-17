@@ -133,14 +133,14 @@ test("the categories sheet turns a row into its inline confirm, and keeps the ro
   await setSwitch(section, "Make saves fail", true);
   await florist.getByRole("button", { name: "Remove", exact: true }).click();
   await florist.getByRole("button", { name: "Remove category" }).click();
-  await expect(florist.getByRole("alert")).toHaveText(
-    "Couldn’t do that. Nothing was changed. Try again.",
-  );
+  await expect(florist.getByRole("alert")).toContainText("Nothing was removed. The planner couldn’t reach its database");
   await expect(florist).toContainText("Remove Florist?");
+  const again = florist.getByRole("button", { name: "Try again" });
+  await expect(again).toBeFocused();
 
   await setSwitch(section, "Make saves fail", false);
   await setSwitch(section, "Slow saves", true);
-  await florist.getByRole("button", { name: "Remove category" }).click();
+  await again.click();
   await expect(florist.getByRole("button", { name: "Removing" })).toBeVisible();
   await expect(dialog.getByRole("listitem").first()).toContainText("Catering, 2 vendors", {
     timeout: COMPILE_TIMEOUT,

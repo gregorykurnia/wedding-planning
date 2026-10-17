@@ -134,6 +134,16 @@ test("shows the names, the days to go and the time gone, then the next dated thi
   await expect(door(page, "Wedding items")).toContainText("1 of 2 confirmed");
 });
 
+test("Record payment on a coming-up payment opens the sheet for that booking, pre-filled with what's left", async ({ page }) => {
+  await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
+  await openOverview(page);
+  await page.getByRole("button", { name: "Record payment" }).click({ timeout: COMPILE_TIMEOUT });
+  const dialog = page.getByRole("dialog", { name: "Record a payment" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Dapur Lestari Catering");
+  await expect(dialog.getByLabel("Amount paid")).toHaveValue("Rp 20.000.000");
+});
+
 test("an event's title opens the schedule on that event", async ({ page }) => {
   await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
   await openOverview(page);
