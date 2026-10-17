@@ -8,7 +8,7 @@ async function lookAround(page: Page) {
   await page.goto("/new/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
   await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible({
+  await expect(page.getByRole("heading", { level: 1, name: "When is the wedding?" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
 }

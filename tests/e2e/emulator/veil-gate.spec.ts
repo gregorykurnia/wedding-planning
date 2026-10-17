@@ -22,10 +22,13 @@ test("an allowed account signs in to /new, and signing out says so", async ({ pa
   await page.goto("/new/sign-in");
   await signInAt(page, email, password);
   await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await expect(page.getByText(`Signed in as ${email}`)).toBeVisible();
   await expect(page.locator("main")).not.toHaveAttribute("aria-busy", "true");
+  // The overview has no account line of its own: the menu says who is signed in, and signs out.
+  await page.getByRole("button", { name: "Menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Menu" });
+  await expect(menu.getByText(`Signed in as ${email}`)).toBeVisible();
 
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await menu.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/new/sign-in");
   await expect(page.getByText("You’ve signed out. Nothing is shown on this device")).toBeVisible();
 });

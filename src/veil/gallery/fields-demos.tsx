@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSettings } from "@/lib/data/settings";
 import { useAutosaveField } from "@/lib/data/use-autosave-field";
 import { set, WriteError } from "@/lib/data/write";
+import { amountProblem, readAmount } from "@/lib/model/amount";
 import { rp } from "@/lib/model/format";
 import { InlineRename } from "@/veil/parts/fields/inline-rename";
 import {
@@ -242,14 +243,27 @@ function RenameDemo({ fail, slow }: { fail: boolean; slow: boolean }) {
 }
 
 function BigDemo() {
-  const [amount, setAmount] = useState<number | null>(48_000_000);
+  const [text, setText] = useState(rp(48_000_000));
   const left = 75_000_000;
+  const problem = amountProblem(text);
+  const amount = problem ? null : (readAmount(text) ?? null);
   const after = left - (amount ?? 0);
   return (
     <div className={styles.sheetFrame} role="group" aria-label="Big input demo">
-      <BigInput label="Amount paid" id="big-demo" value={amount} onChange={setAmount} aria-describedby="big-demo-after" />
+      <BigInput
+        label="Amount paid"
+        id="big-demo"
+        text={text}
+        onText={setText}
+        onLeave={(typed) => {
+          const read = readAmount(typed);
+          if (!amountProblem(typed) && read !== null && read !== undefined) setText(rp(read));
+        }}
+        invalid={problem !== null}
+        aria-describedby="big-demo-after"
+      />
       <p className={styles.note} id="big-demo-after">
-        Read as {amount === null ? "nothing" : rp(amount)}; {rp(after)} would be left.
+        {problem ? "That isn’t an amount yet" : `Read as ${amount === null ? "nothing" : rp(amount)}; ${rp(after)} would be left.`}
       </p>
     </div>
   );

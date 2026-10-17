@@ -357,6 +357,8 @@ export function CreateSheetActions({
   busy = false,
   busyLabel,
   demo,
+  demoLine = "Demonstration mode: adding is turned off.",
+  disabled = false,
   link,
   cancelLabel = "Cancel",
   another,
@@ -368,6 +370,10 @@ export function CreateSheetActions({
   busy?: boolean;
   busyLabel?: string;
   demo?: boolean;
+  /** What the line above says in demonstration mode, for a sheet that records or books rather than adds. */
+  demoLine?: string;
+  /** The primary can't be pressed yet (a receipt is still uploading), though it isn't demonstration mode. */
+  disabled?: boolean;
   /** An optional rose link under the row: "Delete". */
   link?: ReactNode;
   /** The quiet button that closes the sheet: "Done" where the sheet adds several things. */
@@ -384,7 +390,7 @@ export function CreateSheetActions({
   useBusy(sheet, busy || Boolean(another?.busy));
   return (
     <>
-      {inDemo && <p className={styles.demo}>Demonstration mode: adding is turned off.</p>}
+      {inDemo && <p className={styles.demo}>{demoLine}</p>}
       <SheetActions>
         {another ? (
           <Btn
@@ -401,7 +407,7 @@ export function CreateSheetActions({
             {cancelLabel}
           </Btn>
         )}
-        <Btn disabled={inDemo || Boolean(another?.busy)} busy={busy} busyLabel={busyLabel} onClick={onAction}>
+        <Btn disabled={inDemo || disabled || Boolean(another?.busy)} busy={busy} busyLabel={busyLabel} onClick={onAction}>
           {action}
         </Btn>
       </SheetActions>

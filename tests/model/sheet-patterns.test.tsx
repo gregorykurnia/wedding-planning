@@ -52,6 +52,26 @@ describe("CreateSheetActions", () => {
     expect(html).toMatch(/disabled=""[^>]*>Add a booking</);
   });
 
+  it("says its own line in demonstration mode when it records rather than adds", () => {
+    const html = markup(
+      <CreateSheetActions
+        action="Record payment"
+        onAction={noop}
+        demo
+        demoLine="Demonstration mode: recording is turned off."
+      />,
+    );
+    expect(html).toContain("Demonstration mode: recording is turned off.");
+    expect(html).not.toContain("adding is turned off");
+    expect(html).toMatch(/disabled=""[^>]*>Record payment</);
+  });
+
+  it("disables the primary while something it waits for isn't ready, with no demonstration line", () => {
+    const html = markup(<CreateSheetActions action="Record payment" onAction={noop} demo={false} disabled />);
+    expect(html).toMatch(/disabled=""[^>]*>Record payment</);
+    expect(html).not.toContain("Demonstration mode");
+  });
+
   it("leaves the primary enabled, with no line, outside demonstration mode", () => {
     const html = markup(<CreateSheetActions action="Add a booking" onAction={noop} demo={false} />);
     expect(html).not.toContain("Demonstration mode");

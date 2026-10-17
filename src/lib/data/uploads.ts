@@ -236,9 +236,9 @@ export function realUploadDeps(opts: WriteOptions = {}): UploadDeps {
  * as long as the screen does, so the record's tiles and the upload sheet read
  * the same uploads. Demonstration mode refuses every file with its own line.
  */
-export function useUploadQueue(target: UploadTarget, deps?: UploadDeps): UploadQueue {
+export function useUploadQueue(target: UploadTarget, deps?: UploadDeps, demoOverride?: boolean): UploadQueue {
   const { connection } = useSession();
-  const demo = connection === "demo";
+  const demo = demoOverride ?? connection === "demo";
   const [queue] = useState(() => new UploadQueue(target, deps ?? realUploadDeps(), demo));
   useEffect(() => {
     queue.configure(target, demo);
