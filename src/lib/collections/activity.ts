@@ -13,6 +13,7 @@ import {
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { isObject, millis, str, strOrNull } from "@/lib/data/adapters/common";
 import type { ActivityParams, ActivityTarget } from "@/lib/data/activity";
+import type { DeviceKind } from "@/lib/model/partner";
 
 // Partner news written by logActivity() (src/lib/data/activity.ts). Entries
 // are never edited; the screen keeps only those from the other account.
@@ -25,6 +26,9 @@ export interface ActivityEntry {
   kind: string;
   params: ActivityParams;
   target: ActivityTarget | null;
+  /** The browser that made the change (N3); null on entries from before it was kept. */
+  device: string | null;
+  deviceKind: DeviceKind | null;
 }
 
 export function activityFromDoc(id: string, data: DocumentData): ActivityEntry {
@@ -42,6 +46,8 @@ export function activityFromDoc(id: string, data: DocumentData): ActivityEntry {
     kind: str(data.kind),
     params: isObject(data.params) ? (data.params as ActivityParams) : {},
     target,
+    device: strOrNull(data.device),
+    deviceKind: data.deviceKind === "phone" || data.deviceKind === "computer" ? data.deviceKind : null,
   };
 }
 

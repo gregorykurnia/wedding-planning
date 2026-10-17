@@ -110,7 +110,7 @@ test("a failed save that fails again keeps the input, and the count follows each
   await expect(row(screen, "Kind")).toHaveValue("engagement");
 });
 
-test("money tidies to Rp with dots when left, and words put the old amount back", async ({ page }) => {
+test("money tidies to Rp with dots when left", async ({ page }) => {
   await openDemo(page);
   const screen = form(page);
   const price = row(screen, "Agreed price");
@@ -121,14 +121,48 @@ test("money tidies to Rp with dots when left, and words put the old amount back"
   await expect(price).toHaveValue("Rp 12.500.000");
   await expect(line(screen)).toHaveText("Saved");
 
-  await price.fill("a lot");
-  await price.blur();
-  await expect(price).toHaveValue("Rp 12.500.000");
-
   await price.fill("");
   await price.blur();
   await expect(price).toHaveValue("");
   await expect(price).toHaveAttribute("placeholder", "Rp 0");
+});
+
+test("an amount that isn't one is refused: the old amount returns, with the reason", async ({ page }) => {
+  await openDemo(page);
+  const screen = form(page);
+  const price = row(screen, "Agreed price");
+  // The row's own line (another row in the form may be saying something too).
+  const reason = price.locator("xpath=..").getByRole("alert");
+
+  await price.fill("12 juta");
+  await price.blur();
+  await expect(price).toHaveValue("Rp 150.000.000");
+  await expect(price).toHaveAttribute("aria-invalid", "true");
+  await expect(reason).toHaveText("“12 juta” isn’t an amount. Use digits, like 12500000. It stays Rp 150.000.000.");
+
+  await price.fill("-5000000");
+  await price.press("Enter");
+  await expect(price).toHaveValue("Rp 150.000.000");
+  await expect(reason).toHaveText("An amount can’t be below zero, so “-5000000” can’t be used. It stays Rp 150.000.000.");
+
+  await price.fill("12,5");
+  await price.blur();
+  await expect(reason).toHaveText("Rupiah amounts have no decimals, so “12,5” can’t be used. It stays Rp 150.000.000.");
+
+  await price.fill("1234567890123456");
+  await price.blur();
+  await expect(reason).toHaveText(
+    "That’s more than an amount can hold here: up to Rp 999.999.999.999.999. It stays Rp 150.000.000.",
+  );
+  // Nothing was saved by any of it.
+  await expect(line(screen)).toHaveText("Every change saves as you go");
+
+  // The line goes as soon as a usable amount is typed, and the amount then saves as usual.
+  await price.fill("2500000");
+  await expect(reason).toHaveCount(0);
+  await expect(price).not.toHaveAttribute("aria-invalid", "true");
+  await price.blur();
+  await expect(price).toHaveValue("Rp 2.500.000");
 });
 
 test("a pick, a tick and a step each save at once", async ({ page }) => {

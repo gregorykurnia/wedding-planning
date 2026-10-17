@@ -82,24 +82,31 @@ test("a create that fails keeps what was typed, shows the rose box and offers Tr
   await expect(dialog).toBeHidden({ timeout: COMPILE_TIMEOUT });
 });
 
-test("an edit sheet holds Escape while a save runs, and Done waits for a change that didn't save", async ({
-  page,
-}) => {
+test("an edit sheet waits for a save that is running, then closes (N18)", async ({ page }) => {
   const section = await openSection(page);
   await setSwitch(section, "Slow saves", true);
   await section.getByRole("button", { name: "Edit a vendor" }).click();
   const dialog = page.getByRole("dialog", { name: "Edit the vendor" });
   const name = dialog.getByRole("textbox", { name: "Name" });
-  const done = dialog.getByRole("button", { name: "Done", exact: true });
 
   await name.fill("Bunga Melati Florist 2");
   await name.press("Enter");
   await expect(dialog).toContainText("Saving");
-  await expect(done).toBeDisabled();
+  // Done is never off: pressing it, or Escape, waits.
+  await expect(dialog.getByRole("button", { name: "Done", exact: true })).toBeEnabled();
   await page.keyboard.press("Escape");
-  await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText("Saved", { timeout: COMPILE_TIMEOUT });
-  await expect(done).toBeEnabled();
+  await expect(dialog).toContainText("Saving, then this closes");
+  await expect(dialog).toBeHidden({ timeout: COMPILE_TIMEOUT });
+});
+
+test("an edit sheet with a change that didn't save stays open, with Try again and a way out (N18)", async ({
+  page,
+}) => {
+  const section = await openSection(page);
+  await section.getByRole("button", { name: "Edit a vendor" }).click();
+  const dialog = page.getByRole("dialog", { name: "Edit the vendor" });
+  const name = dialog.getByRole("textbox", { name: "Name" });
+  const done = dialog.getByRole("button", { name: "Done", exact: true });
 
   await setSwitch(section, "Make saves fail", true);
   await name.fill("Bunga");
@@ -107,13 +114,85 @@ test("an edit sheet holds Escape while a save runs, and Done waits for a change 
   await expect(dialog).toContainText("Couldn’t save. What you typed is kept.", {
     timeout: COMPILE_TIMEOUT,
   });
-  await expect(done).toBeDisabled();
   await expect(name).toHaveValue("Bunga");
 
+  // Done and Escape both keep the sheet open and say why, with focus on Try again.
+  await done.click();
+  const held = dialog.getByRole("alert");
+  await expect(held).toContainText("Your last change isn’t saved yet.");
+  const again = held.getByRole("button", { name: "Try again" });
+  await expect(again).toBeFocused();
+  await name.focus();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await expect(again).toBeFocused();
+
+  // Try again, once saves work, saves it and Done then closes.
   await setSwitch(section, "Make saves fail", false);
-  await dialog.getByRole("button", { name: "Try again" }).click();
+  await again.click();
   await expect(dialog).toContainText("Saved", { timeout: COMPILE_TIMEOUT });
   await done.click();
+  await expect(dialog).toBeHidden();
+});
+
+test("closing an edit sheet without its unsaved change says so", async ({ page }) => {
+  const section = await openSection(page);
+  await section.getByRole("button", { name: "Edit a vendor" }).click();
+  const dialog = page.getByRole("dialog", { name: "Edit the vendor" });
+  const name = dialog.getByRole("textbox", { name: "Name" });
+
+  await setSwitch(section, "Make saves fail", true);
+  await name.fill("Bunga");
+  await name.press("Enter");
+  await expect(dialog).toContainText("Couldn’t save.", { timeout: COMPILE_TIMEOUT });
+  await dialog.getByRole("button", { name: "Done", exact: true }).click();
+  await dialog.getByRole("button", { name: "close without it" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("Closed without your last change. It wasn’t saved.")).toBeVisible();
+});
+
+test("a create sheet with text typed in it asks before Escape throws it away, and a second Escape closes (N18)", async ({
+  page,
+}) => {
+  const section = await openSection(page);
+  const opener = section.getByRole("button", { name: "Add a booking", exact: true });
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: "Add a booking" });
+  const name = dialog.getByRole("textbox", { name: "Name" });
+
+  // Nothing typed: Escape closes at once.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  await opener.click();
+  await name.fill("Kebun Bunga Atelier");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "You’ve started typing here. Close and it’s not added, or keep going.",
+  );
+  await expect(name).toBeFocused();
+  await expect(name).toHaveValue("Kebun Bunga Atelier");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+
+test("Close without adding it, and Cancel, close a create sheet with typed text at once", async ({ page }) => {
+  const section = await openSection(page);
+  const opener = section.getByRole("button", { name: "Add a booking", exact: true });
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: "Add a booking" });
+  const name = dialog.getByRole("textbox", { name: "Name" });
+
+  await name.fill("Kebun Bunga Atelier");
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+
+  await opener.click();
+  await name.fill("Kebun Bunga Atelier");
+  await page.keyboard.press("Escape");
+  await dialog.getByRole("button", { name: "Close without adding it" }).click();
   await expect(dialog).toBeHidden();
 });
 

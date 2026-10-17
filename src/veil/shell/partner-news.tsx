@@ -7,8 +7,8 @@ import { useFlasher } from "./flash";
 import { useToast, useToastPartnerName } from "./toasts";
 
 /**
- * Turns the partner's changes into a toast and a flash (guide §6.3), and tells
- * the toast host the partner's name. Renders
+ * Turns the partner's changes, and your own from another device (N3), into a
+ * toast and a flash (guide §6.3), and tells the toast host the partner's name. Renders
  * nothing; mounted once by the providers, and listening only while an allowed
  * account is signed in (demo mode has no partner).
  */
@@ -25,7 +25,7 @@ function Listening() {
   usePartnerNews(
     useCallback(
       (news: PartnerNews) => {
-        if (news.text) toast.partner(news.name, news.text);
+        if (news.text) (news.own ? toast.own : toast.partner)(news.name, news.text);
         flash(news.flash);
       },
       [toast, flash],
