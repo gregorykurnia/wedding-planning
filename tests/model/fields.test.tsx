@@ -142,9 +142,15 @@ describe("controls", () => {
   });
 
   it("renders the big input with a hidden label", () => {
-    const html = render(<BigInput id="amt" label="Amount paid" value={75_000_000} onChange={noop} />);
+    const html = render(<BigInput id="amt" label="Amount paid" text="Rp 75.000.000" onText={noop} />);
     expect(html).toMatch(/<label[^>]*for="amt"[^>]*>Amount paid<\/label>/);
     expect(html).toContain('value="Rp 75.000.000"');
+  });
+
+  it("rings the big input rose when what is typed isn't an amount", () => {
+    const html = render(<BigInput id="amt" label="Amount paid" text="12 juta" onText={noop} invalid />);
+    expect(html).toContain('aria-invalid="true"');
+    expect(render(<BigInput id="amt" label="Amount paid" text="" onText={noop} />)).not.toContain("aria-invalid");
   });
 
   it("stops the stepper at its limits", () => {

@@ -1,4 +1,4 @@
-Open needs: N19. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19, N20. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -21,3 +21,4 @@ Open needs: N19. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18
 | N17 | When I add a PDF that is too big and the planner shrinks it but it is still over the size we can keep, I want to be told that shrinking wasn't enough and how big it still is, so that I know to choose a smaller file and don't think the first message about size applies. | Step 7 | designed (v1.2) |
 | N18 | When I finish editing something and a change hasn't saved yet, I want Done to wait until it has saved, or to tell me what to do first, and when I dismiss what I'm editing (Escape, a tap outside it) while a change hasn't saved, I want to be told it was lost or be kept there, so that I never lose what I typed without knowing it. | Step 7 | designed (v1.2) |
 | N19 | When I add someone who pays and the planner can't finish adding them, I want to be told that they weren't added and be able to try again with the name I typed kept, so that I never wonder whether they were added or end up with them twice. | Step 7 | open |
+| N20 | When I record a payment and the planner can't finish recording it, I want to be told that it wasn't recorded and be able to try again with what I typed kept, so that I never wonder whether it was recorded or end up with it twice. When I attach a receipt to the payment and it is still on its way or didn't arrive, I want to be told which, so that a payment is never recorded without its receipt by accident. | Step 7 | open |

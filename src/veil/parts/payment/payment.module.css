@@ -1,0 +1,70 @@
+/* The Record a payment sheet's own lines (guide §5.4). The frame, fields and
+   big amount come from the shared sheet, fields and chips. Tokens only. */
+.after {
+  margin: var(--space-2) 0 var(--space-4);
+  text-align: center;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.after.attention {
+  color: var(--accent-attention-text);
+}
+
+/* N16: the amount put back, and why. It sits under the big amount, centred. */
+.refusal {
+  margin: var(--space-2) 0 0;
+  text-align: center;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+}
+
+.receipt {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.receipts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.receipts li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--gap-buttons);
+  font-size: var(--text-caption);
+}
+
+.receiptName {
+  overflow-wrap: anywhere;
+}
+
+.receiptStatus {
+  color: var(--color-text-muted);
+}
+
+.receiptStatus.ok {
+  color: var(--accent-settled-text);
+}
+
+.receiptStatus.bad,
+.receiptNote.bad {
+  color: var(--accent-attention-text);
+}
+
+.receiptNote {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+.failure {
+  margin-top: var(--space-4);
+}

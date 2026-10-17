@@ -188,7 +188,8 @@
   margin-top: 18px;
 }
 
-.big:focus {
+.big:focus,
+.bigBad {
   border-bottom-color: var(--accent-attention);
 }
 
