@@ -142,3 +142,16 @@ describe("Thread", () => {
     expect(html).not.toContain('style="left:60%"');
   });
 });
+
+describe("Hero lead", () => {
+  it("puts what's above the title first, and gives it room only when a title follows", () => {
+    const withTitle = markup(<Hero lead={<p>Greg &amp; Bella</p>} title="When is the wedding?" />);
+    expect(withTitle).toMatch(/<div class="[^"]*lead[^"]*"><p>Greg &amp; Bella<\/p><\/div><div><h1/);
+    const figureOnly = markup(<Hero lead={<p>Greg &amp; Bella</p>}><p>157</p></Hero>);
+    expect(figureOnly).toMatch(/<div><p>Greg &amp; Bella<\/p><\/div><div><p>157<\/p><\/div>/);
+  });
+
+  it("draws nothing for a missing lead", () => {
+    expect(markup(<Hero title="Budget" />)).not.toMatch(/lead/);
+  });
+});

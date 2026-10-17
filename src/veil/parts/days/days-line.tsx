@@ -1,7 +1,7 @@
 import type { IsoDate } from "@/lib/model/bookings";
-import { countdown } from "@/lib/model/countdown";
 import { dateLong } from "@/lib/model/dates";
 import { n0 } from "@/lib/model/format";
+import { countdown } from "@/lib/model/overview";
 import styles from "./days-line.module.css";
 
 type DaysLineProps = {
@@ -23,12 +23,12 @@ export function DaysLine({ wedding, today }: DaysLineProps) {
   const date = dateLong(wedding, today);
   return (
     <p className={styles.days}>
-      {count.phase === "before" && (
+      {count.phase === "before" && count.days > 1 && (
         <>
           <b>{n0(count.days)}</b> days until {date}
         </>
       )}
-      {count.phase === "eve" && (
+      {count.phase === "before" && count.days === 1 && (
         <>
           <b>Tomorrow</b> is the wedding, {date}
         </>

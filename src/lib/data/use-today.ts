@@ -4,25 +4,33 @@ import { useEffect, useState } from "react";
 import type { IsoDate } from "@/lib/model/bookings";
 import { localIso } from "@/lib/model/dates";
 
-/**
- * Milliseconds from `now` to the next local midnight, plus a second, so the
- * timer never fires before the day has turned.
- */
-export function msUntilMidnight(now: Date): number {
-  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  return next.getTime() - now.getTime() + 1000;
-}
+const MIDNIGHT_SLACK_MS = 1000;
 
 /**
- * Today on this device as `YYYY-MM-DD`. It moves on at local midnight, so a
- * screen left open overnight counts from the new day: the model takes the day
- * as a plain date and works out late and soon against it on each read.
+ * Today as `YYYY-MM-DD` in this device's calendar. It changes at midnight by
+ * itself, so a screen left open overnight counts the days from the new date
+ * (plan §5 #13: nothing that depends on today is stored).
  */
 export function useToday(): IsoDate {
   const [today, setToday] = useState(() => localIso(new Date()));
   useEffect(() => {
-    const timer = setTimeout(() => setToday(localIso(new Date())), msUntilMidnight(new Date()));
-    return () => clearTimeout(timer);
-  }, [today]);
+    let timer: ReturnType<typeof setTimeout>;
+    const arm = () => {
+      const now = new Date();
+      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      timer = setTimeout(() => {
+        setToday(localIso(new Date()));
+        arm();
+      }, next.getTime() - now.getTime() + MIDNIGHT_SLACK_MS);
+    };
+    // A sleeping laptop can miss the timer, so look again when the tab comes back.
+    const look = () => setToday(localIso(new Date()));
+    arm();
+    document.addEventListener("visibilitychange", look);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", look);
+    };
+  }, []);
   return today;
 }

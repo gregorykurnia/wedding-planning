@@ -4,6 +4,11 @@
   text-align: center;
 }
 
+/* Something above the title, such as the couple's names, sits 28px clear of it (prototype overview.html). */
+.lead {
+  margin-bottom: var(--space-7);
+}
+
 .title {
   font-family: var(--font-display);
   font-weight: var(--weight-display);
