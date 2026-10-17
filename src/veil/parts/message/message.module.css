@@ -3,7 +3,6 @@
   text-align: center;
   max-width: var(--measure-message);
   margin: 10vh auto 0;
-  padding: 0 var(--space-page-x);
 }
 
 .inline {

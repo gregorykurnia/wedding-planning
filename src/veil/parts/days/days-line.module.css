@@ -1,0 +1,24 @@
+/* Guide §5.4 (the closing line). Ported from the prototype's .days and .days b, with tokens only. The 0.03em letter spacing has no token and keeps the prototype's value. */
+
+.days {
+  margin-top: var(--space-days);
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.days b {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-amount);
+  font-style: italic;
+  color: var(--accent-gold-text);
+  padding-right: var(--space-1);
+}
+
+@media (max-width: 760px) {
+  .days {
+    margin-top: var(--space-doors);
+  }
+}
