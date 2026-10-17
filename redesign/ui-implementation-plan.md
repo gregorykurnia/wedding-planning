@@ -951,7 +951,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | 2026-10-17 (lane t3, 7dd2e9a): built; raised G20/N20; real cost to log from `/cost` | [x] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
 | 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
-| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1); real cost to log from `/cost`; gap G21/N21 (failed record and receipt lines) added | [x] |
+| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1, ddc5b45); gap G21/N21 (failed record and receipt lines) added | [x] |
 | 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
 | 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
 | 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | | [ ] |
@@ -1253,7 +1253,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.4. **Prototype:** `budget.html`. Uses `useBudget`, `useDues`; the record-payment sheet comes from 4.4.
 
 #### Task 4.4: Record a payment sheet · Sonnet 5.5 High
-- [x] **Done** (2026-10-17 · lane t1, commit in `git log` · real cost to log from `/cost`). `useRecordPayment()` (`src/veil/parts/payment/`) opens the sheet for a booking and optionally a part; the screens that open it (4.3, 4.5, 4.6, 4.8, 4.20) only call it. Gap G21/N21 added; the amount refusal is N16 (G16) for this field only.
+- [x] **Done** (2026-10-17 · lane t1, ddc5b45). `useRecordPayment()` (`src/veil/parts/payment/`) opens the sheet for a booking and optionally a part; the screens that open it (4.3, 4.5, 4.6, 4.8, 4.20) only call it. Gap G21/N21 added; the amount refusal is N16 (G16) for this field only.
 - **Guide:** §5.4 (Record a payment row), §6.9. **Prototype:** `assets/app.js` `recordPayment`.
 - **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast.
 
