@@ -8,8 +8,8 @@ import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR } from "../emulator-config";
 const SETTINGS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents/settings/wedding`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
 
-// The partner's name comes from settings until need N3: the account whose
-// email is `partnerEmail` sees `yourName`, the other sees `partnerName`.
+// The partner's name is the name the other account holds (N3). The seed pairs the
+// two accounts, and `partnerEmail` is the old way of saying the same thing.
 test.beforeAll(async () => {
   const res = await fetch(SETTINGS, {
     method: "PATCH",

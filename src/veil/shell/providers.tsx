@@ -3,7 +3,9 @@
 import { Suspense, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SessionContext, useSession, useSessionSource } from "@/lib/data/session";
+import { useWho } from "@/lib/data/who";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { WhoScreen } from "@/veil/screens/who/who-screen";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
 import { safeNext, sectionOf, showsTopBar, veilHref } from "../href";
 import { DemoBanner } from "./banner";
@@ -90,7 +92,7 @@ function Gate({ children }: { children: ReactNode }) {
 
   if (resolving || target !== null) return <Busy />;
   const framed = showsTopBar(pathname);
-  return (
+  const screen = (
     <>
       {framed && <TopBar section={sectionOf(pathname)} />}
       {framed && session.status === "demo" && <DemoBanner />}
@@ -99,6 +101,25 @@ function Gate({ children }: { children: ReactNode }) {
       </main>
     </>
   );
+  return framed && session.status === "signed-in" ? <AskWho email={session.user?.email ?? ""}>{screen}</AskWho> : screen;
+}
+
+/**
+ * An account that hasn't been paired with one of the two names is asked once,
+ * "Which of you is this?" (guide §5.1, N3), before any screen: the question
+ * replaces the screen it came for, which shows as soon as it is answered. The
+ * screen isn't held back while the settings load, so a slow read never blanks it.
+ */
+function AskWho({ email, children }: { email: string; children: ReactNode }) {
+  const who = useWho();
+  if (who.ready && who.ask !== "none") {
+    return (
+      <main id="main" tabIndex={-1}>
+        <WhoScreen ask={who.ask} email={email} names={who.names} />
+      </main>
+    );
+  }
+  return <>{children}</>;
 }
 
 /** The skeleton, not a blank page (guide §6.6), while the session is checked. */

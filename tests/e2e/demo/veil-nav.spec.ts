@@ -26,6 +26,15 @@ test("the top bar shows the app's name in demonstration mode, and Menu is closed
   await expect(page.getByRole("dialog", { name: "Menu" })).toHaveCount(0);
 });
 
+test("the couple's names in the top bar are 24px on a phone and on a computer alike (N15)", async ({ page }) => {
+  await lookAround(page);
+  const names = page.getByRole("link", { name: "Our wedding planner" });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(names).toHaveCSS("font-size", "24px");
+  }
+});
+
 test("Escape closes the menu and returns focus to Menu", async ({ page }) => {
   await lookAround(page);
   const menu = page.getByRole("button", { name: "Menu" });

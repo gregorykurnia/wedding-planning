@@ -132,7 +132,10 @@ test("a PDF that is still over the limit after shrinking is refused with its own
   await setSwitch(page, "A shrunk PDF stays over the limit", true);
   await openSheet(page);
   await pick(page, [{ name: "Huge.pdf", mimeType: "application/pdf", buffer: Buffer.alloc(12 * MB) }]);
-  await expect(sheet(page).getByText("Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.", { exact: true })).toBeVisible({
+  await expect(sheet(page).getByText(
+      "Shrunk from 12 MB to 10,5 MB, still over 10 MB. Shrinking wasn’t enough, so it wasn’t uploaded. Choose a smaller PDF, or split it into parts.",
+      { exact: true },
+    )).toBeVisible({
     timeout: 15_000,
   });
 });

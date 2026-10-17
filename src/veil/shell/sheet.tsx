@@ -16,9 +16,22 @@ import {
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/data/session";
 import { SaveScopeContext } from "@/lib/data/use-autosave-field";
+import { TRY_AGAIN } from "@/lib/model/confirm-text";
+import {
+  CLOSED_WITHOUT,
+  CLOSE_WITHOUT_ADDING,
+  CLOSE_WITHOUT_IT,
+  HELD_FAILED,
+  SAVING_THEN_CLOSE,
+  STARTED_TYPING,
+  heldBlocked,
+} from "@/lib/model/sheet-text";
 import { Btn } from "@/veil/parts/actions/btn";
+import { TextLink } from "@/veil/parts/actions/text-link";
 import { SaveLine } from "@/veil/parts/fields/save-scope";
+import fieldStyles from "@/veil/parts/fields/fields.module.css";
 import styles from "./sheet.module.css";
+import { useOptionalToast } from "./toasts";
 
 /**
  * One sheet host for the whole new UI (guide §4.14): a centred dialog on a
@@ -40,11 +53,25 @@ export interface Sheets {
   close(id?: number): void;
 }
 
+/**
+ * Asked when Escape, a tap outside or Done wants to close a sheet that isn't
+ * busy (N18). Returns true to go ahead; false to keep it open, having said why.
+ */
+export type DismissGuard = () => boolean;
+
 /** What a component inside a sheet can ask of its own sheet. */
 export interface SheetControl {
   close(): void;
+  /** Closes the way Escape does: busy holds it, and the sheet's guard may keep it open (N18). */
+  requestClose(): void;
   /** While busy, Escape and a tap on the scrim don't close it (a write is in flight). */
   setBusy(busy: boolean): void;
+  /** What Escape and a tap outside ask before closing; null takes it away. */
+  setGuard(guard: DismissGuard | null): void;
+  /** Whether anything in the sheet was typed or changed since it opened. */
+  changed(): boolean;
+  /** Puts focus on the sheet's first field, to keep going. */
+  focusFirstField(): void;
   titleId: string;
 }
 
@@ -76,6 +103,14 @@ export function useSheet(): SheetControl {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** Every typed value in a sheet, as one string: equal to the opening one means nothing was typed. */
+function typedIn(root: HTMLElement): string {
+  return Array.from(root.querySelectorAll<HTMLInputElement>("input, textarea, select"))
+    .filter((el) => el.type !== "file" && el.type !== "hidden")
+    .map((el) => (el.type === "checkbox" || el.type === "radio" ? String(el.checked) : el.value))
+    .join("\u0001");
+}
+
 function focusables(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
     (el) => el.getClientRects().length > 0 && el.getAttribute("aria-hidden") !== "true",
@@ -86,6 +121,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const entriesRef = useRef<Entry[]>([]);
   const busy = useRef(new Set<number>());
+  const guards = useRef(new Map<number, DismissGuard>());
   const nextId = useRef(0);
   // Where focus goes once the sheet that just closed is gone.
   const returnFocusTo = useRef<HTMLElement | null>(null);
@@ -110,6 +146,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
       if (!target) return;
       const wasTop = all[all.length - 1] === target;
       busy.current.delete(target.id);
+      guards.current.delete(target.id);
       if (wasTop) returnFocusTo.current = target.opener;
       commit(all.filter((e) => e !== target));
       target.onClose?.();
@@ -136,10 +173,14 @@ export function SheetHost({ children }: { children: ReactNode }) {
     [commit],
   );
 
-  // Escape and a tap on the scrim ask to close; a busy sheet refuses.
+  // Escape, a tap on the scrim and Done ask to close. A busy sheet refuses; a
+  // sheet with a guard may keep itself open to say a change hasn't saved (N18).
   const requestClose = useCallback(
     (id: number) => {
-      if (!busy.current.has(id)) close(id);
+      if (busy.current.has(id)) return;
+      const guard = guards.current.get(id);
+      if (guard && !guard()) return;
+      close(id);
     },
     [close],
   );
@@ -199,6 +240,11 @@ export function SheetHost({ children }: { children: ReactNode }) {
     else busy.current.delete(id);
   }, []);
 
+  const setGuard = useCallback((id: number, guard: DismissGuard | null) => {
+    if (guard) guards.current.set(id, guard);
+    else guards.current.delete(id);
+  }, []);
+
   const api = useMemo<Sheets>(() => ({ open, close }), [open, close]);
 
   return (
@@ -212,6 +258,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
           close={close}
           requestClose={requestClose}
           setBusy={setBusy}
+          setGuard={setGuard}
         />
       ))}
     </SheetsContext.Provider>
@@ -224,12 +271,14 @@ function SheetFrame({
   close,
   requestClose,
   setBusy,
+  setGuard,
 }: {
   entry: Entry;
   active: boolean;
   close: (id: number) => void;
   requestClose: (id: number) => void;
   setBusy: (id: number, busy: boolean) => void;
+  setGuard: (id: number, guard: DismissGuard | null) => void;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
   const pressedScrim = useRef(false);
@@ -243,13 +292,29 @@ function SheetFrame({
     (focusables(el)[0] ?? el).focus();
   }, [active]);
 
+  // What the fields held when the sheet opened, to tell whether anything was typed since.
+  const opened = useRef<string | null>(null);
+  useEffect(() => {
+    if (dialog.current) opened.current = typedIn(dialog.current);
+  }, []);
+
   const control = useMemo<SheetControl>(
     () => ({
       close: () => close(entry.id),
+      requestClose: () => requestClose(entry.id),
       setBusy: (value) => setBusy(entry.id, value),
+      setGuard: (guard) => setGuard(entry.id, guard),
+      changed: () => dialog.current !== null && opened.current !== null && typedIn(dialog.current) !== opened.current,
+      focusFirstField: () => {
+        const root = dialog.current;
+        const field = root?.querySelector<HTMLElement>(
+          "input:not([disabled]):not([type=hidden]):not([type=file]), textarea:not([disabled]), select:not([disabled])",
+        );
+        (field ?? (root && focusables(root)[0]))?.focus();
+      },
       titleId,
     }),
-    [close, setBusy, entry.id, titleId],
+    [close, requestClose, setBusy, setGuard, entry.id, titleId],
   );
 
   // Tab stays inside the sheet (guide §8).
@@ -388,9 +453,30 @@ export function CreateSheetActions({
   const { connection } = useSession();
   const inDemo = demo ?? connection === "demo";
   useBusy(sheet, busy || Boolean(another?.busy));
+
+  // Escape or a tap outside with text typed in: ask once before throwing it away
+  // (N18). A second one closes. Cancel is a clear choice, so it closes at once.
+  const [asked, setAsked] = useState(false);
+  const askedRef = useRef(false);
+  useEffect(() => {
+    sheet.setGuard(() => {
+      if (inDemo || askedRef.current || !sheet.changed()) return true;
+      askedRef.current = true;
+      setAsked(true);
+      sheet.focusFirstField();
+      return false;
+    });
+    return () => sheet.setGuard(null);
+  }, [sheet, inDemo]);
+
   return (
     <>
       {inDemo && <p className={styles.demo}>{demoLine}</p>}
+      {asked && (
+        <p className={styles.hold} role="alert">
+          {STARTED_TYPING}
+        </p>
+      )}
       <SheetActions>
         {another ? (
           <Btn
@@ -411,50 +497,142 @@ export function CreateSheetActions({
           {action}
         </Btn>
       </SheetActions>
-      {link && <div className={styles.link}>{link}</div>}
+      {(asked || link) && (
+        <div className={styles.link}>
+          {asked && (
+            <TextLink tone="rose" onClick={sheet.close}>
+              {CLOSE_WITHOUT_ADDING}
+            </TextLink>
+          )}
+          {link}
+        </div>
+      )}
     </>
   );
 }
 
 /**
  * The foot of a sheet that edits something that exists (guide §4.14): the save
- * line, then one Done, then an optional rose link. Done waits until every change
- * has saved, so a change that didn't save keeps the sheet open with its Try again
- * above it. While a save is in flight, Escape and the scrim hold the sheet.
+ * line, then one Done, then an optional rose link. Done, Escape and a tap outside
+ * never throw a change away (N18). While one is saving they wait ("Saving, then
+ * this closes") and the sheet closes once it has. If it didn't save, or can't be
+ * saved yet (`blocked` counts the changes that are missing something, N9), the
+ * sheet stays open and says so, with Try again and "close without it", which
+ * closes and says the change wasn't saved.
  */
 export function EditSheetActions({
   link,
   onDone,
   before,
-  held,
+  blocked = 0,
+  blockedLine,
+  onBlocked,
 }: {
   link?: ReactNode;
   onDone?: () => void;
   /** Quiet actions that come before Done, such as the event sheet's "Mark completed". */
   before?: ReactNode;
-  /**
-   * A change that can't be saved until something is fixed (N9). The line says what, and Done goes to
-   * the field (`onFix`) instead of closing the sheet.
-   */
-  held?: { line: string; onFix: () => void } | null;
+  blocked?: number;
+  /** While changes are blocked, the save line says which ones: "1 change not saved yet: the end time". */
+  blockedLine?: string | null;
+  /** Done, Escape or a tap outside was refused for a blocked change: the screen moves to the field. */
+  onBlocked?: () => void;
 }) {
   const sheet = useSheet();
   const scope = useContext(SaveScopeContext);
+  const toast = useOptionalToast();
   const kind = scope?.line.kind ?? "idle";
-  const settled = kind === "idle" || kind === "saved" || kind === "demo";
-  useBusy(sheet, kind === "saving");
+  const failed = kind === "failed";
+  const stuck = failed || blocked > 0;
+
+  // What the guard reads when a dismissal asks, without re-registering it each render.
+  const now = useRef({ kind, stuck });
+  useEffect(() => {
+    now.current = { kind, stuck };
+  });
+
+  const [refused, setRefused] = useState(0);
+  const [waiting, setWaiting] = useState(false);
+  const ask = useCallback(() => {
+    const { kind: current, stuck: held } = now.current;
+    if (held) {
+      setWaiting(false);
+      setRefused((n) => n + 1);
+      return false;
+    }
+    if (current === "saving") {
+      setWaiting(true);
+      return false;
+    }
+    return true;
+  }, []);
+  useEffect(() => {
+    sheet.setGuard(ask);
+    return () => sheet.setGuard(null);
+  }, [sheet, ask]);
+
+  // Waiting for a save: it landed, so close. If it failed, the held line below says so.
+  useEffect(() => {
+    if (waiting && !stuck && kind !== "saving") sheet.close();
+  }, [waiting, stuck, kind, sheet]);
+
+  // A refused dismissal for a blocked change takes the person to the field.
+  const onBlockedRef = useRef(onBlocked);
+  useEffect(() => {
+    onBlockedRef.current = onBlocked;
+  });
+  useEffect(() => {
+    if (refused > 0 && blocked > 0) onBlockedRef.current?.();
+  }, [refused, blocked]);
+
+  const held = stuck && (refused > 0 || waiting);
+  const tryAgain = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (held) tryAgain.current?.focus();
+  }, [held, refused]);
+
+  const loseIt = () => {
+    sheet.close();
+    toast?.confirmation(CLOSED_WITHOUT);
+  };
+
+  let line: ReactNode = <SaveLine held={blocked > 0 ? blockedLine : null} />;
+  if (scope && held) {
+    line = (
+      <p className={`${fieldStyles.saveLine} ${fieldStyles.saveFailed}`} role="alert">
+        {failed ? HELD_FAILED : heldBlocked(blocked)}{" "}
+        {failed && (
+          <>
+            <button
+              ref={tryAgain}
+              type="button"
+              className={`${fieldStyles.link} ${fieldStyles.rose}`}
+              onClick={scope.retryAll}
+            >
+              {TRY_AGAIN}
+            </button>{" "}
+            or{" "}
+          </>
+        )}
+        <button type="button" className={fieldStyles.link} onClick={loseIt}>
+          {CLOSE_WITHOUT_IT}
+        </button>
+      </p>
+    );
+  } else if (scope && waiting) {
+    line = (
+      <p className={fieldStyles.saveLine} role="status">
+        {SAVING_THEN_CLOSE}
+      </p>
+    );
+  }
+
   return (
     <>
-      {scope && (
-        <div className={styles.save}>
-          <SaveLine held={held?.line} />
-        </div>
-      )}
+      {scope && <div className={styles.save}>{line}</div>}
       <SheetActions>
         {before}
-        <Btn disabled={!settled && !held} onClick={held ? held.onFix : (onDone ?? sheet.close)}>
-          Done
-        </Btn>
+        <Btn onClick={() => ask() && (onDone ?? sheet.close)()}>Done</Btn>
       </SheetActions>
       {link && <div className={styles.link}>{link}</div>}
     </>

@@ -65,6 +65,12 @@
   margin-left: -10px;
 }
 
+/* Your own initial, for a change from your other device (N3). */
+.self {
+  background: var(--glow-champagne);
+  color: var(--accent-gold-text-on-tint);
+}
+
 @media (max-width: 760px) /* --bp-phone */ {
   .toasts {
     bottom: 90px;

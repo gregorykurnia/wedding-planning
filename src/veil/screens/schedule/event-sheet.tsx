@@ -232,14 +232,9 @@ function Editor({
           </Banner>
         )}
         <EditSheetActions
-          held={
-            shown.length
-              ? {
-                  line: heldLine(shown),
-                  onFix: () => form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
-                }
-              : null
-          }
+          blocked={shown.length}
+          blockedLine={shown.length ? heldLine(shown) : null}
+          onBlocked={() => form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()}
           before={
             scheduled ? (
               <>

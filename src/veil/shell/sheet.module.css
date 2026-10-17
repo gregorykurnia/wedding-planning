@@ -62,6 +62,14 @@
   color: var(--color-text-muted);
 }
 
+/* A create sheet asked to close with text typed in it (N18): the line above its actions. */
+.hold {
+  margin: var(--space-5) 0 0;
+  text-align: center;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
 /* An edit sheet's save line, centred above Done. */
 .save {
   margin-top: var(--space-4);
