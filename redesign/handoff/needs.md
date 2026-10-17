@@ -1,4 +1,4 @@
-Open needs: N19, N20, N21. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19, N20, N21, N22. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -23,3 +23,4 @@ Open needs: N19, N20, N21. N1–N18 are designed (N1–N14 in design-guide v1.1,
 | N19 | When I add someone who pays and the planner can't finish adding them, I want to be told that they weren't added and be able to try again with the name I typed kept, so that I never wonder whether they were added or end up with them twice. | Step 7 | open |
 | N20 | When I try to sign in with my email and the planner turns me away for a reason other than a wrong password (too many tries, my account switched off, or something unexpected), I want to be told that nothing was changed and what I can do next, so that I don't keep retrying without knowing why. | Step 7 | open |
 | N21 | When I record a payment and the planner can't finish recording it, I want to be told that it wasn't recorded and be able to try again with what I typed kept, so that I never wonder whether it was recorded or end up with it twice. When I attach a receipt to the payment and it is still on its way or didn't arrive, I want to be told which, so that a payment is never recorded without its receipt by accident. | Step 7 | open |
+| N22 | When I leave a document I've been writing in some way other than the planner's own ways back (my browser's back, say), and my last changes then can't be saved, I want to be told so wherever I land and be able to try saving them again, so that nothing I wrote is lost without my knowing. | Step 7 | open |

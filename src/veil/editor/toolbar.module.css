@@ -1,0 +1,187 @@
+/* The document toolbar and its save state, ported from the prototype's
+   editor.css (.toolbar, .tg, .tb, .tsel, .save-state) with tokens (guide §4.24). */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-toolbar);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1) 10px;
+  flex-wrap: wrap;
+  margin: 14px calc(-1 * var(--space-3)) 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-bar));
+  -webkit-backdrop-filter: blur(var(--blur-bar));
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.tg {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-hair);
+  padding-right: 10px;
+  border-right: 1px solid var(--color-rule);
+}
+
+.tg:last-of-type {
+  border-right: 0;
+}
+
+.tb {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--color-text);
+  padding: 0;
+}
+
+.tb:hover:not(:disabled) {
+  background: var(--hover-tool);
+}
+
+.tb[aria-pressed="true"] {
+  background: var(--color-text);
+  color: var(--surface-page);
+}
+
+.tb:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.55;
+}
+
+.glyph {
+  width: 19px;
+  height: 19px;
+}
+
+.swatchLine {
+  stroke: var(--accent-thread);
+}
+
+.tsel {
+  font: inherit;
+  border: 0;
+  background: none;
+  font-size: var(--text-label);
+  padding: 7px var(--space-2);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.tsel:hover:not(:disabled) {
+  background: var(--hover-tool);
+}
+
+.tsel:disabled {
+  cursor: default;
+}
+
+/* The save state at the far end. */
+.saveState {
+  margin: 0 0 0 auto;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.saveState[data-state="unsaved"] {
+  color: var(--accent-gold-text);
+}
+
+.saveState[data-state="failed"],
+.saveState[data-state="offline"] {
+  white-space: normal;
+  color: var(--accent-attention-text);
+  background: var(--accent-attention-wash);
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-tile-sm);
+  display: inline-block;
+  text-align: left;
+}
+
+.tick {
+  width: 9px;
+  height: 5px;
+  border-left: 1.5px solid var(--accent-settled-text);
+  border-bottom: 1.5px solid var(--accent-settled-text);
+  transform: rotate(-45deg) translateY(-2px);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-thread);
+}
+
+.spin {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-text-muted);
+  border-right-color: transparent;
+  animation: spin var(--motion-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --bp-phone: docked at the bottom, above the keyboard, scrolling sideways.
+   The save state floats at the top; a failure is a full-width note under the top bar. */
+@media (max-width: 760px) {
+  .toolbar {
+    position: fixed;
+    top: auto;
+    bottom: var(--keyboard-inset, 0px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    border-top: 1px solid var(--color-rule);
+    border-bottom: 0;
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .tg {
+    flex: none;
+  }
+
+  .saveState {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: var(--text-micro);
+    background: var(--surface-card);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    z-index: var(--z-toolbar-status);
+  }
+
+  .saveState[data-state="failed"],
+  .saveState[data-state="offline"] {
+    top: 64px;
+    left: var(--space-3);
+    right: var(--space-3);
+    transform: none;
+    text-align: center;
+  }
+}

@@ -1,0 +1,20 @@
+/* The document screen's own pieces (guide §5.17): the partner banner under the
+   toolbar, with the prototype's .sync-dot, and the rose Delete link. */
+.banner {
+  margin-top: 14px;
+}
+
+.syncDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-thread);
+  margin-right: var(--space-2);
+  vertical-align: 1px;
+}
+
+.dangerZone {
+  margin-top: var(--space-danger);
+  text-align: center;
+}
