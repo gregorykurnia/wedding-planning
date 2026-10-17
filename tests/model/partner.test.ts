@@ -4,6 +4,7 @@ import {
   PRESENCE_HEARTBEAT_MS,
   flashTargets,
   isRemoval,
+  ownToast,
   partnerIsHere,
   partnerToast,
   removes,
@@ -125,5 +126,27 @@ describe("presence", () => {
 
   it("counts an entry as the partner's when I'm not signed in to anything yet", () => {
     expect(partnerIsHere([{ uid: "bella", at: NOW }], null, NOW)).toBe(true);
+  });
+});
+
+describe("your own change from another device (N3)", () => {
+  const own = (kind: string, params: Record<string, string | number | boolean | null>, device: "phone" | "computer" = "phone") =>
+    ownToast(kind, params, TODAY, device);
+
+  it("says You and which device, as the guide does", () => {
+    expect(own("payment.recorded", { amount: 55500000, name: "Dapur Lestari Catering" })).toBe(
+      "You recorded Rp 55.500.000 for Dapur Lestari Catering on your other phone",
+    );
+    expect(own("vendor.added", { name: "Bunga Melati Florist" }, "computer")).toBe(
+      "You added Bunga Melati Florist on your other computer",
+    );
+    expect(own("event.added", { name: "Cake tasting", date: "2026-10-15", time: "10:00" })).toBe(
+      "You added “Cake tasting” tomorrow at 10:00 on your other phone",
+    );
+  });
+
+  it("has no toast for a removal or a kind it doesn't know, as for the partner", () => {
+    expect(own("booking.removed", { name: "x" })).toBeNull();
+    expect(own("something.new", {})).toBeNull();
   });
 });

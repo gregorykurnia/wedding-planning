@@ -2,6 +2,15 @@ import type { ReactElement, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { SaveScopeContext, type SaveScope } from "@/lib/data/use-autosave-field";
+import {
+  CLOSED_WITHOUT,
+  CLOSE_WITHOUT_ADDING,
+  CLOSE_WITHOUT_IT,
+  HELD_FAILED,
+  SAVING_THEN_CLOSE,
+  STARTED_TYPING,
+  heldBlocked,
+} from "@/lib/model/sheet-text";
 import { SAVE_DEMO, SAVE_IDLE, SHEET_FAILED, saveLine, type FieldStatus } from "@/lib/model/save-state";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { BlockedNotice, InlineConfirm } from "@/veil/shell/confirm";
@@ -19,7 +28,15 @@ vi.mock("@/lib/data/session", async (importOriginal) => ({
 
 const noop = () => {};
 
-const sheetStand = { close: noop, setBusy: noop, titleId: "sheet-title" };
+const sheetStand = {
+  close: noop,
+  requestClose: noop,
+  setBusy: noop,
+  setGuard: noop,
+  changed: () => false,
+  focusFirstField: noop,
+  titleId: "sheet-title",
+};
 const markup = (node: ReactElement) =>
   renderToStaticMarkup(<SheetContext.Provider value={sheetStand}>{node}</SheetContext.Provider>);
 
@@ -134,17 +151,17 @@ describe("EditSheetActions", () => {
     expect(doneIsOff(html)).toBe(false);
   });
 
-  it("holds Done off while a change is saving", () => {
+  it("leaves Done on while a change is saving: pressing it waits (N18)", () => {
     const html = markup(inScope(scopeOf(["saving"]), <EditSheetActions />));
     expect(html).toContain("Saving");
-    expect(doneIsOff(html)).toBe(true);
+    expect(doneIsOff(html)).toBe(false);
   });
 
-  it("keeps Done off after a change that didn't save, with the sheet's words and Try again", () => {
+  it("shows a change that didn't save with the sheet's words and Try again, Done still on", () => {
     const html = markup(inScope(scopeOf(["failed"]), <EditSheetActions />));
     expect(html).toContain(SHEET_FAILED);
     expect(html).toContain("Try again");
-    expect(doneIsOff(html)).toBe(true);
+    expect(doneIsOff(html)).toBe(false);
   });
 
   it("enables Done once saved, and in demonstration mode", () => {
@@ -228,5 +245,17 @@ describe("BlockedNotice", () => {
     expect(html).toContain("It still holds 4 files and 1 folder.");
     expect(html).toContain(">OK<");
     expect(html).not.toContain("Cancel");
+  });
+});
+
+describe("the words of a sheet asked to close before a change has saved (N18)", () => {
+  it("follows the guide", () => {
+    expect(SAVING_THEN_CLOSE).toBe("Saving, then this closes");
+    expect(HELD_FAILED).toBe("Your last change isn’t saved yet.");
+    expect(`${heldBlocked(1)} ${CLOSE_WITHOUT_IT}`).toBe("1 change not saved yet. Fix it, or close without it");
+    expect(heldBlocked(3)).toBe("3 changes not saved yet. Fix it, or");
+    expect(CLOSED_WITHOUT).toBe("Closed without your last change. It wasn’t saved.");
+    expect(STARTED_TYPING).toBe("You’ve started typing here. Close and it’s not added, or keep going.");
+    expect(CLOSE_WITHOUT_ADDING).toBe("Close without adding it");
   });
 });

@@ -29,7 +29,7 @@ export const partnerHere = (partner: string) =>
 
 /**
  * The screen went away (a browser Back) and the last change then didn't save.
- * Provisional (G22/N22): the guide words leaving through the planner's own
+ * Provisional (G23/N23): the guide words leaving through the planner's own
  * links (N18), not a change lost after the page has gone.
  */
 export const lostOnLeave = (title: string) => `Your last changes to “${titleOrUntitled(title)}” didn’t save.`;

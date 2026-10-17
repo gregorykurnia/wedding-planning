@@ -71,9 +71,9 @@ export function planUpload(name: string, type: string, bytes: number): UploadPla
 export const tooLargeText = (bytes: number) =>
   `Too large: ${mbText(bytes)}. Files can be up to 10 MB; only PDFs are shrunk.`;
 
-/** A PDF that is still over the limit after shrinking (G17: undesigned, so provisional). */
-export const stillTooLargeText = (bytes: number) =>
-  `Too large even after shrinking: ${mbText(bytes)}. Files can be up to 10 MB.`;
+/** A PDF that is still over the limit after shrinking (N17, guide §4.20): its own words, so it isn't read as the size message above. */
+export const stillTooLargeText = (from: number, to: number) =>
+  `Shrunk from ${mbText(from)} to ${mbText(to)}, still over 10 MB. Shrinking wasn’t enough, so it wasn’t uploaded. Choose a smaller PDF, or split it into parts.`;
 
 export const FAILED_TEXT = "Upload failed.";
 export const DEMO_TEXT = "Not uploaded: demonstration mode";
@@ -222,7 +222,7 @@ export function statusView(item: UploadItem, short = false): StatusView {
       return { text: FAILED_TEXT, tone: "bad", retry: true, percent: null, bar: false };
     case "too-large":
       return {
-        text: item.stillOver === null ? tooLargeText(item.size) : stillTooLargeText(item.stillOver),
+        text: item.stillOver === null ? tooLargeText(item.size) : stillTooLargeText(item.size, item.stillOver),
         tone: "bad",
         retry: false,
         percent: null,

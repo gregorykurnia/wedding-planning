@@ -27,6 +27,8 @@ interface ToastItem {
   message: ReactNode;
   /** The partner's name; the circle shows its first letter. */
   partner?: string;
+  /** The circle is yours, in champagne: a change from your other device (N3). */
+  own?: boolean;
   action?: { label: string; run: () => void | Promise<void> };
   /** What an Undo that finds the thing changed since says (N13); the generic line if not given. */
   conflict?: ReactNode;
@@ -48,6 +50,11 @@ export interface Toasts {
   next(message: ReactNode, label: string, open: () => void): number;
   /** "Bella recorded Rp 55.500.000 for Dapur Lestari Catering". */
   partner(name: string, message: ReactNode): number;
+  /**
+   * "You recorded Rp 55.500.000 for Dapur Lestari Catering on your other phone":
+   * your own initial in champagne, 9 seconds, never shown as the partner's (N3).
+   */
+  own(name: string, message: ReactNode): number;
   /** "Not saved: demonstration mode". */
   demo(): number;
   dismiss(id: number): void;
@@ -66,6 +73,11 @@ export function useToast(): Toasts {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast needs a ToastHost above it");
   return ctx.toasts;
+}
+
+/** The same, for a part that may be shown with no host above it (a sheet's foot): null then. */
+export function useOptionalToast(): Toasts | null {
+  return useContext(ToastContext)?.toasts ?? null;
 }
 
 /**
@@ -151,6 +163,8 @@ export function ToastHost({ children }: { children: ReactNode }) {
         add({ kind: "next", message, action: { label, run: open } }, TOAST_MS),
       partner: (name, message) =>
         add({ kind: "partner", message, partner: name }, PARTNER_TOAST_MS),
+      own: (name, message) =>
+        add({ kind: "partner", message, partner: name, own: true }, PARTNER_TOAST_MS),
       demo: () => add({ kind: "demo", message: "Not saved: demonstration mode" }, TOAST_MS),
       dismiss,
     };
@@ -207,7 +221,7 @@ export function ToastHost({ children }: { children: ReactNode }) {
         {items.map((item) => (
           <div key={item.id} className={styles.toast} data-kind={item.kind}>
             {item.partner && (
-              <span className={styles.ava} aria-hidden="true">
+              <span className={item.own ? `${styles.ava} ${styles.self}` : styles.ava} aria-hidden="true">
                 {Array.from(item.partner)[0]?.toUpperCase()}
               </span>
             )}

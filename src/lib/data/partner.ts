@@ -2,36 +2,34 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActivitySince } from "@/lib/collections/activity";
-import { useWeddingSettings } from "@/lib/collections/settings";
 import { localIso } from "@/lib/model/dates";
 import {
   flashTargets,
   isRemoval,
+  ownToast,
   partnerToast,
   removes,
   type EntryTarget,
 } from "@/lib/model/partner";
+import { deviceId } from "./device";
 import { useSession } from "./session";
+import { useWho } from "./who";
 
 /**
- * Live partner changes (guide §6.3). The partner's name comes from settings
- * until need N3 says how an account is linked to a name: the partner is the
- * other of the two names, found by this account's email against
- * `partnerEmail`. Until settings have a name, it's "Your partner".
+ * Live partner changes (guide §6.3). The partner's name is the name the other
+ * of the two accounts holds (who's who, N3), "Your partner" until a name is set.
  */
 export function usePartnerName(): { name: string; ready: boolean } {
-  const { user } = useSession();
-  const { data, loading } = useWeddingSettings();
-  const me = user?.email.trim().toLowerCase() ?? "";
-  const iAmThePartner = !!me && me === data?.partnerEmail.trim().toLowerCase();
-  const named = (iAmThePartner ? data?.yourName : data?.partnerName)?.trim();
-  return { name: named || "Your partner", ready: !loading };
+  const { partnerName, ready } = useWho();
+  return { name: partnerName, ready };
 }
 
 export interface PartnerNews {
   id: string;
-  /** The partner's name, for the toast's circle. */
+  /** Whose circle the toast shows: the partner's name, or yours for a change from your other device. */
   name: string;
+  /** A change you made on your other phone or computer (N3): the toast is yours, in champagne. */
+  own: boolean;
   /** The sentence, or null when this kind has no toast. */
   text: string | null;
   /** What to flash: the target, plus a part's booking. */
@@ -40,12 +38,13 @@ export interface PartnerNews {
 
 /**
  * Calls `onNews` once for each change the other account makes after this
- * mounts (the session start, when mounted by the providers). Removals aren't
- * news; they reach the screen that is showing the record (useRemovedByPartner).
+ * mounts (the session start, when mounted by the providers), and for each
+ * this account makes on another device (N3). Removals aren't news; they reach
+ * the screen that is showing the record (useRemovedByPartner).
  */
 export function usePartnerNews(onNews: (news: PartnerNews) => void) {
   const { user } = useSession();
-  const { name, ready } = usePartnerName();
+  const { partnerName: name, myName, ready } = useWho();
   const [since] = useState(() => Date.now());
   const { data } = useActivitySince(since);
   const seen = useRef(new Set<string>());
@@ -61,15 +60,30 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
     for (const entry of data) {
       if (seen.current.has(entry.id)) continue;
       seen.current.add(entry.id);
-      if (!entry.by || entry.by === user.uid || isRemoval(entry.kind)) continue;
+      if (!entry.by || isRemoval(entry.kind)) continue;
+      const today = localIso(new Date());
+      if (entry.by === user.uid) {
+        // This account on another device, never this one (entries from before
+        // the device was kept, and every one made here, are not news).
+        if (!entry.device || entry.device === deviceId()) continue;
+        latest.current({
+          id: entry.id,
+          name: myName || "You",
+          own: true,
+          text: ownToast(entry.kind, entry.params, today, entry.deviceKind ?? "phone"),
+          flash: flashTargets(entry.target),
+        });
+        continue;
+      }
       latest.current({
         id: entry.id,
         name,
-        text: partnerToast(name, entry.kind, entry.params, localIso(new Date())),
+        own: false,
+        text: partnerToast(name, entry.kind, entry.params, today),
         flash: flashTargets(entry.target),
       });
     }
-  }, [data, ready, user, name]);
+  }, [data, ready, user, name, myName]);
 }
 
 /**

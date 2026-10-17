@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useState, type InputHTMLAttributes } from "react";
-import { readAmount } from "@/lib/model/amount";
+import { amountMessage, amountProblem, readAmount } from "@/lib/model/amount";
 import { rp } from "@/lib/model/format";
 import { useFieldContext, type Bound } from "./fields";
 import styles from "./fields.module.css";
@@ -16,8 +16,10 @@ type MoneyInputProps = Omit<Bound<number | null>, "onChange"> &
 /**
  * A money field (guide §4.9): a numeric keyboard, "Rp 12.500.000" once you
  * leave it, and "Rp 0" as the placeholder. It saves on blur and Enter. Text
- * that isn't an amount (words, a minus) puts the old amount back instead of
- * saving; a blank field is no amount (null).
+ * that isn't an amount (words, a minus, decimals, more than 15 digits) is
+ * refused (N16): the old amount comes back, the row rings rose and says why,
+ * quoting what was typed. The line goes as soon as a usable amount is typed.
+ * A blank field is no amount (null).
  */
 export function MoneyInput({ value, onCommit, disabled, id, placeholder = "Rp 0", ...rest }: MoneyInputProps) {
   const field = useFieldContext();
@@ -26,6 +28,12 @@ export function MoneyInput({ value, onCommit, disabled, id, placeholder = "Rp 0"
 
   const leave = (text: string) => {
     setTyping(null);
+    const problem = amountProblem(text);
+    if (problem) {
+      field?.setProblem(amountMessage(problem, text, value));
+      return;
+    }
+    field?.setProblem(null);
     const amount = readAmount(text);
     if (amount !== undefined) onCommit?.(amount);
   };
@@ -43,7 +51,10 @@ export function MoneyInput({ value, onCommit, disabled, id, placeholder = "Rp 0"
       value={shown}
       disabled={disabled || field?.disabled}
       onFocus={() => setTyping(shown)}
-      onChange={(event) => setTyping(event.target.value)}
+      onChange={(event) => {
+        setTyping(event.target.value);
+        if (amountProblem(event.target.value) === null) field?.setProblem(null);
+      }}
       onBlur={(event) => leave(event.currentTarget.value)}
       onKeyDown={(event) => {
         if (event.key === "Enter") leave(event.currentTarget.value);

@@ -90,6 +90,19 @@ export function partnerToast(
   }
 }
 
+/** The kind of device a change was made on, which the toast names ("your other phone"). */
+export type DeviceKind = "phone" | "computer";
+
+/**
+ * The toast for a change you made on your other phone or computer (N3): "You
+ * recorded Rp 55.500.000 for Dapur Lestari Catering on your other phone".
+ * `null` for the kinds with no toast, as for the partner's.
+ */
+export function ownToast(kind: string, params: EntryParams, today: IsoDate, device: DeviceKind): string | null {
+  const sentence = partnerToast("You", kind, params, today);
+  return sentence && `${sentence} on your other ${device}`;
+}
+
 /** Removals are not toasts: they only matter to someone looking at the record. */
 export const isRemoval = (kind: string) => /\.(removed|deleted)$/.test(kind);
 

@@ -6,6 +6,8 @@ type BannerProps = {
   tone?: "gold" | "rose";
   /** The box with a 16px radius, inside a form, rather than the pill under the top bar. */
   inline?: boolean;
+  /** `status` for a note that appears on its own, so a screen reader reads it out. */
+  role?: "status" | "alert";
   children: ReactNode;
 };
 
@@ -14,11 +16,15 @@ type BannerProps = {
  * a partner in the document), or a box inside a form (a booking that couldn't
  * be added).
  */
-export function Banner({ tone = "gold", inline = false, children }: BannerProps) {
+export function Banner({ tone = "gold", inline = false, role, children }: BannerProps) {
   const classes = [styles.banner, tone === "rose" ? styles.rose : "", inline ? styles.inline : ""]
     .filter(Boolean)
     .join(" ");
-  const banner = <p className={classes}>{children}</p>;
+  const banner = (
+    <p className={classes} role={role}>
+      {children}
+    </p>
+  );
   return inline ? banner : <div className={styles.wrap}>{banner}</div>;
 }
 

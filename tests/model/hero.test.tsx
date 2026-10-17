@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { Context, Figure, Hero, Kicker } from "@/veil/parts/hero/hero";
+import { Context, CountFigure, Figure, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { Thread } from "@/veil/parts/hero/thread";
 
 // Task 3.1: the hero, kicker, figure, context and thread as markup (guide §3,
@@ -31,6 +31,19 @@ describe("Figure", () => {
   it("shrinks when it is longer than 13 digits, and not before", () => {
     expect(markup(<Figure amount={98_765_432_109_876} />)).toMatch(/class="[^"]*long/);
     expect(markup(<Figure amount={409_650_000} />)).not.toMatch(/class="[^"]*long/);
+  });
+});
+
+describe("CountFigure", () => {
+  it("is the figure for a count: digits with dots and no Rp", () => {
+    expect(markup(<CountFigure count={3} />)).toMatch(/^<p class="[^"]*figure[^"]*md[^"]*">3<\/p>$/);
+    expect(markup(<CountFigure count={1204} />)).toContain(">1.204<");
+    expect(markup(<CountFigure count={3} />)).not.toContain("Rp");
+  });
+
+  it("is rose when something is late", () => {
+    expect(markup(<CountFigure count={2} tone="late" />)).toMatch(/class="[^"]*late/);
+    expect(markup(<CountFigure count={2} />)).not.toMatch(/class="[^"]*late/);
   });
 });
 

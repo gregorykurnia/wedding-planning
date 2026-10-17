@@ -81,10 +81,39 @@ async function open(page: Page, path: string) {
 const bodyOf = (page: Page) => page.getByRole("textbox", { name: "Document" });
 const saveState = (page: Page) => page.getByRole("toolbar", { name: "Formatting" }).getByRole("status");
 
-/** Puts the cursor at the end of the body. */
-async function typeAtEnd(page: Page, text: string) {
+/**
+ * Selects `text` in the body, or with `caret` puts the cursor just after it.
+ * Set through the DOM, because Home and End keys differ between Mac and Linux.
+ */
+async function select(page: Page, text: string, caret = false) {
   await bodyOf(page).click();
-  await page.keyboard.press("ControlOrMeta+End");
+  await bodyOf(page).evaluate(
+    (root, [wanted, collapse]) => {
+      // The cursor goes after the last match; a selection takes the first.
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let hit: { node: Node; at: number } | null = null;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const at = node.textContent!.lastIndexOf(wanted as string);
+        if (at < 0) continue;
+        hit = { node, at };
+        if (!collapse) break;
+      }
+      if (!hit) throw new Error(`No text "${wanted}"`);
+      const end = hit.at + (wanted as string).length;
+      const range = document.createRange();
+      range.setStart(hit.node, collapse ? end : hit.at);
+      range.setEnd(hit.node, end);
+      getSelection()!.removeAllRanges();
+      getSelection()!.addRange(range);
+    },
+    [text, caret] as const,
+  );
+}
+
+/** Puts the cursor at the end of the body's text and types. */
+async function typeAtEnd(page: Page, text: string) {
+  const lines = (await bodyOf(page).innerText()).trimEnd().split("\n");
+  await select(page, lines[lines.length - 1].slice(-3), true);
   await page.keyboard.type(text);
 }
 
@@ -279,7 +308,7 @@ test("Cmd/Ctrl+K adds a link, a click shows its bubble, and colours store the pa
   const id = docId("links");
   await put(id, { title: "Florists", content: body(para("Call ")) });
   await open(page, `/new/documents/${id}`);
-  await typeAtEnd(page, "");
+  await select(page, "Call ", true);
   await page.keyboard.press("ControlOrMeta+k");
   const sheet = page.getByRole("dialog", { name: "Add a link" });
   await sheet.getByLabel("Web address").fill("kebunbunga.id");
@@ -297,14 +326,7 @@ test("Cmd/Ctrl+K adds a link, a click shows its bubble, and colours store the pa
   await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
 
   // Select the word "Call" and make it rose and bold.
-  await bodyOf(page).click();
-  await bodyOf(page).locator("p").first().evaluate((p) => {
-    const range = document.createRange();
-    range.setStart(p.firstChild!, 0);
-    range.setEnd(p.firstChild!, 4);
-    getSelection()!.removeAllRanges();
-    getSelection()!.addRange(range);
-  });
+  await select(page, "Call");
   await page.getByRole("button", { name: "Bold" }).click();
   await expect(page.getByRole("button", { name: "Bold" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Text colour" }).click();

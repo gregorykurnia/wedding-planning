@@ -1,4 +1,5 @@
 import { collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { deviceId, deviceKind } from "./device";
 import { requireDb, uidOf } from "./db";
 import { guarded, type WriteOptions } from "./write";
 
@@ -50,7 +51,16 @@ export async function logActivity(
   try {
     const database = requireDb(opts.db);
     const ref = doc(collection(database, "activity"));
-    const entry = { by: uidOf(database), at: serverTimestamp(), kind, params, target };
+    // `device` lets the same account's other device tell this change from its own (N3).
+    const entry = {
+      by: uidOf(database),
+      at: serverTimestamp(),
+      kind,
+      params,
+      target,
+      device: deviceId(),
+      deviceKind: deviceKind(),
+    };
     await guarded(() => setDoc(ref, entry));
     return true;
   } catch (err) {

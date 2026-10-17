@@ -7,12 +7,11 @@
   padding: var(--space-top-y) var(--space-top-x);
 }
 
-/* The names in serif, the ampersand in champagne italic. The size is the
-   nearest token: no token holds the prototype's 24px on a phone (gap G15). */
+/* The names in serif, the ampersand in champagne italic, 24px at every width (N15). */
 .couple {
   min-width: 0;
   font-family: var(--font-display);
-  font-size: var(--text-row-lg);
+  font-size: var(--text-names-top);
   font-weight: var(--weight-display);
   letter-spacing: var(--tracking-names);
   color: var(--color-text);

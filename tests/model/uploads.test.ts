@@ -127,7 +127,9 @@ describe("the words of each status", () => {
 
   it("words a PDF that is still too big after shrinking differently from a refused file", () => {
     const item: UploadItem = { ...start("a.pdf", 14 * MB, "application/pdf"), status: "too-large", stillOver: 10.5 * MB };
-    expect(statusView(item).text).toBe("Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.");
+    expect(statusView(item).text).toBe(
+      "Shrunk from 14 MB to 10,5 MB, still over 10 MB. Shrinking wasn’t enough, so it wasn’t uploaded. Choose a smaller PDF, or split it into parts.",
+    );
   });
 });
 

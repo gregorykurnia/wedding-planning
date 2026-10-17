@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { figure, isLongFigure } from "@/lib/model/format";
+import { figure, isLongFigure, n0 } from "@/lib/model/format";
 import styles from "./hero.module.css";
 
 type HeroProps = {
@@ -80,6 +80,19 @@ export function Figure({ amount, tone, md = false }: FigureProps) {
       {digits}
     </p>
   );
+}
+
+type CountFigureProps = {
+  /** A whole number, such as the schedule's things late or due today. */
+  count: number;
+  /** Rose when something is late. */
+  tone?: "late";
+};
+
+/** The same figure for a count: serif, light and never wrapped, with no "Rp" (guide §5.19). */
+export function CountFigure({ count, tone }: CountFigureProps) {
+  const classes = [styles.figure, "num", styles.md, tone && styles[tone]].filter(Boolean).join(" ");
+  return <p className={classes}>{n0(count)}</p>;
 }
 
 /** The sentence under the figure, with each amount in <b> (ink, weight 450). */

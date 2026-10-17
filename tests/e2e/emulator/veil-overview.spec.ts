@@ -144,11 +144,13 @@ test("Record payment on a coming-up payment opens the sheet for that booking, pr
   await expect(dialog.getByLabel("Amount paid")).toHaveValue("Rp 20.000.000");
 });
 
-test("an event's title opens the schedule on that event", async ({ page }) => {
+test("an event's title opens the schedule with that event's sheet open", async ({ page }) => {
   await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
   await openOverview(page);
   await page.getByRole("button", { name: "Cake tasting" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new/schedule?event=ov-cake");
+  // The Schedule (Task 4.20) opens the sheet and clears the address.
+  await expect(page.getByRole("dialog").getByRole("heading", { name: "Cake tasting", level: 2 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/new/schedule");
 });
 
 test("the day before says tomorrow; the wedding day says Today; after it the count ends", async ({ page }) => {

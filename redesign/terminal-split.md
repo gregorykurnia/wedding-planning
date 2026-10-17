@@ -74,8 +74,8 @@ Phase 4 keeps each terminal on one part of the app, so two lanes rarely touch th
 | **Phase 4: screens** | | | |
 | [x] Before 4.1 and 4.2: Phase 2 review S5 and S6, the top bar outside `main` and a page column (see `redesign/reviews/phase-3-review.md`) · Sonnet 5.5 High (done 2026-10-16, lane t1, on Opus 5.5) | | | |
 | [x] 4.9 Who pays · Sonnet 5.5 High | [x] 4.11 Vendors · Sonnet 5.5 High | [x] 4.1 Sign in · Sonnet 5.5 High | [x] 4.9 second build, calibration trial, on `trial/4.9-haiku` from `3f47f9f` (see above) · Haiku 5.5 Max |
-| [x] 4.4 Record a payment · Sonnet 5.5 High | [x] Follow-up: N13 and N14 in 2.6 and 3.8 (2026-10-17, lane t2) · Sonnet 5.5 High<br>[ ] Follow-up: N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 · Sonnet 5.5 High | [x] 4.2 Overview · Sonnet 5.5 High | [x] 4.17 Editor core (L) · Opus 5.5 High |
-| [ ] 4.3 Budget ★ · Haiku 5.5 Max | [ ] 4.12 A vendor · Sonnet 5.5 High | [ ] 4.20 Schedule · Sonnet 5.5 High | [ ] 4.9 calibration result (after Terminal 1's 4.9 is in `redesign`; see above) · Sonnet 5.5 High |
+| [x] 4.4 Record a payment · Sonnet 5.5 High | [x] Follow-up: N13 and N14 in 2.6 and 3.8 (2026-10-17, lane t2) · Sonnet 5.5 High<br>[x] Follow-up: N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 (2026-10-17, lane t2) · Sonnet 5.5 High | [x] 4.2 Overview · Sonnet 5.5 High | [x] 4.17 Editor core (L) · Opus 5.5 High |
+| [x] 4.3 Budget ★ · Haiku 5.5 Max | [ ] 4.12 A vendor · Sonnet 5.5 High | [x] 4.20 Schedule · Sonnet 5.5 High | [ ] 4.9 calibration result (after Terminal 1's 4.9 is in `redesign`; see above) · Sonnet 5.5 High |
 | [ ] 4.5 Bookings ★ · Haiku 5.5 Max | [ ] 4.13 Shortlist ★ · Haiku 5.5 Max | [ ] 4.21 Month ★ · Haiku 5.5 Max | [ ] 4.18 Tables and formulas (L, after 4.17) · Opus 5.5 Medium |
 | [ ] 4.6 A booking (L) · Sonnet 5.5 High | [ ] 4.14 A finalist · Sonnet 5.5 High | [ ] 4.22 Tasks · Sonnet 5.5 High | [ ] 4.16 Documents ★ · Haiku 5.5 Max |
 | [ ] 4.7 Add a booking · Haiku 5.5 Max | [ ] 4.15 Venues · Sonnet 5.5 High | [ ] 4.23 Wedding items (L) · Sonnet 5.5 High | [ ] 4.19 Files (L) · Sonnet 5.5 High |
@@ -111,17 +111,17 @@ Done on 2026-10-16: one studio round designed N1–N18 (design-guide v1.1 and v1
 
 Until it's done, tasks that touch a need build everything else and leave that part out (the §9.1 rule). Phases 2 and 3 have these parts, which get a follow-up after the import:
 - ~~2.6 and 3.8 leave out what Undo says when it can't undo (N13), and 2.6 leaves out what a confirm says when its write fails (N14);~~ done 2026-10-17 in lane t2;
-- 2.7 names the partner with the second name in settings (N3);
-- 3.4's money field puts the old amount back for text that isn't an amount, without a message (N16);
-- 3.10 words a PDF that is still too big after shrinking with a provisional line (N17);
-- 2.4 sets the couple's names in the top bar at 21px on a phone, not 24px (N15);
-- 3.8's Done, Escape and scrim rules while a change is unsaved are provisional (N18).
+- ~~2.7 names the partner with the second name in settings (N3);~~ done 2026-10-17 in lane t2;
+- ~~3.4's money field puts the old amount back for text that isn't an amount, without a message (N16);~~ done 2026-10-17;
+- ~~3.10 words a PDF that is still too big after shrinking with a provisional line (N17);~~ done 2026-10-17;
+- ~~2.4 sets the couple's names in the top bar at 21px on a phone, not 24px (N15);~~ done 2026-10-17;
+- ~~3.8's Done, Escape and scrim rules while a change is unsaved are provisional (N18).~~ done 2026-10-17.
 
 | Task | Waits for | Model |
 |---|---|---|
 | [x] Studio window: design N1–N14 (done 2026-10-16, with N15–N18 in the same round; guide v1.2) (the owner runs it: `BASE_BRANCH=redesign redesign/studio.sh enter` after the banned-word scan, then `./start` and "Design the open needs in needs.md", then "I approve the design guide. Freeze it.") | nothing; before Phase 4 | Opus 5.5 High, since N1 and N2 add new screens |
 | [x] Import the needs' design (done 2026-10-16, commit 4682a5c) (main folder, "Import the approved design", with `BASE_BRANCH=redesign`) | the studio freezing the designs | Haiku 5.5 High |
-| Follow-up: ~~N13 and N14 in 2.6 and 3.8 (done 2026-10-17)~~, N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 (skip if those were built after the import). Now in Terminal 2's Phase 4 column; tick it there | the import | Sonnet 5.5 High |
+| Follow-up: ~~N13 and N14 in 2.6 and 3.8 (done 2026-10-17)~~, ~~N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 (done 2026-10-17)~~ (skip if those were built after the import). Now in Terminal 2's Phase 4 column; tick it there | the import | Sonnet 5.5 High |
 
 ## Any free terminal, once the needs are designed
 
