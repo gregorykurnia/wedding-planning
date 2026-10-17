@@ -43,6 +43,11 @@ export interface VendorRowProps {
   keen?: ReactNode;
   stage?: ReactNode;
   whatsApp?: ReactNode;
+  /**
+   * A one-tap change (the keen heart) that didn't save keeps the choice and puts
+   * this line under the row, with Try again (guide §6.1).
+   */
+  failed?: { message: string; onRetry: () => void };
 }
 
 /**
@@ -59,6 +64,7 @@ export function VendorRow({
   keen,
   stage,
   whatsApp,
+  failed,
 }: VendorRowProps) {
   const flash = useFlash({ kind, id: vendor.id });
   const rating = ratingParts(vendor.rating, vendor.reviewers);
@@ -97,6 +103,14 @@ export function VendorRow({
             <span className={styles.meta}>{plural(vendor.optionCount, "price option")}</span>
           ) : null}
         </div>
+        {failed ? (
+          <p className={styles.rowErr} role="alert">
+            <span>{failed.message}</span>
+            <TextLink tone="rose" onClick={failed.onRetry}>
+              Try again
+            </TextLink>
+          </p>
+        ) : null}
       </div>
     </li>
   );

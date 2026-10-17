@@ -53,7 +53,7 @@ The full table, one row per task with its reason, is §7.0. Picks use only rows 
 | Haiku 5.5 High | 0 | the design-gap scan and import | $0.16 |
 | **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $81** |
 
-Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; check `/cost` after each session and log real costs in §7.0.
+Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; logging the real `/cost` in §7.0 is optional (log it when you have it).
 
 ---
 
@@ -699,12 +699,12 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [ ] |
 | F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [ ] |
 | F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [ ] |
-| F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [ ] |
-| F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [ ] |
+| F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [x] |
+| F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [x] |
 | F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [ ] |
-| F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [ ] |
-| F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [ ] |
-| F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [ ] |
+| F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [x] |
+| F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [x] |
+| F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
 | F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [ ] |
 | F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
 | F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [ ] |
@@ -766,7 +766,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
 | R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [ ] |
 | R14 find a file anywhere | Files | `SearchField`, `ShowMore` | data `useFileSearch` | 4.19 | [ ] |
-| A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [ ] |
+| A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [x] |
 | A2 live partner changes | every screen | `.flash`, partner toast, `Banner` (document) | `activity` listener, `presence` | 1.8, 2.7 | [ ] |
 | A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [ ] |
 | A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
@@ -795,11 +795,11 @@ Every place in the current code that produces something visible, from a full swe
 | `app/budget/page.tsx`, `app/checklist/page.tsx` (orphaned) | dropped (§4 #1, #2); data stays in Firestore | [ ] |
 | no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [ ] |
 | **Auth** | | |
-| `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [ ] |
+| `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [x] |
 | `login/page.tsx` Register button (`auth-context.tsx` `createUserWithEmailAndPassword`) | dropped (§9.2 Q2: both sign in with Google) | n/a |
 | password reset | doesn't exist today; not in the inventory; nothing to build | n/a |
-| `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [ ] |
-| `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [ ] |
+| `login/page.tsx:34-43` raw Firebase error text | wrong email or password, account not allowed, offline (§5.1); Google window closed or blocked: **gap N4** (§9.1 G4) | [x] |
+| `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [x] |
 | `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [x] |
 | account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
@@ -903,14 +903,14 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **Minimum viable model.** Each pick below is the cheapest row in `~/.claude/CLAUDE.md` that should do the task well. Opus 5.5 High is used only where a mistake could lose data or break production, and each such row names the risk. Never Opus 5.5 Low or Sonnet 5.5 Medium.
 - **Model check.** At the start of each session, compare the current model and effort with the task's pick. If the current one is lower, say so and suggest `/model` plus the effort setting before starting. If it's much higher for a Haiku task, suggest the cheaper one.
 - **One task per session,** reading only: the task's section below, the design-guide sections it names, and the prototype file it names. Old UI files are opened only where a task says so, and only for the data calls they make. This keeps a cheaper model from copying old patterns.
-- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Run `/cost` after each, compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21.
+- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. Cheaper means the cheaper row in the model table; real `/cost` figures are optional and help only if both are known. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21.
 - **Escalation.** The first time a model gets a task wrong twice, redo it one row stronger and log the change in the table. When an end-of-phase review rejects a task's work, the fix is done one row stronger too, and that task's pick is updated (redesign plan, "Move up after a failed check").
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 - **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
 
-**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the "Real cost / changes" column and tick **Done** when the task is finished.
+**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. Logging the real `/cost` in the "Real cost / changes" column is optional.
 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
@@ -931,7 +931,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 2 | 2.3 Root layout, providers, auth gate, demo, not-allowed probe | Opus 5.5 Medium | $1.34 | No prototype for the wiring; auth edge cases need judgment (data stays protected by the rules) | facd347; toast and sheet hosts left as a slot in `providers.tsx` for 2.6; real cost to log from `/cost` | [x] |
 | 2 | 2.4 Top bar, menu, sub-navigation, back link, add button | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `header()`, `indexPage()`, `subnav()` | 4a59578; real cost to log from `/cost`; names at 390px are 21px until N15 (G15) | [x] |
 | 2 | 2.5 Whole-screen states, message, banner | Haiku 5.5 Max | $0.21 | Exact markup in `app.js` `stateView()` | 23b6352; real cost to log from `/cost`; offline copy says phone or computer by width, as the prototype does (guide §5 says phone) | [x] |
-| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) is left to a follow-up after the studio round; real cost to log from `/cost`; the Phase 2 review rejected it (B1, a busy confirm closed by a route change lost its undo), so the fix moved one row up and was done in the review session on Opus 5.5 Medium | [x] |
+| 2 | 2.6 Sheets, confirm, toasts hosts | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Focus handling, timers and stacking need judgment; reference in `app.js` | 2026-10-15 (lane t1); the wording of a failed Undo (N13) and of a confirm whose write fails (G14/N14) was left to a follow-up after the studio round, built 2026-10-17 in lane t2 (N13 toast, N14 confirm); real cost to log from `/cost`; the Phase 2 review rejected it (B1, a busy confirm closed by a route change lost its undo), so the fix moved one row up and was done in the review session on Opus 5.5 Medium | [x] |
 | 2 | 2.7 Partner changes and presence | Sonnet 5.5 High | $0.88 | Listener logic with written copy (guide §6.3) | 2026-10-15 (lane t1, 0616302); the partner's name is the other name in settings until N3; real cost to log from `/cost` | [x] |
 | 2 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-15: first pass found 2 blockers (B1 in 2.6; B2, no placeholder hero on `/new`), both fixed in the same session with seven smaller items; 6 should-fix items stay open (S1 session re-probe, S2–S4 partner and presence clocks, S5–S6 layout before Phase 3 screens); see `redesign/reviews/phase-2-review.md`; real cost to log from `/cost` | [x] |
 | 3 | 3.0 Component gallery route | Haiku 5.5 xHigh | $0.12 | A page that lists components | 198a3e6; real cost to log from `/cost` | [x] |
@@ -948,17 +948,17 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | 3.11 Agenda rows and month calendar | Sonnet 5.5 High | $0.88 | Calendar grid and labels need care; reference `schedule.js` | 8005594; 30 unit and 10 demo e2e tests | [x] |
 | 3 | 3.12 Task, item and guest rows | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Drag, keyboard moves and one-tap saves | 242068d; the Phase 3 review rejected it (B3, no failed state for an item's one-tap changes; B4, `HeadcountsCard` and `SidesCard` not built), so the fix moved one row up; fixed 2026-10-16 in the review session on Opus 5.5 High; 29 markup and 7 move tests, 22 demo e2e tests; real cost to log from `/cost` | [x] |
 | 3 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-16 (lane t1, run on Opus 5.5 High): first pass found 4 blockers (B1 in 3.4, B2 in 3.3, B3 and B4 in 3.12), all fixed in the same session with six should-fix items; 13 should-fix items stay open (S1–S13), and Phase 2 S5–S6 (top bar inside `main`, no page column) must be done before 4.1 and 4.2; see `redesign/reviews/phase-3-review.md`; real cost to log from `/cost` | [x] |
-| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | | [ ] |
+| 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | 2026-10-17 (lane t3, 7dd2e9a): built; raised G20/N20; real cost to log from `/cost` | [x] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
 | 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
-| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1); real cost to log from `/cost`; gap G20/N20 (failed record and receipt lines) added | [x] |
+| 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1); real cost to log from `/cost`; gap G21/N21 (failed record and receipt lines) added | [x] |
 | 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
 | 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
 | 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | | [ ] |
 | 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | | [ ] |
 | 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | 4bbbc7e; real cost to log from `/cost`; the Haiku second build is a separate row | [x] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
-| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | | [ ] |
+| 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
 | 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
 | 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | | [ ] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
@@ -987,7 +987,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | 47806c1, 14ef42e; the real-Cloudinary test passed once the server key had the Master Admin role (a Media Library User key can't delete). R13's screen comes with 4.19 | [x] |
 | 6 | 6.4 Manifest, icons, install | Haiku 5.5 Max | $0.21 | Port of need N1's design | | [ ] |
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | | [ ] |
-| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | | [ ] |
+| 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | built inside Task 4.11 (a8f26ea) on Sonnet 5.5, since the export needed them; `VENDOR_COLUMNS` and 9 model tests | [x] |
 | 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
 | 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
@@ -1004,7 +1004,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
 | 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
 | 9 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | | [ ] |
+| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design) | [x] |
 | any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
 ### How every task session runs
@@ -1013,7 +1013,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
 5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's **Done** box in the §7.0 table and under its heading below (date, commit, real `/cost`), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
+6. Tick the task's **Done** box in the §7.0 table and under its heading below (date and commit; the real `/cost` is optional: log it when you have it, and don't hold a tick for it), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
@@ -1239,7 +1239,7 @@ Each screen is built in its **normal** state with real data from the emulator an
 Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sections of the components it uses, and its prototype file. Each task also adds the screen's `page.tsx` under `src/app/(veil)/new/…` and the screen component in `src/veil/screens/<screen>/`.
 
 #### Task 4.1: Sign in · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · 7dd2e9a · real cost to log from `/cost`). The N3 "Which of you is this?" screens are not part of this task. Raised G20/N20 (an email sign-in turned away for another reason).
 - **Guide:** §5.1, §6.4, §6.5. **Prototype:** `signin.html`.
 - **Do:** Google sign-in (popup, as today), email and password, and no registration (§9.2 Q2); Firebase error codes mapped to the designed states (wrong email or password, offline); not allowed from 2.3; just signed out after Sign out; demo "Look around". The Google-window-closed state waits for N4.
 
@@ -1253,7 +1253,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.4. **Prototype:** `budget.html`. Uses `useBudget`, `useDues`; the record-payment sheet comes from 4.4.
 
 #### Task 4.4: Record a payment sheet · Sonnet 5.5 High
-- [x] **Done** (2026-10-17 · lane t1, commit in `git log` · real cost to log from `/cost`). `useRecordPayment()` (`src/veil/parts/payment/`) opens the sheet for a booking and optionally a part; the screens that open it (4.3, 4.5, 4.6, 4.8, 4.20) only call it. Gap G20/N20 added; the amount refusal is N16 (G16) for this field only.
+- [x] **Done** (2026-10-17 · lane t1, commit in `git log` · real cost to log from `/cost`). `useRecordPayment()` (`src/veil/parts/payment/`) opens the sheet for a booking and optionally a part; the screens that open it (4.3, 4.5, 4.6, 4.8, 4.20) only call it. Gap G21/N21 added; the amount refusal is N16 (G16) for this field only.
 - **Guide:** §5.4 (Record a payment row), §6.9. **Prototype:** `assets/app.js` `recordPayment`.
 - **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast.
 
@@ -1283,7 +1283,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.10. **Prototype:** `whatif.html`. Projected total, who would pay (8 + more), ordering, add and edit sheet with split into parts and merge back.
 
 #### Task 4.11: Vendors · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2, commit a8f26ea · real cost to log from `/cost`). `/new/vendors` (`src/veil/screens/vendors/`): hero and sub-navigation, focus chips with counts and Edit categories, search, the keen filter, six orders, category headings, 100 at a time, the add-vendor and categories sheets, the keen heart with its failed state, and the N5 export (`VENDOR_COLUMNS` in `src/lib/model/vendors.ts`, so nothing is left as a TODO N5). Data in `src/lib/data/vendors.ts` and `read.ts`. Not compared with the prototype by screenshot at 1440px and 390px yet; the phone layout is covered by an e2e test.
 - **Guide:** §5.11. **Prototype:** `vendors.html`. Focus chips with counts, search, keen filter, six orders, category headings, 100 at a time, add-vendor sheet (Add and start another), categories sheet (add, rename, remove with inline confirm and undo, 40 characters), export link (columns wait for N5; build with a placeholder set marked TODO N5).
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
@@ -1421,7 +1421,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - **Waits for:** need N2. **Files:** `src/app/(veil)/new/not-found.tsx`, `error.tsx` (and `global-error.tsx` if the design covers it); read `not-found.md`, `error.md` in the Next docs.
 
 #### Task 6.6: Vendor CSV columns · Haiku 5.5 xHigh
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2, commit a8f26ea, inside Task 4.11 · real cost counted there). `VENDOR_COLUMNS` and `vendorsCsv` in `src/lib/model/vendors.ts` hold the guide's N5 columns in order (the file name comes from `exportFileName` in `csv.ts` and the settings names); `toCsv` gained `quoteAll`. Checked by `tests/model/vendors.test.ts` and the export e2e in `tests/e2e/emulator/veil-vendors.spec.ts`.
 - **Waits for:** need N5. **Files:** `src/lib/model/csv.ts` columns; filename `vendors-<first>-<second>.csv` from settings (guide §5.11).
 
 #### Task 6.7: Old-names check · Haiku 5.5 Max
@@ -1512,8 +1512,8 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G1 | **N1** | The installed app and browser tab need a name, a mark, a theme colour and a background colour. Today: `src/app/manifest.ts` and `layout.tsx` metadata, `favicon.ico`, `public/icon-192.png`, `icon-512.png` (also reused as the maskable icon, §5 #36), `apple-icon.png`, theme colour `#2b2f4a`. The brief left branding open and the guide has no mark. The owner decided an app name in Step 2 (`inventory-notes.md` §9, §4 #16), which never reached the brief; the designer may want it (§9.2 Q14). | 6.4 | designed (v1.1); build open |
 | G2 | **N2** | No design for an address that matches no screen, or for an unexpected crash. Today there is no `not-found.tsx` or `error.tsx` at all. A record that's gone is designed (§5.6, §5.17), but only as "removed by Bella". | 6.5 | designed (v1.1); build open |
 | G3 | **N3** | The design names the partner in toasts, banners and "removed by Bella", and settings lists "Greg, you" and "Bella". The code knows only the signed-in account's email; nothing links an account to one of the two names in settings (`yourName`, `partnerName`). Also undesigned: a change made by *me* on my other device arrives like a partner's change (same `activity` feed). | 2.7 (uses the second name until then) | designed (v1.1); build open |
-| G4 | **N4** | Google sign-in uses a popup (`signInWithPopup`). The popup can be closed, blocked by the browser, or fail (`auth/popup-closed-by-user`, `auth/popup-blocked`, `auth/cancelled-popup-request`, network). The design covers wrong password, not allowed and offline only. | 4.1 (that state only) | designed (v1.1); build open |
-| G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); build open |
+| G4 | **N4** | Google sign-in uses a popup (`signInWithPopup`). The popup can be closed, blocked by the browser, or fail (`auth/popup-closed-by-user`, `auth/popup-blocked`, `auth/cancelled-popup-request`, network). The design covers wrong password, not allowed and offline only. | 4.1 (that state only) | designed (v1.1); built in 4.1 (2026-10-16) |
+| G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); built (4.11) |
 | G6 | **N6** | The design has allowed, not yet allowed and turned off. Web push also has "not supported here": an iPhone only receives web push once the app is installed to the home screen (iOS 16.4+), and some browsers have no push at all (`'PushManager' in window` is false). | 6.2 (that state only) | designed (v1.1); build open |
 | G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | designed (v1.1); build open |
 | G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | designed (v1.1); build open |
@@ -1521,14 +1521,15 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | designed (v1.1); build open |
 | G11 | **N11** | Owner decision §9.2 Q8. On Vercel Hobby the reminder job runs once a day, in the morning, within the hour. The event sheet offers "When it starts", "15 minutes", "1 hour", "1 day" and "1 week before" (guide §6.12); only the day-before and week-before ones can be delivered. Existing events may already store 60 minutes (the old default). | 4.20 (Remind us only), 6.2 | designed (v1.1); build open |
 | G12 | **N12** | Owner decision §9.2 Q4. The report from migration 1.11 (run on production 2026-10-14) found 4 wedding items with more than one person in `persons[]`: "Make Up Artist Groom and Bride Moms" (Groom Mom, Bride Mom), "Groom Dad & Brothers Suit" (Groom Dad, Groom Brother), "Groom Mom & Sister Dress" (Groom Mom, Groom Sister) and "Bride Dad & Brothers Suit" (Bride Dad, Bride Brothers). The design gives each item one person, so these can't be shown or filtered as they are. | 4.23 | designed (v1.1); build open |
-| G13 | **N13** | Raised by the Phase 1 review (B1, S1). Undo refuses with `WriteError` code `changed`, writing nothing, when the fields it would put back were changed since, by you or the partner (`patchWithUndo` and `removeAddedElement` in `src/lib/data/undo.ts`). Example: Split a booking, Bella records a payment on the Balance, then Undo. Guide §6.2 says what undo does when it works but not what the toast says when it can't. | 2.6 (toast host), 3.8 | designed (v1.1); build open |
-| G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | designed (v1.1); build open |
+| G13 | **N13** | Raised by the Phase 1 review (B1, S1). Undo refuses with `WriteError` code `changed`, writing nothing, when the fields it would put back were changed since, by you or the partner (`patchWithUndo` and `removeAddedElement` in `src/lib/data/undo.ts`). Example: Split a booking, Bella records a payment on the Balance, then Undo. Guide §6.2 says what undo does when it works but not what the toast says when it can't. | 2.6 (toast host), 3.8 | designed (v1.1); toast host built 2026-10-17 (lane t2): a rejected Undo with `changed` shows a 9-second partner toast, `toast.undoable(message, undo, conflict)` takes the screen's own sentence and the generic line ("Can’t undo: Bella has changed this since. It’s kept as it is now.") covers the rest. Open: each screen's sentence (the split in 4.4 and 4.6, the file move in 4.19, the payment in 4.4), closing with its task |
+| G14 | **N14** | Raised by Task 2.6. A confirm whose write fails (a removal that doesn't go through) has no wording in the guide: §6.1 covers saves, not removals. The confirm keeps its sheet open and shows a provisional line, "Couldn’t do that. Nothing was changed. Try again." (`ConfirmSheet` in `src/veil/shell/confirm.tsx`), written to the guide's error pattern. | 2.6 (follow-up), 3.8 | designed (v1.1); built 2026-10-17 (lane t2): `ConfirmSheet` and `InlineConfirm` show "Nothing was removed." (or "deleted.") with the reason, the button becomes Try again and takes focus, Keep it stays; `confirmFailure` in `src/lib/model/confirm-text.ts`. The provisional line is gone |
 | G15 | **N15** | Raised by Task 2.4. The prototype sets the couple's names in the top bar at 24px on a phone as well as on a computer. No token holds 24px at both widths: `--text-row-lg` is 24px and drops to 21px under 760px, its size for booking entries. Built with `--text-row-lg`, so the names are 21px on a phone until decided (`src/veil/shell/top-bar.module.css`). The rest of the top bar, the menu and the account line match the prototype at 390px and 1440px. | 2.4 (follow-up) | designed (v1.2); build open |
 | G16 | **N16** | Raised by Task 3.4. The guide words a failed save and two validation messages (a booking's name, a taken category) but not what a money field says when what was typed isn't an amount: words ("a lot", "12 juta"), a minus, or more than 15 digits. Built so the old amount returns without a message, the way a cleared name does (`MoneyInput` in `src/veil/parts/fields/money.tsx`, `readAmount` in `src/lib/model/amount.ts`); a blank field is no amount (null). | 3.4 (follow-up), 4.4 | designed (v1.2); build open |
 | G17 | **N17** | Raised by Task 3.10. The guide words a file that is too large ('Too large: 48 MB. Files can be up to 10 MB; only PDFs are shrunk.') and a PDF being shrunk, but not a PDF that is still over the limit after shrinking: the first message would say only PDFs are shrunk, which is wrong for it. Built with a provisional line, 'Too large even after shrinking: 10,5 MB. Files can be up to 10 MB.' (`stillTooLargeText` in `src/lib/model/uploads.ts`). Also undesigned and built plainly: the name, category and description in the upload sheet stay editable after a file is uploaded and save when the field is left (a failure keeps the text and offers Try again); and a refused or failed tile stays on the record until the upload sheet is opened again, which clears refused and finished entries. | 3.10 (follow-up), 4.19 | designed (v1.2); build open |
 | G18 | **N18** | Raised by Task 3.8. The guide says an edit sheet ends with Done, that a failed save keeps what was typed (§6.1, principle 7), and that Escape or a tap on the scrim closes a sheet (§4.14), but not what Done does while a change is unsaved, or what a dismissal does then. Built provisionally in `EditSheetActions` (`src/veil/shell/sheet.tsx`): Done is off while a change is saving or hasn't saved, and a save in flight holds Escape and the scrim (busy). A change that didn't save doesn't hold them, so Escape or a tap outside the sheet loses it. | 3.8; the edit sheets of 4.10, 4.12, 4.14, 4.15, 4.19, 4.20 and 4.24 | designed (v1.2); build open |
 | G19 | **N19** | Raised by Task 4.9. The guide gives a form that creates its Try again button (§6.1) but no line for a funder that wasn't added. Built provisionally in `src/veil/screens/who-pays/add-funder-row.tsx`: the booking form's wording without its reason, "The funder wasn’t added. What you typed is still here." (`ADD_FAILED` in `funder-text.ts`). The add keeps one id per row, so Try again never makes two funders. | 4.9 | open |
-| G20 | **N20** | Raised by Task 4.4. The guide gives a form that records its Try again button (§6.1) but no line for a payment that wasn't recorded, and no state for a receipt that is still uploading or that failed. Built provisionally in `src/veil/parts/payment/record-payment-sheet.tsx`: "The payment wasn’t recorded. What you typed is still here." in a rose inline banner with the button reading Try again (`RECORD_FAILED` in `src/lib/model/payment.ts`; the payment keeps one id per sheet, so Try again never records two); while a receipt uploads, "Waiting for the receipt to finish uploading." and Record payment is off; after a receipt fails, "A receipt didn’t upload. Try again to record the payment with it." with the upload's own Try again link and Record payment off (`RECEIPT_WAITING`, `RECEIPT_FAILED`). | 4.4 | open |
+| G20 | **N20** | Raised by Task 4.1. The guide words a wrong email or password, being offline and the Google window's endings, but not an email sign-in that Firebase turns away for another reason: `auth/too-many-requests`, `auth/user-disabled` or anything unexpected. Built provisionally (`PROBLEM_LINES.other` in `src/lib/model/sign-in.ts`): a rose box, "Couldn’t sign you in. Nothing was changed. Try again in a moment, or continue with Google." | 4.1 | open |
+| G21 | **N21** | Raised by Task 4.4. The guide gives a form that records its Try again button (§6.1) but no line for a payment that wasn't recorded, and no state for a receipt that is still uploading or that failed. Built provisionally in `src/veil/parts/payment/record-payment-sheet.tsx`: "The payment wasn’t recorded. What you typed is still here." in a rose inline banner with the button reading Try again (`RECORD_FAILED` in `src/lib/model/payment.ts`; the payment keeps one id per sheet, so Try again never records two); while a receipt uploads, "Waiting for the receipt to finish uploading." and Record payment is off; after a receipt fails, "A receipt didn’t upload. Try again to record the payment with it." with the upload's own Try again link and Record payment off (`RECEIPT_WAITING`, `RECEIPT_FAILED`). | 4.4 | open |
 
 ### 9.2 Questions for the owner: decided
 

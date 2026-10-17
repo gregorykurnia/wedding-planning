@@ -87,6 +87,28 @@ describe("CreateSheetActions", () => {
     expect(html).toMatch(/disabled=""[^>]*>Cancel</);
   });
 
+  it("can name the quiet button Done, for a sheet that adds several things", () => {
+    const html = markup(<CreateSheetActions action="Add category" cancelLabel="Done" onAction={noop} demo={false} />);
+    expect(html).toContain(">Done<");
+    expect(html).not.toContain(">Cancel<");
+  });
+
+  it("puts Add and start another where Cancel was, and disables both adds in demonstration mode", () => {
+    const another = { label: "Add and start another", onAction: noop };
+    const html = markup(<CreateSheetActions action="Add vendor" onAction={noop} demo another={another} />);
+    expect(html).not.toContain(">Cancel<");
+    expect(html.indexOf(">Add and start another<")).toBeLessThan(html.indexOf(">Add vendor<"));
+    expect(html).toMatch(/disabled=""[^>]*>Add and start another</);
+    expect(html).toMatch(/disabled=""[^>]*>Add vendor</);
+  });
+
+  it("holds the other add while one runs", () => {
+    const another = { label: "Add and start another", onAction: noop, busy: true, busyLabel: "Adding" };
+    const html = markup(<CreateSheetActions action="Add vendor" onAction={noop} demo={false} another={another} />);
+    expect(html).toContain(">Adding<");
+    expect(html).toMatch(/disabled=""[^>]*>Add vendor</);
+  });
+
   it("puts an optional rose link under the actions", () => {
     const html = markup(
       <CreateSheetActions

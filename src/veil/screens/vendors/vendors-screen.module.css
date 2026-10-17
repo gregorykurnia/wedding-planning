@@ -1,0 +1,28 @@
+/* The Vendors screen (guide §5.11), ported from the prototype's .cat-h and the
+   inline spacing of vendors.html. Tokens only; off-scale values take the nearest. */
+
+/* A category heading with its count at the far end: "Catering   12 vendors". */
+.catHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: var(--space-8) 0 var(--space-hair);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  overflow-wrap: anywhere;
+}
+
+.catCount {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* A list that isn't grouped starts 18px under the count, where a heading would be. */
+.flat {
+  margin-top: calc(var(--space-5) - var(--space-2));
+}

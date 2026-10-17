@@ -13,6 +13,12 @@ type InlineRenameProps = {
   onSave: (name: string) => Promise<unknown>;
   /** The rename is over: it saved, was cancelled, or had nothing to change. */
   onClose: () => void;
+  /**
+   * Says why a name can't be used ("There's already a category called Catering."),
+   * or null when it can. A name that can't be used isn't saved: the input keeps it
+   * and shows the reason, in the same look as a field that couldn't save.
+   */
+  check?: (name: string) => string | null;
 };
 
 /**
@@ -21,11 +27,12 @@ type InlineRenameProps = {
  * press. An empty name, or the same name, is a cancel: the old one stays. If
  * the write fails the input stays as typed, with the usual line and Try again.
  */
-export function InlineRename({ name, label, onSave, onClose }: InlineRenameProps) {
+export function InlineRename({ name, label, onSave, onClose, check }: InlineRenameProps) {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(name);
   const [state, setState] = useState<"typing" | "saving" | "failed">("typing");
+  const [problem, setProblem] = useState<string | null>(null);
   const alive = useRef(true);
 
   useEffect(() => {
@@ -42,6 +49,11 @@ export function InlineRename({ name, label, onSave, onClose }: InlineRenameProps
     const next = text.trim();
     if (!next || next === name) {
       onClose();
+      return;
+    }
+    const unusable = check?.(next) ?? null;
+    if (unusable) {
+      setProblem(unusable);
       return;
     }
     setState("saving");
@@ -70,9 +82,10 @@ export function InlineRename({ name, label, onSave, onClose }: InlineRenameProps
         value={text}
         maxLength={60}
         readOnly={busy}
-        aria-invalid={state === "failed" || undefined}
+        aria-invalid={state === "failed" || problem !== null || undefined}
         onChange={(event) => {
           setText(event.target.value);
+          setProblem(null);
           if (state === "failed") setState("typing");
         }}
         onKeyDown={(event) => {
@@ -95,6 +108,11 @@ export function InlineRename({ name, label, onSave, onClose }: InlineRenameProps
           Cancel
         </button>
       </span>
+      {problem ? (
+        <p className={`${styles.err} ${styles.renameErr}`} role="alert">
+          {problem}
+        </p>
+      ) : null}
       {state === "failed" ? (
         <p className={`${styles.err} ${styles.renameErr}`} role="alert">
           <span>{FIELD_FAILED}</span>

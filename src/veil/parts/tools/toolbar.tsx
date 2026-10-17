@@ -1,9 +1,21 @@
 import type { ReactNode } from "react";
 import styles from "./tools.module.css";
 
-/** Guide §4.12. The row that holds the search and the order, and the first row of filters under it. */
-export function Toolbar({ continued = false, children }: { continued?: boolean; children: ReactNode }) {
-  return <div className={[styles.tools, continued && styles.continued].filter(Boolean).join(" ")}>{children}</div>;
+/**
+ * Guide §4.12. The row that holds the search and the order, and the first row of filters under it.
+ * `tight` is for a toolbar that follows the focus chips, which already leave room above it.
+ */
+export function Toolbar({
+  continued = false,
+  tight = false,
+  children,
+}: {
+  continued?: boolean;
+  tight?: boolean;
+  children: ReactNode;
+}) {
+  const classes = [styles.tools, continued && styles.continued, tight && styles.tight];
+  return <div className={classes.filter(Boolean).join(" ")}>{children}</div>;
 }
 
 /** The toggles beside the search: "Only ones we're keen on" and the order. */

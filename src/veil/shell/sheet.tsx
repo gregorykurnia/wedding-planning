@@ -360,6 +360,8 @@ export function CreateSheetActions({
   demoLine = "Demonstration mode: adding is turned off.",
   disabled = false,
   link,
+  cancelLabel = "Cancel",
+  another,
 }: {
   /** The primary: "Add a booking". */
   action: string;
@@ -374,19 +376,38 @@ export function CreateSheetActions({
   disabled?: boolean;
   /** An optional rose link under the row: "Delete". */
   link?: ReactNode;
+  /** The quiet button that closes the sheet: "Done" where the sheet adds several things. */
+  cancelLabel?: string;
+  /**
+   * "Add and start another" (guide §6.13): a second add that keeps the sheet
+   * open for the next one. It takes Cancel's place, and Escape still closes.
+   */
+  another?: { label: string; onAction: () => void; busyLabel?: string; busy?: boolean };
 }) {
   const sheet = useSheet();
   const { connection } = useSession();
   const inDemo = demo ?? connection === "demo";
-  useBusy(sheet, busy);
+  useBusy(sheet, busy || Boolean(another?.busy));
   return (
     <>
       {inDemo && <p className={styles.demo}>{demoLine}</p>}
       <SheetActions>
-        <Btn variant="quiet" disabled={busy} onClick={sheet.close}>
-          Cancel
-        </Btn>
-        <Btn disabled={inDemo || disabled} busy={busy} busyLabel={busyLabel} onClick={onAction}>
+        {another ? (
+          <Btn
+            variant="quiet"
+            disabled={inDemo || busy}
+            busy={another.busy}
+            busyLabel={another.busyLabel}
+            onClick={another.onAction}
+          >
+            {another.label}
+          </Btn>
+        ) : (
+          <Btn variant="quiet" disabled={busy} onClick={sheet.close}>
+            {cancelLabel}
+          </Btn>
+        )}
+        <Btn disabled={inDemo || disabled || Boolean(another?.busy)} busy={busy} busyLabel={busyLabel} onClick={onAction}>
           {action}
         </Btn>
       </SheetActions>

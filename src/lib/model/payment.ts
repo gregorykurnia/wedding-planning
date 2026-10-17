@@ -14,13 +14,13 @@ export const PAYMENT_BUSY = "Recording";
 export const DEMO_RECORDING = "Demonstration mode: recording is turned off.";
 
 /**
- * Provisional (G20/N20): the design gives a failed save its Try again button
+ * Provisional (G21/N21): the design gives a failed save its Try again button
  * (guide §6.1), but no line for a payment. This is the funder form's wording
  * (G19) for a payment.
  */
 export const RECORD_FAILED = "The payment wasn’t recorded. What you typed is still here.";
 
-/** Provisional (G20/N20): the design has no state for a receipt that is still on its way, or one that didn't arrive. */
+/** Provisional (G21/N21): the design has no state for a receipt that is still on its way, or one that didn't arrive. */
 export const RECEIPT_WAITING = "Waiting for the receipt to finish uploading.";
 export const RECEIPT_FAILED = "A receipt didn’t upload. Try again to record the payment with it.";
 

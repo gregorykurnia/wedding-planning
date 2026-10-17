@@ -58,7 +58,7 @@ export function Btn({
   const label = busy && busyLabel !== undefined ? busyLabel : children;
   const content = (
     <>
-      {variant === "google" ? <GoogleMark className={styles.mark} /> : null}
+      {variant === "google" && !busy ? <GoogleMark className={styles.mark} /> : null}
       {label}
     </>
   );

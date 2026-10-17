@@ -41,6 +41,13 @@
   white-space: nowrap;
 }
 
+/* A category's count where a price would be: sans, muted, never wrapped (prototype's 14px). */
+.note {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 .inc {
   margin-top: var(--space-hair);
   font-size: var(--text-meta);

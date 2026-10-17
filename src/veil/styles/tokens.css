@@ -1,5 +1,7 @@
 /* =====================================================================
-   Veil design tokens, v1.0 (2026-10-14), frozen with design-guide.md
+   Veil design tokens, v1.2 (2026-10-16), frozen with design-guide.md v1.2
+   (v1.0 frozen 2026-10-14; v1.1 adds the app identity colours for N1;
+   v1.2 gives the couple's names one size at every width for N15)
    Taken from the stage 2 prototype (prototype/assets/veil.css, editor.css,
    schedule.css and the per-screen <style> blocks). Light only: the brief
    says dark mode isn't needed (decisions.md, stage 2 session 1).
@@ -122,7 +124,8 @@
   --text-figure-unit:   .38em;                    /* [.figure .rp] the small "Rp" before a figure */
   --text-gate-title:    46px;  /* sign-in "Our wedding planner" */
   --text-menu:          clamp(30px, 4.4vw, 44px); /* the full-page menu */
-  --text-names:         clamp(30px, 4vw, 44px);   /* overview: Greg & Bella in gold italic */
+  --text-names:         44px;  /* overview: Greg & Bella in gold italic, the same on a phone and a computer (v1.2, N15); line-height 1.1, long names wrap */
+  --text-names-top:     24px;  /* [.couple] the names in the top bar, the same at every width */
   --text-doc-title:     42px;  /* document title (phone 34) */
   --text-page-title:    40px;  /* [.hero h1] (phone 34) */
   --text-big-input:     40px;  /* the amount in "Record a payment" */
@@ -317,6 +320,19 @@
   --z-popover:        45; /* editor colour, table size and link bubble */
   --z-toast:          50;
   /* 60 is taken by the prototype's state switcher, which is not part of the design. */
+
+  /* ------------------------------------------------------------------
+     15. App identity (v1.1, N1). Outside the page only: the manifest,
+     theme-color and the icon files in prototype/assets/identity/.
+     ------------------------------------------------------------------ */
+  --app-theme:       #fce6ec;  /* theme_color: browser bar, installed window title bar (= --glow-blush) */
+  --app-splash:      #ffffff;  /* background_color: the opening screen */
+  --app-mark:        #8a6a2e;  /* the knot on the icon (= --accent-gold-text): 4,2:1 on blush, 3,5:1 at the deepest light; a graphic needs 3:1 */
+  --app-tile-blush:  #f9cbd8;  /* the icon's top-right light, deepest point */
+  --app-tile-gold:   #efdcb7;  /* the icon's bottom-left light, deepest point */
+
+  /* Self avatar in a toast (v1.1, N3): your own other device. [.toast .ava.self]
+     --glow-champagne behind --accent-gold-text-on-tint; the partner keeps --glow-blush. */
 }
 
 /* Phone overrides: the values that change under --bp-phone. */
@@ -380,7 +396,7 @@
     4.51  --accent-gold-text on --surface-note ("Sorted for now"), just passes
     5.20  --accent-gold-text-on-tint on --surface-banner (demonstration banner, calm sign-in notes)
     4.97  --accent-gold-text-on-tint on --glow-champagne (gold flags: "due in 4 days", "Now a booking")
-    4.23  --accent-gold-text on --glow-blush               passes only as large text (overview names, 30px+)
+    4.23  --accent-gold-text on --glow-blush               passes only as large text (overview names, 44px)
     5.77  --doc-ink-cornflower on white;  8.51  --doc-ink-plum on white
     3.49  --accent-attention on --glow-blush               decorative ♡ on the wedding day (desktop only; the cell label says it)
     5.68  white on --color-text-muted (RSVP "Not attending" pressed)

@@ -38,8 +38,8 @@ export function DemoBanner() {
 type ProblemProps = {
   /** Rose for errors; calm (gold) for signed-out, offline and not-connected notes. */
   tone?: "rose" | "calm";
-  /** `alert` for a sign-in error, so a screen reader announces it. */
-  role?: "alert";
+  /** `alert` for a sign-in error and `status` for a calm note, so a screen reader announces it. */
+  role?: "alert" | "status";
   children: ReactNode;
 };
 
