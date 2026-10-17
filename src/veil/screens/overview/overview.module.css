@@ -1,0 +1,92 @@
+/* Guide §5.2. Ported from overview.html's own styles. Sizes, colours and spacing come from tokens; where the prototype's value has no token the nearest one is used (ties go up). */
+
+/* The couple's names in gold italic: 44px on a phone and a computer alike (N15); long names wrap. */
+.names {
+  font-family: var(--font-display);
+  font-size: var(--text-names);
+  font-weight: var(--weight-display-light);
+  font-style: italic;
+  line-height: var(--leading-title);
+  color: var(--accent-gold-text);
+  overflow-wrap: anywhere;
+}
+
+.days {
+  margin-top: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--weight-figure);
+  font-size: var(--text-days);
+  line-height: var(--leading-days);
+  letter-spacing: var(--tracking-days);
+}
+
+/* "The wedding day" and "Married" sit 22px under the names. */
+.kicker {
+  margin-top: calc(var(--space-5) + var(--space-hair));
+}
+
+/* After the wedding the day is set in serif, in ink. */
+.married {
+  margin-top: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-sheet-title);
+  line-height: var(--leading-heading);
+  color: var(--color-text);
+}
+
+/* No wedding date: a 420px form, left-aligned inside the centred hero, then the button. */
+.dateForm {
+  max-width: 420px;
+  margin: var(--space-6) auto 0;
+  text-align: left;
+}
+
+.save {
+  margin-top: var(--space-5);
+}
+
+.demoLine {
+  margin-top: var(--space-3);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.install {
+  margin-top: var(--space-7);
+}
+
+.coming {
+  margin-top: var(--space-9);
+}
+
+.comingTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-display);
+  text-align: center;
+}
+
+.agenda {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+.all {
+  margin-top: var(--space-5);
+  text-align: center;
+  font-size: var(--text-meta);
+}
+
+.nothing {
+  margin-top: var(--space-3);
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* The prototype puts 44px above the doors; the doors' own 36px plus the next step up. */
+.doors {
+  padding-top: var(--space-3);
+}

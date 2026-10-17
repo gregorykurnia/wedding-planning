@@ -16,6 +16,7 @@ function fromDoc(data: DocumentData | undefined): WeddingSettings {
     weddingDate: data?.weddingDate ?? null,
     partnerEmail: data?.partnerEmail ?? "",
     venue: data?.venue ?? "",
+    startedOn: typeof data?.startedOn === "string" ? data.startedOn : null,
     updatedAt: timestampToMillis(data?.updatedAt),
   };
 }

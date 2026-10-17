@@ -324,5 +324,7 @@ export interface WeddingSettings {
   weddingDate: string | null; // ISO date string
   partnerEmail: string;
   venue: string;
+  /** The day planning started (`YYYY-MM-DD`), set by migration 1.11; the old UI doesn't write it. */
+  startedOn?: string | null;
   updatedAt: number | null;
 }

@@ -3,6 +3,8 @@ import { figure, isLongFigure } from "@/lib/model/format";
 import styles from "./hero.module.css";
 
 type HeroProps = {
+  /** Above the head and 28px clear of it: the overview's couple names (guide §5.2). */
+  lead?: ReactNode;
   /** The line above the title, in muted text. */
   category?: ReactNode;
   /** The page title. Left out on a figure-only hero, such as the what-if figure state. */
@@ -20,10 +22,11 @@ type HeroProps = {
  * title, the line under it, the sub-navigation, then the figure block (guide §4.4).
  * The back link sits above it, outside.
  */
-export function Hero({ category, title, sub, nav, children }: HeroProps) {
+export function Hero({ lead, category, title, sub, nav, children }: HeroProps) {
   const hasHead = category != null || title != null || sub != null;
   return (
     <section className={styles.hero}>
+      {lead != null && <div className={hasHead ? styles.lead : undefined}>{lead}</div>}
       {hasHead && (
         <div>
           {category != null && <p className={styles.sub}>{category}</p>}
