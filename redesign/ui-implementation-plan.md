@@ -1004,7 +1004,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
 | 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
 | 9 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | | [ ] |
+| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design) | [x] |
 | any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
 ### How every task session runs
