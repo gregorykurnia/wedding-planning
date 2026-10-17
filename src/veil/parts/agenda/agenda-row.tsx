@@ -19,6 +19,8 @@ export interface AgendaRowProps {
   related?: { name: string; href: string } | null;
   /** Who pays a payment: the funder's name, or `null` when nobody is named yet. */
   funderName?: string | null;
+  /** A reminder set for a time of day, which can't arrive any more (N11): the row says so. */
+  reminderLine?: boolean;
 }
 
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
@@ -35,7 +37,7 @@ const flashTarget = (item: AgendaItem) =>
  * their sheet; a payment or a task is a read-only reflection that links to
  * its booking or task.
  */
-export function AgendaRow({ item, today, onOpen, onRecordPayment, related, funderName }: AgendaRowProps) {
+export function AgendaRow({ item, today, onOpen, onRecordPayment, related, funderName, reminderLine }: AgendaRowProps) {
   const flash = useFlash(flashTarget(item));
   const late = isLate(item, today);
   const when = rowWhen(item, today);
@@ -80,6 +82,9 @@ export function AgendaRow({ item, today, onOpen, onRecordPayment, related, funde
           <Link className={styles.rel} href={related.href} dir="auto">
             {related.name}
           </Link>
+        ) : null}
+        {item.type === "event" && reminderLine && !late ? (
+          <span className={styles.remBad}>Its reminder can’t arrive. Choose another</span>
         ) : null}
       </div>
       {flag || item.type === "payment" ? (

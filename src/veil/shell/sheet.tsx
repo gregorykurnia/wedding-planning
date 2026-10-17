@@ -422,7 +422,22 @@ export function CreateSheetActions({
  * has saved, so a change that didn't save keeps the sheet open with its Try again
  * above it. While a save is in flight, Escape and the scrim hold the sheet.
  */
-export function EditSheetActions({ link, onDone }: { link?: ReactNode; onDone?: () => void }) {
+export function EditSheetActions({
+  link,
+  onDone,
+  before,
+  held,
+}: {
+  link?: ReactNode;
+  onDone?: () => void;
+  /** Quiet actions that come before Done, such as the event sheet's "Mark completed". */
+  before?: ReactNode;
+  /**
+   * A change that can't be saved until something is fixed (N9). The line says what, and Done goes to
+   * the field (`onFix`) instead of closing the sheet.
+   */
+  held?: { line: string; onFix: () => void } | null;
+}) {
   const sheet = useSheet();
   const scope = useContext(SaveScopeContext);
   const kind = scope?.line.kind ?? "idle";
@@ -432,11 +447,12 @@ export function EditSheetActions({ link, onDone }: { link?: ReactNode; onDone?: 
     <>
       {scope && (
         <div className={styles.save}>
-          <SaveLine />
+          <SaveLine held={held?.line} />
         </div>
       )}
       <SheetActions>
-        <Btn disabled={!settled} onClick={onDone ?? sheet.close}>
+        {before}
+        <Btn disabled={!settled && !held} onClick={held ? held.onFix : (onDone ?? sheet.close)}>
           Done
         </Btn>
       </SheetActions>

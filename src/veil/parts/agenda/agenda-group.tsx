@@ -14,6 +14,8 @@ interface AgendaGroupProps extends Pick<AgendaRowProps, "onOpen" | "onRecordPaym
   relatedOf?: (item: AgendaItem) => AgendaRowProps["related"];
   /** The funder's name for a payment. */
   funderNameOf?: (item: AgendaItem) => string | null;
+  /** Whether an event's reminder can't arrive any more (N11). */
+  reminderLineOf?: (item: AgendaItem) => boolean;
 }
 
 /**
@@ -21,7 +23,7 @@ interface AgendaGroupProps extends Pick<AgendaRowProps, "onOpen" | "onRecordPaym
  * on the right (guide §4.25). The count is the whole group's, so "Show 80
  * more" doesn't change what the heading says.
  */
-export function AgendaGroup({ group, today, onOpen, onRecordPayment, relatedOf, funderNameOf }: AgendaGroupProps) {
+export function AgendaGroup({ group, today, onOpen, onRecordPayment, relatedOf, funderNameOf, reminderLineOf }: AgendaGroupProps) {
   return (
     <>
       <h2 className={group.late ? `${styles.groupHead} ${styles.groupLate}` : styles.groupHead}>
@@ -38,6 +40,7 @@ export function AgendaGroup({ group, today, onOpen, onRecordPayment, relatedOf, 
             onRecordPayment={onRecordPayment}
             related={relatedOf?.(item)}
             funderName={funderNameOf?.(item)}
+            reminderLine={reminderLineOf?.(item)}
           />
         ))}
       </ul>

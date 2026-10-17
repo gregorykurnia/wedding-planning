@@ -19,6 +19,7 @@ const COLLECTION = "scheduleEvents";
 
 const EVENT_TYPES: ScheduleEventType[] = [
   "vendor_call",
+  "organiser_call",
   "appointment",
   "payment",
   "deadline",
@@ -42,6 +43,9 @@ function fromDoc(id: string, data: DocumentData): ScheduleEvent {
     relatedVenueId: typeof data.relatedVenueId === "string" ? data.relatedVenueId : null,
     reminderMinutes: Array.isArray(data.reminderMinutes)
       ? data.reminderMinutes.filter((value: unknown): value is number => typeof value === "number")
+      : [],
+    remindersSent: Array.isArray(data.remindersSent)
+      ? data.remindersSent.filter((value: unknown): value is number => typeof value === "number")
       : [],
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),

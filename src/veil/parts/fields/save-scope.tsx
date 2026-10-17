@@ -28,12 +28,21 @@ export function SaveScopeProvider({
  * "Saving", then "Saved"; "1 change not saved" in rose when a change fails. On
  * a screen it sits centred under the title. In a sheet scope a failure reads
  * "Couldn’t save. What you typed is kept. Try again", and Try again retries
- * every change that didn't save.
+ * every change that didn't save. `held` replaces the line while a change waits
+ * for something to be fixed ("1 change not saved yet: the end time").
  */
-export function SaveLine() {
+export function SaveLine({ held }: { held?: string | null }) {
   const scope = useContext(SaveScopeContext);
   if (!scope) return null;
   const { line, retryAll, sheet } = scope;
+  // A change that can't be saved until something is fixed (guide §6.1, N9): the screen says what.
+  if (held) {
+    return (
+      <p className={`${styles.saveLine} ${styles.saveFailed}`} role="status">
+        {held}
+      </p>
+    );
+  }
   const failed = line.kind === "failed";
   return (
     <p className={failed ? `${styles.saveLine} ${styles.saveFailed}` : styles.saveLine} role="status">
