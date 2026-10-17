@@ -10,6 +10,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { WriteError } from "@/lib/data/write-error";
+import { undoConflict } from "@/lib/model/confirm-text";
 import styles from "./toasts.module.css";
 
 /** Guide §4.16: 6 seconds, and the undo window lasts exactly as long. */
@@ -26,6 +28,8 @@ interface ToastItem {
   /** The partner's name; the circle shows its first letter. */
   partner?: string;
   action?: { label: string; run: () => void | Promise<void> };
+  /** What an Undo that finds the thing changed since says (N13); the generic line if not given. */
+  conflict?: ReactNode;
   /** Undo was tapped and the restore hasn't finished. */
   restoring: boolean;
 }
@@ -33,8 +37,13 @@ interface ToastItem {
 export interface Toasts {
   /** "Saved", "Added Bunga Melati Florist". */
   confirmation(message: ReactNode): number;
-  /** "Removed Villa Samaya Ubud · Undo". `undo` resolves when the item is back. */
-  undoable(message: ReactNode, undo: () => void | Promise<void>): number;
+  /**
+   * "Removed Villa Samaya Ubud · Undo". `undo` resolves when the item is back.
+   * If it rejects with a `changed` WriteError (the partner, or you, changed the
+   * same thing since), nothing is taken back and a 9-second partner toast says
+   * so: `conflict` is its sentence, "Can’t undo the split: Bella recorded …".
+   */
+  undoable(message: ReactNode, undo: () => void | Promise<void>, conflict?: ReactNode): number;
   /** "Kebun Bunga Atelier is now a booking · Open". */
   next(message: ReactNode, label: string, open: () => void): number;
   /** "Bella recorded Rp 55.500.000 for Dapur Lestari Catering". */
@@ -47,6 +56,8 @@ export interface Toasts {
 interface ToastContextValue {
   toasts: Toasts;
   setLifted: (lifted: boolean) => void;
+  /** Who the conflict toast's circle shows, set by whoever knows (`useToastPartnerName`). */
+  setPartnerName: (name: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -71,9 +82,27 @@ export function useEditorToasts() {
   }, [setLifted]);
 }
 
+/**
+ * Tells the toast host who the partner is, for the "Can’t undo" toast (N13).
+ * Mounted by the providers while an allowed account is signed in, where the
+ * name can be read; "Your partner" until then.
+ */
+export function useToastPartnerName(name: string) {
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error("useToastPartnerName needs a ToastHost above it");
+  const { setPartnerName } = ctx;
+  useEffect(() => {
+    setPartnerName(name);
+  }, [setPartnerName, name]);
+}
+
 export function ToastHost({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
   const [lifted, setLifted] = useState(false);
+  const partnerNameRef = useRef("Your partner");
+  const setPartnerName = useCallback((name: string) => {
+    partnerNameRef.current = name;
+  }, []);
   const nextId = useRef(0);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
@@ -116,8 +145,8 @@ export function ToastHost({ children }: { children: ReactNode }) {
     };
     return {
       confirmation: (message) => add({ kind: "confirmation", message }, TOAST_MS),
-      undoable: (message, undo) =>
-        add({ kind: "undo", message, action: { label: "Undo", run: undo } }, TOAST_MS),
+      undoable: (message, undo, conflict) =>
+        add({ kind: "undo", message, conflict, action: { label: "Undo", run: undo } }, TOAST_MS),
       next: (message, label, open) =>
         add({ kind: "next", message, action: { label, run: open } }, TOAST_MS),
       partner: (name, message) =>
@@ -146,16 +175,25 @@ export function ToastHost({ children }: { children: ReactNode }) {
     try {
       await item.action.run();
       dismiss(item.id);
-    } catch {
+    } catch (err) {
+      if (err instanceof WriteError && err.code === "changed") {
+        // The same thing was changed since (N13): nothing is taken back, there
+        // is nothing left to try, and what is there now stays. The toast says so.
+        dismiss(item.id);
+        toasts.partner(
+          partnerNameRef.current,
+          item.conflict ?? undoConflict(partnerNameRef.current),
+        );
+        return;
+      }
       // Nothing was put back. The button goes back to Undo for another window
-      // so nothing is lost silently. What the toast says about it waits for
-      // need N13, which Task 3.8 picks up.
+      // so nothing is lost silently.
       setRestoring(item.id, false);
       startTimer(item.id, TOAST_MS);
     }
   }
 
-  const value = useMemo(() => ({ toasts, setLifted }), [toasts]);
+  const value = useMemo(() => ({ toasts, setLifted, setPartnerName }), [toasts, setPartnerName]);
 
   return (
     <ToastContext.Provider value={value}>

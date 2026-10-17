@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { WriteError } from "@/lib/data/write-error";
 import { veilHref } from "@/veil/href";
 import { useConfirm } from "@/veil/shell/confirm";
 import { Sheet, SheetActions, useSheet, useSheets } from "@/veil/shell/sheet";
@@ -24,6 +25,12 @@ const START: FakeRecord[] = [
 ];
 
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** An undo that finds the record changed since: it refuses and writes nothing. */
+async function cantUndo() {
+  await pause(300);
+  throw new WriteError("changed", "Changed after this, so undo would erase that change");
+}
 
 export function ShellDemos() {
   const toast = useToast();
@@ -105,6 +112,22 @@ export function ShellDemos() {
         </button>{" "}
         <button type="button" onClick={() => toast.demo()}>
           Show the demonstration toast
+        </button>{" "}
+        {/* N13: the same thing was changed since, so Undo takes nothing back. */}
+        <button type="button" onClick={() => toast.undoable("Removed Villa Samaya Ubud", cantUndo)}>
+          Show an undo that can’t
+        </button>{" "}
+        <button
+          type="button"
+          onClick={() =>
+            toast.undoable(
+              "Split Villa Samaya Ubud",
+              cantUndo,
+              "Can’t undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now.",
+            )
+          }
+        >
+          Show a split that can’t be undone
         </button>
       </p>
 
