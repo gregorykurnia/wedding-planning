@@ -716,7 +716,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | B2 add a booking directly | Add a booking | `Fields`, `UploadSheet`, `Problem` | write `addDirectBooking` (client id, retry-safe) | 1.10, 4.7 | [ ] |
 | B3 a booking's details | A booking | `Fields`, `SaveLine`, `FileTiles` | data `useBooking`, write layer | 4.6 | [ ] |
 | B4 parts | A booking | `PartDisclosure`, split | model `money.ts` (`totals`, `splitBooking`), write `splitBooking`, `addPart`, `removePart`, `mergeLastPart` | 1.4, 1.10, 4.6 | [ ] |
-| B5 committed, paid, to pay | Budget, Bookings | `Hero`, `Thread`, `.over` | model `money.ts` (`budget`, overpaid) | 1.4, 4.3 | [ ] |
+| B5 committed, paid, to pay | Budget, Bookings | `Hero`, `Thread`, `.over` | model `money.ts` (`budget`, overpaid) | 1.4, 4.3 | [x] |
 | B6 payments due | Payments due | `DueRow`, groups | model `money.ts` (`dues`, `urgency`, `SOON = 14`) | 1.4, 4.8 | [ ] |
 | B7 per funder | Who pays | funder rows | model `money.ts` (`byFunder`, Not assigned) | 1.4, 4.9 | [x] |
 | B8 what-if items | What-if | `WhatIfEntry`, sheet with parts | model `money.ts` (`whatIfTotals`, `projected`) | 1.4, 4.10 | [ ] |
@@ -950,7 +950,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 3 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-16 (lane t1, run on Opus 5.5 High): first pass found 4 blockers (B1 in 3.4, B2 in 3.3, B3 and B4 in 3.12), all fixed in the same session with six should-fix items; 13 should-fix items stay open (S1–S13), and Phase 2 S5–S6 (top bar inside `main`, no page column) must be done before 4.1 and 4.2; see `redesign/reviews/phase-3-review.md`; real cost to log from `/cost` | [x] |
 | 4 | 4.1 Sign in | Sonnet 5.5 High | $0.88 | Real auth errors mapped to the designed states | 2026-10-17 (lane t3, 7dd2e9a): built; raised G20/N20; real cost to log from `/cost` | [x] |
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | | [ ] |
-| 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | | [ ] |
+| 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | 2026-10-17 (lane t1, 3c5d884); the N7 closing line is built here and G7 stays open for 4.2; 34 model tests, 3 demo and 3 emulator e2e; real cost to log from `/cost` | [x] |
 | 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1, ddc5b45); gap G21/N21 (failed record and receipt lines) added | [x] |
 | 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
 | 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
@@ -1249,7 +1249,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Do:** names, days figure, time-gone thread, coming up (5), doors, no-date form (saves `weddingDate`), install card (6.4 completes the install logic). The day itself and after wait for N7.
 
 #### Task 4.3: Budget · Haiku 5.5 Max
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t1, 3c5d884). `/new/budget` (`src/veil/screens/budget/`): the hero, next card, after line, doors, closing line and Add booking, plus the empty layout. `useBudgetOverview` composes `useBudget` and `useDues`; the closing line's N7 phases are in `src/lib/model/countdown.ts`. G7 stays open for 4.2. The Bella's-change flash, the stress and overpaid screenshots and the loading, couldn't-load and offline checks wait for Phase 5.
 - **Guide:** §5.4. **Prototype:** `budget.html`. Uses `useBudget`, `useDues`; the record-payment sheet comes from 4.4.
 
 #### Task 4.4: Record a payment sheet · Sonnet 5.5 High
