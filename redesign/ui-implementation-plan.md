@@ -53,7 +53,7 @@ The full table, one row per task with its reason, is §7.0. Picks use only rows 
 | Haiku 5.5 High | 0 | the design-gap scan and import | $0.16 |
 | **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $81** |
 
-Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; check `/cost` after each session and log real costs in §7.0.
+Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; logging the real `/cost` in §7.0 is optional (log it when you have it).
 
 ---
 
@@ -903,14 +903,14 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **Minimum viable model.** Each pick below is the cheapest row in `~/.claude/CLAUDE.md` that should do the task well. Opus 5.5 High is used only where a mistake could lose data or break production, and each such row names the risk. Never Opus 5.5 Low or Sonnet 5.5 Medium.
 - **Model check.** At the start of each session, compare the current model and effort with the task's pick. If the current one is lower, say so and suggest `/model` plus the effort setting before starting. If it's much higher for a Haiku task, suggest the cheaper one.
 - **One task per session,** reading only: the task's section below, the design-guide sections it names, and the prototype file it names. Old UI files are opened only where a task says so, and only for the data calls they make. This keeps a cheaper model from copying old patterns.
-- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Run `/cost` after each, compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21.
+- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. Cheaper means the cheaper row in the model table; real `/cost` figures are optional and help only if both are known. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21.
 - **Escalation.** The first time a model gets a task wrong twice, redo it one row stronger and log the change in the table. When an end-of-phase review rejects a task's work, the fix is done one row stronger too, and that task's pick is updated (redesign plan, "Move up after a failed check").
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 - **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
 
-**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; log real `/cost` figures in the "Real cost / changes" column and tick **Done** when the task is finished.
+**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. Logging the real `/cost` in the "Real cost / changes" column is optional.
 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
@@ -1013,7 +1013,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
 5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's **Done** box in the §7.0 table and under its heading below (date, commit, real `/cost`), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
+6. Tick the task's **Done** box in the §7.0 table and under its heading below (date and commit; the real `/cost` is optional: log it when you have it, and don't hold a tick for it), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 

@@ -36,16 +36,16 @@ Replace `N` with the terminal's number (1 to 4).
 4. **Start the task:** "Do Task 4.17 from `redesign/ui-implementation-plan.md`" (the session reads only that task's plan section, design-guide section and prototype file, as §7.0 says).
 5. **Commit locally** in the lane. Don't push lane branches.
 6. **Deliver it to `redesign`:** `git merge redesign`, fix any bookkeeping conflicts, rerun the checks, then `git -C ../../wedding-planning merge --ff-only lane/tN` and `git -C ../../wedding-planning push origin redesign`. If the fast-forward fails, another lane merged first: merge `redesign` again and retry.
-7. **Tick it:** §7.0 and the task heading in the implementation plan, its box here, and its §5, §6 and §10 rows. Run `/cost` and log the real cost.
+7. **Tick it:** §7.0 and the task heading in the implementation plan, its box here, and its §5, §6 and §10 rows, in the lane before step 6 so the ticks arrive with the work. Logging the real `/cost` is optional: add it when you have it, and never hold a tick or a merge for it.
 
 ## Terminal 4's first job: the calibration trial
 
 §7.0 says to build Task 4.9 twice from the same starting commit. Terminal 1 builds it with Sonnet 5.5 High from `19befeb`; Terminal 4 builds the second one at the same time with Haiku 5.5 Max, from `3f47f9f`, which has the same app code as `19befeb` plus this file's four-lane split and the e2e lock:
 
 1. `t4`, then `git switch -c trial/4.9-haiku 3f47f9f`. This branch is thrown away: never merge it into `redesign` and never push it.
-2. `/model` Haiku 5.5 Max. "Do Task 4.9 from `redesign/ui-implementation-plan.md` as the calibration trial's second build. Don't tick anything, don't merge, and don't push." Commit on the trial branch, then run `/cost` and note the real cost.
+2. `/model` Haiku 5.5 Max. "Do Task 4.9 from `redesign/ui-implementation-plan.md` as the calibration trial's second build. Don't tick anything, don't merge, and don't push." Commit on the trial branch. Noting the real `/cost` is optional.
 3. `git switch lane/t4`. The trial is done; the comparison waits for Terminal 1's 4.9 to be in `redesign`.
-4. **Calibration result** (its own session in t4, Sonnet 5.5 High, once Terminal 1's 4.9 is in `redesign`): `git merge --ff-only redesign`, then compare both builds against `redesign/design/prototype/funders.html` in every state at 1440px and 390px (`git switch trial/4.9-haiku` and `npm run dev -- -p 3040` for one, `git switch lane/t4` for the other). Terminal 1's build stays in `redesign` either way, since later tasks build on it; the trial only decides the model. If Haiku's build is as good, move the single-screen Sonnet tasks that only display model data down to Haiku 5.5 Max and log it under §7.0, as the plan says. Either way, write the result and both real costs in the §7.0 "Calibration trial" row, tick it, and set the model in every ★ cell here. Deliver the ticks like any task (step 6 above), then `git branch -D trial/4.9-haiku`.
+4. **Calibration result** (its own session in t4, Sonnet 5.5 High, once Terminal 1's 4.9 is in `redesign`): `git merge --ff-only redesign`, then compare both builds against `redesign/design/prototype/funders.html` in every state at 1440px and 390px (`git switch trial/4.9-haiku` and `npm run dev -- -p 3040` for one, `git switch lane/t4` for the other). Terminal 1's build stays in `redesign` either way, since later tasks build on it; the trial only decides the model. If Haiku's build is as good, move the single-screen Sonnet tasks that only display model data down to Haiku 5.5 Max and log it under §7.0, as the plan says. Decide on quality: if Haiku's build is as good, Haiku wins, since its row costs less. Either way, write the result in the §7.0 "Calibration trial" row (with the real costs only if both are known), tick it, and set the model in every ★ cell here. Deliver the ticks like any task (step 6 above), then `git branch -D trial/4.9-haiku`.
 
 The ★ tasks wait for step 4.
 
