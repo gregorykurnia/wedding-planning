@@ -1,0 +1,86 @@
+/* "Which of you is this?" (guide §5.1, N3), ported from the prototype's signin.html
+   whoami states. The gate's layout again; tokens only, and off-scale values take
+   the nearest token, ties going up. */
+.screen {
+  display: grid;
+  place-items: center;
+  /* main keeps room at the bottom for the add button, which this screen doesn't have. */
+  min-height: 100svh;
+  margin-bottom: calc(-1 * var(--space-page-bottom));
+  padding: var(--space-6);
+}
+
+.gate {
+  width: min(var(--measure-gate), 100%);
+  text-align: center;
+}
+
+.mark {
+  width: 64px;
+  height: 64px;
+  color: var(--accent-thread);
+  margin: 0 auto;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display-light);
+  font-size: var(--text-gate-title);
+  line-height: var(--leading-gate);
+  margin-top: var(--space-page-top);
+}
+
+.sub {
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+  font-size: var(--text-reading);
+}
+
+.ask {
+  margin-top: var(--space-5);
+}
+
+/* The two names as large serif chips, centred. Doubled so they beat the shared chip's own rules. */
+.chips {
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+.chip.chip {
+  font-family: var(--font-display);
+  font-size: var(--text-row-lg);
+  padding: var(--space-3) var(--space-7);
+}
+
+.form {
+  margin-top: var(--space-5);
+  text-align: left;
+}
+
+/* The two name fields sit without the rules above and between them. */
+.bare.bare {
+  border-top: 0;
+}
+
+.bare > * {
+  border-bottom: 0;
+}
+
+.why {
+  margin-top: var(--space-7);
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.problem {
+  margin-top: var(--space-5);
+  text-align: left;
+}
+
+.go.go {
+  width: 100%;
+  justify-content: center;
+  padding-block: var(--space-3);
+  margin-top: var(--space-6);
+}

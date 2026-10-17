@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useId,
+  useState,
   type InputHTMLAttributes,
   type ReactNode,
   type Ref,
@@ -31,6 +32,11 @@ type FieldContextValue = {
   /** A change that didn't save, or a value that can't be saved. */
   invalid: boolean;
   disabled: boolean;
+  /**
+   * A control that refuses what was typed says why here (a money field, N16):
+   * the row rings rose and shows the line, until the control clears it.
+   */
+  setProblem: (line: string | null) => void;
 };
 
 const FieldContext = createContext<FieldContextValue | null>(null);
@@ -77,12 +83,14 @@ export function FieldRow({
   group = false,
   hint,
   field,
-  problem,
+  problem: problemProp,
   invalid = false,
   stacked = false,
   children,
 }: FieldRowProps) {
   const id = useId();
+  const [refusal, setRefusal] = useState<string | null>(null);
+  const problem = problemProp ?? refusal;
   const controlId = `${id}-control`;
   const labelId = `${id}-label`;
   const noteId = `${id}-note`;
@@ -115,7 +123,14 @@ export function FieldRow({
         </label>
       )}
       <FieldContext.Provider
-        value={{ controlId, labelId, describedBy: note ? noteId : undefined, invalid: failed || invalid || Boolean(problem), disabled }}
+        value={{
+          controlId,
+          labelId,
+          describedBy: note ? noteId : undefined,
+          invalid: failed || invalid || Boolean(problem),
+          disabled,
+          setProblem: setRefusal,
+        }}
       >
         {children}
       </FieldContext.Provider>
@@ -127,7 +142,7 @@ export function FieldRow({
           </button>
         </p>
       ) : problem ? (
-        <p className={styles.err} id={noteId}>
+        <p className={styles.err} id={noteId} role="alert">
           {problem}
         </p>
       ) : hint ? (

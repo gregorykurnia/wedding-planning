@@ -32,6 +32,9 @@ type ChipGroupProps<T extends string> = {
   onChange: (value: T) => void;
   /** Demonstration mode: every chip is inert. */
   disabled?: boolean;
+  /** Extra classes for the group and for each chip, for a screen that sets its chips larger (who's who). */
+  className?: string;
+  chipClassName?: string;
 };
 
 /**
@@ -39,7 +42,15 @@ type ChipGroupProps<T extends string> = {
  * on the chosen chip; the arrow keys, Home and End move and choose, as in any
  * radio group.
  */
-export function ChipGroup<T extends string>({ label, options, value, onChange, disabled = false }: ChipGroupProps<T>) {
+export function ChipGroup<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  disabled = false,
+  className,
+  chipClassName,
+}: ChipGroupProps<T>) {
   const chips = useRef<(HTMLButtonElement | null)[]>([]);
   const checked = Math.max(0, options.findIndex((option) => option.value === value));
 
@@ -76,7 +87,12 @@ export function ChipGroup<T extends string>({ label, options, value, onChange, d
   }
 
   return (
-    <div role="radiogroup" aria-label={label} className={styles.chips} onKeyDown={onKeyDown}>
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className={className ? `${styles.chips} ${className}` : styles.chips}
+      onKeyDown={onKeyDown}
+    >
       {options.map((option, index) => (
         <button
           key={option.value}
@@ -87,7 +103,7 @@ export function ChipGroup<T extends string>({ label, options, value, onChange, d
           role="radio"
           aria-checked={option.value === value}
           tabIndex={index === checked ? 0 : -1}
-          className={styles.chip}
+          className={chipClassName ? `${styles.chip} ${chipClassName}` : styles.chip}
           disabled={disabled}
           onClick={() => choose(index)}
         >
