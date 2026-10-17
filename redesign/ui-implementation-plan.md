@@ -742,13 +742,13 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | T8 remove with undo | Wedding items | `ConfirmSheet`, undo | `restoreMasterListItem` (same `sortOrder`) | 1.8, 4.23 | [ ] |
 | T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [x] |
 | T10 starts filled in | Wedding items | first-use `Banner`, Start with common items | `ensureMasterListInitialized` (guard kept; list per §9.2 Q12) | 4.23 | [ ] |
-| S1 record an event | Schedule (event sheet) | kind chips, `Fields`, related select | `collections/schedule-events.ts` (`organiser_call` added) | 4.20 | [ ] |
-| S2 complete, cancel, delete | Event sheet | status actions, `ConfirmSheet`, undo | write layer | 4.20 | [ ] |
-| S3 one agenda | Schedule | `AgendaGroup`, `AgendaRow` | model `agenda.ts` (events + dues + dated tasks; real today, §5 #11) | 1.6, 4.20 | [ ] |
+| S1 record an event | Schedule (event sheet) | kind chips, `Fields`, related select | `collections/schedule-events.ts` (`organiser_call` added) | 4.20 | [x] |
+| S2 complete, cancel, delete | Event sheet | status actions, `ConfirmSheet`, undo | write layer | 4.20 | [x] |
+| S3 one agenda | Schedule | `AgendaGroup`, `AgendaRow` | model `agenda.ts` (events + dues + dated tasks; real today, §5 #11) | 1.6, 4.20 | [x] |
 | S4 month | Month | `MonthCalendar` | model `agenda.ts` (`monthCells`, Monday first) | 1.6, 4.21 | [ ] |
-| S5 search and kind | Schedule | kind chips, search | model `agenda.ts` (payments filter includes Payment events) | 1.6, 4.20 | [ ] |
-| S6 urgency at a glance | Schedule, Payments due | `Hero` figure, context sentence | model `agenda.ts` (`lateOrToday`) | 1.6, 4.20 | [ ] |
-| S7 jump to the source | Schedule | row links | routes to booking (`vendor-…`) and `/schedule/tasks?open=` | 4.20 | [ ] |
+| S5 search and kind | Schedule | kind chips, search | model `agenda.ts` (payments filter includes Payment events) | 1.6, 4.20 | [x] |
+| S6 urgency at a glance | Schedule, Payments due | `Hero` figure, context sentence | model `agenda.ts` (`lateOrToday`) | 1.6, 4.20 | [x] |
+| S7 jump to the source | Schedule | row links | routes to booking (`vendor-…`) and `/schedule/tasks?open=` | 4.20 | [x] |
 | S8 tasks with steps | Tasks | `TaskRow`, `StepRow`, `Thread small` | `collections/todos.ts` (steps by transaction) | 1.8, 4.22 | [ ] |
 | S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [ ] |
 | S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [ ] |
@@ -805,7 +805,7 @@ Every place in the current code that produces something visible, from a full swe
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
 | `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [ ] |
 | **Native dialogs** | | |
-| `schedule/page.tsx:763` `window.confirm` delete event | `ConfirmSheet` + undo (§6.2) | [ ] |
+| `schedule/page.tsx:763` `window.confirm` delete event | `ConfirmSheet` + undo (§6.2) | [x] |
 | `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [ ] |
 | `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [ ] |
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [ ] |
@@ -821,11 +821,11 @@ Every place in the current code that produces something visible, from a full swe
 | `guests/page.tsx:332-374`, `:814-835` undo toast (10 s) | `ToastHost` undo (6 s, guide §2 Motion) | [ ] |
 | `master-list/page.tsx:556-598`, `:1002-1023` undo toast | same | [ ] |
 | inline load and save errors: notes `:140`, files `:425`, schedule `:872-882`, master list `:682-695`, guests `:790`, settings `:141`, master-list cell `:111-124` | Couldn't load message; failed field or row line with Try again; sheet save line (§6.1) | [ ] |
-| schedule form validation `schedule/page.tsx:250-270` (title, date, invalid date, end before start) | validation uses the failed-field look (§4.9), but the design words only two messages (a booking's missing name, a taken category name). A missing title or date and an end before the start: **gap N9** (§9.1 G9) | [ ] |
+| schedule form validation `schedule/page.tsx:250-270` (title, date, invalid date, end before start) | validation uses the failed-field look (§4.9), but the design words only two messages (a booking's missing name, a taken category name). A missing title or date and an end before the start: **gap N9** (§9.1 G9) | [x] |
 | category validation `vendor-categories.ts:49-60` | "There's already a category called …", characters left (§5.11) | [ ] |
 | upload errors `cloudinary-upload-button.tsx:77`, `:86`, `:112-117` | Too large, Upload failed, Try again (§4.20) | [ ] |
 | **Dialogs, popovers, tooltips, dropdowns** | | |
-| schedule form dialog `:293` | event sheet (§4.14, §5.19) | [ ] |
+| schedule form dialog `:293` | event sheet (§4.14, §5.19) | [x] |
 | files: folder dialog `:592`, file details `:617` (with "Skip for now"), move `:664` | folder sheet, `FileDetailsSheet`, `UploadSheet` per-file fields, `MoveSheet` (§4.20) | [ ] |
 | guests delete dialog `:783` | `ConfirmSheet` naming plus-ones (§5.23) | [ ] |
 | master list "Add multiple rows" `:915`, delete `:971` | add-items sheet (one per line), `ConfirmSheet` | [ ] |
@@ -967,7 +967,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | | [ ] |
 | 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | | [ ] |
 | 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
-| 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | | [ ] |
+| 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | ef903b5; 19 model, 16 emulator and 3 demo e2e tests | [x] |
 | 4 | 4.21 Month | Haiku 5.5 Max | $0.21 | The calendar from 3.11 on a screen | | [ ] |
 | 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | | [ ] |
 | 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | | [ ] |
@@ -1327,7 +1327,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Do:** top level and inside a folder, path folding, folders then files, search everywhere (200 at a time), new and rename folder (Enter, undo), move file or folder (no cycles, disabled targets, undo), blocked folder delete, file details sheet (preview, fields saving as you go, Open, Download, Move), Delete for good wired to 6.3 (until then the button calls a stub that throws, so it can't silently half-delete).
 
 #### Task 4.20: Schedule agenda and event sheet · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t3, commit ef903b5 · real cost to log from `/cost`). `/new/schedule` with the agenda, the event sheet and the add sheet (`src/veil/screens/schedule/`); N9 and N11 built; gap G22/N22 added. The §5 state rows wait for Phase 8; S10 waits for Task 6.2; Month is 4.21 and Tasks 4.22.
 - **Guide:** §5.19, §6.12. **Prototype:** `schedule.html` (`?state=event`, `?state=new`).
 - **Do:** figure and context, kind chips, search, completed and cancelled toggle, groups, 80 at a time, Record payment on payment rows, links to bookings and tasks; event sheet (kind, title, date, all day or times, with, where or call link shown as Join the call, notes, Remind us, Mark completed, Cancel it, Back to scheduled, Delete) saving as you go. Event validation waits for N9, and the Remind us choices wait for N11.
 
