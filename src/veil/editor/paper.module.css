@@ -1,0 +1,57 @@
+/* The page, its title and meta line, ported from the prototype's editor.css
+   (.paper, .doc-title, .doc-meta) with tokens (guide §4.24). */
+.paper {
+  margin-top: 26px;
+  background: var(--surface-page);
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-sheet);
+  padding: 54px var(--space-11) 72px;
+  box-shadow: var(--shadow-paper);
+}
+
+/* Tables scroll sideways inside the page rather than pushing it wider. */
+.paper:has(table) {
+  overflow-x: auto;
+}
+
+.title {
+  display: block;
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: none;
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-doc-title);
+  line-height: 1.12;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.title::placeholder {
+  color: var(--color-text-muted);
+  font-style: italic;
+  opacity: 1;
+}
+
+.meta {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* --bp-phone: full-bleed, no radius. */
+@media (max-width: 760px) {
+  .paper {
+    margin: 18px calc(-1 * var(--space-page-x)) 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 30px var(--space-5) 60px;
+  }
+}

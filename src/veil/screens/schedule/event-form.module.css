@@ -1,0 +1,26 @@
+/* The event sheet's own pieces (guide §5.19): the kind chips and the time row. Tokens only. */
+
+.kinds {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* "All day" and the two times sit in one row, wrapping on a narrow sheet. */
+.when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.times {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The time boxes are as wide as a time, not the whole row (this wins over the field's own 100%). */
+.times input {
+  width: auto;
+}

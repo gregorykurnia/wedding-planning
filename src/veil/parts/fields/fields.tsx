@@ -172,7 +172,7 @@ type InputAttributes = Omit<
 type FieldInputProps = Bound<string> &
   InputAttributes & {
     id?: string;
-    type?: "text" | "email" | "tel" | "url" | "password";
+    type?: "text" | "email" | "tel" | "url" | "password" | "time";
     /** For a screen that moves focus into the field (React 19 passes it down as a prop). */
     ref?: Ref<HTMLInputElement>;
   };
@@ -259,7 +259,8 @@ export function DateInput({ value, onChange, onCommit, disabled, id, ...rest }: 
 type FieldSelectProps = Bound<string> &
   Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange" | "onBlur" | "disabled" | "id" | "children"> & {
     id?: string;
-    options: readonly { value: string; label: string }[];
+    /** A disabled option is shown greyed, such as a reminder morning that has gone. */
+    options: readonly { value: string; label: string; disabled?: boolean }[];
   };
 
 /** A select with no arrow: it reads as text, and a pick saves at once. */
@@ -280,7 +281,7 @@ export function FieldSelect({ value, onChange, onCommit, disabled, id, options, 
       }}
     >
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
+        <option key={option.value} value={option.value} disabled={option.disabled}>
           {option.label}
         </option>
       ))}

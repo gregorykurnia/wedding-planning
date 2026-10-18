@@ -109,6 +109,14 @@
   overflow-wrap: anywhere;
 }
 
+/* A reminder set for a time of day can't arrive (N11); the prototype's .rem-bad. */
+.remBad {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+  margin-top: var(--space-hair);
+}
+
 .aside {
   display: flex;
   flex-direction: column;

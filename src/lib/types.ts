@@ -206,6 +206,7 @@ export interface TodoItem {
 
 export type ScheduleEventType =
   | "vendor_call"
+  | "organiser_call"
   | "appointment"
   | "payment"
   | "deadline"
@@ -228,6 +229,8 @@ export interface ScheduleEvent {
   relatedVendorId: string | null;
   relatedVenueId: string | null;
   reminderMinutes: number[];
+  /** The `reminderMinutes` values already sent (the daily reminder job records them). */
+  remindersSent?: number[];
   createdAt: number | null;
   updatedAt: number | null;
 }

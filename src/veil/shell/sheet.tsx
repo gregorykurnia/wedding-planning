@@ -523,11 +523,20 @@ export function CreateSheetActions({
 export function EditSheetActions({
   link,
   onDone,
+  before,
   blocked = 0,
+  blockedLine,
+  onBlocked,
 }: {
   link?: ReactNode;
   onDone?: () => void;
+  /** Quiet actions that come before Done, such as the event sheet's "Mark completed". */
+  before?: ReactNode;
   blocked?: number;
+  /** While changes are blocked, the save line says which ones: "1 change not saved yet: the end time". */
+  blockedLine?: string | null;
+  /** Done, Escape or a tap outside was refused for a blocked change: the screen moves to the field. */
+  onBlocked?: () => void;
 }) {
   const sheet = useSheet();
   const scope = useContext(SaveScopeContext);
@@ -567,6 +576,15 @@ export function EditSheetActions({
     if (waiting && !stuck && kind !== "saving") sheet.close();
   }, [waiting, stuck, kind, sheet]);
 
+  // A refused dismissal for a blocked change takes the person to the field.
+  const onBlockedRef = useRef(onBlocked);
+  useEffect(() => {
+    onBlockedRef.current = onBlocked;
+  });
+  useEffect(() => {
+    if (refused > 0 && blocked > 0) onBlockedRef.current?.();
+  }, [refused, blocked]);
+
   const held = stuck && (refused > 0 || waiting);
   const tryAgain = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -578,7 +596,7 @@ export function EditSheetActions({
     toast?.confirmation(CLOSED_WITHOUT);
   };
 
-  let line: ReactNode = <SaveLine />;
+  let line: ReactNode = <SaveLine held={blocked > 0 ? blockedLine : null} />;
   if (scope && held) {
     line = (
       <p className={`${fieldStyles.saveLine} ${fieldStyles.saveFailed}`} role="alert">
@@ -613,6 +631,7 @@ export function EditSheetActions({
     <>
       {scope && <div className={styles.save}>{line}</div>}
       <SheetActions>
+        {before}
         <Btn onClick={() => ask() && (onDone ?? sheet.close)()}>Done</Btn>
       </SheetActions>
       {link && <div className={styles.link}>{link}</div>}

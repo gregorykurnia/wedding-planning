@@ -1,0 +1,70 @@
+/* Popovers and the link bubble, ported from the prototype's editor.css
+   (.pop, .pop-h, .swatches, .sw, .bubble) with tokens (guide §4.24). */
+.pop,
+.bubble {
+  position: fixed;
+  z-index: var(--z-popover);
+  background: var(--surface-sheet);
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-tile);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-popover);
+  font-size: var(--text-label);
+}
+
+.head {
+  font-size: var(--text-tiny);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-2);
+}
+
+.swatches {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.sw {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-edge);
+  cursor: pointer;
+  padding: 0;
+}
+
+.sw[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--surface-sheet), 0 0 0 3px var(--color-text);
+}
+
+/* "None": white struck through in rose. */
+.none {
+  background: linear-gradient(
+    135deg,
+    var(--surface-sheet) 45%,
+    var(--accent-attention) 47%,
+    var(--accent-attention) 53%,
+    var(--surface-sheet) 55%
+  );
+}
+
+.bubble {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-2) 14px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.address,
+.edit {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-thread);
+  text-underline-offset: 3px;
+}

@@ -1,0 +1,6 @@
+/* The event sheet's own pieces. Tokens only. */
+
+/* "Was on Friday 16 October": a scheduled event whose day has gone (guide §5.19). */
+.was {
+  color: var(--accent-attention-text);
+}

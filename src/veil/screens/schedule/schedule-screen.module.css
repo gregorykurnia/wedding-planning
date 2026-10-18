@@ -1,0 +1,6 @@
+/* The Schedule (guide §5.19). Tokens only. */
+
+/* "3 late" in the sentence under the figure is rose, as the late figure above it is. */
+p b.late {
+  color: var(--accent-attention-text);
+}

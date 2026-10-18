@@ -137,7 +137,7 @@ export const filesCount = (n: number) => (n ? plural(n, "file") : "None yet");
 export const NO_OPTIONS = "No prices yet. When they send a price list, add each option here.";
 
 export const optionAddedToast = (name: string) => `Added ${name}`;
-/** A price option that wasn't added keeps what was typed (guide §6.1); the line is G22/N22's. */
+/** A price option that wasn't added keeps what was typed (guide §6.1); the line is G24/N24's. */
 export const OPTION_ADD_FAILED = "The price option wasn’t added. What you typed is still here.";
 export const optionRemovedToast = (name: string) => `Removed ${name}`;
 

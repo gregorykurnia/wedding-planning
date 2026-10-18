@@ -1,0 +1,168 @@
+/* The document's body styles (guide §4.24 "Body styles"), ported from the
+   prototype's editor.css (.ed and its children) with tokens. `.ed` is set on
+   Tiptap's own .ProseMirror element. Tables get their full look in Task 4.18. */
+.body {
+  min-width: 0;
+}
+
+.ed {
+  outline: none;
+  font-size: var(--text-doc-body);
+  line-height: var(--leading-doc);
+  min-height: 40vh;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ed > * {
+  margin: 0;
+}
+
+.ed > * + * {
+  margin-top: 0.75em;
+}
+
+.ed p {
+  margin: 0;
+}
+
+.ed h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-doc-h1);
+  font-weight: var(--weight-display);
+  line-height: 1.2;
+  margin-top: 1.1em;
+}
+
+.ed h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-doc-h2);
+  font-weight: var(--weight-display);
+  line-height: 1.25;
+  margin-top: 1.2em;
+}
+
+.ed h3 {
+  font-size: 18px;
+  font-weight: var(--weight-display);
+  margin-top: 1.1em;
+}
+
+.ed > :first-child {
+  margin-top: 0;
+}
+
+.ed ul,
+.ed ol {
+  padding-left: 1.4em;
+  margin: 0;
+}
+
+.ed li + li {
+  margin-top: 0.2em;
+}
+
+.ed li::marker {
+  color: var(--accent-gold-text);
+}
+
+.ed blockquote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.45;
+  border-left: 2px solid var(--accent-thread);
+  padding: 2px 0 2px var(--space-5);
+  margin: 0;
+  color: var(--color-text);
+}
+
+.ed pre {
+  font-family: var(--font-code);
+  font-size: var(--text-label);
+  background: var(--surface-mist);
+  border-radius: var(--radius-tile-sm);
+  padding: 14px var(--space-4);
+  white-space: pre-wrap;
+}
+
+.ed code {
+  font-family: var(--font-code);
+}
+
+.ed a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-attention);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* The four fonts and sizes (marks.ts draws them as data attributes). */
+.ed [data-font="cormorant"] {
+  font-family: var(--font-display);
+}
+
+.ed [data-font="georgia"] {
+  font-family: var(--font-doc-plain);
+}
+
+.ed [data-font="mono"] {
+  font-family: var(--font-code);
+}
+
+.ed [data-size="small"] {
+  font-size: 14px;
+}
+
+.ed [data-size="large"] {
+  font-size: 22px;
+}
+
+.ed [data-size="huge"] {
+  font-size: 30px;
+}
+
+/* Tables: a plain hairline grid until Task 4.18 gives them their tools and totals. */
+.ed table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  margin: 1em 0;
+}
+
+.ed th,
+.ed td {
+  border: 1px solid var(--color-edge);
+  padding: var(--space-2) 10px;
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.ed th {
+  background: var(--surface-petal);
+  font-weight: var(--weight-display);
+  font-size: var(--text-label);
+}
+
+.ed table:has(tr > :nth-child(6)) {
+  min-width: 720px;
+}
+
+.ed :global(.tableWrapper) {
+  overflow-x: auto;
+}
+
+.ed :global(.selectedCell) {
+  box-shadow: var(--ring-cell);
+}
+
+/* --bp-phone */
+@media (max-width: 760px) {
+  .ed {
+    font-size: var(--text-doc-body);
+  }
+}
