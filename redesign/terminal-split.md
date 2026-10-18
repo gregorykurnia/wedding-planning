@@ -53,7 +53,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 |---|---|
 | **Phase 4: screens (rest)** | |
 | [x] 4.6 A booking (L) · Sonnet 5.5 High | [ ] 4.13 Shortlist · Sonnet 5.5 High |
-| [ ] 4.7 Add a booking · Haiku 5.5 Max | [ ] 4.14 A finalist · Sonnet 5.5 High |
+| [x] 4.7 Add a booking · Haiku 5.5 Max | [ ] 4.14 A finalist · Sonnet 5.5 High |
 | [ ] 4.8 Payments due · Sonnet 5.5 High | [ ] 4.15 Venues · Sonnet 5.5 High |
 | [ ] 4.10 What-if · Sonnet 5.5 High | [ ] 4.25 Settings · Sonnet 5.5 High |
 | [ ] 4.16 Documents · Sonnet 5.5 High | [ ] 4.22 Tasks · Sonnet 5.5 High |

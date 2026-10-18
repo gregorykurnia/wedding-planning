@@ -125,6 +125,19 @@ describe("addDirectBooking", () => {
     expect(booking).toMatchObject({ name: "Wedding rings", price: 25_000_000, paid: 5_000_000, direct: true, funder: "Bella" });
     await expect(addDirectBooking({ ...input, name: "  " }, null, g())).rejects.toMatchObject({ code: "failed" });
   });
+
+  it("links the files attached to it to the new booking, in the same write", async () => {
+    await setDoc(doc(gregory.db, "weddingFiles", "contract1"), { name: "Contract", folderId: null, url: "https://example.test/contract.pdf" });
+    const input = { name: "Wedding rings", category: "Other", price: 25_000_000, paid: 0, funder: null, due: null, step: "", files: ["contract1"] };
+    const { bookingId } = await addDirectBooking(input, "2026-10-14", { ...g(), id: "direct2" });
+    expect((await read("weddingFiles", "contract1"))?.recordRef).toEqual({ kind: "booking", id: bookingId });
+  });
+
+  it("writes neither the booking nor a link when an attached file isn't there", async () => {
+    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["no-such-file"] };
+    await expect(addDirectBooking(input, null, { ...g(), id: "direct3" })).rejects.toThrow();
+    expect(await exists("vendors", "direct3")).toBe(false);
+  });
 });
 
 describe("split, parts, payments and removing a booking", () => {
