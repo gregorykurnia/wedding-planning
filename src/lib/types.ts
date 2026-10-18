@@ -199,6 +199,8 @@ export interface TodoItem {
   notes: string;
   dueDate: string | null; // ISO date string
   done: boolean;
+  /** The day it was finished, set by the new UI; tasks finished before it was kept have none. */
+  doneOn?: string | null;
   subtasks: TodoSubtask[];
   createdAt: number | null;
   updatedAt: number | null;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { finishedTasks, isTaskLate, openTasks, stepsDone, taskCounts, taskDueText, taskMeta, type TaskRecord } from "@/lib/model/tasks";
+import { finishedTasks, isTaskLate, openTasks, shownCount, stepsDone, taskCounts, taskDueText, taskMeta, type TaskRecord } from "@/lib/model/tasks";
 
 const TODAY = "2026-10-14";
 
@@ -60,11 +60,11 @@ describe("finished tasks", () => {
     expect(ids(finishedTasks([a, b, c, open]))).toEqual(["b", "c", "a"]);
   });
 
-  it("fall back to the due date for tasks finished before the date was kept, and put ones with neither last", () => {
+  it("put tasks finished before the day was kept last, whatever their due date (N8)", () => {
     const old = task({ id: "old", done: true, dueDate: "2026-10-12" });
-    const kept = task({ id: "kept", done: true, doneOn: "2026-10-13", dueDate: "2026-01-01" });
+    const kept = task({ id: "kept", done: true, doneOn: "2026-01-13", dueDate: "2026-10-01" });
     const bare = task({ id: "bare", done: true });
-    expect(ids(finishedTasks([bare, old, kept]))).toEqual(["kept", "old", "bare"]);
+    expect(ids(finishedTasks([bare, old, kept]))).toEqual(["kept", "bare", "old"]);
   });
 });
 
@@ -96,7 +96,8 @@ describe("due text", () => {
 
   it("says when a finished task was done", () => {
     expect(taskDueText(task({ done: true, doneOn: "2026-09-29", dueDate: "2026-09-30" }), TODAY)).toBe("Done 29 Sep");
-    expect(taskDueText(task({ done: true, dueDate: "2026-09-30" }), TODAY)).toBe("Done 30 Sep");
+    expect(taskDueText(task({ done: true, dueDate: "2026-09-30" }), TODAY)).toBe("Done");
+    expect(taskDueText(task({ done: true, doneOn: null, dueDate: "2026-09-30" }), TODAY)).toBe("Done");
     expect(taskDueText(task({ done: true }), TODAY)).toBe("Done");
   });
 
@@ -123,5 +124,18 @@ describe("meta line", () => {
   it("shows nothing when there are neither", () => {
     expect(taskMeta(task())).toBeNull();
     expect(taskMeta(task({ notes: "   " }))).toBeNull();
+  });
+});
+
+describe("paging", () => {
+  const list = Array.from({ length: 250 }, (_, i) => ({ id: `t${i}` }));
+
+  it("shows one page, or as many as it takes for the task a link names to be on screen", () => {
+    expect(shownCount(list, null, 100)).toBe(100);
+    expect(shownCount(list, "t5", 100)).toBe(100);
+    expect(shownCount(list, "t99", 100)).toBe(100);
+    expect(shownCount(list, "t100", 100)).toBe(200);
+    expect(shownCount(list, "t249", 100)).toBe(300);
+    expect(shownCount(list, "gone", 100)).toBe(100);
   });
 });

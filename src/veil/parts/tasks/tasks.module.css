@@ -221,6 +221,10 @@
   color: var(--accent-attention-text);
 }
 
+.notesFailed {
+  box-shadow: var(--ring-field-failed);
+}
+
 .addStep {
   margin-top: 10px;
   font-size: var(--text-label);

@@ -96,6 +96,16 @@ describe("TaskRow", () => {
     expect(html).toContain("Delete task");
   });
 
+  it("rings a due date or notes that didn't save, with one line and Try again", () => {
+    const due = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedField="due" />);
+    expect(count(due, /Couldn’t save this change\. What you typed is kept\./g)).toBe(1);
+    expect(due).toContain("Try again");
+    const notes = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedField="notes" />);
+    expect(count(notes, /Couldn’t save this change\. What you typed is kept\./g)).toBe(1);
+    expect(notes).toMatch(/<textarea[^>]*aria-invalid="true"/);
+    expect(markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen />)).not.toContain("Couldn’t save");
+  });
+
   it("makes every control inert in demonstration mode", () => {
     const html = markup(<TaskRow task={task({ subtasks: steps })} today={TODAY} actions={{}} defaultOpen demo />);
     expect(html).toContain('aria-disabled="true"');
