@@ -64,7 +64,7 @@ Allow about 20% on top (≈ $101) for escalations, retries and further design-ga
 - **Build and lint:** `npm run build`, `npm run lint`. Phase 1 adds `npm test` and `npm run test:e2e`.
 - **Data backend:** Firebase Firestore through the client SDK with realtime listeners, Firebase Auth, files on Cloudinary (unsigned preset). Collections and field names stay, so live data survives the switch-over (`inventory-notes.md` §6).
 - **Hosting:** Vercel project `wedding-planning`, Node 24. Every push to `main` deploys to production, so the rebuild lives on the `redesign` branch and is reviewed on preview deploys until Phase 7 merges.
-- **Repo rule:** commit and push after every change, with an `AGENTS.md` change-log entry. During the rebuild, push to `redesign`, not `main`.
+- **Repo rule:** commit and push after every change, with a one-to-three-line `CHANGELOG.md` entry. During the rebuild, push to `redesign`, not `main`.
 
 ### 2.2 Running next to the old app
 The two UIs live in one Next.js app as two route groups, each with its own root layout. Navigating between them is a full page load, which is what we want: no CSS or providers leak across.
@@ -164,6 +164,7 @@ Three layers, and screens only touch the top one.
 
 **New fields and collections (all additive).** Old documents without them still read correctly through the model's adapters.
 - `vendors`, `venues`: `booking: { on: 'YYYY-MM-DD' | null, from: 'vendor' | 'venue' | 'finalist' | 'direct', removed: boolean }`, `estimate` (vendors; venues keep `budgetEstimate` as their estimate), `agreedPrice` (venues). A booking is a vendor or venue with `booking` set and not removed. Direct bookings (guide §5.7) are vendor documents with `booking.from = 'direct'`, left out of the Vendors list. Booking ids in URLs are `vendor-<id>` and `venue-<id>`.
+- `vendors`: `priceOptions[].includes` (what's included, under the option's name; the option's name stays `description`).
 - `shortlist`: `sourceVendorId`, `preferredPackageId` (the top-level price is package `main`), `movedTo: { kind: 'booking' | 'vendor', id }`.
 - `hypotheticalItems`: `funder`.
 - Bookings and their parts (on `vendors`, `venues` and `subEntries[]`): `payments[]` (`id`, `amount`, `paidOn`, `funder`, `receiptFileId`), a history kept beside `budgetSpent`, which stays the total (§9.2 Q5).
@@ -694,18 +695,18 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F4 narrow venues | Venues | `SearchField`, `FilterSelect`, `RangeField`, `FilterCheck` | model `search.ts` | 1.5, 4.15 | [ ] |
 | F5 order venues | Venues | `OrderBy` | model `order.ts` | 1.5, 4.15 | [ ] |
 | F22 files on a venue | Venue sheet | `FileTiles`, `UploadSheet` | data `useRecordFiles({kind:'venue'})`, upload pipeline | 3.10, 4.15 | [ ] |
-| F6 capture a vendor | Vendors, A vendor | add-vendor sheet, `Fields` | `collections/vendors.ts` via the write layer | 4.11, 4.12 | [ ] |
+| F6 capture a vendor | Vendors, A vendor | add-vendor sheet, `Fields` | `collections/vendors.ts` via the write layer | 4.11, 4.12 | [x] |
 | F7 WhatsApp | Vendors, A vendor, A finalist | `WhatsAppLink` | model `whatsapp.ts` (`waHref`, leading 0 → 62) | 1.5, 3.9 | [ ] |
-| F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [ ] |
-| F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [ ] |
-| F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [ ] |
+| F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [x] |
+| F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [x] |
+| F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [x] |
 | F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [x] |
 | F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [x] |
-| F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [ ] |
+| F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [x] |
 | F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [x] |
 | F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [x] |
 | F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
-| F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [ ] |
+| F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [x] |
 | F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
 | F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [ ] |
 | F19 finalists by category | Shortlist | `FocusChips`, `OrderBy` | model `order.ts` | 4.13 | [ ] |
@@ -753,9 +754,9 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [ ] |
 | S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [ ] |
 | R1 rich documents | A document | `EditorToolbar`, pops | Tiptap StarterKit, TextStyleKit; `editor/marks.ts` | 4.17 | [x] |
-| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [x] |
-| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [x] |
-| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [x] |
+| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [ ] |
+| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [ ] |
+| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [ ] |
 | R5 autosave state | A document | `DocSaveState` | `editor/use-doc-autosave.ts` (0.9s, failure kept, flush on leave) | 4.17 | [x] |
 | R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [ ] |
 | R7 delete for good | A document | `ConfirmSheet` (Delete for good), message | `deleteNote` (no undo) | 4.17 | [x] |
@@ -809,7 +810,7 @@ Every place in the current code that produces something visible, from a full swe
 | `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [ ] |
 | `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [ ] |
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [x] |
-| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [x] |
+| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [ ] |
 | **Deletes with no confirmation today** | | |
 | vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [ ] |
 | shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [ ] |
@@ -841,11 +842,11 @@ Every place in the current code that produces something visible, from a full swe
 | file-type icons `files/page.tsx:111-123` | file type in gold italic, envelope folders (§4.7, §4.20) | [ ] |
 | **Editor** | | |
 | toolbar `rich-text-editor.tsx:288-447`; style, font, size, colour inputs | `EditorToolbar`, pops (§4.24) | [x] |
-| table presets 2×2–6×5 | 8 × 8 size picker | [x] |
-| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [x] |
-| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [x] |
+| table presets 2×2–6×5 | 8 × 8 size picker | [ ] |
+| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [ ] |
+| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [ ] |
 | save status "Saving…/Unsaved changes/Saved/Retry save" `:276-285` | `DocSaveState` (§4.24) | [x] |
-| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [x] |
+| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [ ] |
 | stored marks: fonts `""`, Inter, Georgia, Arial, Courier New; sizes 14/16/20/28px; any hex colour and highlight | read unchanged; normalised per §9.2 Q10 | [x] |
 | legacy plain-text notes (`notes.ts:21-45`) | same conversion, kept in the data layer | [x] |
 | **Exports and output** | | |
@@ -895,7 +896,7 @@ Every place in the current code that produces something visible, from a full swe
 
 ## 7. Phases
 
-Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps `npm run lint`, `npm run build`, `npm test` and `npm run test:e2e` green, and ends with a fresh-session review (§7.0) before it counts as done. Each task is one session and one commit (or a few), pushed to `redesign`, with an `AGENTS.md` change-log entry.
+Every phase is built on the `redesign` branch, checked on a local preview (Vercel doesn't build `redesign`), and ends with a fresh-session review (§7.0) that runs the whole e2e suite before it counts as done. Each task is one session and one commit (or a few), delivered to `redesign`, with a one-to-three-line `CHANGELOG.md` entry. Each task runs the lighter checks in step 5 below.
 
 ### 7.0 Who builds it: model and effort per task
 
@@ -908,9 +909,10 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
-- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
+- **Parallel terminals.** `redesign/terminal-split.md` sets out which tasks run at the same time. From 2026-10-18 it's two terminals: more made this 8 GB Mac swap so hard that every task slowed down.
+- **One record of progress.** The Done column of this table is the only place a task is ticked. The task headings' Done boxes below are kept for the tasks done before 2026-10-18 and are no longer ticked; `terminal-split.md` has no boxes; §5, §6 and §10 rows are ticked by the phase review, in one go, after it checks them.
 
-**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. Logging the real `/cost` in the "Real cost / changes" column is optional.
+**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. In the "Real cost / changes" column write the date, lane and commit, plus one short phrase only if something changed from the plan (a gap raised, a pick moved). The real `/cost` is optional.
 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
@@ -959,13 +961,13 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | 4bbbc7e; real cost to log from `/cost`; the Haiku second build is a separate row | [x] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
 | 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
-| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
+| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | 2026-10-17 (lane t2); 14 model tests, 11 emulator tests, 14 emulator e2e tests; gap G24/N24; real cost to log from `/cost` | [x] |
 | 4 | 4.13 Shortlist | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; reference `shortlist.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
 | 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
 | 4 | 4.16 Documents | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays data; reference `documents.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | a90b7f8; 31 model tests, 9 emulator tests, 10 emulator and 2 demo e2e tests; owner spot-check of five documents on a preview still open | [x] |
-| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | 1a354b9; 11 model tests, 4 emulator e2e (the whole document spec, 14 emulator and 2 demo, passes); screenshot comparison with `doc.html` still open | [x] |
+| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | 2026-10-18 · lane t4 · 1a354b9; screenshot comparison with `doc.html` still open | [x] |
 | 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
 | 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | ef903b5; 19 model, 16 emulator and 3 demo e2e tests | [x] |
 | 4 | 4.21 Month | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | The calendar from 3.11 on a screen; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
@@ -1012,8 +1014,12 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 2. Read the task, the named guide sections and the named prototype file. Open the prototype in a browser at 390px and 1440px.
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
-5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's **Done** box in the §7.0 table and under its heading below (date and commit; the real `/cost` is optional: log it when you have it, and don't hold a tick for it), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
+5. Checks (lighter per task since 2026-10-18; the phase review runs everything):
+   - **While building:** `npx tsc --noEmit`, lint on the changed files, the related unit tests (`npx vitest run --project model <files>`), and only this task's own e2e specs, plus the specs of any shared part it changed (a component in `src/veil/parts/` or `src/veil/shell/`, a gallery section, `sections.tsx`): `npm run test:e2e -- tests/e2e/demo/<spec> …` or `tests/e2e/emulator/<spec> …`. Specs all from one folder start only that folder's servers. (Task 4.4 added a gallery section without running `veil-gallery.spec.ts`, and the break went unnoticed until 2026-10-18.)
+   - **Once, before delivering:** `npm test`, `node scripts/check-veil-styles.mjs`, `node scripts/check-old-names.mjs`, `npm run build`, and `npm run test:emulator` only if the task changed `src/lib/data/`, `src/lib/collections/`, `firestore.rules` or `src/lib/server/`.
+   - **After merging `redesign` into the lane:** if only bookkeeping files conflicted (or nothing did), `npx tsc --noEmit` and `npm test` are enough. If code conflicted, rerun this task's own e2e specs as well.
+   - Don't rerun a check that passed when nothing it covers has changed since. The whole e2e suite (`npm run test:e2e` with no arguments) runs at the phase review, not per task.
+6. Tick the task's **Done** box in the §7.0 table (date, lane and commit; the real `/cost` only if you have it). Nowhere else: not the heading below, not `terminal-split.md`, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign`. When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
@@ -1287,7 +1293,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.11. **Prototype:** `vendors.html`. Focus chips with counts, search, keen filter, six orders, category headings, 100 at a time, add-vendor sheet (Add and start another), categories sheet (add, rename, remove with inline confirm and undo, 40 characters), export link (columns wait for N5; build with a placeholder set marked TODO N5).
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2 · real cost to log from `/cost`). `/new/vendors/[vendorId]` (`src/veil/screens/vendor/`, data in `src/lib/data/vendors.ts`, words in `src/lib/model/vendor-detail.ts`). Chosen goes through `markBooked`; a vendor that is a live booking is removed by making it a direct booking (it leaves Vendors, stays in the budget, undo restores `from`), since the record is the booking (N10). Compared with `vendor.html` at 1440px and 390px by screenshot: the same layout, the save line about 4px taller.
 - **Guide:** §5.12. **Prototype:** `vendor.html` (`?id=kebun`, `ara`, `nusantara`, `sv-long`).
 - **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist). Removing the vendor waits for N10.
 
@@ -1317,7 +1323,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Done when:** existing production documents open on the preview and look complete (owner spot-check of five documents), a document typed offline is never lost, and e2e covers save, fail, retry and leave.
 
 #### Task 4.18: Document tables and formulas (L) · Opus 5.5 Medium
-- [x] **Done** (2026-10-18 · lane t4, commit 1a354b9). Totals stay stored as the cell text and are drawn by decorations (`editor/totals.ts`); the table bar is `editor/table-bar.tsx`. Still open: a side-by-side screenshot comparison with `doc.html?state=table`, `?state=formula` and `?id=scratch&state=formula-error`; the §5 table state rows wait for Phase 8.
+- [ ] **Done** (date · commit · real cost)
 - **Guide:** §4.24 (table bar, formula bar, cells), §6.10. **Prototype:** `doc.html?state=table`, `?state=formula`, `doc.html?id=scratch&state=formula-error`.
 - **Do:** 8 × 8 size picker, table bar shown only in a table, rows and columns either side, add 1–50, remove, title row, narrower and wider (stored `colwidth`), sort (`sortTableRows` from 1.7, totals and title row fixed), remove table with undo; total cells drawn in gold with errors named; the formula bar with the cell address; Tab between cells; tables scroll sideways (720px minimum).
 
@@ -1474,7 +1480,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 8.6: Merge preparation and `CLAUDE.md` · Haiku 5.5 Max
 - [ ] **Done** (date · commit · real cost)
-- Update `CLAUDE.md` and `AGENTS.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
+- Update `CLAUDE.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
 
 ### Phase 9: After launch (on `main`)
 
@@ -1532,6 +1538,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G21 | **N21** | Raised by Task 4.4. The guide gives a form that records its Try again button (§6.1) but no line for a payment that wasn't recorded, and no state for a receipt that is still uploading or that failed. Built provisionally in `src/veil/parts/payment/record-payment-sheet.tsx`: "The payment wasn’t recorded. What you typed is still here." in a rose inline banner with the button reading Try again (`RECORD_FAILED` in `src/lib/model/payment.ts`; the payment keeps one id per sheet, so Try again never records two); while a receipt uploads, "Waiting for the receipt to finish uploading." and Record payment is off; after a receipt fails, "A receipt didn’t upload. Try again to record the payment with it." with the upload's own Try again link and Record payment off (`RECEIPT_WAITING`, `RECEIPT_FAILED`). | 4.4 | open |
 | G22 | **N22** | Raised by Task 4.20. The guide says Mark completed, Cancel it and Back to scheduled act at once, close the sheet and give an undo toast (§6.2, §4.14), but not what the sheet says when that write doesn't land. Built provisionally in `src/veil/screens/schedule/event-sheet.tsx`: the sheet stays open, the buttons come back, and a rose inline banner says "Couldn’t save that change. Nothing was changed. Try again." (`STATUS_FAILED` in `schedule-text.ts`). | 4.20 | open |
 | G23 | **N23** | Raised by Task 4.17. N18 words leaving a document through the planner's own links (Back, the menu, the names), but not a change that fails to save after the document is already gone, such as after the browser's Back: the editor saves what's left as it goes and has nowhere to say it didn't land. Built provisionally in `src/veil/screens/document/document-screen.tsx`: a toast on whatever screen follows, "Your last changes to “Seating ideas” didn’t save." with **Try again**, which saves the same draft again (`lostOnLeave` in `document-text.ts`). | 4.17 | open |
+| G24 | **N24** | Raised by Task 4.12. The guide gives no reply for a rating or a number of reviewers that isn't one, no line for a vendor that couldn't be copied to the shortlist or a price option that couldn't be added, and the "Chosen, and now a booking" line says nothing true once a booked vendor is moved to an earlier stage. Built provisionally: the rating and reviewers follow N16's pattern (the old value returns, the row rings rose and says why, quoting what was typed: "“great” isn’t a rating. Use a number from 0 to 5, like 4,8. It stays 4,8."; `ratingMessage`, `reviewersMessage` in `src/lib/model/vendor-detail.ts`); "Couldn’t copy to the shortlist. Nothing was changed." with the button reading Try again (`COPY_FAILED`; one shortlist id per card, so Try again never copies twice); "The price option wasn’t added. What you typed is still here." (`OPTION_ADD_FAILED`); and for a booked vendor at a stage other than Chosen or Done, "Now a booking. Open the booking" (`BOOKING_LINE_LATER`). A failed stage, keen or lean change uses §6.1's one-tap line. | 4.12 | open |
 
 ### 9.2 Questions for the owner: decided
 
@@ -1584,4 +1591,4 @@ The owner took every recommendation on 2026-10-14. For Q8 the project turned out
 - [ ] The accessibility check (axe and the guide §8 checklist) passes.
 - [ ] The real-device checklist is done on an installed iPhone, Android and a Mac.
 - [ ] The rollback was rehearsed (§9.3), and the fallback was removed at the end of the launch window.
-- [ ] `CLAUDE.md` and `AGENTS.md` describe the new UI.
+- [ ] `CLAUDE.md` describes the new UI.
