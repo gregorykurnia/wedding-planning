@@ -15,7 +15,7 @@ import {
   type DocFontKey,
   type DocSizeKey,
 } from "@/lib/model/documents";
-import { ColourPop, HighlightPop } from "./pops";
+import { ColourPop, HighlightPop, TableSizePop } from "./pops";
 import {
   BulletsGlyph,
   ClearGlyph,
@@ -24,6 +24,7 @@ import {
   LinkGlyph,
   NumbersGlyph,
   RedoGlyph,
+  TableGlyph,
   UndoGlyph,
 } from "./toolbar-icons";
 import styles from "./toolbar.module.css";
@@ -95,7 +96,8 @@ function Tool({ label, pressed, disabled, popup, onPress, children }: ToolProps)
   );
 }
 
-type Pop = { kind: "colour" | "highlight"; anchor: HTMLButtonElement } | null;
+type PopKind = "colour" | "highlight" | "table";
+type Pop = { kind: PopKind; anchor: HTMLButtonElement } | null;
 
 type EditorToolbarProps = {
   editor: Editor;
@@ -110,8 +112,8 @@ type EditorToolbarProps = {
 /**
  * The formatting toolbar (guide §4.24): Undo/Redo · Text style, Font, Size ·
  * bold, italic, underline, strikethrough · Text colour, Highlight · Bullet
- * points, Numbered steps · Link, Clear formatting, then the save state. The
- * table button joins the last group with the table tools (Task 4.18).
+ * points, Numbered steps · Link, Table, Clear formatting, then the save state.
+ * Table opens the size grid; the table bar (`table-bar.tsx`) has the rest.
  */
 export function EditorToolbar({ editor, disabled, onLink, saveState }: EditorToolbarProps) {
   const id = useId();
@@ -141,7 +143,7 @@ export function EditorToolbar({ editor, disabled, onLink, saveState }: EditorToo
     },
   });
 
-  const toggle = (kind: "colour" | "highlight", anchor: HTMLButtonElement) =>
+  const toggle = (kind: PopKind, anchor: HTMLButtonElement) =>
     setPop((open) => (open?.kind === kind ? null : { kind, anchor }));
   const closePop = () => setPop(null);
 
@@ -259,6 +261,9 @@ export function EditorToolbar({ editor, disabled, onLink, saveState }: EditorToo
         <Tool label="Link" pressed={s.link} disabled={disabled} popup onPress={onLink}>
           <LinkGlyph />
         </Tool>
+        <Tool label="Table" disabled={disabled} popup onPress={(b) => toggle("table", b)}>
+          <TableGlyph />
+        </Tool>
         <Tool
           label="Clear formatting"
           disabled={disabled}
@@ -274,6 +279,7 @@ export function EditorToolbar({ editor, disabled, onLink, saveState }: EditorToo
       {pop?.kind === "highlight" && (
         <HighlightPop editor={editor} anchor={pop.anchor} current={s.highlight} onClose={closePop} />
       )}
+      {pop?.kind === "table" && <TableSizePop editor={editor} anchor={pop.anchor} onClose={closePop} />}
     </div>
   );
 }

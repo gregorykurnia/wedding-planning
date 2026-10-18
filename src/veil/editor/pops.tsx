@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as KeyPress, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/core";
 import { DOC_COLOURS, DOC_HIGHLIGHTS, type DocSwatch } from "@/lib/model/documents";
+import { SIZE_GRID, SIZE_PROMPT, newTableRows, sizeLabel } from "./table-text";
 import styles from "./pops.module.css";
 
 const GAP = 8;
@@ -21,11 +22,14 @@ export function tokenValue(token: string): string {
 export function Pop({
   anchor,
   label,
+  heading,
   onClose,
   children,
 }: {
   anchor: HTMLElement;
   label: string;
+  /** The line at the top, when it isn't the label ("3 rows, 4 columns"). */
+  heading?: ReactNode;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -71,7 +75,7 @@ export function Pop({
       aria-label={label}
       style={place ? { left: place.left, top: place.top } : { visibility: "hidden" }}
     >
-      <p className={styles.head}>{label}</p>
+      <p className={styles.head}>{heading ?? label}</p>
       {children}
     </div>,
     document.body,
@@ -157,6 +161,64 @@ export function HighlightPop({ editor, anchor, current, onClose }: SwatchPopProp
           onClose();
         }}
       />
+    </Pop>
+  );
+}
+
+/**
+ * Table size (guide §4.24): an 8 × 8 grid that previews "3 rows, 4 columns".
+ * Pointing at or focusing a square shows the size; the arrow keys move between
+ * squares. The new table has a title row.
+ */
+export function TableSizePop({ editor, anchor, onClose }: { editor: Editor; anchor: HTMLElement; onClose: () => void }) {
+  const [size, setSize] = useState<{ rows: number; cols: number } | null>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  useEffect(() => grid.current?.querySelector("button")?.focus(), []);
+
+  const insert = (rows: number, cols: number) => {
+    editor.chain().focus().insertTable({ rows: newTableRows(rows), cols, withHeaderRow: true }).run();
+    onClose();
+  };
+
+  const move = (e: KeyPress, rows: number, cols: number) => {
+    const step: Record<string, [number, number]> = {
+      ArrowRight: [0, 1],
+      ArrowLeft: [0, -1],
+      ArrowDown: [1, 0],
+      ArrowUp: [-1, 0],
+    };
+    const d = step[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const r = Math.max(1, Math.min(SIZE_GRID, rows + d[0]));
+    const c = Math.max(1, Math.min(SIZE_GRID, cols + d[1]));
+    grid.current?.querySelector<HTMLButtonElement>(`[data-size="${r}x${c}"]`)?.focus();
+  };
+
+  return (
+    <Pop anchor={anchor} label="Table size" heading={size ? sizeLabel(size.rows, size.cols) : SIZE_PROMPT} onClose={onClose}>
+      <div ref={grid} className={styles.grid} onMouseLeave={() => setSize(null)}>
+        {Array.from({ length: SIZE_GRID * SIZE_GRID }, (_, i) => {
+          const rows = Math.floor(i / SIZE_GRID) + 1;
+          const cols = (i % SIZE_GRID) + 1;
+          const on = size !== null && rows <= size.rows && cols <= size.cols;
+          return (
+            <button
+              key={i}
+              type="button"
+              data-size={`${rows}x${cols}`}
+              className={on ? `${styles.square} ${styles.on}` : styles.square}
+              aria-label={sizeLabel(rows, cols)}
+              tabIndex={i === 0 ? 0 : -1}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseEnter={() => setSize({ rows, cols })}
+              onFocus={() => setSize({ rows, cols })}
+              onKeyDown={(e) => move(e, rows, cols)}
+              onClick={() => insert(rows, cols)}
+            />
+          );
+        })}
+      </div>
     </Pop>
   );
 }
