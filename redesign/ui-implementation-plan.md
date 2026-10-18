@@ -164,6 +164,7 @@ Three layers, and screens only touch the top one.
 
 **New fields and collections (all additive).** Old documents without them still read correctly through the model's adapters.
 - `vendors`, `venues`: `booking: { on: 'YYYY-MM-DD' | null, from: 'vendor' | 'venue' | 'finalist' | 'direct', removed: boolean }`, `estimate` (vendors; venues keep `budgetEstimate` as their estimate), `agreedPrice` (venues). A booking is a vendor or venue with `booking` set and not removed. Direct bookings (guide §5.7) are vendor documents with `booking.from = 'direct'`, left out of the Vendors list. Booking ids in URLs are `vendor-<id>` and `venue-<id>`.
+- `vendors`: `priceOptions[].includes` (what's included, under the option's name; the option's name stays `description`).
 - `shortlist`: `sourceVendorId`, `preferredPackageId` (the top-level price is package `main`), `movedTo: { kind: 'booking' | 'vendor', id }`.
 - `hypotheticalItems`: `funder`.
 - Bookings and their parts (on `vendors`, `venues` and `subEntries[]`): `payments[]` (`id`, `amount`, `paidOn`, `funder`, `receiptFileId`), a history kept beside `budgetSpent`, which stays the total (§9.2 Q5).
@@ -694,18 +695,18 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F4 narrow venues | Venues | `SearchField`, `FilterSelect`, `RangeField`, `FilterCheck` | model `search.ts` | 1.5, 4.15 | [ ] |
 | F5 order venues | Venues | `OrderBy` | model `order.ts` | 1.5, 4.15 | [ ] |
 | F22 files on a venue | Venue sheet | `FileTiles`, `UploadSheet` | data `useRecordFiles({kind:'venue'})`, upload pipeline | 3.10, 4.15 | [ ] |
-| F6 capture a vendor | Vendors, A vendor | add-vendor sheet, `Fields` | `collections/vendors.ts` via the write layer | 4.11, 4.12 | [ ] |
+| F6 capture a vendor | Vendors, A vendor | add-vendor sheet, `Fields` | `collections/vendors.ts` via the write layer | 4.11, 4.12 | [x] |
 | F7 WhatsApp | Vendors, A vendor, A finalist | `WhatsAppLink` | model `whatsapp.ts` (`waHref`, leading 0 → 62) | 1.5, 3.9 | [ ] |
-| F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [ ] |
-| F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [ ] |
-| F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [ ] |
+| F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [x] |
+| F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [x] |
+| F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [x] |
 | F11 keen | Vendors, A vendor | `KeenHeart`, `FilterCheck` | `starred` | 3.9, 4.11 | [x] |
 | F12 browse vendors | Vendors | `FocusChips`, `SearchField`, `OrderBy`, category headings | model `search.ts`, `order.ts`, `categories.ts` | 1.5, 4.11 | [x] |
-| F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [ ] |
+| F13 files on a vendor | A vendor | `FileTiles` | `useRecordFiles({kind:'vendor'})` | 3.10, 4.12 | [x] |
 | F14 our own categories | Vendors (categories sheet) | `MenuCardList`, `InlineConfirm`, field with characters left | `collections/vendor-categories.ts` (validation), model `categories.ts` | 4.11 | [x] |
 | F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [x] |
 | F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
-| F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [ ] |
+| F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [x] |
 | F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
 | F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [ ] |
 | F19 finalists by category | Shortlist | `FocusChips`, `OrderBy` | model `order.ts` | 4.13 | [ ] |
@@ -959,7 +960,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | 4bbbc7e; real cost to log from `/cost`; the Haiku second build is a separate row | [x] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
 | 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
-| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
+| 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | 2026-10-17 (lane t2); 14 model tests, 11 emulator tests, 14 emulator e2e tests; gap G22/N22; real cost to log from `/cost` | [x] |
 | 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | | [ ] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
 | 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
@@ -1287,7 +1288,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.11. **Prototype:** `vendors.html`. Focus chips with counts, search, keen filter, six orders, category headings, 100 at a time, add-vendor sheet (Add and start another), categories sheet (add, rename, remove with inline confirm and undo, 40 characters), export link (columns wait for N5; build with a placeholder set marked TODO N5).
 
 #### Task 4.12: A vendor · Sonnet 5.5 High
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-17 · lane t2 · real cost to log from `/cost`). `/new/vendors/[vendorId]` (`src/veil/screens/vendor/`, data in `src/lib/data/vendors.ts`, words in `src/lib/model/vendor-detail.ts`). Chosen goes through `markBooked`; a vendor that is a live booking is removed by making it a direct booking (it leaves Vendors, stays in the budget, undo restores `from`), since the record is the booking (N10). Compared with `vendor.html` at 1440px and 390px by screenshot: the same layout, the save line about 4px taller.
 - **Guide:** §5.12. **Prototype:** `vendor.html` (`?id=kebun`, `ara`, `nusantara`, `sv-long`).
 - **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist). Removing the vendor waits for N10.
 
@@ -1530,6 +1531,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G19 | **N19** | Raised by Task 4.9. The guide gives a form that creates its Try again button (§6.1) but no line for a funder that wasn't added. Built provisionally in `src/veil/screens/who-pays/add-funder-row.tsx`: the booking form's wording without its reason, "The funder wasn’t added. What you typed is still here." (`ADD_FAILED` in `funder-text.ts`). The add keeps one id per row, so Try again never makes two funders. | 4.9 | open |
 | G20 | **N20** | Raised by Task 4.1. The guide words a wrong email or password, being offline and the Google window's endings, but not an email sign-in that Firebase turns away for another reason: `auth/too-many-requests`, `auth/user-disabled` or anything unexpected. Built provisionally (`PROBLEM_LINES.other` in `src/lib/model/sign-in.ts`): a rose box, "Couldn’t sign you in. Nothing was changed. Try again in a moment, or continue with Google." | 4.1 | open |
 | G21 | **N21** | Raised by Task 4.4. The guide gives a form that records its Try again button (§6.1) but no line for a payment that wasn't recorded, and no state for a receipt that is still uploading or that failed. Built provisionally in `src/veil/parts/payment/record-payment-sheet.tsx`: "The payment wasn’t recorded. What you typed is still here." in a rose inline banner with the button reading Try again (`RECORD_FAILED` in `src/lib/model/payment.ts`; the payment keeps one id per sheet, so Try again never records two); while a receipt uploads, "Waiting for the receipt to finish uploading." and Record payment is off; after a receipt fails, "A receipt didn’t upload. Try again to record the payment with it." with the upload's own Try again link and Record payment off (`RECEIPT_WAITING`, `RECEIPT_FAILED`). | 4.4 | open |
+| G22 | **N22** | Raised by Task 4.12. The guide gives no reply for a rating or a number of reviewers that isn't one, no line for a vendor that couldn't be copied to the shortlist or a price option that couldn't be added, and the "Chosen, and now a booking" line says nothing true once a booked vendor is moved to an earlier stage. Built provisionally: the rating and reviewers follow N16's pattern (the old value returns, the row rings rose and says why, quoting what was typed: "“great” isn’t a rating. Use a number from 0 to 5, like 4,8. It stays 4,8."; `ratingMessage`, `reviewersMessage` in `src/lib/model/vendor-detail.ts`); "Couldn’t copy to the shortlist. Nothing was changed." with the button reading Try again (`COPY_FAILED`; one shortlist id per card, so Try again never copies twice); "The price option wasn’t added. What you typed is still here." (`OPTION_ADD_FAILED`); and for a booked vendor at a stage other than Chosen or Done, "Now a booking. Open the booking" (`BOOKING_LINE_LATER`). A failed stage, keen or lean change uses §6.1's one-tap line. | 4.12 | open |
 
 ### 9.2 Questions for the owner: decided
 

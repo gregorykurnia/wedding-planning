@@ -75,7 +75,7 @@ Phase 4 keeps each terminal on one part of the app, so two lanes rarely touch th
 | [x] Before 4.1 and 4.2: Phase 2 review S5 and S6, the top bar outside `main` and a page column (see `redesign/reviews/phase-3-review.md`) · Sonnet 5.5 High (done 2026-10-16, lane t1, on Opus 5.5) | | | |
 | [x] 4.9 Who pays · Sonnet 5.5 High | [x] 4.11 Vendors · Sonnet 5.5 High | [x] 4.1 Sign in · Sonnet 5.5 High | [x] 4.9 second build, calibration trial, on `trial/4.9-haiku` from `3f47f9f` (see above) · Haiku 5.5 Max |
 | [x] 4.4 Record a payment · Sonnet 5.5 High | [x] Follow-up: N13 and N14 in 2.6 and 3.8 (2026-10-17, lane t2) · Sonnet 5.5 High<br>[x] Follow-up: N3 in 2.7, N15 in 2.4, N16 in 3.4, N17 in 3.10, N18 in 3.8 (2026-10-17, lane t2) · Sonnet 5.5 High | [x] 4.2 Overview · Sonnet 5.5 High | [ ] 4.17 Editor core (L) · Opus 5.5 High |
-| [ ] 4.3 Budget ★ · Haiku 5.5 Max | [ ] 4.12 A vendor · Sonnet 5.5 High | [ ] 4.20 Schedule · Sonnet 5.5 High | [ ] 4.9 calibration result (after Terminal 1's 4.9 is in `redesign`; see above) · Sonnet 5.5 High |
+| [ ] 4.3 Budget ★ · Haiku 5.5 Max | [x] 4.12 A vendor · Sonnet 5.5 High | [ ] 4.20 Schedule · Sonnet 5.5 High | [ ] 4.9 calibration result (after Terminal 1's 4.9 is in `redesign`; see above) · Sonnet 5.5 High |
 | [ ] 4.5 Bookings ★ · Haiku 5.5 Max | [ ] 4.13 Shortlist ★ · Haiku 5.5 Max | [ ] 4.21 Month ★ · Haiku 5.5 Max | [ ] 4.18 Tables and formulas (L, after 4.17) · Opus 5.5 Medium |
 | [ ] 4.6 A booking (L) · Sonnet 5.5 High | [ ] 4.14 A finalist · Sonnet 5.5 High | [ ] 4.22 Tasks · Sonnet 5.5 High | [ ] 4.16 Documents ★ · Haiku 5.5 Max |
 | [ ] 4.7 Add a booking · Haiku 5.5 Max | [ ] 4.15 Venues · Sonnet 5.5 High | [ ] 4.23 Wedding items (L) · Sonnet 5.5 High | [ ] 4.19 Files (L) · Sonnet 5.5 High |

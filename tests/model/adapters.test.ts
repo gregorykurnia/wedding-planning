@@ -84,7 +84,7 @@ describe("bookings: the booking field or the old status", () => {
       rating: 4.8,
       reviewers: 120,
       totalPrice: 0,
-      priceOptions: [{ id: "legacy-0", description: "Silver", price: 0, selected: true }],
+      priceOptions: [{ id: "legacy-0", description: "Silver", includes: "", price: 0, selected: true }],
       createdAt: 5,
       updatedBy: "uid-bella",
     });
