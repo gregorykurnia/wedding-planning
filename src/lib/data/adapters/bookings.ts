@@ -63,7 +63,10 @@ export function parts(raw: unknown): StoredPart[] {
 
 export interface PriceOption {
   id: string;
+  /** The option's name ("Package B"). */
   description: string;
+  /** What's included, under the name: new in the redesign, so older options have none. */
+  includes: string;
   price: number;
   /** The one we're leaning towards. */
   selected: boolean;
@@ -102,6 +105,7 @@ export function vendorFromDoc(id: string, data: Record<string, unknown>): Vendor
     priceOptions: withElementIds<Record<string, unknown>>(data.priceOptions).map((o) => ({
       id: o.id,
       description: str(o.description),
+      includes: str(o.includes),
       price: num(o.price),
       selected: o.selected === true,
     })),
