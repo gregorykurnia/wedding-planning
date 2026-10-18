@@ -387,7 +387,12 @@ function whatIfPart(id: string, name: string, totalPrice: number, funder: unknow
   return { id, name, funder: typeof funder === "string" ? funder : null, totalPrice, budgetSpent: 0, nextTargetDate: null, nextAction: "", files: [] };
 }
 
-/** "Part 1" with the item's price and funder, and "Part 2" at Rp 0. */
+/**
+ * "Part 1" with the item's price and funder, and "Part 2" at Rp 0. The funder moves
+ * down into the parts, so the item has none of its own: a part set to Not assigned
+ * (stored as null, which reads as "the item's") then really is, as the prototype's
+ * split does by deleting the item's `funder`.
+ */
 export async function splitWhatIf(id: string, opts: WriteOptions = {}): Promise<Undoable & { partIds: string[] }> {
   const done = await patchWithUndo<string[]>(
     WHAT_IF,
@@ -398,7 +403,7 @@ export async function splitWhatIf(id: string, opts: WriteOptions = {}): Promise<
         whatIfPart(makeId(), "Part 1", num(data.totalPrice), data.funder),
         whatIfPart(makeId(), "Part 2", 0, data.funder),
       ];
-      return { patch: { subEntries: parts }, result: parts.map((p) => p.id) };
+      return { patch: { subEntries: parts, funder: null }, result: parts.map((p) => p.id) };
     },
     opts,
   );

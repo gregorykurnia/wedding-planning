@@ -1,0 +1,90 @@
+/* The what-if sheets (guide §5.10), ported from the inline styles and .pe in
+   whatif.html. Tokens only; off-scale values take the nearest token, ties going up. */
+
+/* "Paying in stages? …", under the fields. */
+.stages {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+/* "Parts   3 parts; the price comes from them" */
+.partsHead {
+  margin: var(--space-7) 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-amount);
+  font-weight: var(--weight-display);
+}
+
+.partsHead small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+}
+
+/* "Rp 40.000.000 in all", left-aligned under the heading. */
+.total {
+  margin: 0;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.parts {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.part {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* A field row stripped to its control: the grid is the layout, and the row keeps its label, ring and refusal line. */
+.cell > div {
+  padding: 0 0 0 var(--space-3);
+  border-bottom: 0;
+  min-height: 0;
+}
+
+.remove {
+  white-space: nowrap;
+}
+
+.add {
+  margin: var(--space-3) 0 0;
+}
+
+/* A split or an added part that didn't go through. */
+.failure {
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+}
+
+@media (max-width: 760px) /* --bp-phone */ {
+  .part {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cellName {
+    grid-column: 1 / -1;
+  }
+
+  .remove {
+    justify-self: start;
+  }
+}

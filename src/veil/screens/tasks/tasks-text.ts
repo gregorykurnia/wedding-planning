@@ -50,7 +50,7 @@ export const deleteConfirm = (task: Pick<TaskRecord, "title" | "subtasks">) => (
   action: "Delete task",
 });
 
-/** Provisional (G29/N29): the design words no failure for a tick or an added step. */
+/** Provisional (G30/N30): the design words no failure for a tick or an added step. */
 export const finishFailed = (title: string, done: boolean) =>
   `Couldn’t ${done ? "finish" : "reopen"} “${title}”. Nothing was changed.`;
 export const STEP_ADD_FAILED = "Couldn’t add the step. Nothing was changed.";
