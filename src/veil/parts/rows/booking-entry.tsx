@@ -11,6 +11,19 @@ import { useFlash } from "@/veil/shell/flash";
 import { bookingMeta, bookingStatus, NO_TEXT } from "./ledger-text";
 import styles from "./rows.module.css";
 
+/** The status words with their figure in tabular numerals, as the prototype sets it. */
+function amountIn({ text, amount }: { text: string; amount: string | null }) {
+  if (!amount) return text;
+  const at = text.indexOf(amount);
+  return (
+    <>
+      {text.slice(0, at)}
+      <span className="num">{amount}</span>
+      {text.slice(at + amount.length)}
+    </>
+  );
+}
+
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
 export interface BookingEntryProps {
@@ -48,7 +61,7 @@ export function BookingEntry({ booking, funders, today }: BookingEntryProps) {
             status.tone === "done" && styles.statusDone,
           )}
         >
-          {status.text}
+          {amountIn(status)}
         </span>
         {lines ? (
           <div className={styles.partsSlot}>

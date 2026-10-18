@@ -1,19 +1,21 @@
 /*
  * Parts in a ledger row (guide §4.8; prototype `.parts`). Dotted leaders; a
- * what-if list (`.hypothetical`) has dashed leaders and italic values.
+ * what-if list (`.hypothetical`) has dashed leaders and italic values. The 10px
+ * margin and gap and the 3px padding have no token, so they are composed from
+ * tokens to keep the prototype's row heights.
  */
 
 .parts {
   list-style: none;
   grid-column: 1 / -1;
-  margin: var(--space-3) 0 var(--space-hair) var(--space-hair);
+  margin: calc(var(--space-3) - var(--space-hair)) 0 var(--space-hair) var(--space-hair);
 }
 
 .parts li {
   display: flex;
   align-items: baseline;
-  gap: var(--space-3);
-  padding: var(--space-1) 0;
+  gap: calc(var(--space-3) - var(--space-hair));
+  padding: calc(var(--space-1) - 1px) 0;
   font-size: var(--text-meta);
   color: var(--color-text-muted);
 }

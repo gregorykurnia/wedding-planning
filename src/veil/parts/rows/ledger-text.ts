@@ -52,14 +52,19 @@ export function bookingMeta(b: Booking, funders: Funder[]): string {
 /**
  * The right of a booking entry: "Rp 1.000.000 to pay", "… late" (rose), "Paid in
  * full" (sage), "Overpaid by …" (rose) or "No price yet". Late is the earliest
- * owing part's date passing.
+ * owing part's date passing. `amount` is the figure inside `text`, which the row
+ * sets in tabular numerals; it is null when there is none.
  */
-export function bookingStatus(b: Booking, today: IsoDate): { text: string; tone: LineTone } {
+export function bookingStatus(b: Booking, today: IsoDate): { text: string; tone: LineTone; amount: string | null } {
   const t = totals(b);
-  if (t.over) return { text: `Overpaid by ${rp(t.overBy)}`, tone: "late" };
-  if (t.left === 0) return t.price ? { text: "Paid in full", tone: "done" } : { text: "No price yet", tone: "plain" };
+  if (t.over) return { text: `Overpaid by ${rp(t.overBy)}`, tone: "late", amount: rp(t.overBy) };
+  if (t.left === 0) {
+    return t.price
+      ? { text: "Paid in full", tone: "done", amount: null }
+      : { text: "No price yet", tone: "plain", amount: null };
+  }
   const late = t.next !== null && urgency(t.next.due, today) === "late";
-  return { text: `${rp(t.left)} ${late ? "late" : "to pay"}`, tone: late ? "late" : "plain" };
+  return { text: `${rp(t.left)} ${late ? "late" : "to pay"}`, tone: late ? "late" : "plain", amount: rp(t.left) };
 }
 
 /** The place-card date: the day and the short month, or `null` for a date that isn't real. */

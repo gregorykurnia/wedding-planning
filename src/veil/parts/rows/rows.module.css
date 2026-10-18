@@ -1,7 +1,7 @@
 /*
  * Ledger rows (guide §4.7), ported from the prototype's .ledger, .entry, .vrow,
  * .due, .drow, .frow and the what-if and guest shells. Tokens only. Values with no
- * token take the nearest one; the 18px row padding is --space-4 (16px).
+ * token take the nearest one; the entry's 18px bottom padding is composed from tokens.
  */
 
 /* ---------- the list: hairlines between rows, one above the first ---------- */
@@ -31,7 +31,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--space-hair) var(--space-6);
-  padding: var(--space-5) var(--space-row-x) var(--space-4);
+  padding: var(--space-5) var(--space-row-x) calc(var(--space-row-y) + var(--space-hair));
   color: inherit;
   text-decoration: none;
 }
@@ -413,6 +413,10 @@
 /* ---------- a phone (760px and under) ---------- */
 
 @media (max-width: 760px) {
+  .entry {
+    column-gap: calc(var(--space-3) + var(--space-hair));
+  }
+
   .due {
     grid-template-columns: var(--date-card-width) 1fr;
     gap: var(--space-hair) var(--space-3);

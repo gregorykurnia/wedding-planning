@@ -73,14 +73,14 @@ describe("booking entries", () => {
     expect(html).toContain("Pelaminan Ayu");
     expect(html).toContain("Rp 25.000.000");
     expect(html).toContain("Decoration, paid by Greg and Bella’s family, Rp 3.000.000 over the estimate");
-    expect(html).toContain("Rp 20.000.000 to pay");
+    expect(html).toContain('<span class="num">Rp 20.000.000</span> to pay');
     expect(html).toContain("Deposit");
     expect(html).toContain("Final payment");
   });
 
   it("writes the late status in rose and the paid one in sage", () => {
     const late = booking({ id: "vendor-v3", name: "Dimas", price: 15_000_000, paid: 5_000_000, funder: "ck", due: "2026-10-10" });
-    expect(markup(<BookingEntry booking={late} funders={FUNDERS} today={TODAY} />)).toMatch(/class="[^"]*statusLate[^"]*">Rp 10.000.000 late</);
+    expect(markup(<BookingEntry booking={late} funders={FUNDERS} today={TODAY} />)).toMatch(/class="[^"]*statusLate[^"]*"><span class="num">Rp 10.000.000<\/span> late</);
     const paid = booking({ id: "vendor-v2", name: "Catering", price: 55_500_000, paid: 55_500_000, funder: "ck" });
     expect(markup(<BookingEntry booking={paid} funders={FUNDERS} today={TODAY} />)).toMatch(/class="[^"]*statusDone[^"]*">Paid in full</);
   });

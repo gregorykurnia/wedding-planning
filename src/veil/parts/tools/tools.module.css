@@ -1,6 +1,7 @@
 /* Guide §4.12 and §6.8. Ported from the prototype's .tools, .search, .order,
    .filters, .range, .toggles, .count and .sorted-note, with tokens only. Off-
-   scale values take the nearest token (6px is 8px, 18px is 20px, 14px is 16px). */
+   scale values take the nearest token (18px is 20px, 14px is 16px), except the search
+   and order paddings and gap, which are composed from tokens to match the prototype. */
 
 .tools {
   display: flex;
@@ -8,7 +9,7 @@
   align-items: end;
   justify-content: space-between;
   gap: var(--space-3) var(--space-7);
-  margin: var(--space-8) 0 var(--space-2);
+  margin: calc(var(--space-doors) + var(--space-1)) 0 var(--space-2);
 }
 
 /* A second toolbar under the first: closer to it, and it starts at the left. */
@@ -27,8 +28,8 @@
   flex: 1 1 260px;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-hair);
+  gap: calc(var(--space-3) - var(--space-hair));
+  padding: calc(var(--space-2) - var(--space-hair)) var(--space-hair);
   border-bottom: 1px solid var(--color-edge);
 }
 
@@ -80,7 +81,8 @@
   -webkit-appearance: none;
   border: 0;
   background: none;
-  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-hair);
+  padding: calc(var(--space-2) - var(--space-hair)) calc(var(--space-4) + var(--space-hair))
+    calc(var(--space-2) - var(--space-hair)) var(--space-hair);
   font: inherit;
   font-size: var(--text-label);
   color: var(--color-text);

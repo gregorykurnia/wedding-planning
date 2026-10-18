@@ -102,15 +102,15 @@ describe("booking entries", () => {
   });
 
   it("gives the status: to pay, late in rose, paid in full, overpaid, or no price yet", () => {
-    expect(bookingStatus(decoration, TODAY)).toEqual({ text: "Rp 20.000.000 to pay", tone: "plain" });
+    expect(bookingStatus(decoration, TODAY)).toEqual({ text: "Rp 20.000.000 to pay", tone: "plain", amount: "Rp 20.000.000" });
     const late = booking({ id: "vendor-v3", name: "Dimas", price: 15_000_000, paid: 5_000_000, funder: "ck", due: "2026-10-10" });
-    expect(bookingStatus(late, TODAY)).toEqual({ text: "Rp 10.000.000 late", tone: "late" });
+    expect(bookingStatus(late, TODAY)).toEqual({ text: "Rp 10.000.000 late", tone: "late", amount: "Rp 10.000.000" });
     const paid = booking({ id: "vendor-v2", name: "Catering", price: 55_500_000, paid: 55_500_000 });
-    expect(bookingStatus(paid, TODAY)).toEqual({ text: "Paid in full", tone: "done" });
+    expect(bookingStatus(paid, TODAY)).toEqual({ text: "Paid in full", tone: "done", amount: null });
     const over = booking({ id: "venue-h1", name: "Hotel", price: 10_000_000, paid: 11_000_000 });
-    expect(bookingStatus(over, TODAY)).toEqual({ text: "Overpaid by Rp 1.000.000", tone: "late" });
+    expect(bookingStatus(over, TODAY)).toEqual({ text: "Overpaid by Rp 1.000.000", tone: "late", amount: "Rp 1.000.000" });
     const none = booking({ id: "vendor-v5", name: "Florist" });
-    expect(bookingStatus(none, TODAY)).toEqual({ text: "No price yet", tone: "plain" });
+    expect(bookingStatus(none, TODAY)).toEqual({ text: "No price yet", tone: "plain", amount: null });
   });
 });
 
