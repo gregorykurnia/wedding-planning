@@ -9,7 +9,7 @@
 import type { Booking, FunderId } from "./bookings";
 import { categoryRank } from "./categories";
 import { GUEST_EVENTS, ITEM_EVENTS, ITEM_PEOPLE, RSVPS, VENDOR_RULED_OUT, VENDOR_STAGES, indexOf, type Choice } from "./labels";
-import { estimateDifference, totals } from "./money";
+import { estimateDifference, totals, whatIfParts, whatIfTotal, type WhatIfRecord } from "./money";
 
 export type Direction = "asc" | "desc";
 export type Sortable = string | number | null | undefined;
@@ -331,4 +331,43 @@ export function orderBookings<T extends Booking>(
     booked: (b) => b.bookedOn,
   };
   return sortBy(bookings, value[key], direction, (a, z) => compareText(a.name, z.name));
+}
+
+// ---------- what-if items (guide §5.10, B9) ----------
+
+export type WhatIfOrderKey = "added" | "name" | "category" | "price" | "funder";
+
+// Price is the one number that starts biggest first; the rest start at the beginning.
+export const WHAT_IF_ORDERS = order<WhatIfOrderKey>(
+  ["added", "Order added", "asc"],
+  ["name", "Name", "asc"],
+  ["category", "Category", "asc"],
+  ["price", "Price", "desc"],
+  ["funder", "Who would pay", "asc"],
+);
+
+export type OrderableWhatIf = WhatIfRecord & { category?: string | null; createdAt?: number | null };
+
+/**
+ * What-if items in an order. An item's price is its parts added up, and who would
+ * pay is the first part's funder (blank when nobody is named yet, so it goes last).
+ * A tie falls back to the name.
+ */
+export function orderWhatIfs<T extends OrderableWhatIf>(
+  items: readonly T[],
+  key: WhatIfOrderKey,
+  direction: Direction,
+  funderName: (id: FunderId) => string,
+): T[] {
+  const value: Record<WhatIfOrderKey, (w: T) => Sortable> = {
+    added: (w) => w.createdAt,
+    name: (w) => w.name,
+    category: (w) => w.category,
+    price: (w) => whatIfTotal(w),
+    funder: (w) => {
+      const id = whatIfParts(w)[0]?.funder ?? null;
+      return id === null ? null : funderName(id);
+    },
+  };
+  return sortBy(items, value[key], direction, (a, z) => compareText(a.name, z.name));
 }

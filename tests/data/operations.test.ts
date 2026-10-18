@@ -321,7 +321,8 @@ describe("what-if items", () => {
 
     await merged.undo();
     data = await read("hypotheticalItems", "w1");
-    expect(data).toMatchObject({ totalPrice: 40_000_000, funder: "Bella" });
+    // The split moved the funder into the parts, so the item has none of its own to give back.
+    expect(data).toMatchObject({ totalPrice: 40_000_000, funder: null });
     expect(data?.subEntries).toHaveLength(2);
   });
 

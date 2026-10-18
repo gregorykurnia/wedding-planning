@@ -1,0 +1,28 @@
+/* The What-if items screen (guide §5.10), ported from the inline styles of
+   whatif.html and .section-h. Tokens only; off-scale values take the nearest token. */
+
+/* "Who would pay the extra" and "Items   3 items": a section heading with a small note at the far end. */
+.section {
+  margin: var(--space-section) 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+}
+
+.section small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+}
+
+/* Order by, to the right and 4px under the heading. */
+.order {
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--space-1) 0 var(--space-2);
+}
