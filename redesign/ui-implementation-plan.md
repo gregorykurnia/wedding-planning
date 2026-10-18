@@ -970,7 +970,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | 2026-10-18 · lane t4 · 1a354b9; screenshot comparison with `doc.html` still open | [x] |
 | 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
 | 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | ef903b5; 19 model, 16 emulator and 3 demo e2e tests | [x] |
-| 4 | 4.21 Month | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | The calendar from 3.11 on a screen; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
+| 4 | 4.21 Month | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | The calendar from 3.11 on a screen; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | 2026-10-18 · lane t3, `2ab2926` (built on Haiku 5.5 Max before the calibration result) and `b2b5553` (Sonnet 5.5 High review, one fix); the Phase 4 review checks it for Haiku drift, as it does 4.3 | [x] |
 | 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | | [ ] |
 | 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | | [ ] |
 | 4 | 4.24 Guests | Sonnet 5.5 High | $0.88 | Guest sheet, RSVP switch, headcounts | | [ ] |

@@ -18,6 +18,10 @@ export function noResults(query: string): { title: string; body: string } {
     : { title: "Nothing here", body: "Nothing of this kind is coming up." };
 }
 
+/** The month's chosen day with nothing on it, and the link that adds something there (guide §5.20). */
+export const NOTHING_ON_DAY = "Nothing on this day.";
+export const ADD_SOMETHING = "Add something";
+
 /**
  * The rose box above the agenda for reminders that can't arrive (N11): the first
  * three names open their sheets, and the rest are counted.
