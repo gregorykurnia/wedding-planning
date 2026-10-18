@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { Booking, FunderId } from "@/lib/model/bookings";
 import {
   NO_VENDOR_FILTER,
   NO_VENUE_FILTER,
+  bookingMatches,
   filterVendors,
   filterVenues,
   fold,
@@ -184,5 +186,54 @@ describe("filterVenues", () => {
     expect(isFilteringVenues({ ...NO_VENUE_FILTER, maxCost: 0 })).toBe(true);
     expect(isFilteringVenues({ ...NO_VENUE_FILTER, minGuests: 100 })).toBe(true);
     expect(isFilteringVenues({ ...NO_VENUE_FILTER, stage: "Booked" })).toBe(true);
+  });
+});
+
+describe("bookingMatches", () => {
+  const NAMES: Record<string, string> = { greg: "Gregory", ck: "CK" };
+  const nameOf = (id: FunderId) => (id === null ? "Not assigned" : (NAMES[id] ?? "Not assigned"));
+
+  const booking = (extra: Partial<Booking>): Booking => ({
+    id: "vendor-x",
+    kind: "vendor",
+    recordId: "x",
+    name: "Lumière Décor",
+    category: "Decoration",
+    price: 10,
+    paid: 0,
+    funder: "greg",
+    due: null,
+    step: "Send the deposit",
+    parts: [],
+    estimate: null,
+    bookedOn: null,
+    from: "vendor",
+    direct: false,
+    ...extra,
+  });
+
+  it("matches everything when the search is empty", () => {
+    expect(bookingMatches(booking({}), "", nameOf)).toBe(true);
+  });
+
+  it("looks through the name, the category, the parts' names and next steps, ignoring accents", () => {
+    const parts = booking({
+      parts: [{ id: "p", name: "Final payment", price: 5, paid: 0, funder: "ck", due: null, step: "Ask for the invoice" }],
+    });
+    expect(bookingMatches(parts, "lumiere", nameOf)).toBe(true);
+    expect(bookingMatches(parts, "decor", nameOf)).toBe(true);
+    expect(bookingMatches(parts, "final payment", nameOf)).toBe(true);
+    expect(bookingMatches(parts, "invoice", nameOf)).toBe(true);
+    expect(bookingMatches(parts, "fireworks", nameOf)).toBe(false);
+  });
+
+  it("looks through the funders' names, so a booking's funder can be searched", () => {
+    expect(bookingMatches(booking({ funder: "greg" }), "gregory", nameOf)).toBe(true);
+    expect(bookingMatches(booking({ funder: "greg" }), "CK", nameOf)).toBe(false);
+  });
+
+  it("finds a booking with no funder by Not assigned, as Who pays links it", () => {
+    expect(bookingMatches(booking({ funder: null }), "not assigned", nameOf)).toBe(true);
+    expect(bookingMatches(booking({ funder: "ck" }), "not assigned", nameOf)).toBe(false);
   });
 });

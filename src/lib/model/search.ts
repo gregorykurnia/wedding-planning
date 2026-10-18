@@ -5,7 +5,9 @@
  * looks only at the fields each screen names. Filters combine: every active
  * one must match.
  */
+import { partsOf, type Booking, type FunderId } from "./bookings";
 import { VENUE_RULED_OUT } from "./labels";
+import { totals } from "./money";
 
 /** Lower case with accents removed, for comparing text. */
 export const fold = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
@@ -138,3 +140,17 @@ export function filterVenues<T extends VenueSearchFields & { status: string; bud
       (f.minGuests == null || (known(v.guestMax) && v.guestMax >= f.minGuests)),
   );
 }
+
+/**
+ * A booking matches on its name, its category, its parts' names and next steps,
+ * and its funders' names (guide §5.5). A funder that isn't listed, or none at all,
+ * reads as Not assigned, so searching for "Not assigned" finds what has no funder.
+ */
+export const bookingMatches = (b: Booking, query: string, funderName: (id: FunderId) => string) =>
+  matches(
+    query,
+    b.name,
+    b.category,
+    ...partsOf(b).flatMap((p) => [p.name, p.step]),
+    ...totals(b).funders.map((id) => funderName(id)),
+  );

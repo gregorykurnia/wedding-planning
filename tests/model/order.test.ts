@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BOOKING_ORDERS,
   GUEST_ORDERS,
   ITEM_ORDERS,
   SHORTLIST_ORDERS,
@@ -7,6 +8,7 @@ import {
   VENUE_ORDERS,
   directionWord,
   flip,
+  orderBookings,
   orderFinalists,
   orderGuests,
   orderItems,
@@ -19,6 +21,7 @@ import {
   startDirection,
   type OrderableItem,
 } from "@/lib/model/order";
+import type { Booking, FunderId } from "@/lib/model/bookings";
 import { buildCategories } from "@/lib/model/categories";
 
 const ids = <T extends { id: string }>(rows: T[]) => rows.map((r) => r.id);
@@ -376,5 +379,119 @@ describe("orderFinalists", () => {
 
   it("orders by category in the shared list's order", () => {
     expect(ids(orderFinalists(list, "category", "asc", categories))).toEqual(["c", "a", "d", "b"]);
+  });
+});
+
+describe("bookings order (B9)", () => {
+  const NAMES: Record<string, string> = { ck: "CK", greg: "Gregory" };
+  const nameOf = (id: FunderId) => (id === null ? "Not assigned" : (NAMES[id] ?? "Not assigned"));
+
+  /** A booking with a price of 10 and nothing else set, so each test sets what it orders by. */
+  const booking = (id: string, extra: Partial<Booking> = {}): Booking => ({
+    id,
+    kind: "vendor",
+    recordId: id,
+    name: id,
+    category: "Catering",
+    price: 10,
+    paid: 0,
+    funder: null,
+    due: null,
+    step: "",
+    parts: [],
+    estimate: null,
+    bookedOn: null,
+    from: "vendor",
+    direct: false,
+    ...extra,
+  });
+
+  it("lists the nine orders, and money and the estimate start biggest first", () => {
+    expect(BOOKING_ORDERS.map((o) => o.label)).toEqual([
+      "Next due date",
+      "Name",
+      "Category",
+      "Price",
+      "Paid",
+      "Still to pay",
+      "Funder",
+      "Difference from estimate",
+      "Date booked",
+    ]);
+    expect(startDirection(BOOKING_ORDERS, "price")).toBe("desc");
+    expect(startDirection(BOOKING_ORDERS, "paid")).toBe("desc");
+    expect(startDirection(BOOKING_ORDERS, "left")).toBe("desc");
+    expect(startDirection(BOOKING_ORDERS, "estimate")).toBe("desc");
+    expect(startDirection(BOOKING_ORDERS, "due")).toBe("asc");
+    expect(startDirection(BOOKING_ORDERS, "funder")).toBe("asc");
+  });
+
+  it("orders by the next due date, earliest first, with undated bookings last and ties by name", () => {
+    const list = [
+      booking("b", { name: "Bravo" }),
+      booking("a", { name: "Alpha", due: "2026-11-01" }),
+      booking("d", { name: "Delta", due: "2026-10-20" }),
+      booking("c", { name: "Charlie", due: "2026-10-20" }),
+    ];
+    expect(ids(orderBookings(list, "due", "asc", nameOf))).toEqual(["c", "d", "a", "b"]);
+    expect(ids(orderBookings(list, "due", "desc", nameOf))).toEqual(["a", "c", "d", "b"]);
+  });
+
+  it("orders a price biggest first, with no price (nothing set) last both ways", () => {
+    const list = [booking("p2", { price: 100 }), booking("p0", { price: 0 }), booking("p1", { price: 300 })];
+    expect(ids(orderBookings(list, "price", "desc", nameOf))).toEqual(["p1", "p2", "p0"]);
+    expect(ids(orderBookings(list, "price", "asc", nameOf))).toEqual(["p2", "p1", "p0"]);
+  });
+
+  it("orders what's paid and still to pay biggest first, so an overpaid booking has least left", () => {
+    const list = [
+      booking("owing", { price: 100, paid: 0 }),
+      booking("settled", { price: 100, paid: 100 }),
+      booking("over", { price: 100, paid: 150 }),
+    ];
+    expect(ids(orderBookings(list, "left", "desc", nameOf))).toEqual(["owing", "settled", "over"]);
+    expect(ids(orderBookings(list, "paid", "desc", nameOf))).toEqual(["over", "settled", "owing"]);
+  });
+
+  it("orders by the funders' names, with Not assigned after the names", () => {
+    const list = [booking("greg", { funder: "greg" }), booking("none", { funder: null }), booking("ck", { funder: "ck" })];
+    expect(ids(orderBookings(list, "funder", "asc", nameOf))).toEqual(["ck", "greg", "none"]);
+  });
+
+  it("orders the difference from the estimate biggest first, with no estimate last", () => {
+    const list = [
+      booking("under", { price: 90, estimate: 100 }),
+      booking("none", { price: 50, estimate: null }),
+      booking("over", { price: 120, estimate: 100 }),
+    ];
+    expect(ids(orderBookings(list, "estimate", "desc", nameOf))).toEqual(["over", "under", "none"]);
+    expect(ids(orderBookings(list, "estimate", "asc", nameOf))).toEqual(["under", "over", "none"]);
+  });
+
+  it("orders the date booked earliest first, and the category and name as text", () => {
+    const list = [
+      booking("late", { name: "Zulu", bookedOn: "2026-09-01", category: "Venue" }),
+      booking("none", { name: "Mike", bookedOn: null, category: "" }),
+      booking("early", { name: "Early", bookedOn: "2026-08-15", category: "Catering" }),
+    ];
+    expect(ids(orderBookings(list, "booked", "asc", nameOf))).toEqual(["early", "late", "none"]);
+    expect(ids(orderBookings(list, "category", "asc", nameOf))).toEqual(["early", "late", "none"]);
+    expect(ids(orderBookings(list, "name", "asc", nameOf))).toEqual(["early", "none", "late"]);
+  });
+
+  it("reads numbers in names in order, so Item 2 comes before Item 10", () => {
+    const list = [booking("ten", { name: "Item 10" }), booking("two", { name: "Item 2" }), booking("a", { name: "Alpha" })];
+    expect(ids(orderBookings(list, "name", "asc", nameOf))).toEqual(["a", "two", "ten"]);
+  });
+
+  it("keeps a booking's parts with it: it sorts by its earliest part still owing", () => {
+    const split = booking("split", {
+      parts: [
+        { id: "deposit", name: "Deposit", price: 50, paid: 50, funder: "ck", due: "2026-10-01", step: "" },
+        { id: "balance", name: "Balance", price: 50, paid: 0, funder: "greg", due: "2026-12-01", step: "" },
+      ],
+    });
+    const single = booking("single", { due: "2026-11-01" });
+    expect(ids(orderBookings([single, split], "due", "asc", nameOf))).toEqual(["single", "split"]);
   });
 });

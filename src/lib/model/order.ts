@@ -6,8 +6,10 @@
  * go last, whichever way the list runs, and ties fall back to name (vendors) or
  * guest number (guests) in ascending order.
  */
+import type { Booking, FunderId } from "./bookings";
 import { categoryRank } from "./categories";
 import { GUEST_EVENTS, ITEM_EVENTS, ITEM_PEOPLE, RSVPS, VENDOR_RULED_OUT, VENDOR_STAGES, indexOf, type Choice } from "./labels";
+import { estimateDifference, totals } from "./money";
 
 export type Direction = "asc" | "desc";
 export type Sortable = string | number | null | undefined;
@@ -287,4 +289,46 @@ export function orderFinalists<T extends OrderableFinalist>(
     followers: (f) => f.igFollowers,
   };
   return sortBy(finalists, value[key], direction, (a, z) => compareText(a.name, z.name));
+}
+
+// ---------- bookings (B9) ----------
+
+export type BookingOrderKey = "due" | "name" | "category" | "price" | "paid" | "left" | "funder" | "estimate" | "booked";
+
+// Money and the difference from the estimate start biggest first; dates, names and funders start at the beginning (guide §6.8).
+export const BOOKING_ORDERS = order<BookingOrderKey>(
+  ["due", "Next due date", "asc"],
+  ["name", "Name", "asc"],
+  ["category", "Category", "asc"],
+  ["price", "Price", "desc"],
+  ["paid", "Paid", "desc"],
+  ["left", "Still to pay", "desc"],
+  ["funder", "Funder", "asc"],
+  ["estimate", "Difference from estimate", "desc"],
+  ["booked", "Date booked", "asc"],
+);
+
+/**
+ * Whole bookings in an order: a booking's parts stay with it (guide §6.8, B9).
+ * A booking with no price reads as "No price yet", so it counts as blank. A tie
+ * falls back to the name. `funderName` gives a funder's name, Not assigned for none.
+ */
+export function orderBookings<T extends Booking>(
+  bookings: readonly T[],
+  key: BookingOrderKey,
+  direction: Direction,
+  funderName: (id: FunderId) => string,
+): T[] {
+  const value: Record<BookingOrderKey, (b: T) => Sortable> = {
+    due: (b) => totals(b).next?.due ?? null,
+    name: (b) => b.name,
+    category: (b) => b.category,
+    price: (b) => positive(totals(b).price),
+    paid: (b) => totals(b).paid,
+    left: (b) => totals(b).left,
+    funder: (b) => totals(b).funders.map((id) => funderName(id)).join(", "),
+    estimate: (b) => estimateDifference(b)?.difference ?? null,
+    booked: (b) => b.bookedOn,
+  };
+  return sortBy(bookings, value[key], direction, (a, z) => compareText(a.name, z.name));
 }
