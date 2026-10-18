@@ -47,13 +47,13 @@ The full table, one row per task with its reason, is §7.0. Picks use only rows 
 |---|---|---|---|
 | Opus 5.5 High | 9 | 2 reviews (Phases 1 and 7) | $21.84 |
 | Opus 5.5 Medium | 3 | 7 reviews (Phases 2–6, 8, 9) | $14.74 |
-| Sonnet 5.5 High | 37 | 1 design-gap round in the studio | $36.96 |
-| Haiku 5.5 Max | 28 | the calibration trial's second build | $7.14 |
+| Sonnet 5.5 High | 42 | 1 design-gap round in the studio | $41.36 |
+| Haiku 5.5 Max | 23 | the calibration trial's second build | $6.09 |
 | Haiku 5.5 xHigh | 4 | | $0.48 |
 | Haiku 5.5 High | 0 | the design-gap scan and import | $0.16 |
-| **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $81** |
+| **Total** | **81 tasks** | **9 reviews, 1 trial, 1 gap round** | **≈ $84** |
 
-Allow about 20% on top (≈ $98) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; logging the real `/cost` in §7.0 is optional (log it when you have it).
+Allow about 20% on top (≈ $101) for escalations, retries and further design-gap rounds. Reviews and the rebuild run at the picked effort; logging the real `/cost` in §7.0 is optional (log it when you have it).
 
 ---
 
@@ -903,7 +903,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **Minimum viable model.** Each pick below is the cheapest row in `~/.claude/CLAUDE.md` that should do the task well. Opus 5.5 High is used only where a mistake could lose data or break production, and each such row names the risk. Never Opus 5.5 Low or Sonnet 5.5 Medium.
 - **Model check.** At the start of each session, compare the current model and effort with the task's pick. If the current one is lower, say so and suggest `/model` plus the effort setting before starting. If it's much higher for a Haiku task, suggest the cheaper one.
 - **One task per session,** reading only: the task's section below, the design-guide sections it names, and the prototype file it names. Old UI files are opened only where a task says so, and only for the data calls they make. This keeps a cheaper model from copying old patterns.
-- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. Cheaper means the cheaper row in the model table; real `/cost` figures are optional and help only if both are known. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21.
+- **Calibration trial (once, in Phase 4).** Build Task 4.9 (Who pays, a Sonnet 5.5 High task) twice from the same starting commit: once with Sonnet 5.5 High, once with Haiku 5.5 Max on a throwaway branch. Compare both against `funders.html` in every state at both widths, and keep the cheaper one if it's as good. Cheaper means the cheaper row in the model table; real `/cost` figures are optional and help only if both are known. If Haiku passes, move the other single-screen Sonnet tasks that only display model data (4.13-like work) down to Haiku 5.5 Max and log it below. Extra cost: about $0.21. **Result (2026-10-18): Haiku wasn't as good, so the ★ tasks stay on Sonnet 5.5 High (see the trial row below).**
 - **Escalation.** The first time a model gets a task wrong twice, redo it one row stronger and log the change in the table. When an end-of-phase review rejects a task's work, the fix is done one row stronger too, and that task's pick is updated (redesign plan, "Move up after a failed check").
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
@@ -952,23 +952,23 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.2 Overview | Sonnet 5.5 High | $0.88 | Several data sources on one screen | 2026-10-17 (lane t3, 1cbc978): built; the wedding day and after (N7) are in; real cost to log from `/cost` | [x] |
 | 4 | 4.3 Budget | Haiku 5.5 Max | $0.21 | Displays model data; exact reference `budget.html` | 2026-10-17 (lane t1, 3c5d884); the N7 closing line is built here and G7 stays open for 4.2; 27 model tests, 3 demo and 3 emulator e2e; real cost to log from `/cost` | [x] |
 | 4 | 4.4 Record a payment sheet | Sonnet 5.5 High | $0.88 | Writes money through 1.10's operation, with undo | 2026-10-17 (lane t1, ddc5b45); gap G21/N21 (failed record and receipt lines) added | [x] |
-| 4 | 4.5 Bookings | Haiku 5.5 Max | $0.21 | Displays model data; reference `bookings.html` | | [ ] |
+| 4 | 4.5 Bookings | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; reference `bookings.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.6 A booking (L) | Sonnet 5.5 High | $1.76 | Many fields, parts and actions, with writes already made safe in 1.10 | | [ ] |
 | 4 | 4.7 Add a booking | Haiku 5.5 Max | $0.21 | Form port; the write is 1.10's | | [ ] |
-| 4 | 4.8 Payments due | Haiku 5.5 Max | $0.21 | Displays model data | | [ ] |
+| 4 | 4.8 Payments due | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.9 Who pays (calibration trial) | Sonnet 5.5 High | $0.88 | Inline rename and remove with undo | 4bbbc7e; real cost to log from `/cost`; the Haiku second build is a separate row | [x] |
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
 | 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
 | 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | | [ ] |
-| 4 | 4.13 Shortlist | Haiku 5.5 Max | $0.21 | Displays model data; reference `shortlist.html` | | [ ] |
+| 4 | 4.13 Shortlist | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; reference `shortlist.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
 | 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
-| 4 | 4.16 Documents | Haiku 5.5 Max | $0.21 | Displays data; reference `documents.html` | | [ ] |
+| 4 | 4.16 Documents | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays data; reference `documents.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | a90b7f8; 31 model tests, 9 emulator tests, 10 emulator and 2 demo e2e tests; owner spot-check of five documents on a preview still open | [x] |
 | 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | | [ ] |
 | 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
 | 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | ef903b5; 19 model, 16 emulator and 3 demo e2e tests | [x] |
-| 4 | 4.21 Month | Haiku 5.5 Max | $0.21 | The calendar from 3.11 on a screen | | [ ] |
+| 4 | 4.21 Month | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | The calendar from 3.11 on a screen; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | | [ ] |
 | 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | | [ ] |
 | 4 | 4.24 Guests | Sonnet 5.5 High | $0.88 | Guest sheet, RSVP switch, headcounts | | [ ] |
@@ -1004,7 +1004,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
 | 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
 | 9 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design) | [x] |
+| any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design). **Result (2026-10-18): Haiku wasn't as good, so Sonnet 5.5 High stays for the ★ tasks (4.5, 4.8, 4.13, 4.16, 4.21).** At 1440px and 390px against `funders.html`: Sonnet's build matches the normal, adding, demonstration and remove states and the phone line wraps; Haiku's rows run about 4px off the prototype's heights with different phone wraps, and its add row isn't the prototype's (input, then Add funder and Cancel beneath): it bent the shared `InlineRename` into an add row, so the links and the demonstration line sit beside the input in the serif font. Its add also makes a new funder id on each try, so Try again after a timeout can add two (the guide asks for one id per row), and it has no line for a failed add (G19). Its rename and remove states and its 12 model tests are fine. Real costs weren't both known, so the decision is on quality. 4.3 was already built on Haiku before this result: the Phase 4 review checks it for the same kind of drift | [x] |
 | any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
 ### How every task session runs
@@ -1257,7 +1257,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.4 (Record a payment row), §6.9. **Prototype:** `assets/app.js` `recordPayment`.
 - **Do:** opened from the budget, a booking, a part, payments due and the agenda; amount pre-filled with what's left, live preview line, Paid on, Paid by chips, Attach a receipt (the shared upload sheet, filing into the booking's folder); `recordPayment` from 1.10; busy "Recording"; undo toast.
 
-#### Task 4.5: Bookings · Haiku 5.5 Max
+#### Task 4.5: Bookings · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.5. **Prototype:** `bookings.html`. Search, nine orders, 100 at a time, parts collapsed.
 
@@ -1270,12 +1270,12 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.7. **Prototype:** `booking-new.html`. Uses `addDirectBooking` (one id per form, so Try again never duplicates); attached files are uploaded first and linked when the booking is added.
 
-#### Task 4.8: Payments due · Haiku 5.5 Max
+#### Task 4.8: Payments due · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.8. **Prototype:** `payments.html`. Groups Late, next 14 days, then months; 60 at a time.
 
 #### Task 4.9: Who pays · Sonnet 5.5 High (calibration trial)
-- [x] **Done** (2026-10-17 · 4bbbc7e · real cost to log from `/cost`). The Sonnet build; the Haiku 5.5 Max second build and the comparison are still open. Gap G19/N19 (failed add line) added.
+- [x] **Done** (2026-10-17 · 4bbbc7e · real cost to log from `/cost`). The Sonnet build. The Haiku 5.5 Max second build was compared on 2026-10-18 and wasn't as good (§7.0 trial row). Gap G19/N19 (failed add line) added.
 - **Guide:** §5.9, §6.9. **Prototype:** `funders.html`. Add, rename (Enter, Escape, undo), remove (confirm naming costs, undo), Not assigned row linking to Bookings searched for "Not assigned". Build twice per §7.0.
 
 #### Task 4.10: What-if items · Sonnet 5.5 High
@@ -1291,7 +1291,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.12. **Prototype:** `vendor.html` (`?id=kebun`, `ara`, `nusantara`, `sv-long`).
 - **Do:** keen heart, stage chips (Chosen → `markBooked`, toast with Open), "now a booking" line, figure from the preferred option, contact and reputation fields, price options menu card and sheet (add with Cancel/Add option, edit saves as you go), notes view, files, shortlist card (Copy to the shortlist, busy, undo; or Open on the shortlist). Removing the vendor waits for N10.
 
-#### Task 4.13: Shortlist · Haiku 5.5 Max
+#### Task 4.13: Shortlist · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.13. **Prototype:** `shortlist.html`. Cards grouped by category, up to 4 packages, booked cards faded with the flag, four orders with direction, add-finalist sheet.
 
@@ -1304,7 +1304,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.15. **Prototype:** `venues.html`. Booked venue line, search, stage filter, cost and capacity limits, Hide ruled out on by default, three orders, rows with stage thread and notes cut at 140, venue sheet (add with undo, edit saves as you go, Booked → `markBooked`, files). Removing a venue waits for N10.
 
-#### Task 4.16: Documents · Haiku 5.5 Max
+#### Task 4.16: Documents · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.16. **Prototype:** `documents.html`. Meeting notes and New document starts, three newest as cards, the rest as rows, search through titles and text (tables included) with highlights, 60 at a time.
 
@@ -1331,7 +1331,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Guide:** §5.19, §6.12. **Prototype:** `schedule.html` (`?state=event`, `?state=new`).
 - **Do:** figure and context, kind chips, search, completed and cancelled toggle, groups, 80 at a time, Record payment on payment rows, links to bookings and tasks; event sheet (kind, title, date, all day or times, with, where or call link shown as Join the call, notes, Remind us, Mark completed, Cancel it, Back to scheduled, Delete) saving as you go. Event validation waits for N9, and the Remind us choices wait for N11.
 
-#### Task 4.21: Month · Haiku 5.5 Max
+#### Task 4.21: Month · Sonnet 5.5 High
 - [ ] **Done** (date · commit · real cost)
 - **Guide:** §5.20. **Prototype:** `schedule.html?view=month`. Earlier, Later, Back to today, the chosen day's list, Add something for an empty day.
 
