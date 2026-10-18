@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { deleteField, doc, onSnapshot } from "firebase/firestore";
 import type { JSONContent } from "@tiptap/core";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { useCollection } from "@/lib/use-collection";
+import { documentText, type DocumentListItem } from "@/lib/model/document-list";
 import { titleOrUntitled } from "@/lib/model/documents";
 import { logActivity } from "./activity";
 import { documentFromDoc, contentFields, type DocumentDoc } from "./adapters/documents";
-import { useRemovedByPartner } from "./partner";
+import { useRemovedByPartner, usePartnerName } from "./partner";
+import { readOf } from "./read";
 import { useSession } from "./session";
-import type { ReadStatus } from "./settings";
+import type { Loaded, ReadStatus } from "./settings";
 import { create, remove, update, type WriteOptions } from "./write";
 
 export type { DocumentDoc } from "./adapters/documents";
@@ -96,6 +99,32 @@ export function useDocument(id: string | null): DocumentRead {
     return { status: connection === "offline" ? "offline" : "loading", data: null, pending, by };
   }
   return { status: "ready", data, pending, by };
+}
+
+/**
+ * The documents list (guide §5.16): every document with its title, the words
+ * written inside (tables too) and when and by whom it was last saved. Unordered
+ * on purpose, so a document without `createdAt` can't drop out; the list sorts
+ * itself. `editedBy` names the partner only: yours, and the old UI's, are null.
+ */
+export function useDocuments(): Loaded<DocumentListItem[]> {
+  const { connection, user } = useSession();
+  const { name: partner } = usePartnerName();
+  const docs = useCollection<DocumentDoc>(COLLECTION, documentFromDoc, []);
+  const uid = user?.uid ?? null;
+
+  const items = useMemo(
+    () =>
+      docs.data.map((d) => ({
+        id: d.id,
+        title: d.title,
+        text: documentText(d.content),
+        editedAt: d.updatedAt,
+        editedBy: d.updatedBy && d.updatedBy !== uid ? partner : null,
+      })),
+    [docs.data, uid, partner],
+  );
+  return readOf(connection, [docs], items);
 }
 
 export interface DocumentDraft {
