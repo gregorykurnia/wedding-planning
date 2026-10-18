@@ -6,7 +6,7 @@ import { bookingMark, vendorFromDoc, venueFromDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
 import { withElementIds, type Element } from "./array-ops";
 import { patchWithUndo, removeAddedElement, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
-import { create, newId, stamp, transact, type WriteOptions } from "./write";
+import { newId, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
@@ -117,12 +117,15 @@ export interface DirectBookingInput {
   funder: FunderId;
   due: IsoDate | null;
   step: string;
+  /** The `weddingFiles` ids attached while adding: each is linked to the booking in the same write (§5.7). */
+  files?: readonly string[];
 }
 
 /**
  * Add a booking (guide §5.7): something booked outside Vendors and Venues. It's
  * a vendor record with `booking.from = "direct"`, left out of the Vendors list.
- * Pass the same `id` to retry after a failure.
+ * The record and the links to its attached files are one write, so a failure
+ * leaves neither. Pass the same `id` to retry after a failure.
  */
 export async function addDirectBooking(
   input: DirectBookingInput,
@@ -131,9 +134,10 @@ export async function addDirectBooking(
 ): Promise<{ bookingId: string; id: string }> {
   const name = input.name.trim();
   if (!name) throw new WriteError("failed", "A booking needs a name");
-  const id = await create(
-    "vendors",
-    {
+  const id = opts.id ?? newId("vendors", opts);
+  const bookingId = bookingIdOf({ kind: "vendor", id });
+  await transact(async (tx, database) => {
+    tx.set(doc(database, "vendors", id), {
       name,
       category: input.category,
       contactName: "",
@@ -156,10 +160,12 @@ export async function addDirectBooking(
       subEntries: [],
       booking: { on, from: "direct", removed: false },
       estimate: null,
-    },
-    { ...opts, id: opts.id ?? newId("vendors", opts) },
-  );
-  const bookingId = bookingIdOf({ kind: "vendor", id });
+      ...stamp(database, true),
+    });
+    for (const fileId of input.files ?? []) {
+      tx.update(doc(database, "weddingFiles", fileId), { recordRef: { kind: "booking", id: bookingId }, ...stamp(database) });
+    }
+  }, opts);
   void logActivity("booking.added", { name }, { kind: "booking", id: bookingId }, opts);
   return { bookingId, id };
 }

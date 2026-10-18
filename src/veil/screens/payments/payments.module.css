@@ -1,0 +1,31 @@
+/* The Payments due screen (guide §5.8), ported from the prototype's .group-h.
+   Tokens only; off-scale values take the nearest. */
+
+/* A group heading with its total at the far end: "Late   Rp 4.000.000". */
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: var(--space-9) 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+}
+
+.late {
+  color: var(--accent-attention-text);
+}
+
+.total {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* "Showing 60 of 1.507", centred above the Show more button. */
+.paging {
+  text-align: center;
+}
