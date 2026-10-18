@@ -728,6 +728,8 @@ test.describe("the month", () => {
     await expect(dayCell(page, inDays(0))).toHaveAttribute("aria-pressed", "true");
     await expect(dayCell(page, inDays(0))).toHaveAttribute("aria-label", /, today, selected, 1 event$/);
     await expect(page.getByRole("heading", { name: /^Today, / })).toBeVisible();
+    // The month's heading is the day's title alone (the prototype has no "Today" on its right).
+    await expect(page.getByRole("heading", { name: /^Today, / }).locator("small")).toHaveCount(0);
     await expect(row(page, "Call with Laras about the arch")).toBeVisible();
   });
 

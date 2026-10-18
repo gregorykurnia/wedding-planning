@@ -59,8 +59,9 @@ export function MonthView({ items, today, day, onDay, onAdd, ...rows }: MonthVie
           onDay(today);
         }}
       />
+      {/* The prototype's month heads the chosen day with its title alone: no "Today" on the right, since a title that starts "Today," already says it. */}
       <AgendaGroup
-        group={{ key: day, title: dayTitle(day, today), late: false, today: day === today, count: list.length, items: list }}
+        group={{ key: day, title: dayTitle(day, today), late: false, today: false, count: list.length, items: list }}
         today={today}
         {...rows}
       />
