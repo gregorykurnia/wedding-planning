@@ -34,6 +34,17 @@ export function metaText(due: Due, today: IsoDate, funders: Funder[]) {
   return [due.booking.category || "No category", paidByText(due.funder, funders), when].join(", ");
 }
 
+/** On the booking's own page (guide §5.6) the card is "Next step": the step, or the part's name when it has none. */
+export const STEP_LABEL = "Next step";
+export const stepTitle = (due: Due) => due.part.step || due.part.name;
+
+/** "Deposit, paid by CK, due Friday 9 October": the part's name only when the booking has parts, and no category. */
+export function stepMeta(due: Due, today: IsoDate, funders: Funder[]) {
+  const when = due.urgency === "late" ? wasDueText(due.due, today) : `due ${dateLong(due.due, today)}`;
+  const part = due.booking.parts.length > 0 ? `${due.part.name}, ` : "";
+  return `${part}${paidByText(due.funder, funders)}, ${when}`;
+}
+
 /** A booking's own page in the new UI. The id is `vendor-…` or `venue-…`, as the model has it. */
 export const bookingHref = (id: string) => veilHref(`/budget/bookings/${encodeURIComponent(id)}`);
 
