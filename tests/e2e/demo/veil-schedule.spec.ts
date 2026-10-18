@@ -50,3 +50,12 @@ test("?new=1 opens the add sheet and clears the address", async ({ page }) => {
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Add to the schedule", level: 2 })).toBeVisible();
   await expect(page).toHaveURL(/\/new\/schedule$/);
 });
+
+// Task 4.21: the month route has the same empty state, with Month marked current (guide §5.20).
+test("the month says nothing is scheduled yet, with Month marked current", async ({ page }) => {
+  await openSchedule(page, "/new/schedule/month");
+  const nav = page.getByRole("navigation", { name: "Agenda, month and tasks" });
+  await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Agenda" })).not.toHaveAttribute("aria-current");
+  await expect(page.getByRole("heading", { name: "Nothing scheduled yet", level: 2 })).toBeVisible();
+});

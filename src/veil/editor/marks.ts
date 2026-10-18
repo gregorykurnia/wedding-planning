@@ -3,6 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
 import { FontFamily, FontSize, TextStyleKit } from "@tiptap/extension-text-style";
 import { fontKeyOf, fontStored, sizeKeyOf, sizeStored } from "@/lib/model/documents";
+import { TableTotals } from "./totals";
 
 /**
  * The editor's schema: StarterKit, TextStyleKit and TableKit, as the old
@@ -76,8 +77,9 @@ export function docExtensions() {
     TextStyleKit.configure({ fontFamily: false, fontSize: false }),
     DocFontFamily,
     DocFontSize,
-    // Tables and their tools are Task 4.18; the schema is here so tables open and save.
+    // Columns are sized by Narrower and Wider in the table bar, stored as `colwidth`.
     TableKit.configure({ table: { resizable: false } }),
+    TableTotals,
     LinkShortcut,
   ];
 }

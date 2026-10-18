@@ -22,7 +22,7 @@ A process for redesigning this project's UI from scratch, as if it were a brand-
 - **Exports and file handling:** `src/lib/compress-pdf.ts` (jsPDF / pdf.js), `public/pdf.worker.min.mjs`, Cloudinary uploads
 - **Primitives (UI layer, replaced in the rebuild):** `src/components/ui/*` (shadcn on Base UI), `src/app/globals.css`
 - **Tests:** none in the repo. Step 8 has to write the behaviour checklist from scratch.
-- **Behaviour history:** the change log in `AGENTS.md` and the `*-implementation-plan.md` / `*-prompt.md` files at the repo root (owner-only context; they describe the old UI, so they never enter the handoff).
+- **Behaviour history:** the change log in `CHANGELOG.md` and the `*-implementation-plan.md` / `*-prompt.md` files at the repo root (owner-only context; they describe the old UI, so they never enter the handoff).
 
 ### Project constraints (for Step 6)
 - **Framework:** Next.js 16.2 App Router, React 19.2, TypeScript. Read `node_modules/next/dist/docs/` before writing code (see `AGENTS.md`).
@@ -30,7 +30,7 @@ A process for redesigning this project's UI from scratch, as if it were a brand-
 - **Build step:** `npm run build`; lint with `npm run lint`.
 - **Data backend:** Firebase Firestore (client SDK, realtime listeners) and Firebase Auth; files on Cloudinary (unsigned upload preset). Firebase Hosting only serves a stub (`public-firebase-stub/`).
 - **Hosting and deploy:** Vercel project `wedding-planning` (team `gregorykurnia-8729s-projects`), Node 24. Every push to `main` deploys to production; other branches get preview deploys.
-- **Repo rule:** `CLAUDE.md` commits and pushes after every change, and `AGENTS.md` needs a change-log entry per change. During the rebuild, push to `redesign`, not `main`.
+- **Repo rule:** `CLAUDE.md` commits and pushes after every change, and each change needs a one-to-three-line entry in `CHANGELOG.md`. During the rebuild, push to `redesign`, not `main`.
 
 ### Domain words allowed in the inventory
 wedding, guest, plus-one, RSVP, headcount, family (groom's / bride's side), business connections, event, venue, vendor, vendor category, shortlist, package, quote, price option, contract, booking, confirmed, hypothetical, budget, real budget spent, pending spend, funder, payment, installment, deposit, due date, payment reminder, to-do, checklist, schedule, agenda, master list, notes, table, formula, files, folder, attachment, PDF, gallery, settings.
@@ -434,7 +434,7 @@ You approve the plan before Step 7.
 - **Tests follow the design:** tests are a checklist of *behaviours*. Rewrite their steps and selectors, and never bend the design to fit an old test.
 - **Design gaps:** stop, add them to §9.1, and run the design-gap loop. Never fill a gap from the old app.
 - **Before each commit:** a syntax or type check on changed files, the relevant tests, and the old-names check once it exists.
-- **Track progress after every task:** tick the task's **Done** box in the §7.0 table and under its heading in §7 (with the date and commit; the real cost is optional), then its rows in §5, §6 and §10. When a phase's review passes, tick that phase in the checklist below.
+- **Track progress after every task:** tick the task's **Done** box in the §7.0 table only (date, lane and commit; the real cost is optional). The phase review ticks the phase's rows in §5, §6 and §10 after checking them, and then the phase in the checklist below.
 - **After merge:** update the project's `CLAUDE.md` so it describes the new UI.
 
 ---
@@ -887,7 +887,7 @@ After each finished piece of work: `git add -A && git commit -m "<what changed>"
 - At the start of each redesign session, check the model against the plan's "Picks per step" (or §7.0 in the implementation plan during the rebuild), using the table in `~/.claude/CLAUDE.md`. If the current model is lower, say so and suggest switching.
 - When the owner says **"Import the approved design"**: run `redesign/studio.sh import`, confirm `redesign/design/` arrived, tick the step it belongs to (5b, or the matching rows in `needs.md` and §9.1), and offer the next step.
 - Rebuild (Step 7): work only on the `redesign` branch, one task per session, reading only that task's plan section, design-guide section and prototype file. Never copy markup, CSS, names or wording from the old UI.
-- After every rebuild task: tick its **Done** box in the implementation plan's §7.0 table and under its task heading in §7 (date and commit; the real `/cost` is optional), tick its rows in §5, §6 and §10, and when a phase's review passes, tick that phase in `redesign/redesign-plan.md`'s checklist.
+- After every rebuild task: tick its **Done** box in the implementation plan's §7.0 table only (date, lane and commit; the real `/cost` is optional). The phase review ticks §5, §6 and §10 and the phase in `redesign/redesign-plan.md`'s checklist.
 - Design gaps: add them to §9.1 of the implementation plan, then write them as needs in `redesign/handoff/needs.md` (the design-gap loop). Never fill a gap from the old app.
 ```
 

@@ -1,6 +1,6 @@
 /* The document's body styles (guide §4.24 "Body styles"), ported from the
    prototype's editor.css (.ed and its children) with tokens. `.ed` is set on
-   Tiptap's own .ProseMirror element. Tables get their full look in Task 4.18. */
+   Tiptap's own .ProseMirror element. */
 .body {
   min-width: 0;
 }
@@ -123,7 +123,8 @@
   font-size: 30px;
 }
 
-/* Tables: a plain hairline grid until Task 4.18 gives them their tools and totals. */
+/* Tables: small spreadsheets inside notes (guide §4.24 "Table cells"). The
+   cells' data-cell and data-here come from totals.ts. */
 .ed table {
   width: 100%;
   border-collapse: collapse;
@@ -135,6 +136,7 @@
 
 .ed th,
 .ed td {
+  position: relative;
   border: 1px solid var(--color-edge);
   padding: var(--space-2) 10px;
   vertical-align: top;
@@ -148,8 +150,66 @@
   font-size: var(--text-label);
 }
 
+.ed td[data-cell="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A total: worked out, so gold on warm white, drawn over its formula. */
+.ed [data-cell="total"],
+.ed [data-cell="error"] {
+  background: var(--surface-warm);
+  color: var(--accent-gold-text);
+  font-weight: var(--weight-emphasis);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+
+/* The formula stays under the drawing, transparent but still there to click into. */
+.ed [data-cell="total"] > *,
+.ed [data-cell="error"] > * {
+  color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ed [data-cell="total"]::after,
+.ed [data-cell="error"]::after {
+  content: attr(data-total);
+  position: absolute;
+  inset: var(--space-2) 10px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.ed [data-cell="error"] {
+  color: var(--accent-attention-text);
+  background: var(--accent-attention-wash);
+  font-style: italic;
+  font-weight: var(--weight-display-light);
+  font-size: var(--text-caption);
+}
+
+/* The total holding the cursor shows its formula. */
+.ed [data-cell="editing"] {
+  font-family: var(--font-code);
+  font-size: var(--text-caption);
+  text-align: left;
+  color: var(--color-text);
+  background: var(--surface-sheet);
+}
+
+.ed [data-here] {
+  box-shadow: var(--ring-cell);
+}
+
+/* Wide tables keep 720px and scroll sideways. As width, not min-width: the
+   table's own inline min-width would win over it. */
 .ed table:has(tr > :nth-child(6)) {
-  min-width: 720px;
+  width: max(100%, 720px);
 }
 
 .ed :global(.tableWrapper) {

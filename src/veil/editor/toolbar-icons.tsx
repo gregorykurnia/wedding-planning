@@ -55,6 +55,13 @@ export const LinkGlyph = () => (
   </Glyph>
 );
 
+export const TableGlyph = () => (
+  <Glyph>
+    <rect x="3" y="4" width="14" height="12" rx="1.5" />
+    <path d="M3 8h14M3 12h14M8 4v12" />
+  </Glyph>
+);
+
 export const ClearGlyph = () => (
   <Glyph>
     <path d="M5 5h9M9.5 5l-2.5 10" />

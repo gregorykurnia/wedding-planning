@@ -1,0 +1,6 @@
+/* The chosen day's empty line under the month (guide §5.20), ported from the prototype's .note. Tokens only. */
+.nothing {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  margin-top: var(--space-4);
+}

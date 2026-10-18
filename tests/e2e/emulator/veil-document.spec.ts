@@ -350,3 +350,194 @@ test("on a phone the toolbar docks at the bottom and the save state floats at th
   const status = await saveState(page).boundingBox();
   expect(status!.y).toBeLessThan(60);
 });
+
+// Task 4.18: tables and totals (guide §4.24 "Table bar", "Table cells", §6.10).
+
+const cellOf = (type: "tableHeader" | "tableCell", text: string) => ({
+  type,
+  content: [text ? para(text) : { type: "paragraph" }],
+});
+const rowOf = (type: "tableHeader" | "tableCell", ...texts: string[]) => ({
+  type: "tableRow",
+  content: texts.map((t) => cellOf(type, t)),
+});
+const pricesTable = () => ({
+  type: "table",
+  content: [
+    rowOf("tableHeader", "Item", "Price"),
+    rowOf("tableCell", "Flowers", "Rp 12.500.000"),
+    rowOf("tableCell", "Cake", "2.000.000"),
+    rowOf("tableCell", "Music", "8.000.000"),
+    rowOf("tableCell", "Total", "=SUM(B2:B)"),
+  ],
+});
+const tableBar = (page: Page) => page.getByRole("toolbar", { name: "Table" });
+const cells = (page: Page) => bodyOf(page).locator("td, th");
+
+test("totals are worked out in gold, errors are named, and the formula bar shows the cell and its formula", async ({
+  page,
+}) => {
+  const id = docId("totals");
+  await put(id, {
+    title: "Scratchpad",
+    content: body(
+      para("Prices"),
+      {
+        type: "table",
+        content: [
+          rowOf("tableHeader", "Item", "Price"),
+          rowOf("tableCell", "Flowers", "Rp 12.500.000"),
+          rowOf("tableCell", "Cake", "2.000.000"),
+          rowOf("tableCell", "Total", "=SUM(B2:B)"),
+          rowOf("tableCell", "Oops", "=SUM(B2:B4, D9)"),
+          rowOf("tableCell", "Loop", "=SUM(B2:B3, B6)"),
+        ],
+      },
+    ),
+  });
+  await open(page, `/new/documents/${id}`);
+  const total = cells(page).nth(7);
+  await expect(total).toHaveAttribute("data-cell", "total");
+  await expect(total).toHaveAttribute("data-total", "Rp 14.500.000");
+  await expect(total).toHaveAttribute("title", "B4 =SUM(B2:B)");
+  await expect(cells(page).nth(3)).toHaveAttribute("data-cell", "number");
+  await expect(cells(page).nth(9)).toHaveAttribute("data-total", "Bad reference");
+  await expect(cells(page).nth(11)).toHaveAttribute("data-total", "Includes itself");
+  // The table bar shows only while the cursor is in a table.
+  await expect(tableBar(page)).toHaveCount(0);
+
+  await total.click();
+  await expect(tableBar(page)).toBeVisible();
+  await expect(total).toHaveAttribute("data-cell", "editing");
+  await expect(total).toHaveText("=SUM(B2:B)");
+  await expect(tableBar(page).getByLabel("Cell B4")).toBeVisible();
+  await expect(tableBar(page).locator("code")).toHaveText("=SUM(B2:B)");
+
+  await cells(page).nth(9).click();
+  await expect(tableBar(page)).toContainText("D9 is outside this table, which has 2 columns and 6 rows.");
+  await cells(page).nth(11).click();
+  await expect(tableBar(page)).toContainText("This total includes its own cell, B6.");
+
+  await cells(page).nth(2).click();
+  await expect(tableBar(page)).toContainText("Type =SUM(B2:B6) for a total. B2:B keeps growing as rows are added.");
+  await select(page, "Prices", true);
+  await expect(tableBar(page)).toHaveCount(0);
+});
+
+test("the table bar adds and removes rows and columns, sorts, widens, and removes the table with undo", async ({
+  page,
+}) => {
+  const id = docId("tools");
+  await put(id, { title: "Vendors to compare", content: body(para("Quotes"), pricesTable()) });
+  await open(page, `/new/documents/${id}`);
+  const bar = tableBar(page);
+  const total = () => bodyOf(page).locator('[data-cell="total"]');
+
+  // A row under Cake: the growing total takes it in.
+  await select(page, "Cake", true);
+  await bar.getByRole("button", { name: "Below" }).click();
+  await expect(bodyOf(page).locator("tr")).toHaveCount(6);
+  await bodyOf(page).locator("tr").nth(3).locator("td").nth(1).click();
+  await expect(bar.getByLabel("Cell B4")).toBeVisible();
+  await page.keyboard.type("1.000.000");
+  await select(page, "Quotes", true);
+  await expect(total()).toHaveAttribute("data-total", "Rp 23.500.000");
+
+  // Sort by price, largest first: the title row and the total stay put.
+  await select(page, "Flowers", true);
+  await expect(bar.getByLabel("Cell A2")).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(bar.getByLabel("Cell B2")).toBeVisible();
+  await bar.getByRole("button", { name: "Descending" }).click();
+  const firsts = async () => bodyOf(page).locator("tr").evaluateAll((rows) => rows.map((r) => r.firstElementChild!.textContent));
+  expect(await firsts()).toEqual(["Item", "Flowers", "Music", "Cake", "", "Total"]);
+  await bar.getByRole("button", { name: "Ascending" }).click();
+  expect(await firsts()).toEqual(["Item", "", "Cake", "Music", "Flowers", "Total"]);
+
+  // Add 3 rows and 2 columns; the count is kept between 1 and 50.
+  await bar.getByLabel("Add").fill("80");
+  await bar.getByLabel("Add").blur();
+  await expect(bar.getByLabel("Add")).toHaveValue("50");
+  await bar.getByLabel("Add").fill("3");
+  await bar.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(bodyOf(page).locator("tr")).toHaveCount(9);
+  await bar.getByLabel("Add").fill("2");
+  await bar.getByLabel("Rows or columns").selectOption("columns");
+  await bar.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(bodyOf(page).locator("tr").first().locator("th")).toHaveCount(4);
+  await expect(total()).toHaveAttribute("data-total", "Rp 23.500.000");
+
+  // Wider stores a width on the column's cells.
+  await select(page, "Flowers", true);
+  const before = (await bodyOf(page).locator("tr").first().locator("th").first().boundingBox())!.width;
+  await bar.getByRole("button", { name: "Wider" }).click();
+  await expect
+    .poll(async () => (await bodyOf(page).locator("tr").first().locator("th").first().boundingBox())!.width)
+    .toBeGreaterThan(before + 20);
+
+  // Title row off and on.
+  await bar.getByRole("button", { name: "Title row" }).click();
+  await expect(bar.getByRole("button", { name: "Title row" })).toHaveAttribute("aria-pressed", "false");
+  await expect(bodyOf(page).locator("th")).toHaveCount(0);
+  await bar.getByRole("button", { name: "Title row" }).click();
+  await expect(bodyOf(page).locator("th")).toHaveCount(4);
+
+  await expect(saveState(page)).toHaveText("Saved just now", { timeout: 15_000 });
+  await expect.poll(async () => textOf((await read(id))?.content), { timeout: 15_000 }).toContain('"colwidth":[');
+
+  // Remove table, then Undo puts it back where it was.
+  await bar.getByRole("button", { name: "Remove table" }).click();
+  await expect(bodyOf(page).locator("table")).toHaveCount(0);
+  await expect(bar).toHaveCount(0);
+  await page.getByRole("status").filter({ hasText: "Removed the table" }).getByRole("button", { name: "Undo" }).click();
+  await expect(bodyOf(page).locator("table")).toHaveCount(1);
+  await expect(bodyOf(page).locator('[data-cell="total"]')).toHaveAttribute("data-total", "Rp 23.500.000");
+  await expect.poll(async () => textOf((await read(id))?.content), { timeout: 15_000 }).toContain("=SUM(B2:B)");
+});
+
+test("Table opens an 8 × 8 size grid, and Tab moves between the new table's cells", async ({ page }) => {
+  const id = docId("insert");
+  await put(id, { title: "Seating", content: body(para("Tables")) });
+  await open(page, `/new/documents/${id}`);
+  await select(page, "Tables", true);
+  await page.getByRole("button", { name: "Table", exact: true }).click();
+  const pop = page.getByRole("dialog", { name: "Table size" });
+  await expect(pop).toContainText("Choose a size");
+  await expect(pop.getByRole("button")).toHaveCount(64);
+  await pop.getByRole("button", { name: "3 rows, 4 columns" }).hover();
+  await expect(pop).toContainText("3 rows, 4 columns");
+  await pop.getByRole("button", { name: "3 rows, 4 columns" }).click();
+  await expect(pop).toHaveCount(0);
+  await expect(bodyOf(page).locator("tr")).toHaveCount(3);
+  await expect(bodyOf(page).locator("th")).toHaveCount(4);
+
+  await page.keyboard.type("Table");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("Guests");
+  await expect(cells(page).nth(1)).toHaveText("Guests");
+  await expect(tableBar(page).getByLabel("Cell B1")).toBeVisible();
+  await page.keyboard.press("Shift+Tab");
+  await expect(tableBar(page).getByLabel("Cell A1")).toBeVisible();
+});
+
+test("on a phone the table bar sits above the docked toolbar and a wide table scrolls sideways", async ({ page }) => {
+  const id = docId("phone-table");
+  await put(id, {
+    title: "Phone table",
+    content: body(para("Wide"), {
+      type: "table",
+      content: [rowOf("tableHeader", "A", "B", "C", "D", "E", "F"), rowOf("tableCell", "1", "2", "3", "4", "5", "6")],
+    }),
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, `/new/documents/${id}`);
+  await cells(page).nth(7).click();
+  const bar = tableBar(page);
+  await expect(bar).toHaveCSS("position", "fixed");
+  const barBox = (await bar.boundingBox())!;
+  const toolBox = (await page.getByRole("toolbar", { name: "Formatting" }).boundingBox())!;
+  expect(Math.abs(barBox.y + barBox.height - toolBox.y)).toBeLessThan(3);
+  const table = (await bodyOf(page).locator("table").boundingBox())!;
+  expect(table.width).toBeGreaterThanOrEqual(720);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});

@@ -20,7 +20,8 @@ test("lists the icon set, then a section for each later task, in plan order", as
   // Only the gallery's own sections: a demo can hold sections of its own (the Notes part has one).
   const headings = await page.locator('section[id^="section-"] > h2').allTextContents();
   const tasks = headings.map((text) => text.match(/Task (\d+\.\d+)/)?.[1]);
-  expect(tasks).toEqual(["2.2", ...LATER_TASKS]);
+  // Phase 4 screens add a section only for a part they share (4.4: the payment sheet).
+  expect(tasks).toEqual(["2.2", ...LATER_TASKS, "4.4"]);
 });
 
 // Every section of Phase 3 has a demo now, so none says it isn't built yet. A later

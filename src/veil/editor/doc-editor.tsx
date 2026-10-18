@@ -10,6 +10,7 @@ import { LinkBubble } from "./link-bubble";
 import { LinkSheet, linkTargetOf } from "./link-sheet";
 import { LINK_SHORTCUT_EVENT, docExtensions } from "./marks";
 import { Paper } from "./paper";
+import { TableBar } from "./table-bar";
 import { EditorToolbar } from "./toolbar";
 import content from "./content.module.css";
 
@@ -46,8 +47,8 @@ function canonical(editor: Editor, doc: JSONContent): JSONContent | null {
 const keyOf = (title: string, doc: JSONContent | null) => stableKey({ title, doc });
 
 /**
- * A document being written (guide §4.24, §5.17): the toolbar, the page with its
- * title, and the body. Links open the link bubble when clicked; Cmd/Ctrl+K and
+ * A document being written (guide §4.24, §5.17): the toolbar, the table bar
+ * while the cursor is in a table, the page with its title, and the body. Links open the link bubble when clicked; Cmd/Ctrl+K and
  * the toolbar's Link open the link sheet.
  */
 export function DocEditor({
@@ -162,6 +163,7 @@ export function DocEditor({
       {editor && (
         <EditorToolbar editor={editor} disabled={!editable} onLink={openLink} saveState={saveState} />
       )}
+      {editor && editable && <TableBar editor={editor} />}
       {banner}
       <Paper
         title={title}

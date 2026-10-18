@@ -13,6 +13,14 @@ const EMULATOR_APP_PORT = TEST_PORTS.emulatorApp;
 const DEMO_APP_PORT = TEST_PORTS.demoApp;
 const emulatorConfigFile = writeEmulatorConfig();
 
+// Which servers this run starts (set by scripts/test-e2e.mjs from the spec
+// paths): "demo" skips the emulators and their dev server, "emulator" skips
+// the demo dev server. Each Next dev server takes a gigabyte or more, so a
+// run of one spec starts only what it needs.
+const SERVERS = process.env.E2E_SERVERS ?? "all";
+const needsEmulator = SERVERS !== "demo";
+const needsDemo = SERVERS !== "emulator";
+
 // The Firebase emulators need Java. Homebrew's openjdk is keg-only, so it is
 // not on PATH unless the owner linked it.
 const BREW_JAVA_BIN = "/opt/homebrew/opt/openjdk/bin";
@@ -72,12 +80,12 @@ export default defineConfig({
     },
   ],
   webServer: [
-    {
+    ...(needsEmulator ? [{
       command: `npx firebase emulators:start --config ${emulatorConfigFile} --only auth,firestore --project ${EMULATOR_PROJECT_ID}`,
       url: `http://${FIRESTORE_EMULATOR}`,
       env: { PATH: emulatorPath ?? "" },
       // Without a graceful stop, the emulator's Java process outlives the run.
-      gracefulShutdown: { signal: "SIGINT", timeout: 15_000 },
+      gracefulShutdown: { signal: "SIGINT" as const, timeout: 15_000 },
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
@@ -87,13 +95,13 @@ export default defineConfig({
       env: emulatorAppEnv,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-    },
-    {
+    }] : []),
+    ...(needsDemo ? [{
       command: `npx next dev --port ${DEMO_APP_PORT}`,
       url: `http://localhost:${DEMO_APP_PORT}/login`,
       env: demoAppEnv,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-    },
+    }] : []),
   ],
 });

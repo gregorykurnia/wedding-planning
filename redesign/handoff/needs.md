@@ -1,4 +1,4 @@
-Open needs: N19, N20, N21, N22, N23. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19, N20, N21, N22, N23, N24. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -25,3 +25,4 @@ Open needs: N19, N20, N21, N22, N23. N1–N18 are designed (N1–N14 in design-g
 | N21 | When I record a payment and the planner can't finish recording it, I want to be told that it wasn't recorded and be able to try again with what I typed kept, so that I never wonder whether it was recorded or end up with it twice. When I attach a receipt to the payment and it is still on its way or didn't arrive, I want to be told which, so that a payment is never recorded without its receipt by accident. | Step 7 | open |
 | N22 | When I mark an appointment as done, cancel it or bring it back to the schedule, and the planner can't finish saving that, I want to be told that nothing was changed and be able to try again, so that I never think an appointment is done or cancelled when it isn't. | Step 7 | open |
 | N23 | When I leave a document I've been writing in some way other than the planner's own ways back (my browser's back, say), and my last changes then can't be saved, I want to be told so wherever I land and be able to try saving them again, so that nothing I wrote is lost without my knowing. | Step 7 | open |
+| N24 | When I type a rating or a number of reviewers that isn't one (words, a rating above 5, a negative number, or far too many reviewers), I want to be told it can't be used and have what was there before kept, so that I never wonder why what I entered disappeared. When I copy a vendor to the shortlist or add a price option and the planner can't finish, I want to be told that nothing was changed and be able to try again with what I typed kept, so that I never wonder whether it happened or end up with two. When a vendor is already a booking and I move it to an earlier stage, I want to be told it is still a booking and how to reach it, so that I don't think the change undid it. | Step 7 | open |
