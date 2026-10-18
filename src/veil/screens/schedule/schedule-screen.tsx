@@ -16,12 +16,13 @@ import {
   type AgendaFilterKey,
   type AgendaItem,
 } from "@/lib/model/agenda";
+import type { IsoDate } from "@/lib/model/bookings";
 import { isIsoDate } from "@/lib/model/dates";
 import { dues } from "@/lib/model/money";
 import { reminderCantArrive } from "@/lib/model/schedule";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
-import { AgendaGroup } from "@/veil/parts/agenda/agenda-group";
+import { AgendaGroup, type AgendaRowHandlers } from "@/veil/parts/agenda/agenda-group";
 import { FocusChips } from "@/veil/parts/chips/focus-chips";
 import { Context, CountFigure, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { Message } from "@/veil/parts/message/message";
@@ -39,30 +40,34 @@ import { useSheets } from "@/veil/shell/sheet";
 import { SubNav } from "@/veil/shell/sub-nav";
 import { AddEventSheet } from "./add-event-sheet";
 import { EventSheet } from "./event-sheet";
+import { MonthView } from "./month-view";
 import styles from "./schedule-screen.module.css";
 import { NOTHING_SCHEDULED, SCHEDULE_SUB, noResults, reminderBoxText } from "./schedule-text";
 
 /** Things shown at a time (guide §5.19). */
 const PAGE = 80;
 
+/** The Schedule's two views, one route each: the sub-navigation's Agenda and Month. */
+export type ScheduleView = "agenda" | "month";
+
 /**
- * The Schedule, agenda view (guide §5.19; S1–S3, S5–S7, S10, O2): what is late or
- * due today, then everything with a date in one line of time: our own events,
- * payments due on bookings and tasks with a due date. An event opens its sheet;
- * a payment or a task is a read-only reflection that links to where it lives.
+ * The Schedule (guide §5.19 agenda, §5.20 month; S1–S5, S7, S10, O2): what is late
+ * or due today, then everything with a date in one line of time, or the same
+ * things on a month grid with the chosen day listed under it. An event opens its
+ * sheet; a payment or a task is a read-only reflection that links to where it lives.
  */
-export function ScheduleScreen() {
+export function ScheduleScreen({ view = "agenda" }: { view?: ScheduleView }) {
   const read = useSchedule();
   return (
     <PageColumn width="wide">
       <ScreenState read={read} what="your schedule" onRetry={() => window.location.reload()}>
-        {(data) => <Agenda data={data} />}
+        {(data) => <Schedule data={data} view={view} />}
       </ScreenState>
     </PageColumn>
   );
 }
 
-function Agenda({ data }: { data: ScheduleData | null }) {
+function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleView }) {
   const today = useToday();
   const sheets = useSheets();
   const recordPayment = useRecordPayment();
@@ -95,6 +100,15 @@ function Agenda({ data }: { data: ScheduleData | null }) {
     }
     router.replace(pathname);
   }, [eventParam, newParam, dateParam, data, sheets, router, pathname]);
+
+  // The month's chosen day is `?day=` when the address names one, else today, so it follows midnight until someone picks a day.
+  const dayParam = params.get("day");
+  const [picked, setPicked] = useState<IsoDate | null>(() => (isIsoDate(dayParam) ? dayParam : null));
+  const day = picked ?? today;
+  const pickDay = (next: IsoDate) => {
+    setPicked(next === today ? null : next);
+    window.history.replaceState(null, "", next === today ? pathname : `${pathname}?day=${next}`);
+  };
 
   const all = useMemo(
     () => (data ? agendaItems(data.events, dues(data.bookings, today), data.tasks) : []),
@@ -130,8 +144,23 @@ function Agenda({ data }: { data: ScheduleData | null }) {
     };
   };
 
+  const rows: AgendaRowHandlers = {
+    onOpen: (item) => openEvent(item.id),
+    onRecordPayment: (payment) => {
+      const booking = data?.bookings.find((b) => b.id === payment.id);
+      if (booking) recordPayment(booking, payment.partId);
+    },
+    relatedOf,
+    funderNameOf: (item) => (item.funder ? (data?.funderNames.get(item.funder) ?? null) : null),
+    reminderLineOf: (item) => item.type === "event" && cantArriveIds.has(item.id) && !isLate(item, today),
+  };
+
   const hero = (
-    <Hero title="Schedule" sub={SCHEDULE_SUB} nav={<SubNav set="schedule" current="/schedule" />}>
+    <Hero
+      title="Schedule"
+      sub={SCHEDULE_SUB}
+      nav={<SubNav set="schedule" current={view === "month" ? "/schedule/month" : "/schedule"} />}
+    >
       {summary.has && (
         <>
           <Kicker>{summary.kicker}</Kicker>
@@ -209,7 +238,9 @@ function Agenda({ data }: { data: ScheduleData | null }) {
         </Toggles>
       </Toolbar>
 
-      {items.length === 0 ? (
+      {view === "month" ? (
+        <MonthView items={items} today={today} day={day} onDay={pickDay} onAdd={openAdd} {...rows} />
+      ) : items.length === 0 ? (
         <Message
           kind="no-results"
           inline
@@ -227,25 +258,13 @@ function Agenda({ data }: { data: ScheduleData | null }) {
       ) : (
         <>
           {groups.map((group) => (
-            <AgendaGroup
-              key={group.key}
-              group={group}
-              today={today}
-              onOpen={(item) => openEvent(item.id)}
-              onRecordPayment={(payment) => {
-                const booking = data?.bookings.find((b) => b.id === payment.id);
-                if (booking) recordPayment(booking, payment.partId);
-              }}
-              relatedOf={relatedOf}
-              funderNameOf={(item) => (item.funder ? (data?.funderNames.get(item.funder) ?? null) : null)}
-              reminderLineOf={(item) => item.type === "event" && cantArriveIds.has(item.id) && !isLate(item, today)}
-            />
+            <AgendaGroup key={group.key} group={group} today={today} {...rows} />
           ))}
           <ShowMore more={more} onMore={() => setShown((count) => count + PAGE)} />
         </>
       )}
 
-      <AddButton onPress={() => openAdd()}>Add to the schedule</AddButton>
+      <AddButton onPress={() => openAdd(view === "month" ? day : null)}>Add to the schedule</AddButton>
     </>
   );
 }

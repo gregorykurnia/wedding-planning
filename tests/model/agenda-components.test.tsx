@@ -203,6 +203,12 @@ describe("AgendaGroup", () => {
     expect(draw(today)).toMatch(/<h2[^>]*>Today, Wednesday 14 October<small>Today<\/small><\/h2>/);
   });
 
+  it("heads a day with nothing on it without an empty list", () => {
+    const html = draw({ key: "2026-10-20", title: "Tuesday 20 October", late: false, today: false, count: 0, items: [] });
+    expect(html).toMatch(/<h2[^>]*>Tuesday 20 October<\/h2>/);
+    expect(html).not.toContain("<ul");
+  });
+
   it("says the whole group's size after paging", () => {
     expect(draw({ ...late, count: 12 })).toContain("12 things");
   });

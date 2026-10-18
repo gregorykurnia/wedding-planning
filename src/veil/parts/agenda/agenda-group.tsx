@@ -18,6 +18,9 @@ interface AgendaGroupProps extends Pick<AgendaRowProps, "onOpen" | "onRecordPaym
   reminderLineOf?: (item: AgendaItem) => boolean;
 }
 
+/** What a group's rows need from their screen: the agenda and the month's chosen day take the same ones. */
+export type AgendaRowHandlers = Pick<AgendaGroupProps, "onOpen" | "onRecordPayment" | "relatedOf" | "funderNameOf" | "reminderLineOf">;
+
 /**
  * A heading and its rows: "Late" with how many things, or a day with "Today"
  * on the right (guide §4.25). The count is the whole group's, so "Show 80
@@ -30,20 +33,22 @@ export function AgendaGroup({ group, today, onOpen, onRecordPayment, relatedOf, 
         {group.title}
         {group.today ? <small>Today</small> : group.late ? <small>{plural(group.count, "thing")}</small> : null}
       </h2>
-      <ul className={styles.agenda}>
-        {group.items.map((item) => (
-          <AgendaRow
-            key={item.key}
-            item={item}
-            today={today}
-            onOpen={onOpen}
-            onRecordPayment={onRecordPayment}
-            related={relatedOf?.(item)}
-            funderName={funderNameOf?.(item)}
-            reminderLine={reminderLineOf?.(item)}
-          />
-        ))}
-      </ul>
+      {group.items.length > 0 ? (
+        <ul className={styles.agenda}>
+          {group.items.map((item) => (
+            <AgendaRow
+              key={item.key}
+              item={item}
+              today={today}
+              onOpen={onOpen}
+              onRecordPayment={onRecordPayment}
+              related={relatedOf?.(item)}
+              funderName={funderNameOf?.(item)}
+              reminderLine={reminderLineOf?.(item)}
+            />
+          ))}
+        </ul>
+      ) : null}
     </>
   );
 }

@@ -87,7 +87,7 @@ const inDays = (n: number) => {
 };
 
 const IDS = {
-  scheduleEvents: ["sc-late", "sc-call", "sc-tasting", "sc-fitting", "sc-sync"],
+  scheduleEvents: ["sc-late", "sc-call", "sc-tasting", "sc-fitting", "sc-sync", "sc-month-dress", "sc-month-florist", "sc-month-cake", "sc-month-menu", "sc-month-live"],
   todos: ["sc-task"],
   vendors: ["sc-vendor"],
 };
@@ -675,5 +675,160 @@ test.describe("a long agenda", () => {
     // Four fixtures and the three others are still on the agenda; 80 more come in a page.
     await expect(page.locator("li[data-agenda-key]").nth(80)).toBeVisible();
     await expect(page.getByRole("button", { name: /^Show \d+ more$/ })).toHaveCount(0);
+  });
+});
+
+// ---------- the month (Task 4.21) ----------
+
+// The month's own events sit in a fixed March, so their marks don't depend on the day this runs; the
+// relative events above fall outside it. Each test shows the month it needs with `?day=`.
+const DRESS = "2031-03-10";
+const CAKE = "2031-03-11";
+const MENU = "2031-03-12";
+const EMPTY = "2031-03-14";
+const WEDDING = "2031-03-20";
+
+const WEEKDAY = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTH_NAME = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** A day's cell, found by the start of its label: its long date, as the model writes it. */
+function dayCell(page: Page, day: string) {
+  const [year, month, date] = day.split("-").map(Number);
+  const weekday = WEEKDAY[new Date(year, month - 1, date).getDay()];
+  return page.getByRole("button", { name: new RegExp(`^${weekday} ${date} ${MONTH_NAME[month - 1]}`) });
+}
+
+const fixture = (title: string, type: string, startAt: string, status: string) => ({
+  title,
+  type,
+  startAt,
+  endAt: null,
+  allDay: false,
+  status,
+  notes: "",
+  location: "",
+  relatedVendorId: null,
+  relatedVenueId: null,
+  reminderMinutes: [],
+});
+
+test.describe("the month", () => {
+  test.beforeEach(async () => {
+    await put("scheduleEvents", "sc-month-dress", fixture("Dress fitting", "appointment", `${DRESS}T10:00`, "scheduled"));
+    await put("scheduleEvents", "sc-month-florist", fixture("Florist call", "vendor_call", `${DRESS}T15:00`, "scheduled"));
+    await put("scheduleEvents", "sc-month-cake", fixture("Cake tasting", "appointment", `${CAKE}T11:00`, "scheduled"));
+    await put("scheduleEvents", "sc-month-menu", fixture("Menu tasting", "appointment", `${MENU}T11:00`, "completed"));
+  });
+
+  test("opens on today, chosen, with its marks and its list, and Month marked in the sub-navigation", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, "/new/schedule/month");
+    const nav = page.getByRole("navigation", { name: "Agenda, month and tasks" });
+    await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("aria-current", "page");
+    // Today has the call with Laras and nothing else.
+    await expect(dayCell(page, inDays(0))).toHaveAttribute("aria-pressed", "true");
+    await expect(dayCell(page, inDays(0))).toHaveAttribute("aria-label", /, today, selected, 1 event$/);
+    await expect(page.getByRole("heading", { name: /^Today, / })).toBeVisible();
+    await expect(row(page, "Call with Laras about the arch")).toBeVisible();
+  });
+
+  test("choosing a day lists it, moves the address to it, and each label says what its marks show", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-pressed", "true");
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, selected, 2 events$/);
+    await expect(row(page, "Dress fitting")).toBeVisible();
+    await expect(row(page, "Florist call")).toBeVisible();
+
+    await dayCell(page, CAKE).click();
+    await expect(dayCell(page, CAKE)).toHaveAttribute("aria-pressed", "true");
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-pressed", "false");
+    await expect(row(page, "Cake tasting")).toBeVisible();
+    await expect(row(page, "Dress fitting")).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`day=${CAKE}$`));
+  });
+
+  test("Earlier and Later move the month and keep the chosen day; Back to today chooses today and clears the address", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    // Exact, because a day's heading ("Monday 10 March 2031") contains the month's name too.
+    await expect(page.getByRole("heading", { name: "March 2031", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Later:/ }).click();
+    await expect(page.getByRole("heading", { name: "April 2031", exact: true })).toBeVisible();
+    // The chosen day stays, so its list is still there.
+    await expect(row(page, "Dress fitting")).toBeVisible();
+    await page.getByRole("button", { name: /^Earlier:/ }).click();
+    await expect(page.getByRole("heading", { name: "March 2031", exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Back to today" }).click();
+    await expect(page.getByRole("heading", { name: new RegExp(`^${MONTH_NAME[new Date().getMonth()]}`) })).toBeVisible();
+    await expect(dayCell(page, inDays(0))).toHaveAttribute("aria-pressed", "true");
+    await expect(page).not.toHaveURL(/day=/);
+  });
+
+  test("kind chips and search narrow the marks, completed things count only when asked for, and Everything brings them back", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, 2 events$/);
+
+    const chips = page.getByRole("group", { name: "Show" });
+    await chips.getByRole("button", { name: "Calls" }).click();
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, 1 event$/);
+    await expect(row(page, "Dress fitting")).toHaveCount(0);
+    await chips.getByRole("button", { name: "Everything" }).click();
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, 2 events$/);
+
+    const search = page.getByRole("searchbox", { name: "Search the schedule" });
+    await search.fill("zither");
+    await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, nothing$/);
+    await search.fill("");
+
+    await dayCell(page, MENU).click();
+    await expect(dayCell(page, MENU)).toHaveAttribute("aria-label", /, nothing$/);
+    await page.getByLabel("Show completed and cancelled").check();
+    await expect(dayCell(page, MENU)).toHaveAttribute("aria-label", /, 1 event$/);
+    await expect(row(page, "Menu tasting")).toContainText("Appointment, completed");
+  });
+
+  test("an empty day says so, and Add something and the floating button both add to that day", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${EMPTY}`);
+    await expect(page.getByText("Nothing on this day.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Add something" }).click();
+    const dialog = sheet(page);
+    await expect(dialog.getByLabel("Date")).toHaveValue(EMPTY);
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Add to the schedule" }).click();
+    await expect(dialog.getByLabel("Date")).toHaveValue(EMPTY);
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toHaveCount(0);
+  });
+
+  test("the wedding day is marked and says so in its label", async ({ browser }) => {
+    await put("settings", "wedding", {
+      yourName: "Greg",
+      partnerName: "Bella",
+      partnerEmail: TEST_ACCOUNTS[1].email,
+      weddingDate: WEDDING,
+    });
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    await expect(dayCell(page, WEDDING)).toHaveAttribute("aria-label", /, the wedding day, nothing$/);
+  });
+
+  test("an event added elsewhere arrives on the calendar and in the chosen day's list, without a reload", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${EMPTY}`);
+    await expect(page.getByText("Nothing on this day.")).toBeVisible();
+    await put("scheduleEvents", "sc-month-live", fixture("Dress shop", "appointment", `${EMPTY}T11:00`, "scheduled"));
+    await expect(row(page, "Dress shop")).toBeVisible();
+    await expect(dayCell(page, EMPTY)).toHaveAttribute("aria-label", /, 1 event$/);
+    await expect(page.getByText("Nothing on this day.")).toHaveCount(0);
+  });
+
+  test("a phone shows the month in one column with no sideways scroll, and each day is a tap target", async ({ browser }) => {
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], { width: 390, height: 844 }, `/new/schedule/month?day=${DRESS}`);
+    await expect(dayCell(page, DRESS)).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    const box = await dayCell(page, DRESS).boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(24);
+    expect(box?.height).toBeGreaterThanOrEqual(24);
   });
 });
