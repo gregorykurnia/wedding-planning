@@ -12,6 +12,9 @@ import {
   NOTHING_DUE_META,
   nextLabel,
   RECORD_PAYMENT,
+  STEP_LABEL,
+  stepMeta,
+  stepTitle,
   titleText,
 } from "./next-text";
 import styles from "./next-card.module.css";
@@ -27,6 +30,12 @@ export interface NextCardProps {
   funders: Funder[];
   /** Record payment, the card's one primary button. */
   onRecord: () => void;
+  /**
+   * On the booking's own page (guide §5.6): "Next step", the step as the name
+   * (not a link to itself) and no category in the meta line. A booking with
+   * nothing to pay has no card there, so `next` is never null.
+   */
+  onBooking?: boolean;
 }
 
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
@@ -41,7 +50,7 @@ const toneClass = (urgency: Due["urgency"]) =>
  * button, all in one column. The empty card keeps the same layout with no
  * amount, flag or button.
  */
-export function NextCard({ today, next, lateCount, funders, onRecord }: NextCardProps) {
+export function NextCard({ today, next, lateCount, funders, onRecord, onBooking = false }: NextCardProps) {
   if (!next) {
     return (
       <section className={styles.card} aria-label="Next payment">
@@ -53,15 +62,19 @@ export function NextCard({ today, next, lateCount, funders, onRecord }: NextCard
   }
   return (
     <section className={styles.card} aria-label="Next payment">
-      <span className={styles.label}>{nextLabel(lateCount)}</span>
+      <span className={styles.label}>{onBooking ? STEP_LABEL : nextLabel(lateCount)}</span>
       <span className={join(styles.flag, toneClass(next.urgency))}>{flagText(next, today)}</span>
-      <h2 className={styles.name}>
-        <Link href={bookingHref(next.booking.id)} className={styles.link}>
-          {titleText(next)}
-        </Link>
+      <h2 className={styles.name} dir={onBooking ? "auto" : undefined}>
+        {onBooking ? (
+          stepTitle(next)
+        ) : (
+          <Link href={bookingHref(next.booking.id)} className={styles.link}>
+            {titleText(next)}
+          </Link>
+        )}
       </h2>
       <span className={join(styles.amt, "num")}>{rp(next.left)}</span>
-      <span className={styles.meta}>{metaText(next, today, funders)}</span>
+      <span className={styles.meta}>{onBooking ? stepMeta(next, today, funders) : metaText(next, today, funders)}</span>
       <Btn className={styles.action} onClick={onRecord}>
         {RECORD_PAYMENT}
       </Btn>
