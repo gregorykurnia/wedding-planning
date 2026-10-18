@@ -64,7 +64,7 @@ Allow about 20% on top (≈ $101) for escalations, retries and further design-ga
 - **Build and lint:** `npm run build`, `npm run lint`. Phase 1 adds `npm test` and `npm run test:e2e`.
 - **Data backend:** Firebase Firestore through the client SDK with realtime listeners, Firebase Auth, files on Cloudinary (unsigned preset). Collections and field names stay, so live data survives the switch-over (`inventory-notes.md` §6).
 - **Hosting:** Vercel project `wedding-planning`, Node 24. Every push to `main` deploys to production, so the rebuild lives on the `redesign` branch and is reviewed on preview deploys until Phase 7 merges.
-- **Repo rule:** commit and push after every change, with an `AGENTS.md` change-log entry. During the rebuild, push to `redesign`, not `main`.
+- **Repo rule:** commit and push after every change, with a one-to-three-line `CHANGELOG.md` entry. During the rebuild, push to `redesign`, not `main`.
 
 ### 2.2 Running next to the old app
 The two UIs live in one Next.js app as two route groups, each with its own root layout. Navigating between them is a full page load, which is what we want: no CSS or providers leak across.
@@ -896,7 +896,7 @@ Every place in the current code that produces something visible, from a full swe
 
 ## 7. Phases
 
-Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps `npm run lint`, `npm run build`, `npm test` and `npm run test:e2e` green, and ends with a fresh-session review (§7.0) before it counts as done. Each task is one session and one commit (or a few), pushed to `redesign`, with an `AGENTS.md` change-log entry.
+Every phase is built on the `redesign` branch, checked on a local preview (Vercel doesn't build `redesign`), and ends with a fresh-session review (§7.0) that runs the whole e2e suite before it counts as done. Each task is one session and one commit (or a few), delivered to `redesign`, with a one-to-three-line `CHANGELOG.md` entry. Each task runs the lighter checks in step 5 below.
 
 ### 7.0 Who builds it: model and effort per task
 
@@ -909,9 +909,10 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
-- **Parallel terminals (optional).** `redesign/terminal-split.md` sets out which tasks can run at the same time in up to four terminals (four in Phases 4 and 5), and the setup that needs first.
+- **Parallel terminals.** `redesign/terminal-split.md` sets out which tasks run at the same time. From 2026-10-18 it's two terminals: more made this 8 GB Mac swap so hard that every task slowed down.
+- **One record of progress.** The Done column of this table is the only place a task is ticked. The task headings' Done boxes below are kept for the tasks done before 2026-10-18 and are no longer ticked; `terminal-split.md` has no boxes; §5, §6 and §10 rows are ticked by the phase review, in one go, after it checks them.
 
-**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. Logging the real `/cost` in the "Real cost / changes" column is optional.
+**Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. In the "Real cost / changes" column write the date, lane and commit, plus one short phrase only if something changed from the plan (a gap raised, a pick moved). The real `/cost` is optional.
 
 | Phase | Task | Model · effort | Est. cost | Why | Real cost / changes | Done |
 |---|---|---|---|---|---|---|
@@ -1013,8 +1014,12 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 2. Read the task, the named guide sections and the named prototype file. Open the prototype in a browser at 390px and 1440px.
 3. Build only what the task lists. Use only token names, the components already built and the hooks in `src/lib/data/`.
 4. Hit a design gap? Stop that part, add it to §9.1, write the need in `needs.md`, and carry on with the rest.
-5. Before committing: `npm run lint`, `npm run build`, `npm test`, `npm run test:e2e` for the touched area, and from Task 6.7 on, `node scripts/check-old-names.mjs`.
-6. Tick the task's **Done** box in the §7.0 table and under its heading below (date and commit; the real `/cost` is optional: log it when you have it, and don't hold a tick for it), tick its box in `redesign/terminal-split.md`, tick its rows in §5, §6 and §10, add the `AGENTS.md` entry, commit and push to `redesign`. When a phase's review passes, tick its Done row in §7.0 and the phase in `redesign/redesign-plan.md`'s checklist.
+5. Checks (lighter per task since 2026-10-18; the phase review runs everything):
+   - **While building:** `npx tsc --noEmit`, lint on the changed files, the related unit tests (`npx vitest run --project model <files>`), and only this task's own e2e specs, plus the specs of any shared part it changed (a component in `src/veil/parts/` or `src/veil/shell/`, a gallery section, `sections.tsx`): `npm run test:e2e -- tests/e2e/demo/<spec> …` or `tests/e2e/emulator/<spec> …`. Specs all from one folder start only that folder's servers. (Task 4.4 added a gallery section without running `veil-gallery.spec.ts`, and the break went unnoticed until 2026-10-18.)
+   - **Once, before delivering:** `npm test`, `node scripts/check-veil-styles.mjs`, `node scripts/check-old-names.mjs`, `npm run build`, and `npm run test:emulator` only if the task changed `src/lib/data/`, `src/lib/collections/`, `firestore.rules` or `src/lib/server/`.
+   - **After merging `redesign` into the lane:** if only bookkeeping files conflicted (or nothing did), `npx tsc --noEmit` and `npm test` are enough. If code conflicted, rerun this task's own e2e specs as well.
+   - Don't rerun a check that passed when nothing it covers has changed since. The whole e2e suite (`npm run test:e2e` with no arguments) runs at the phase review, not per task.
+6. Tick the task's **Done** box in the §7.0 table (date, lane and commit; the real `/cost` only if you have it). Nowhere else: not the heading below, not `terminal-split.md`, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign`. When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
@@ -1475,7 +1480,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 8.6: Merge preparation and `CLAUDE.md` · Haiku 5.5 Max
 - [ ] **Done** (date · commit · real cost)
-- Update `CLAUDE.md` and `AGENTS.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
+- Update `CLAUDE.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
 
 ### Phase 9: After launch (on `main`)
 
@@ -1586,4 +1591,4 @@ The owner took every recommendation on 2026-10-14. For Q8 the project turned out
 - [ ] The accessibility check (axe and the guide §8 checklist) passes.
 - [ ] The real-device checklist is done on an installed iPhone, Android and a Mac.
 - [ ] The rollback was rehearsed (§9.3), and the fallback was removed at the end of the launch window.
-- [ ] `CLAUDE.md` and `AGENTS.md` describe the new UI.
+- [ ] `CLAUDE.md` describes the new UI.

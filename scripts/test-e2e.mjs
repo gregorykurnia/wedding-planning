@@ -83,7 +83,28 @@ function release() {
   if (dir && holder(dir)?.pid === process.pid) rmSync(dir, { recursive: true, force: true });
 }
 
-const child = spawn("npx", ["playwright", "test", ...args], { stdio: "inherit" });
+// Start only the servers the chosen specs need (see playwright.config.ts):
+// every spec path under tests/e2e/demo/ (or --project=demo) needs only the
+// demo server, every one under tests/e2e/emulator/ only the emulators'.
+function serversFor(list) {
+  const flag = list.findIndex((a) => a === "--project" || a.startsWith("--project="));
+  if (flag !== -1) {
+    const name = list[flag].includes("=") ? list[flag].split("=")[1] : list[flag + 1];
+    if (name === "demo" || name === "emulator") return name;
+  }
+  const paths = list.filter((a) => !a.startsWith("-") && /e2e\/(demo|emulator)\//.test(a));
+  if (paths.length === 0 || paths.length !== list.filter((a) => !a.startsWith("-")).length) return "all";
+  if (paths.every((a) => a.includes("e2e/demo/"))) return "demo";
+  if (paths.every((a) => a.includes("e2e/emulator/"))) return "emulator";
+  return "all";
+}
+
+const servers = process.env.E2E_SERVERS ?? serversFor(args);
+if (servers !== "all") console.log(`e2e: starting only the ${servers} servers for these specs.`);
+const child = spawn("npx", ["playwright", "test", ...args], {
+  stdio: "inherit",
+  env: { ...process.env, E2E_SERVERS: servers },
+});
 for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
   process.on(signal, () => child.kill(signal));
 }
