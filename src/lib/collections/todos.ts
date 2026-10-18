@@ -26,6 +26,7 @@ function fromDoc(id: string, data: DocumentData): TodoItem {
     notes: data.notes ?? "",
     dueDate: data.dueDate ?? null,
     done: data.done === true,
+    doneOn: typeof data.doneOn === "string" ? data.doneOn : null,
     subtasks: withElementIds<TodoSubtask>(data.subtasks),
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),

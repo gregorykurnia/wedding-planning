@@ -41,12 +41,13 @@ export const openTasks = <T extends TaskRecord>(tasks: readonly T[]): T[] =>
 
 /**
  * Finished tasks, the latest finished first. A task finished before `doneOn`
- * was kept falls back to its due date, and one with neither goes last.
+ * was kept has no day to sort by, so it goes last, as every blank does (N8);
+ * its due date is never taken for the day it was finished.
  */
 export const finishedTasks = <T extends TaskRecord>(tasks: readonly T[]): T[] =>
   sortBy(
     tasks.filter((t) => t.done),
-    (t) => (isIsoDate(t.doneOn) ? t.doneOn : dueOf(t)),
+    (t) => (isIsoDate(t.doneOn) ? t.doneOn : null),
     "desc",
   );
 
@@ -79,13 +80,13 @@ export const isTaskLate = (task: TaskRecord, today: IsoDate) => {
   return !task.done && due !== null && daysUntil(due, today) < 0;
 };
 
-/** The due text on a task row: "No date" · "3 days late" · "Due today" · "Due tomorrow" · "Due 25 Oct" · "Done 29 Sep". */
+/**
+ * The due text on a task row: "No date" · "3 days late" · "Due today" · "Due tomorrow" · "Due 25 Oct" · "Done 29 Sep".
+ * A finished task whose day isn't known says just "Done", never its due date or today (N8).
+ */
 export function taskDueText(task: TaskRecord, today: IsoDate): string {
   const due = dueOf(task);
-  if (task.done) {
-    const on = isIsoDate(task.doneOn) ? task.doneOn : due;
-    return on ? `Done ${dateShort(on, today)}` : "Done";
-  }
+  if (task.done) return isIsoDate(task.doneOn) ? `Done ${dateShort(task.doneOn, today)}` : "Done";
   if (!due) return "No date";
   const n = daysUntil(due, today);
   if (n < 0) return `${plural(-n, "day")} late`;
@@ -102,4 +103,14 @@ export function taskMeta(task: TaskRecord): TaskMeta {
   if (steps.total) return { kind: "steps", ...steps };
   const notes = task.notes.trim();
   return notes ? { kind: "notes", text: cut(notes, 80) } : null;
+}
+
+/**
+ * How many tasks to show of a list that pages by `page`: one page, or as many
+ * pages as it takes for `id` to be on screen (`?open=` names a task that sits
+ * past the first page).
+ */
+export function shownCount(list: readonly { id: string }[], id: string | null, page: number): number {
+  const at = id ? list.findIndex((t) => t.id === id) : -1;
+  return at < 0 ? page : Math.max(page, Math.ceil((at + 1) / page) * page);
 }

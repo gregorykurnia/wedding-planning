@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type MouseEvent } from "react";
 import type { IsoDate } from "@/lib/model/bookings";
+import { FIELD_FAILED } from "@/lib/model/save-state";
 import type { SubtaskRecord, TaskRecord } from "@/lib/model/tasks";
 import { Chevron } from "@/veil/icons/chevron";
 import { TextLink } from "@/veil/parts/actions/text-link";
@@ -34,7 +35,12 @@ export interface TaskActions {
   onNotes?: (task: TaskRecord, notes: string) => void;
   onDelete?: (task: TaskRecord) => void;
   onRetryStep?: (task: TaskRecord, step: SubtaskRecord) => void;
+  /** Try again for a due date or notes that didn't save. */
+  onRetryField?: (task: TaskRecord, field: TaskField) => void;
 }
+
+/** The task's own fields that save as you go. */
+export type TaskField = "due" | "notes";
 
 /** A date saves once it is whole, or on leaving the field; an empty one clears the date. */
 const dateValue = (text: string): IsoDate | null => (isDate(text) ? text : null);
@@ -138,6 +144,8 @@ export interface TaskRowProps {
   failedStepId?: string | null;
   /** The step to put the cursor in (one just added). */
   focusStepId?: string | null;
+  /** A due date or notes change that didn't save: the field is ringed and keeps what was typed. */
+  failedField?: TaskField | null;
   /** Demonstration mode: every control is inert. */
   demo?: boolean;
 }
@@ -157,6 +165,7 @@ export function TaskRow({
   onToggle,
   failedStepId = null,
   focusStepId = null,
+  failedField = null,
   demo = false,
 }: TaskRowProps) {
   const flash = useFlash({ kind: "task", id: task.id });
@@ -229,7 +238,10 @@ export function TaskRow({
             <TextLink onClick={() => !demo && actions.onAddStep?.(task)}>Add a step</TextLink>
           </p>
           <Fields className={styles.dueFields}>
-            <FieldRow label="Due date">
+            <FieldRow
+              label="Due date"
+              field={failedField === "due" ? { failed: true, retry: () => actions.onRetryField?.(task, "due"), disabled: demo } : undefined}
+            >
               <DateInput
                 value={due}
                 disabled={demo}
@@ -243,7 +255,8 @@ export function TaskRow({
           </label>
           <textarea
             id={`${task.id}-notes`}
-            className={styles.notes}
+            className={join(styles.notes, failedField === "notes" && styles.notesFailed)}
+            aria-invalid={failedField === "notes" || undefined}
             dir="auto"
             placeholder="Notes"
             value={notes}
@@ -251,6 +264,14 @@ export function TaskRow({
             onChange={(event) => setNotes(event.target.value)}
             onBlur={(event) => event.currentTarget.value !== task.notes && actions.onNotes?.(task, event.currentTarget.value)}
           />
+          {failedField === "notes" ? (
+            <p className={styles.rowErr} role="alert">
+              <span>{FIELD_FAILED}</span>
+              <TextLink tone="rose" onClick={() => actions.onRetryField?.(task, "notes")}>
+                Try again
+              </TextLink>
+            </p>
+          ) : null}
           <div className={styles.tacts}>
             <TextLink tone="rose" onClick={() => !demo && actions.onDelete?.(task)}>
               Delete task
