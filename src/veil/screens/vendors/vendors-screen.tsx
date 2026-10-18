@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { setVendorKeen, useVendorsAndCategories } from "@/lib/data/vendors";
 import { useSettings } from "@/lib/data/settings";
 import { buildCategories } from "@/lib/model/categories";
@@ -90,6 +91,24 @@ function VendorsList({ vendors, categories }: { vendors: VendorListItem[]; categ
         onRemoved={(name) => setCategory((now) => (now === name ? "" : now))}
       />,
     );
+
+  // `?categories=1` opens the categories sheet (settings links here); the address is cleared once handled.
+  const router = useRouter();
+  const pathname = usePathname();
+  const categoriesParam = useSearchParams().get("categories");
+  const handled = useRef(false);
+  useEffect(() => {
+    if (!categoriesParam) {
+      handled.current = false;
+      return;
+    }
+    if (handled.current) return;
+    handled.current = true;
+    openCategories();
+    router.replace(pathname);
+    // The sheet opens once per visit to the address; `openCategories` only reads state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoriesParam]);
 
   // Any change to what's in view starts again at the first page.
   const narrow = <T,>(set: (value: T) => void) => (value: T) => {

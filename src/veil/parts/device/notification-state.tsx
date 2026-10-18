@@ -19,7 +19,7 @@ export interface NotificationStateProps {
 }
 
 /** "phone" under 760px and "computer" above, as the prototype and the offline copy do. The hidden word isn't read out. */
-function Device() {
+export function Device() {
   return (
     <>
       <span className={styles.phone}>phone</span>

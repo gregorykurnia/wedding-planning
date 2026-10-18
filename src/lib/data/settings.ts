@@ -29,6 +29,15 @@ export function useSettings(): Loaded<WeddingSettings> {
 }
 
 /**
+ * Saves one of the two names (guide §5.3, O6) on its own, so a name changed on
+ * one phone never overwrites the date or the other name changed on another
+ * (plan §5 #26). `yourName` is the first name, `partnerName` the second.
+ */
+export function saveCoupleName(field: "yourName" | "partnerName", name: string, opts: WriteOptions = {}): Promise<void> {
+  return set("settings", "wedding", { [field]: name.trim() }, { ...opts, merge: true });
+}
+
+/**
  * Sets the wedding date once (guide §5.2, O5), leaving every other field of
  * `settings/wedding` as it is. The document may not exist yet on a new
  * account, so this merges rather than updates.

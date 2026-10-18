@@ -111,11 +111,11 @@ export const PARTS_SMALL = (count: number) => `${plural(count, "part")}; the pri
 export const IN_ALL = "in all";
 export const addedToast = (name: string) => `Added ${name}`;
 
-/** N28: an item with no name is turned back with this, and what was typed stays. */
+/** N29: an item with no name is turned back with this, and what was typed stays. */
 export const NAME_MISSING = "Give the what-if item a name.";
-/** N28: an item that wasn't added keeps what was typed, like a venue that wasn't. */
+/** N29: an item that wasn't added keeps what was typed, like a venue that wasn't. */
 export const ADD_FAILED = "The what-if item wasn’t added: the planner lost its connection. Everything you entered is still here.";
-/** N28: a split or an added part that didn't go through, as for a booking (N25). */
+/** N29: a split or an added part that didn't go through, as for a booking (N25). */
 export const ACTION_FAILED = "That didn’t go through, and nothing was changed. Try again.";
 
 // ---------- removing ----------
