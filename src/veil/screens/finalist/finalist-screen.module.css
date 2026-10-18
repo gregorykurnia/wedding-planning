@@ -1,0 +1,139 @@
+/* A finalist's own screen (guide §5.14), ported from finalist.html and veil.css
+   (.section-h, .origin, .flag, .card, .danger-zone, .note). Tokens only; off-scale
+   values take the nearest token, ties going up. */
+
+.heart {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.origin {
+  margin-top: var(--space-3);
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* "Now a booking", as on the shortlist card. */
+.flag {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-display);
+  white-space: nowrap;
+  color: var(--accent-gold-text-on-tint);
+  background: var(--glow-champagne);
+}
+
+.section {
+  margin: var(--space-section) 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+}
+
+.section small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+}
+
+/* The phone number and its WhatsApp link share one row. */
+.phone {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.phone input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.note {
+  margin-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* Under the Files heading, before the tiles. */
+.filesNote {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.add {
+  margin-top: var(--space-4);
+}
+
+/* A change that didn't save, under the control it belongs to (Try again is one press). */
+.failure {
+  margin-top: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--accent-attention-text);
+  text-align: center;
+}
+
+.card {
+  margin-top: var(--space-10);
+  padding: var(--space-card-y) var(--space-card-x);
+  text-align: center;
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--blur-card));
+  -webkit-backdrop-filter: blur(var(--blur-card));
+  border: 1px solid var(--color-card-edge);
+  border-radius: var(--radius-card);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+}
+
+.cardNote {
+  margin-top: var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.cardActs {
+  margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.danger {
+  margin-top: var(--space-danger);
+  text-align: center;
+}
+
+/* The package chips in the Book it sheet sit centred. */
+.chosen {
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+.sheetNote {
+  margin-top: var(--space-5);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .card {
+    padding: var(--space-5);
+  }
+}

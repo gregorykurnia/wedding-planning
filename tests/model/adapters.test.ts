@@ -152,6 +152,24 @@ describe("shortlist: main package and the preferred one", () => {
     expect(finalistFromDoc("s1", { ...doc, preferredPackageId: "gone" }).preferredPackageId).toBe("main");
   });
 
+  it("reads what a package includes: its own words, or the old description when that isn't its name", () => {
+    const f = finalistFromDoc("s1", {
+      ...doc,
+      includes: "Two photographers",
+      subEntries: [
+        { id: "k1", name: "Half day", price: 9, priceDescription: "4 hours" },
+        { id: "k2", name: "Same", price: 3, priceDescription: "Same" },
+        { id: "k3", name: "Own", price: 4, priceDescription: "Own", includes: "An album" },
+      ],
+    });
+    expect(f.packages.map((p) => [p.id, p.includes])).toEqual([
+      ["main", "Two photographers"],
+      ["k1", "4 hours"],
+      ["k2", ""],
+      ["k3", "An album"],
+    ]);
+  });
+
   it("reads where a finalist moved to", () => {
     expect(finalistFromDoc("s1", { ...doc, movedTo: { kind: "vendor", id: "v1" } }).movedTo).toEqual({
       kind: "vendor",

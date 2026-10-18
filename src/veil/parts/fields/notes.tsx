@@ -5,13 +5,10 @@ import { linkParts } from "@/lib/model/format";
 import { FieldText, Fields, FieldRow, type Bound } from "./fields";
 import styles from "./fields.module.css";
 
-/**
- * Notes as reading text (guide §4.9): line breaks kept, and web addresses
- * become links that open in a new tab, shown without "https://".
- */
-export function NotesView({ text }: { text: string }) {
+/** Text with its web addresses as links that open in a new tab, shown without "https://". */
+export function LinkedText({ text }: { text: string }) {
   return (
-    <div className={styles.notesView} dir="auto">
+    <>
       {linkParts(text).map((part, index) =>
         "href" in part ? (
           <a key={index} className={styles.link} href={part.href} target="_blank" rel="noopener noreferrer">
@@ -21,6 +18,18 @@ export function NotesView({ text }: { text: string }) {
           <span key={index}>{part.text}</span>
         ),
       )}
+    </>
+  );
+}
+
+/**
+ * Notes as reading text (guide §4.9): line breaks kept, and web addresses
+ * become links that open in a new tab, shown without "https://".
+ */
+export function NotesView({ text }: { text: string }) {
+  return (
+    <div className={styles.notesView} dir="auto">
+      <LinkedText text={text} />
     </div>
   );
 }

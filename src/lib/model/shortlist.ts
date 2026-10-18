@@ -46,7 +46,7 @@ export interface FinalistListItem {
 }
 
 /** A finalist's own price and description are a package only once either is filled in. */
-const isPackage = (p: { name: string; price: number }) => p.price > 0 || p.name.trim() !== "";
+export const isPackage = (p: { name: string; price: number }) => p.price > 0 || p.name.trim() !== "";
 
 export function finalistListItem(f: FinalistSource): FinalistListItem {
   const packages = f.packages.filter(isPackage);

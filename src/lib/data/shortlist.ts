@@ -4,17 +4,22 @@ import { useMemo } from "react";
 import { collection, doc, getDocs, limit, query, where } from "firebase/firestore";
 import { useCollection } from "@/lib/use-collection";
 import type { IsoDate } from "@/lib/model/bookings";
-import { finalistListItem, type FinalistListItem } from "@/lib/model/shortlist";
+import { isVendorBooked } from "@/lib/model/bookings";
+import { finalistDetail, type FinalistDetail, type FinalistFile } from "@/lib/model/finalist-detail";
+import { isListedVendor } from "@/lib/model/search";
+import { finalistListItem, isPackage, type FinalistListItem } from "@/lib/model/shortlist";
 import { logActivity } from "./activity";
-import { bookingMark, vendorFromDoc } from "./adapters/bookings";
+import { withElementIds, mutateArray, type Element } from "./array-ops";
+import { bookingMark, vendorFromDoc, type VendorDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
+import { fileFromDoc, filesForRecord, type FileDoc, type RecordRef } from "./adapters/files";
 import { finalistFromDoc, MAIN_PACKAGE_ID, type FinalistDoc, type Package } from "./adapters/shortlist";
 import { requireDb } from "./db";
 import { mergeStatus, readOf } from "./read";
 import { useSession } from "./session";
 import type { Loaded } from "./settings";
-import { removeWithUndo, type Undoable } from "./undo";
-import { create, newId, stamp, transact, type WriteOptions } from "./write";
+import { patchWithUndo, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
+import { create, newId, stamp, transact, update, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 import { useCategories, type CategoriesData } from "./vendors";
 
@@ -179,8 +184,14 @@ export async function copyToShortlist(
   };
 }
 
+/** The package we're leaning towards: the chosen one when it is a real package, otherwise the first real one. */
+function leaningPackage(f: FinalistDoc): Package | null {
+  const real = f.packages.filter(isPackage);
+  return real.find((p) => p.id === f.preferredPackageId) ?? real[0] ?? null;
+}
+
 /** A new vendor record made from a finalist (from-scratch finalists only). */
-function vendorFromFinalist(f: FinalistDoc, chosen: Package, extra: Record<string, unknown>) {
+function vendorFromFinalist(f: FinalistDoc, chosen: Package | null, extra: Record<string, unknown>) {
   return {
     name: f.name,
     category: f.category,
@@ -188,16 +199,18 @@ function vendorFromFinalist(f: FinalistDoc, chosen: Package, extra: Record<strin
     contactPhone: f.contactPhone,
     contactEmail: "",
     contractStatus: "Consideration",
-    priceOptions: f.packages.map((p) => ({
+    priceOptions: f.packages.filter(isPackage).map((p) => ({
       id: p.id === MAIN_PACKAGE_ID ? makeId() : p.id,
       description: p.description || p.name,
       price: p.price,
-      selected: p.id === chosen.id,
+      includes: p.includes,
+      selected: p.id === chosen?.id,
     })),
     notes: f.notes,
     starred: false,
     images: [],
-    files: [],
+    // Files attached on the finalist come along on the vendor's old list; the new screens find them by address.
+    files: f.files,
     bridestoryRating: null,
     bridestoryReviewCount: f.reviewers,
     confirmedType: f.category,
@@ -221,7 +234,7 @@ function vendorFromFinalist(f: FinalistDoc, chosen: Package, extra: Record<strin
  */
 export async function bookFinalist(
   finalistId: string,
-  packageId: string,
+  packageId: string | null,
   on: IsoDate | null,
   opts: WriteOptions & { vendorId?: string } = {},
 ): Promise<Undoable & { bookingId: string; vendorId: string }> {
@@ -238,8 +251,10 @@ export async function bookFinalist(
       const vendorId = finalist.movedTo.id.replace(/^vendor-/, "");
       return { vendorId, already: true, created: false, vendorBefore: null, finalistBefore: null, name: finalist.name };
     }
-    const chosen = finalist.packages.find((p) => p.id === packageId);
-    if (!chosen) throw new WriteError("missing", "That package is gone");
+    // No package at all books it without a price, as the sheet says.
+    const chosen = packageId === null ? null : (finalist.packages.find((p) => p.id === packageId) ?? null);
+    if (packageId !== null && !chosen) throw new WriteError("missing", "That package is gone");
+    const price = chosen?.price ?? 0;
 
     const sourceRef = finalist.sourceVendorId ? doc(database, VENDORS, finalist.sourceVendorId) : null;
     const sourceSnap = sourceRef ? await tx.get(sourceRef) : null;
@@ -266,8 +281,8 @@ export async function bookFinalist(
         tx.update(sourceRef, {
           booking: mark ? { ...mark, removed: false } : booking,
           contractStatus: v.contractStatus === "Done" ? "Done" : "Chosen",
-          estimate: chosen.price,
-          totalPrice: num(v.totalPrice) > 0 ? num(v.totalPrice) : chosen.price,
+          estimate: price,
+          totalPrice: num(v.totalPrice) > 0 ? num(v.totalPrice) : price,
           ...stamp(database),
         });
       }
@@ -279,8 +294,8 @@ export async function bookFinalist(
         {
           ...vendorFromFinalist(finalist, chosen, {
             contractStatus: "Chosen",
-            totalPrice: chosen.price,
-            estimate: chosen.price,
+            totalPrice: price,
+            estimate: price,
             booking,
           }),
           ...stamp(database, true),
@@ -289,7 +304,7 @@ export async function bookFinalist(
     }
     tx.update(finalistRef, {
       movedTo: { kind: "booking", id: `vendor-${vendorId}` },
-      preferredPackageId: packageId,
+      ...(packageId !== null ? { preferredPackageId: packageId } : {}),
       ...stamp(database),
     });
     return { vendorId, already: false, created, vendorBefore, finalistBefore, name: finalist.name };
@@ -344,8 +359,7 @@ export async function moveFinalistToVendors(
       if (finalist.sourceVendorId === vendorId) return null; // a retry that already landed
       throw new WriteError("failed", "This finalist is already in Vendors");
     }
-    const chosen = finalist.packages.find((p) => p.id === finalist.preferredPackageId) ?? finalist.packages[0];
-    tx.set(vendorRef, { ...vendorFromFinalist(finalist, chosen, {}), ...stamp(database, true) });
+    tx.set(vendorRef, { ...vendorFromFinalist(finalist, leaningPackage(finalist), {}), ...stamp(database, true) });
     tx.update(finalistRef, {
       sourceVendorId: vendorId,
       movedTo: { kind: "vendor", id: vendorId },
@@ -370,7 +384,216 @@ export async function moveFinalistToVendors(
   };
 }
 
-/** Removes a finalist (need N10), with undo. */
-export function removeFinalist(finalistId: string, opts: WriteOptions = {}) {
-  return removeWithUndo(SHORTLIST, finalistId, opts);
+/**
+ * Removes a finalist (need N10), with undo. The vendor it was copied from, its
+ * files and any booking stay; the activity entry tells the partner's open screen.
+ */
+export async function removeFinalist(finalistId: string, opts: WriteOptions = {}): Promise<Undoable> {
+  const done = await removeWithUndo(SHORTLIST, finalistId, opts);
+  void logActivity("finalist.removed", { name: String(done.data.name ?? "") }, { kind: "finalist", id: finalistId }, opts);
+  return { undo: done.undo };
+}
+
+// ---------- a finalist's own screen (guide §5.14) ----------
+
+export interface FinalistPage {
+  /** Null when there is no such finalist here (an old link), or it was removed. */
+  finalist: FinalistDetail | null;
+}
+
+/**
+ * One finalist with what its screen shows beside it: the vendor it was copied
+ * from (when that vendor is still in Vendors), its files (its own, then the
+ * source vendor's, which are not copied: F20) and each package's files.
+ */
+export function useFinalist(id: string): Loaded<FinalistPage> {
+  const { connection } = useSession();
+  const finalists = useCollection<FinalistDoc>(SHORTLIST, finalistFromDoc, []);
+  const vendors = useCollection<VendorDoc>(VENDORS, vendorFromDoc, []);
+  const files = useCollection<FileDoc>("weddingFiles", fileFromDoc, []);
+
+  const page = useMemo<FinalistPage>(() => {
+    const doc = finalists.data.find((f) => f.id === id);
+    if (!doc) return { finalist: null };
+    const vendorDoc = doc.sourceVendorId
+      ? vendors.data.find((v) => v.id === doc.sourceVendorId && isListedVendor(v))
+      : undefined;
+    const byId = new Map(files.data.map((f) => [f.id, f]));
+    const tiles = (refs: RecordRef[], legacy: unknown, withVendor: boolean): FinalistFile[] => {
+      const own = new Set(filesForRecord([refs[0]], files.data, []).map((f) => f.id));
+      return filesForRecord(refs, files.data, legacy).map((f) => {
+        const stored = f.id ? byId.get(f.id) : undefined;
+        return {
+          id: f.id,
+          name: f.name,
+          url: f.url,
+          size: stored?.fileSize || null,
+          mime: stored?.fileType ?? "",
+          fromVendor: withVendor && f.id !== null && !own.has(f.id),
+        };
+      });
+    };
+    const refs: RecordRef[] = [{ kind: "finalist", id }];
+    // The vendor's files are on the finalist whether or not the vendor is still listed, so a removed vendor's files stay.
+    if (doc.sourceVendorId) refs.push({ kind: "vendor", id: doc.sourceVendorId });
+    const packageFiles: Record<string, FinalistFile[]> = {};
+    for (const p of doc.packages) {
+      if (p.id === MAIN_PACKAGE_ID) continue;
+      packageFiles[p.id] = tiles([{ kind: "finalist", id, partId: p.id }], p.files, false);
+    }
+    return {
+      finalist: finalistDetail(doc, {
+        sourceVendor: vendorDoc ? { id: vendorDoc.id, name: vendorDoc.name, booked: isVendorBooked(vendorDoc) } : null,
+        files: tiles(refs, doc.files, true),
+        packageFiles,
+      }),
+    };
+  }, [finalists.data, vendors.data, files.data, id]);
+
+  return readOf(connection, [finalists, vendors, files], page);
+}
+
+/** The fields the contact and popularity rows save (guide §5.14). */
+export interface FinalistFields {
+  contactName: string;
+  contactPhone: string;
+  reviewers: number | null;
+  followers: number | null;
+  step: string;
+  notes: string;
+}
+
+const STORED: { [K in keyof FinalistFields]: (value: FinalistFields[K]) => Record<string, unknown> } = {
+  contactName: (value) => ({ contactName: value }),
+  contactPhone: (value) => ({ contactPhone: value }),
+  reviewers: (value) => ({ bridestoryReviewers: value }),
+  followers: (value) => ({ igFollowers: value }),
+  step: (value) => ({ nextAction: value }),
+  notes: (value) => ({ notes: value }),
+};
+
+/** Saves one field of the finalist, by the stored names the old screens read. */
+export function setFinalistField<K extends keyof FinalistFields>(
+  id: string,
+  field: K,
+  value: FinalistFields[K],
+  opts: WriteOptions = {},
+): Promise<void> {
+  return update(SHORTLIST, id, STORED[field](value), opts);
+}
+
+// ---------- packages (F17) ----------
+
+export interface PackageInput {
+  /** Made when the sheet opened, so Try again adds the same package. */
+  id: string;
+  name: string;
+  price: number;
+  includes: string;
+  reviewers: number | null;
+  step: string;
+  notes: string;
+}
+
+/**
+ * Adds a package at the end, as the old screens store one (`subEntries`). The
+ * first package on a finalist is the one we're leaning towards. Adding an id
+ * that is already there does nothing. Undo puts the earlier list back, and
+ * refuses with `changed` when the packages were changed since.
+ */
+export function addPackage(finalistId: string, input: PackageInput, opts: WriteOptions = {}) {
+  return patchWithUndo(
+    SHORTLIST,
+    finalistId,
+    (data) => {
+      const items = withElementIds<Element>(data.subEntries);
+      if (items.some((i) => i.id === input.id)) return null;
+      const name = input.name.trim();
+      const added: Element = {
+        id: input.id,
+        name,
+        type: typeof data.type === "string" ? data.type : "Other",
+        price: input.price,
+        priceDescription: name,
+        includes: input.includes,
+        bridestoryReviewers: input.reviewers,
+        igFollowers: null,
+        nextAction: input.step,
+        notes: input.notes,
+        files: [],
+      };
+      const first = !finalistFromDoc(finalistId, data).packages.some(isPackage);
+      return { patch: { subEntries: [...items, added], ...(first ? { preferredPackageId: input.id } : {}) } };
+    },
+    opts,
+  );
+}
+
+/**
+ * Changes one package as it is edited in its sheet (saves as you go). The
+ * finalist's own price is package `main`: its name is the price's description,
+ * and it has no reviews, step or notes apart from the finalist's.
+ */
+export function updatePackage(
+  finalistId: string,
+  packageId: string,
+  patch: Partial<Omit<PackageInput, "id">>,
+  opts: WriteOptions = {},
+): Promise<void> {
+  if (packageId === MAIN_PACKAGE_ID) {
+    const stored: Record<string, unknown> = {};
+    if (patch.name !== undefined) stored.priceDescription = patch.name.trim();
+    if (patch.price !== undefined) stored.price = patch.price;
+    if (patch.includes !== undefined) stored.includes = patch.includes;
+    return update(SHORTLIST, finalistId, stored, opts);
+  }
+  return mutateArray(
+    SHORTLIST,
+    finalistId,
+    "subEntries",
+    (items) => {
+      if (!items.some((i) => i.id === packageId)) throw new WriteError("missing", `Package ${packageId} is gone`);
+      return {
+        items: items.map((i) => {
+          if (i.id !== packageId) return i;
+          const next: Element = { ...i };
+          if (patch.name !== undefined) {
+            const name = patch.name.trim();
+            // The old screens' description follows the name unless someone wrote it apart from it.
+            if (!i.priceDescription || i.priceDescription === i.name) next.priceDescription = name;
+            next.name = name;
+          }
+          if (patch.price !== undefined) next.price = patch.price;
+          if (patch.includes !== undefined) next.includes = patch.includes;
+          if (patch.reviewers !== undefined) next.bridestoryReviewers = patch.reviewers;
+          if (patch.step !== undefined) next.nextAction = patch.step;
+          if (patch.notes !== undefined) next.notes = patch.notes;
+          return next;
+        }),
+        result: undefined,
+      };
+    },
+    opts,
+  );
+}
+
+/** "Lean towards this one": this package is the one we're leaning towards. */
+export function leanTowardsPackage(finalistId: string, packageId: string, opts: WriteOptions = {}) {
+  return patchWithUndo(
+    SHORTLIST,
+    finalistId,
+    (data) => (data.preferredPackageId === packageId ? null : { patch: { preferredPackageId: packageId } }),
+    opts,
+  );
+}
+
+/**
+ * Removes a package, with an undo that puts it back. The finalist's own price
+ * can't leave the document, so removing it clears its price and words.
+ */
+export function removePackage(finalistId: string, packageId: string, opts: WriteOptions = {}) {
+  if (packageId === MAIN_PACKAGE_ID) {
+    return patchWithUndo(SHORTLIST, finalistId, () => ({ patch: { price: 0, priceDescription: "", includes: "" } }), opts);
+  }
+  return removeElementWithUndo<Element>(SHORTLIST, finalistId, "subEntries", packageId, opts);
 }
