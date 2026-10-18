@@ -7,7 +7,7 @@ How the Step 7 rebuild (`redesign/ui-implementation-plan.md` §7) runs in more t
 - **Each terminal goes down its own list** at its own pace, one task per session.
 - **🛑 rows stop both.** At each phase review, both terminals wait until it passes. Don't start a later phase's tasks before then.
 - **Set the model and effort shown** before each task (`/model`, `/effort`). They come from the §7.0 table; if §7.0 changes a pick, change it here too.
-- **No tick boxes here.** The §7.0 Done column is the only record of progress. This file is only the order of work, so it rarely changes and doesn't cause merge conflicts. If a merge still conflicts here, keep `redesign`'s version.
+- **Tick the box here too** when a task is done: `[ ]` becomes `[x]`, in the same commit as its §7.0 Done tick. §7.0 holds the date and commit; this file is each lane's own checklist. If a merge conflicts here, keep both sides' ticks.
 - **One e2e run at a time.** `npm run test:e2e` waits while another copy of the repo runs it. Run e2e only through that script, never `npx playwright test` directly.
 - **Keep the machine free while lanes run:** one browser, no other AI tools or extensions running against this repo, and no dev server left running once a check is done.
 - **The studio is separate.** It runs in its own window with `./start` in `../wedding-planning-studio`.
@@ -33,16 +33,16 @@ Replace `N` with the terminal's number.
 2. **Bring the lane up to date:** `git merge --ff-only redesign` (or `git merge redesign` if the lane has local commits).
 3. **Set the model and effort** from the task's line below.
 4. **Start the task:** "Do Task 4.13 from `redesign/ui-implementation-plan.md`".
-5. **Commit locally** in the lane, with the §7.0 tick and the `CHANGELOG.md` entry in the same commit. Don't push lane branches.
-6. **Deliver it to `redesign`:** `git merge redesign`, fix any bookkeeping conflicts (the change log: keep both entries, newest first; the §7.0 table: keep both ticks), run the after-merge checks (step 5 of the task routine: `tsc` and `npm test` unless code conflicted), then `git -C ../../wedding-planning merge --ff-only lane/tN` and `git -C ../../wedding-planning push origin redesign`. If the fast-forward fails, another lane merged first: merge `redesign` again and retry. One merge at a time.
+5. **Commit locally** in the lane, with the §7.0 tick, the box here and the `CHANGELOG.md` entry in the same commit. Don't push lane branches.
+6. **Deliver it to `redesign`:** `git merge redesign`, fix any bookkeeping conflicts (the change log: keep both entries, newest first; the §7.0 table and the boxes here: keep both sides' ticks), run the after-merge checks (step 5 of the task routine: `tsc` and `npm test` unless code conflicted), then `git -C ../../wedding-planning merge --ff-only lane/tN` and `git -C ../../wedding-planning push origin redesign`. If the fast-forward fails, another lane merged first: merge `redesign` again and retry. One merge at a time.
 
 ## Switching to two lanes (2026-10-18)
 
 The four lanes each had a task in hand. Finish those, then close down to two:
 
-1. **t3:** 4.21 Month is built (`2ab2926`). Deliver it (step 6), tick 4.21 in §7.0, then close t3 for good.
-2. **t1:** 4.5 Bookings is built (`7ccf468`). Deliver it, then close t1 until t4 is done, so only two lanes run.
-3. **t4:** finish 4.18 Tables and formulas and deliver it, then close t4 for good and reopen t1.
+1. [x] **t3:** 4.21 Month is built (`2ab2926`). Deliver it (step 6), tick 4.21 in §7.0, then close t3 for good.
+2. [x] **t1:** 4.5 Bookings is built (`7ccf468`). Deliver it, then close t1 until t4 is done, so only two lanes run.
+3. [x] **t4:** finish 4.18 Tables and formulas and deliver it, then close t4 for good and reopen t1.
 4. **t2:** carries on down its list.
 
 ## The order of work
@@ -52,38 +52,38 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | Terminal 1 | Terminal 2 |
 |---|---|
 | **Phase 4: screens (rest)** | |
-| 4.6 A booking (L) · Sonnet 5.5 High | 4.13 Shortlist · Sonnet 5.5 High |
-| 4.7 Add a booking · Haiku 5.5 Max | 4.14 A finalist · Sonnet 5.5 High |
-| 4.8 Payments due · Sonnet 5.5 High | 4.15 Venues · Sonnet 5.5 High |
-| 4.10 What-if · Sonnet 5.5 High | 4.25 Settings · Sonnet 5.5 High |
-| 4.16 Documents · Sonnet 5.5 High | 4.22 Tasks · Sonnet 5.5 High |
-| 4.19 Files (L) · Sonnet 5.5 High | 4.23 Wedding items (L) · Sonnet 5.5 High |
-| 6.4 Manifest, icons, install · Haiku 5.5 Max | 4.24 Guests · Sonnet 5.5 High |
-| 6.5 Not found and error screens · Haiku 5.5 Max | 6.2 Push reminders (after 4.25) · Opus 5.5 High |
-| 🛑 Phase 4 review · Opus 5.5 Medium | wait |
+| [ ] 4.6 A booking (L) · Sonnet 5.5 High | [ ] 4.13 Shortlist · Sonnet 5.5 High |
+| [ ] 4.7 Add a booking · Haiku 5.5 Max | [ ] 4.14 A finalist · Sonnet 5.5 High |
+| [ ] 4.8 Payments due · Sonnet 5.5 High | [ ] 4.15 Venues · Sonnet 5.5 High |
+| [ ] 4.10 What-if · Sonnet 5.5 High | [ ] 4.25 Settings · Sonnet 5.5 High |
+| [ ] 4.16 Documents · Sonnet 5.5 High | [ ] 4.22 Tasks · Sonnet 5.5 High |
+| [ ] 4.19 Files (L) · Sonnet 5.5 High | [ ] 4.23 Wedding items (L) · Sonnet 5.5 High |
+| [ ] 6.4 Manifest, icons, install · Haiku 5.5 Max | [ ] 4.24 Guests · Sonnet 5.5 High |
+| [ ] 6.5 Not found and error screens · Haiku 5.5 Max | [ ] 6.2 Push reminders (after 4.25) · Opus 5.5 High |
+| 🛑 [ ] Phase 4 review · Opus 5.5 Medium | wait |
 | **Phase 5: states** | |
-| 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
-| 5.2 Budget states (L) · Haiku 5.5 Max | 5.3 Vendors states · Haiku 5.5 Max |
-| 5.4 Documents and files states · Sonnet 5.5 High | 5.5 Schedule states · Haiku 5.5 Max |
-| — | 5.6 Items and guests states · Haiku 5.5 Max |
-| — | 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
-| 🛑 Phase 5 review · Opus 5.5 Medium | wait |
-| 🛑 Phase 6 review · Opus 5.5 Medium | wait |
+| [ ] 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
+| [ ] 5.2 Budget states (L) · Haiku 5.5 Max | [ ] 5.3 Vendors states · Haiku 5.5 Max |
+| [ ] 5.4 Documents and files states · Sonnet 5.5 High | [ ] 5.5 Schedule states · Haiku 5.5 Max |
+| — | [ ] 5.6 Items and guests states · Haiku 5.5 Max |
+| — | [ ] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
+| 🛑 [ ] Phase 5 review · Opus 5.5 Medium | wait |
+| 🛑 [ ] Phase 6 review · Opus 5.5 Medium | wait |
 | **Phase 7: switch-over (one terminal only)** | |
-| 7.1 Switch-over commit · Opus 5.5 High | off |
-| 7.2 Rollback rehearsal · Sonnet 5.5 High | off |
-| 7.3 Delete old code · Sonnet 5.5 High | off |
-| 🛑 Phase 7 review · Opus 5.5 High | off |
+| [ ] 7.1 Switch-over commit · Opus 5.5 High | off |
+| [ ] 7.2 Rollback rehearsal · Sonnet 5.5 High | off |
+| [ ] 7.3 Delete old code · Sonnet 5.5 High | off |
+| 🛑 [ ] Phase 7 review · Opus 5.5 High | off |
 | **Phase 8: QA** | |
-| 8.1 Behaviour tests (L) · Sonnet 5.5 High | 8.2 Screenshots · Sonnet 5.5 High |
-| 8.3 Fixes: budget and vendors (after 8.2) · Haiku 5.5 Max | 8.4 Accessibility · Sonnet 5.5 High |
-| 8.3 Fixes: documents and files · Haiku 5.5 Max | 8.3 Fixes: schedule, items and guests · Haiku 5.5 Max |
-| 8.5 Device checklist · Haiku 5.5 xHigh | 8.3 Fixes: shell, overview, sign-in, settings · Haiku 5.5 Max |
-| — | 8.6 Merge preparation · Haiku 5.5 Max |
-| 🛑 Phase 8 review · Opus 5.5 Medium | wait |
+| [ ] 8.1 Behaviour tests (L) · Sonnet 5.5 High | [ ] 8.2 Screenshots · Sonnet 5.5 High |
+| [ ] 8.3 Fixes: budget and vendors (after 8.2) · Haiku 5.5 Max | [ ] 8.4 Accessibility · Sonnet 5.5 High |
+| [ ] 8.3 Fixes: documents and files · Haiku 5.5 Max | [ ] 8.3 Fixes: schedule, items and guests · Haiku 5.5 Max |
+| [ ] 8.5 Device checklist · Haiku 5.5 xHigh | [ ] 8.3 Fixes: shell, overview, sign-in, settings · Haiku 5.5 Max |
+| — | [ ] 8.6 Merge preparation · Haiku 5.5 Max |
+| 🛑 [ ] Phase 8 review · Opus 5.5 Medium | wait |
 | **Phase 9: after launch (one terminal only)** | |
-| 9.1 After-launch check · Sonnet 5.5 High | off |
-| 9.2 Remove the old UI · Sonnet 5.5 High | off |
-| 🛑 Phase 9 review · Opus 5.5 Medium | off |
+| [ ] 9.1 After-launch check · Sonnet 5.5 High | off |
+| [ ] 9.2 Remove the old UI · Sonnet 5.5 High | off |
+| 🛑 [ ] Phase 9 review · Opus 5.5 Medium | off |
 
 The earlier four-lane split, the 4.9 calibration trial steps and the N1–N18 studio round are in this file's git history (before 2026-10-18). Their results are in §7.0.

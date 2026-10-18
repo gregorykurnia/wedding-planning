@@ -910,7 +910,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 - **Parallel terminals.** `redesign/terminal-split.md` sets out which tasks run at the same time. From 2026-10-18 it's two terminals: more made this 8 GB Mac swap so hard that every task slowed down.
-- **One record of progress.** The Done column of this table is the only place a task is ticked. The task headings' Done boxes below are kept for the tasks done before 2026-10-18 and are no longer ticked; `terminal-split.md` has no boxes; §5, §6 and §10 rows are ticked by the phase review, in one go, after it checks them.
+- **Where progress is ticked.** The Done column of this table (with date, lane and commit) and the task's box in `redesign/terminal-split.md` (each lane's checklist), in the same commit. The task headings' Done boxes below are kept for the tasks done before 2026-10-18 and are no longer ticked; §5, §6 and §10 rows are ticked by the phase review, in one go, after it checks them.
 
 **Size:** L means about two sessions' worth of work and is costed twice. Costs are the table's per-task averages; tick **Done** when the task is finished. In the "Real cost / changes" column write the date, lane and commit, plus one short phrase only if something changed from the plan (a gap raised, a pick moved). The real `/cost` is optional.
 
@@ -1019,7 +1019,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
    - **Once, before delivering:** `npm test`, `node scripts/check-veil-styles.mjs`, `node scripts/check-old-names.mjs`, `npm run build`, and `npm run test:emulator` only if the task changed `src/lib/data/`, `src/lib/collections/`, `firestore.rules` or `src/lib/server/`.
    - **After merging `redesign` into the lane:** if only bookkeeping files conflicted (or nothing did), `npx tsc --noEmit` and `npm test` are enough. If code conflicted, rerun this task's own e2e specs as well.
    - Don't rerun a check that passed when nothing it covers has changed since. The whole e2e suite (`npm run test:e2e` with no arguments) runs at the phase review, not per task.
-6. Tick the task's **Done** box in the §7.0 table (date, lane and commit; the real `/cost` only if you have it). Nowhere else: not the heading below, not `terminal-split.md`, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign`. When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
+6. Tick the task's **Done** box in the §7.0 table (date, lane and commit; the real `/cost` only if you have it). Tick its box in `redesign/terminal-split.md` in the same commit. Nowhere else: not the heading below, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign`. When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 

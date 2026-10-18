@@ -2,6 +2,7 @@
 
 Newest first. One entry per change: the date, then one to three lines on what changed and why, naming the main files. Test counts, check lists and design detail belong in the commit body, not here.
 
+- 2026-10-18: `redesign/terminal-split.md` has tick boxes again, so each lane checks off its own list; a task is ticked there and in the §7.0 Done column in the same commit (`CLAUDE.md`, plan §7.0 rules and step 6).
 - 2026-10-18: Task 4.5, Bookings (lane t1, `7ccf468` and `bb0a39e`): `/new/budget/bookings` (`src/veil/screens/bookings/`) has the committed line, a search over names, categories, parts, next steps and funders (`?q=` starts it, as Who pays links), the nine orders (`orderBookings` in `src/lib/model/order.ts`; Difference from estimate starts biggest first per §6.8, where the prototype starts it smallest first), and 100 at a time with the parts collapsed.
 - 2026-10-18: Matched the shared ledger, parts and search styles to `bookings.html` (off-scale 3, 6, 10 and 18px values are now composed from tokens, not rounded), and set a booking's status figure in tabular numerals (`bookingStatus` returns `amount`).
 - 2026-10-18: Task 4.18, document tables and formulas (lane t4, 1a354b9): totals stay stored as the cell text ("=SUM(B2:B)") and are drawn gold, errors named in rose (`src/veil/editor/totals.ts`); Table opens an 8 × 8 size grid (`pops.tsx`); `table-bar.tsx` has the formula bar, rows, columns, Add 1–50, sort, width (stored `colwidth`), title row and Remove table with undo (`table-ops.ts`).
