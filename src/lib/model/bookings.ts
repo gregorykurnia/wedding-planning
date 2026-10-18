@@ -174,7 +174,7 @@ export function bookingFromVenue(v: VenueRecord): Booking {
     estimate: typeof v.budgetEstimate === "number" ? rupiah(v.budgetEstimate) : null,
     bookedOn: v.booking?.on ?? null,
     from: v.booking?.from ?? null,
-    direct: false,
+    direct: v.booking?.from === "direct",
   };
 }
 

@@ -1,0 +1,16 @@
+/* The venue sheet (guide §5.15), ported from the prototype's inline spacing in
+   venues.html. Tokens only; off-scale values take the nearest token. */
+
+/* The stage chips sit centred under the title, with room before the first field. */
+.stage {
+  justify-content: center;
+  margin: var(--space-4) 0 var(--space-6);
+}
+
+/* "Files", above the tiles. */
+.section {
+  margin: var(--space-7) 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-row-lg);
+  font-weight: var(--weight-display);
+}

@@ -98,6 +98,9 @@ export const isFilteringVendors = (f: VendorFilter) => !!(f.query.trim() || f.ca
 /** A booking added straight from "Add a booking" has no place in the Vendors list (§2.7). */
 export const isListedVendor = (v: { booking?: { from: string } | null }) => v.booking?.from !== "direct";
 
+/** A booked venue that was removed from Venues stays in the budget as a direct booking and has no place in the list (N10). */
+export const isListedVenue = isListedVendor;
+
 export function filterVendors<
   T extends VendorSearchFields & { category: string; starred: boolean },
 >(vendors: readonly T[], f: VendorFilter): T[] {

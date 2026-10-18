@@ -9,6 +9,7 @@ import { DueRow } from "@/veil/parts/rows/due-row";
 import { FileRow, FolderRow, type FileRowData } from "@/veil/parts/rows/file-row";
 import { Ledger } from "@/veil/parts/rows/ledger";
 import { VendorRow, type VendorRowData } from "@/veil/parts/rows/vendor-row";
+import { VenueRow, type VenueRowData } from "@/veil/parts/rows/venue-row";
 import { WhatIfEntry } from "@/veil/parts/rows/what-if-entry";
 import { NO_TEXT } from "@/veil/parts/rows/ledger-text";
 import { FlashProvider } from "@/veil/shell/flash";
@@ -261,5 +262,46 @@ describe("files and folders", () => {
     expect(html).toContain("6 folders, 12 files");
     expect(html.match(/<svg/g)).toHaveLength(2);
     expect(markup(<FolderRow folder={{ id: "fo3", name: "Empty", folders: 0, files: 0 }} href="/x" />)).toContain("Empty");
+  });
+});
+
+describe("venue rows", () => {
+  const venue: VenueRowData = {
+    id: "ven1",
+    name: "Puri Taman Sari",
+    cost: 180_000_000,
+    location: "Seminyak, Bali",
+    capacity: 200,
+    fileCount: 2,
+    notes: "Ask about the sound limit. https://puri.example/rules",
+  };
+
+  it("shows the cost, the place, the capacity, the files and the note with its link", () => {
+    const html = markup(<VenueRow venue={venue} href="/new/vendors/venues?venue=ven1" stage={<i>thread</i>} onOpen={() => {}} />);
+    expect(html).toMatch(/<a[^>]*href="\/new\/vendors\/venues\?venue=ven1"[^>]*>Puri Taman Sari<\/a>/);
+    expect(html).toContain("Rp 180.000.000");
+    expect(html).toContain("Seminyak, Bali");
+    expect(html).toContain("Up to 200 guests");
+    expect(html).toContain("<i>thread</i>");
+    expect(html).toContain("2 files");
+    expect(html).toMatch(/<a[^>]*href="https:\/\/puri\.example\/rules"[^>]*>/);
+  });
+
+  it("says No estimate, No location and Capacity unknown, and shows no files or note when there are none", () => {
+    const bare: VenueRowData = { id: "ven2", name: "Bukit", cost: null, location: "", capacity: null, fileCount: 0, notes: "" };
+    const html = markup(<VenueRow venue={bare} href="/new/vendors/venues?venue=ven2" onOpen={() => {}} />);
+    expect(html).toContain("No estimate");
+    expect(html).toContain("No location");
+    expect(html).toContain("Capacity unknown");
+    expect(html).not.toContain("file");
+  });
+
+  it("strikes a ruled-out venue and cuts a long note at 140 characters", () => {
+    const html = markup(
+      <VenueRow venue={{ ...venue, ruledOut: true, notes: "n".repeat(300) }} href="/x" onOpen={() => {}} />,
+    );
+    expect(html).toMatch(/<li class="[^"]*ruled[^"]*"/);
+    expect(html).toContain(`${"n".repeat(138)}…`);
+    expect(html).not.toContain("n".repeat(139));
   });
 });

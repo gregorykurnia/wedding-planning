@@ -175,6 +175,11 @@
   font-size: var(--text-label);
 }
 
+/* A venue's note takes its own line in the foot, under the stage and the files. */
+.rowNote {
+  flex-basis: 100%;
+}
+
 /* A ruled-out name is greyed and struck through (guide §4.7). */
 .ruled .vname {
   color: var(--color-text-muted);

@@ -1,0 +1,7 @@
+/* The Venues screen (guide §5.15), ported from the inline spacing of venues.html.
+   Tokens only; off-scale values take the nearest token. */
+
+/* The list starts 12px under the count line (the prototype's inline margin), 4px more than a bare ledger. */
+.list {
+  padding-top: var(--space-1);
+}
