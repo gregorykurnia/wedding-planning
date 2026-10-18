@@ -753,9 +753,9 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [ ] |
 | S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [ ] |
 | R1 rich documents | A document | `EditorToolbar`, pops | Tiptap StarterKit, TextStyleKit; `editor/marks.ts` | 4.17 | [x] |
-| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [ ] |
-| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [ ] |
-| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [ ] |
+| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [x] |
+| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [x] |
+| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [x] |
 | R5 autosave state | A document | `DocSaveState` | `editor/use-doc-autosave.ts` (0.9s, failure kept, flush on leave) | 4.17 | [x] |
 | R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [ ] |
 | R7 delete for good | A document | `ConfirmSheet` (Delete for good), message | `deleteNote` (no undo) | 4.17 | [x] |
@@ -809,7 +809,7 @@ Every place in the current code that produces something visible, from a full swe
 | `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [ ] |
 | `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [ ] |
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [x] |
-| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [ ] |
+| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [x] |
 | **Deletes with no confirmation today** | | |
 | vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [ ] |
 | shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [ ] |
@@ -841,11 +841,11 @@ Every place in the current code that produces something visible, from a full swe
 | file-type icons `files/page.tsx:111-123` | file type in gold italic, envelope folders (§4.7, §4.20) | [ ] |
 | **Editor** | | |
 | toolbar `rich-text-editor.tsx:288-447`; style, font, size, colour inputs | `EditorToolbar`, pops (§4.24) | [x] |
-| table presets 2×2–6×5 | 8 × 8 size picker | [ ] |
-| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [ ] |
-| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [ ] |
+| table presets 2×2–6×5 | 8 × 8 size picker | [x] |
+| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [x] |
+| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [x] |
 | save status "Saving…/Unsaved changes/Saved/Retry save" `:276-285` | `DocSaveState` (§4.24) | [x] |
-| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [ ] |
+| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [x] |
 | stored marks: fonts `""`, Inter, Georgia, Arial, Courier New; sizes 14/16/20/28px; any hex colour and highlight | read unchanged; normalised per §9.2 Q10 | [x] |
 | legacy plain-text notes (`notes.ts:21-45`) | same conversion, kept in the data layer | [x] |
 | **Exports and output** | | |
@@ -965,7 +965,7 @@ Every phase is built on the `redesign` branch, ships to a Vercel preview, keeps 
 | 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
 | 4 | 4.16 Documents | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays data; reference `documents.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
 | 4 | 4.17 Document editor core (L) | **Opus 5.5 High** | $3.64 | **Risk: lost writing or corrupted documents.** Autosave, flush on leave, failure handling and normalising stored Tiptap JSON | a90b7f8; 31 model tests, 9 emulator tests, 10 emulator and 2 demo e2e tests; owner spot-check of five documents on a preview still open | [x] |
-| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | | [ ] |
+| 4 | 4.18 Document tables and formulas (L) | Opus 5.5 Medium | $2.68 | Tiptap table commands with no exact reference; sorting moves content, but editor undo catches mistakes | 1a354b9; 11 model tests, 4 emulator e2e (the whole document spec, 14 emulator and 2 demo, passes); screenshot comparison with `doc.html` still open | [x] |
 | 4 | 4.19 Files (L) | Sonnet 5.5 High | $1.76 | Folders, search, details, move | | [ ] |
 | 4 | 4.20 Schedule agenda and event sheet | Sonnet 5.5 High | $0.88 | Sheet with kinds, times and reminders | ef903b5; 19 model, 16 emulator and 3 demo e2e tests | [x] |
 | 4 | 4.21 Month | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | The calendar from 3.11 on a screen; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
@@ -1317,7 +1317,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Done when:** existing production documents open on the preview and look complete (owner spot-check of five documents), a document typed offline is never lost, and e2e covers save, fail, retry and leave.
 
 #### Task 4.18: Document tables and formulas (L) · Opus 5.5 Medium
-- [ ] **Done** (date · commit · real cost)
+- [x] **Done** (2026-10-18 · lane t4, commit 1a354b9). Totals stay stored as the cell text and are drawn by decorations (`editor/totals.ts`); the table bar is `editor/table-bar.tsx`. Still open: a side-by-side screenshot comparison with `doc.html?state=table`, `?state=formula` and `?id=scratch&state=formula-error`; the §5 table state rows wait for Phase 8.
 - **Guide:** §4.24 (table bar, formula bar, cells), §6.10. **Prototype:** `doc.html?state=table`, `?state=formula`, `doc.html?id=scratch&state=formula-error`.
 - **Do:** 8 × 8 size picker, table bar shown only in a table, rows and columns either side, add 1–50, remove, title row, narrower and wider (stored `colwidth`), sort (`sortTableRows` from 1.7, totals and title row fixed), remove table with undo; total cells drawn in gold with errors named; the formula bar with the cell address; Tab between cells; tables scroll sideways (720px minimum).
 
