@@ -12,8 +12,9 @@ export interface PackageLine {
 /**
  * The packages on a finalist's card (guide §4.8): a name, a dotted leader and the
  * price. The one we're leaning towards is gold italic, as on the vendor screens.
+ * `more` is the closing line for packages the card doesn't list: "and 26 more packages".
  */
-export function PackageLines({ packages }: { packages: PackageLine[] }) {
+export function PackageLines({ packages, more }: { packages: PackageLine[]; more?: string | null }) {
   return (
     <ul className={styles.pkgs}>
       {packages.map((pkg) => (
@@ -26,6 +27,7 @@ export function PackageLines({ packages }: { packages: PackageLine[] }) {
           <span className={`${styles.pv} num`}>{rp(pkg.price)}</span>
         </li>
       ))}
+      {more ? <li className={styles.more}>{more}</li> : null}
     </ul>
   );
 }

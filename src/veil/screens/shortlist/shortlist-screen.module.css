@@ -1,0 +1,54 @@
+/* The Shortlist screen (guide §5.13), ported from the prototype's .finalists, .fcard and .cat-h.
+   Tokens only; off-scale values take the nearest. */
+
+/* A category heading with its count at the far end: "Photography   2 finalists". */
+.catHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: var(--space-8) 0 var(--space-hair);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+  overflow-wrap: anywhere;
+}
+
+.catCount {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Cards in a grid, 280px or wider; a phone gets one to a row. */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+/* Without headings the grid starts 28px under the order row. */
+.flat {
+  margin-top: var(--space-7);
+}
+
+.tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-3);
+}
+
+.more {
+  text-align: center;
+  margin-top: var(--space-7);
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

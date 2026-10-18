@@ -1,13 +1,22 @@
+"use client";
+
+import { useMemo } from "react";
 import { collection, doc, getDocs, limit, query, where } from "firebase/firestore";
+import { useCollection } from "@/lib/use-collection";
 import type { IsoDate } from "@/lib/model/bookings";
+import { finalistListItem, type FinalistListItem } from "@/lib/model/shortlist";
 import { logActivity } from "./activity";
 import { bookingMark, vendorFromDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
 import { finalistFromDoc, MAIN_PACKAGE_ID, type FinalistDoc, type Package } from "./adapters/shortlist";
 import { requireDb } from "./db";
+import { mergeStatus, readOf } from "./read";
+import { useSession } from "./session";
+import type { Loaded } from "./settings";
 import { removeWithUndo, type Undoable } from "./undo";
-import { newId, stamp, transact, type WriteOptions } from "./write";
+import { create, newId, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
+import { useCategories, type CategoriesData } from "./vendors";
 
 /**
  * Shortlist writes (guide §5.12–§5.14, F17–F21, F24). A finalist copied from a
@@ -19,6 +28,85 @@ const SHORTLIST = "shortlist";
 const VENDORS = "vendors";
 
 const makeId = () => crypto.randomUUID();
+
+/** The shortlist (guide §5.13): every finalist as its card reads it. */
+export function useFinalists(): Loaded<FinalistListItem[]> {
+  const { connection } = useSession();
+  // No ordering: a document without `createdAt` must not drop out of the list.
+  const finalists = useCollection<FinalistDoc>(SHORTLIST, finalistFromDoc, []);
+  const items = useMemo(() => finalists.data.map(finalistListItem), [finalists.data]);
+  return readOf(connection, [finalists], items);
+}
+
+/** The finalists and the category list as one read, for the screen and its add sheet. */
+export function useFinalistsAndCategories(): Loaded<[FinalistListItem[], CategoriesData]> {
+  const finalists = useFinalists();
+  const categories = useCategories();
+  const status = mergeStatus(finalists, categories);
+  const data = useMemo<[FinalistListItem[], CategoriesData] | null>(
+    () => (finalists.data && categories.data ? [finalists.data, categories.data] : null),
+    [finalists.data, categories.data],
+  );
+  return { status, data: status === "demo" ? null : data };
+}
+
+export interface NewFinalist {
+  /** Made when the sheet's form began, so Try again writes the same record. */
+  id: string;
+  name: string;
+  category: string;
+  /** The first package's name and price; either may be left out, and with both left out there is no package yet. */
+  packageName: string;
+  price: number | null;
+}
+
+/** Stops an undo of an add from deleting a finalist that has grown since (a package, a note, a file, a booking). */
+function untouched(data: Record<string, unknown>) {
+  const filled = (v: unknown) => (Array.isArray(v) && v.length > 0) || (typeof v === "string" && v.trim() !== "");
+  if (data.movedTo || filled(data.subEntries) || filled(data.files) || filled(data.notes)) {
+    throw new WriteError("changed", "That finalist has changed since it was added");
+  }
+}
+
+/**
+ * "Add a finalist" (guide §5.13, F21): straight onto the shortlist, without a
+ * vendor first, so there is no `sourceVendorId`. The first package is the
+ * finalist's own price and description, as a copy from a vendor stores its main
+ * one. Undo removes it again, unless it has grown meanwhile.
+ */
+export async function addFinalist(input: NewFinalist, opts: WriteOptions = {}): Promise<Undoable> {
+  const { id } = input;
+  const name = input.name.trim();
+  const packageName = input.packageName.trim();
+  const hasPackage = packageName !== "" || (input.price ?? 0) > 0;
+  await create(
+    SHORTLIST,
+    {
+      name,
+      type: input.category,
+      contactName: "",
+      contactPhone: "",
+      price: input.price ?? 0,
+      priceDescription: hasPackage ? packageName || "Package" : "",
+      bridestoryReviewers: null,
+      igFollowers: null,
+      nextAction: "",
+      notes: "",
+      files: [],
+      subEntries: [],
+      sourceVendorId: null,
+      preferredPackageId: MAIN_PACKAGE_ID,
+    },
+    { ...opts, id },
+  );
+  void logActivity("finalist.added", { name }, { kind: "finalist", id }, opts);
+  return {
+    undo: async () => {
+      await removeWithUndo(SHORTLIST, id, { ...opts, guard: untouched });
+      void logActivity("finalist.removed", { name }, { kind: "finalist", id }, opts);
+    },
+  };
+}
 
 /**
  * Copy to the shortlist. The price option we're leaning towards (or the

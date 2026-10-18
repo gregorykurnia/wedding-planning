@@ -201,4 +201,10 @@ describe("PackageLines", () => {
     expect(html).toContain("Rp 26.500.000");
     expect(count(html, new RegExp(packageStyles.preferred, "g"))).toBe(1);
   });
+
+  it("closes with the line for the packages it doesn't list", () => {
+    const one = [{ id: "a", name: "Half day", price: 18_000_000 }];
+    expect(markup(<PackageLines packages={one} more="and 26 more packages" />)).toContain("and 26 more packages");
+    expect(markup(<PackageLines packages={one} more={null} />)).not.toContain("more package");
+  });
 });

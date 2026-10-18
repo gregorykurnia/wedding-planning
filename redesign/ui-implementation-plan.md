@@ -962,7 +962,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.10 What-if items | Sonnet 5.5 High | $0.88 | Sheet with split parts | | [ ] |
 | 4 | 4.11 Vendors | Sonnet 5.5 High | $0.88 | Two sheets, categories, export | a8f26ea; 16 + 9 model tests, 9 emulator tests, 11 emulator e2e tests; real cost to log from `/cost` | [x] |
 | 4 | 4.12 A vendor | Sonnet 5.5 High | $0.88 | Stage creates a booking, price options, copy to shortlist | 2026-10-17 (lane t2); 14 model tests, 11 emulator tests, 14 emulator e2e tests; gap G24/N24; real cost to log from `/cost` | [x] |
-| 4 | 4.13 Shortlist | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; reference `shortlist.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
+| 4 | 4.13 Shortlist | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays model data; reference `shortlist.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | 2026-10-18 · lane t2; 19 model tests, 6 emulator tests, 9 emulator e2e tests, 1 demo e2e test; compared with `shortlist.html` at 1440px by screenshot (card geometry within 1–2px; the 390px prototype screenshot timed out, so the phone layout is covered by the prototype's `max-width: 760px` rule and an e2e test); real cost to log from `/cost` | [x] |
 | 4 | 4.14 A finalist | Sonnet 5.5 High | $0.88 | Packages, book it, move into vendors | | [ ] |
 | 4 | 4.15 Venues | Sonnet 5.5 High | $0.88 | Venue sheet with stage and files | | [ ] |
 | 4 | 4.16 Documents | Sonnet 5.5 High (was Haiku 5.5 Max) | $0.88 | Displays data; reference `documents.html`; Haiku's calibration build wasn't as good, so back to Sonnet 5.5 High (2026-10-18) | | [ ] |
