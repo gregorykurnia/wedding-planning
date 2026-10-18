@@ -974,7 +974,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.22 Tasks | Sonnet 5.5 High | $0.88 | Steps, finish and reopen, delete with undo | | [ ] |
 | 4 | 4.23 Wedding items (L) | Sonnet 5.5 High | $1.76 | The densest screen: drag, filters, temporary sort, add several | | [ ] |
 | 4 | 4.24 Guests | Sonnet 5.5 High | $0.88 | Guest sheet, RSVP switch, headcounts | | [ ] |
-| 4 | 4.25 Wedding settings | Sonnet 5.5 High | $0.88 | Settings fields, accounts, notifications | 2026-10-18 · lane t2; compared with `settings.html` at 1440px and 390px by screenshot (demonstration mode); G28 is new | [x] |
+| 4 | 4.25 Wedding settings | Sonnet 5.5 High | $0.88 | Settings fields, accounts, notifications | 2026-10-18 · lane t2, commit c734798; compared with `settings.html` at 1440px and 390px by screenshot (demonstration mode); G28 is new | [x] |
 | 4 | Review | Opus 5.5 Medium | $1.34 | | To check: 4.3, 4.21 and 4.5 were first built on Haiku 5.5 Max, so look for drift from the prototype; 4.5 changed four shared spacing values to `calc()` from tokens (part lines, search row, toolbar margin, entry padding and phone gap), which also moves the vendor and what-if rows, so recheck those screens; 4.18's screenshot check against `doc.html` (table, formula, formula error) is still open; run the whole e2e suite | [ ] |
 | 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | | [ ] |
 | 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | | [ ] |
