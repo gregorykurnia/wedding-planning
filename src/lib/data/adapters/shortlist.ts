@@ -9,6 +9,8 @@ export interface Package {
   name: string;
   price: number;
   description: string;
+  /** What's included, in the package's own words (`includes`, or the old screens' description when it isn't the name). */
+  includes: string;
   reviewers: number | null;
   igFollowers: number | null;
   step: string;
@@ -44,6 +46,7 @@ export function finalistFromDoc(id: string, data: Record<string, unknown>): Fina
     name: str(data.priceDescription),
     price: num(data.price),
     description: str(data.priceDescription),
+    includes: str(data.includes),
     reviewers: numOrNull(data.bridestoryReviewers),
     igFollowers: numOrNull(data.igFollowers),
     step: str(data.nextAction),
@@ -56,6 +59,8 @@ export function finalistFromDoc(id: string, data: Record<string, unknown>): Fina
       name: str(p.name),
       price: num(p.price),
       description: str(p.priceDescription),
+      // A package the old screens made has its words in `priceDescription`; when they differ from the name they read as what's included.
+      includes: str(p.includes) || (str(p.priceDescription).trim() !== str(p.name).trim() ? str(p.priceDescription) : ""),
       reviewers: numOrNull(p.bridestoryReviewers),
       igFollowers: numOrNull(p.igFollowers),
       step: str(p.nextAction),

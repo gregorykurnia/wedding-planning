@@ -18,6 +18,7 @@ export type ActivityKind =
   | "vendor.removed"
   | "vendor.booked"
   | "finalist.added"
+  | "finalist.removed"
   | "finalist.booked"
   | "venue.added"
   | "venue.booked"

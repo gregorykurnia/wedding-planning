@@ -55,6 +55,12 @@
   overflow-wrap: anywhere;
 }
 
+/* Notes someone wrote on the option: ink, not muted, and their line breaks kept. */
+.written {
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
 .acts {
   display: flex;
   flex-wrap: wrap;

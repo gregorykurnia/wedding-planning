@@ -41,3 +41,7 @@
   font-weight: var(--weight-display);
   color: var(--accent-gold-text);
 }
+
+.pkgs .more {
+  color: var(--color-text-muted);
+}

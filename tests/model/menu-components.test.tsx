@@ -30,6 +30,34 @@ const part = (over: Partial<Part> & Pick<Part, "id" | "name">): Part => ({
   ...over,
 });
 
+describe("MenuCardList: a second muted line and written notes", () => {
+  it("draws the meta line and the notes under what's included, with the notes' addresses as links", () => {
+    const html = markup(
+      <MenuCardList
+        options={[
+          {
+            id: "k1",
+            name: "Gold",
+            price: 62_500_000,
+            includes: "Arch and aisle flowers",
+            meta: "120 reviews. Next: Send the quote",
+            notes: "Ask about the arch https://example.com/arch",
+          },
+        ]}
+      />,
+    );
+    expect(html).toContain("Arch and aisle flowers");
+    expect(html).toContain("120 reviews. Next: Send the quote");
+    expect(html).toContain('href="https://example.com/arch"');
+    expect(html).toContain("example.com/arch");
+  });
+
+  it("draws neither line when there is nothing to say", () => {
+    const html = markup(<MenuCardList options={[{ id: "k1", name: "Gold", price: 1, meta: "", notes: "" }]} />);
+    expect(count(html, /<p[ >]/g)).toBe(0);
+  });
+});
+
 describe("PartLines", () => {
   it("draws each line as a name, a decorative leader and a value", () => {
     const html = markup(
@@ -200,5 +228,11 @@ describe("PackageLines", () => {
     );
     expect(html).toContain("Rp 26.500.000");
     expect(count(html, new RegExp(packageStyles.preferred, "g"))).toBe(1);
+  });
+
+  it("closes with the line for the packages it doesn't list", () => {
+    const one = [{ id: "a", name: "Half day", price: 18_000_000 }];
+    expect(markup(<PackageLines packages={one} more="and 26 more packages" />)).toContain("and 26 more packages");
+    expect(markup(<PackageLines packages={one} more={null} />)).not.toContain("more package");
   });
 });

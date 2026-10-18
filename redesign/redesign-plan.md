@@ -402,9 +402,9 @@ Anything without a design counterpart goes to §9.1. It is **never** restyled fr
 - **Shown up front:** a short "Who builds what" summary sits right after §1 (above the architecture), with the tier list, the number of tasks per model and an estimated total cost. The full §7.0 stays in §7.
 - **A tier list** that maps each kind of work in this project to a row of the global table. Risky or data-losing work (data layer, sync, auth, the switch-over) → Opus 5.5 High. Planning-grade judgment with no exact reference → Opus 5.5 Medium. UI built from a prototype screen that needs judgment → Sonnet 5.5 High. Straight porting of prototype markup or styles, tokens, scripts and scans → Haiku 5.5 Max, or xHigh/High for the simplest. Never Opus Low or Sonnet Medium.
 - **A table with one row per task:** `Phase | Task | Model · effort | Est. cost | Why | Done`. The "why" names the reference that lets a cheaper row do the task, or the specific risk that rules the cheaper row out. Every Opus 5.5 High row must name a risk.
-- **A done box for every task:** the §7.0 table ends with a `Done` checkbox column, and every task heading in §7 is followed by `- [ ] Done (date · commit · real cost)`. Both are ticked when the task is finished (see Step 7, Track progress).
+- **A done box for every task:** the §7.0 table ends with a `Done` checkbox column, and every task heading in §7 is followed by a Done box (no longer ticked since 2026-10-18; §7.0 and `terminal-split.md` are). Both are ticked when the task is finished (see Step 7, Track progress).
 - **Every task heading in §7 repeats its pick** (for example `Task 3.4: Booking card · Haiku 5.5 Max`), so the implementer sees it without going back to the table.
-- **A calibration trial:** build one middle-tier task twice, with the picked model and the next cheaper row. Check both against the prototype (real `/cost` figures are optional). Keep the cheaper one if it's just as good.
+- **A calibration trial:** build one middle-tier task twice, with the picked model and the next cheaper row. Check both against the prototype. Keep the cheaper one if it's just as good.
 - **An escalation rule:** move a task up one row the first time a cheaper model gets it wrong twice. **A de-escalation rule:** when a row passes three similar tasks in a row, try the next cheaper row on the next similar task. Log every change in the §7.0 table.
 - **End-of-phase review:** a fresh session reviews the phase's diff against the plan and the prototype before the phase counts as done. Use Opus 5.5 Medium, or Opus 5.5 High for Phase 1 and Phase 7.
 - **One task per session**, reading only that task's plan section, the matching design-guide section, and the matching prototype file. This keeps a cheaper model from reading the old code and copying old patterns.
@@ -434,7 +434,7 @@ You approve the plan before Step 7.
 - **Tests follow the design:** tests are a checklist of *behaviours*. Rewrite their steps and selectors, and never bend the design to fit an old test.
 - **Design gaps:** stop, add them to §9.1, and run the design-gap loop. Never fill a gap from the old app.
 - **Before each commit:** a syntax or type check on changed files, the relevant tests, and the old-names check once it exists.
-- **Track progress after every task:** tick the task's **Done** box in the §7.0 table only (date, lane and commit; the real cost is optional). The phase review ticks the phase's rows in §5, §6 and §10 after checking them, and then the phase in the checklist below.
+- **Track progress after every task:** tick the task's **Done** box in the §7.0 table (date, lane and commit) and its box in `redesign/terminal-split.md`. The phase review ticks the phase's rows in §5, §6 and §10 after checking them, and then the phase in the checklist below.
 - **After merge:** update the project's `CLAUDE.md` so it describes the new UI.
 
 ---
@@ -887,7 +887,7 @@ After each finished piece of work: `git add -A && git commit -m "<what changed>"
 - At the start of each redesign session, check the model against the plan's "Picks per step" (or §7.0 in the implementation plan during the rebuild), using the table in `~/.claude/CLAUDE.md`. If the current model is lower, say so and suggest switching.
 - When the owner says **"Import the approved design"**: run `redesign/studio.sh import`, confirm `redesign/design/` arrived, tick the step it belongs to (5b, or the matching rows in `needs.md` and §9.1), and offer the next step.
 - Rebuild (Step 7): work only on the `redesign` branch, one task per session, reading only that task's plan section, design-guide section and prototype file. Never copy markup, CSS, names or wording from the old UI.
-- After every rebuild task: tick its **Done** box in the implementation plan's §7.0 table only (date, lane and commit; the real `/cost` is optional). The phase review ticks §5, §6 and §10 and the phase in `redesign/redesign-plan.md`'s checklist.
+- After every rebuild task: tick its **Done** box in the implementation plan's §7.0 table (date, lane and commit) and its box in `redesign/terminal-split.md`. The phase review ticks §5, §6 and §10 and the phase in `redesign/redesign-plan.md`'s checklist.
 - Design gaps: add them to §9.1 of the implementation plan, then write them as needs in `redesign/handoff/needs.md` (the design-gap loop). Never fill a gap from the old app.
 ```
 

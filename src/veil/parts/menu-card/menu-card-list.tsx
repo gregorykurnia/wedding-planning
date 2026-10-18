@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { rp } from "@/lib/model/format";
 import { TextLink } from "@/veil/parts/actions/text-link";
+import { LinkedText } from "@/veil/parts/fields/notes";
 import styles from "./menu-card-list.module.css";
 
 export interface MenuOption {
@@ -10,6 +11,10 @@ export interface MenuOption {
   price?: number | null;
   /** What's included, under the name. */
   includes?: string | null;
+  /** A second muted line: "120 reviews. Next: Send the quote". */
+  meta?: string | null;
+  /** Written notes in ink under it, their web addresses as links. */
+  notes?: string | null;
   /** The option the couple lean towards. It says so instead of offering the action. */
   preferred?: boolean;
   /** Muted words at the end of the line, in the price's place: "Ours, 3 vendors". */
@@ -60,6 +65,12 @@ export function MenuCardList({ options, onLean, onEdit, onRemove }: MenuCardList
             {option.includes ? (
               <p className={styles.inc} dir="auto">
                 {option.includes}
+              </p>
+            ) : null}
+            {option.meta ? <p className={styles.inc}>{option.meta}</p> : null}
+            {option.notes ? (
+              <p className={`${styles.inc} ${styles.written}`} dir="auto">
+                <LinkedText text={option.notes} />
               </p>
             ) : null}
             {hasActions ? (
