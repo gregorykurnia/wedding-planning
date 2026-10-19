@@ -9,6 +9,9 @@ export const addedToast = (name: string) => `Added ${name} to the shortlist`;
 /** The flag on a finalist that became a booking. */
 export const BOOKED_FLAG = "Now a booking";
 
+/** Where a card's packages would be, for a finalist with none yet (guide §5.13). */
+export const NO_PACKAGES_CARD = "No packages yet";
+
 export const addSheet = {
   title: "Add a finalist",
   sub: "Straight onto the shortlist, without adding a vendor first.",

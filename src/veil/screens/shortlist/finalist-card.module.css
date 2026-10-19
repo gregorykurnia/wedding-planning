@@ -49,6 +49,11 @@
   color: var(--color-text-muted);
 }
 
+/* A card with no packages yet says so where they would be (guide §5.13). */
+.none {
+  margin: var(--space-2) 0;
+}
+
 /* The foot sits at the bottom of the card, whatever the cards beside it hold. */
 .step {
   margin-top: auto;

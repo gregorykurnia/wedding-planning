@@ -13,13 +13,13 @@ import { PackageLines } from "@/veil/parts/menu-card/package-lines";
 import { veilHref } from "@/veil/href";
 import { useFlash } from "@/veil/shell/flash";
 import styles from "./finalist-card.module.css";
-import { BOOKED_FLAG } from "./shortlist-text";
+import { BOOKED_FLAG, NO_PACKAGES_CARD } from "./shortlist-text";
 
 /**
  * A finalist on the shortlist (guide §5.13): the name, "120 reviews, 12,3k
- * followers", up to four packages with the one we lean towards in gold italic,
- * and "Next: …" at the foot. A finalist that became a booking fades and carries
- * a gold flag. It flashes when the partner adds it.
+ * followers", up to four packages with the one we lean towards in gold italic
+ * (or "No packages yet"), and "Next: …" at the foot. A finalist that became a
+ * booking fades and carries a gold flag. It flashes when the partner adds it.
  */
 export function FinalistCard({ finalist }: { finalist: FinalistListItem }) {
   const flash = useFlash({ kind: "finalist", id: finalist.id });
@@ -38,7 +38,9 @@ export function FinalistCard({ finalist }: { finalist: FinalistListItem }) {
           packages={finalist.packages.slice(0, CARD_PACKAGES)}
           more={morePackages(finalist.packages.length)}
         />
-      ) : null}
+      ) : (
+        <p className={`${styles.meta} ${styles.none}`}>{NO_PACKAGES_CARD}</p>
+      )}
       <p className={styles.step}>
         {step ? (
           <>
