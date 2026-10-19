@@ -30,9 +30,15 @@ export function useWeddingSettings() {
     if (!isFirebaseConfigured || !db) {
       return;
     }
+    // Offline with nothing on the device, the first answer is a cached "no document". That says
+    // nothing has arrived, not that there are no settings: answering it would ask for the names
+    // again and write over the real ones. Wait for the server (metadata changes on, since a
+    // missing document confirmed by the server changes only `fromCache`).
     const unsubscribe = onSnapshot(
       doc(db, COLLECTION, DOC_ID),
+      { includeMetadataChanges: true },
       (snapshot) => {
+        if (snapshot.metadata.fromCache && !snapshot.exists()) return;
         setData(fromDoc(snapshot.data()));
         setLoading(false);
         setError(null);

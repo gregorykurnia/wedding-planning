@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { doc } from "firebase/firestore";
 import { useAccountSlots } from "@/lib/collections/accounts";
 import { useWeddingSettings } from "@/lib/collections/settings";
 import {
@@ -16,7 +17,7 @@ import {
 import { requireDb, uidOf } from "./db";
 import { useSession } from "./session";
 import { patchWithUndo } from "./undo";
-import { remove, set, WriteError, type WriteOptions } from "./write";
+import { remove, set, stamp, transact, WriteError, type WriteOptions } from "./write";
 
 const NO_SETTINGS: WhoSettings = { yourName: "", partnerName: "", partnerEmail: "" };
 
@@ -76,8 +77,21 @@ export function chooseWho(slot: Slot, opts: WriteOptions = {}): Promise<void> {
  */
 export async function startNames(mine: string, theirs: string, opts: WriteOptions = {}): Promise<void> {
   const uid = myUid(opts);
-  await set("settings", "wedding", { yourName: mine.trim(), partnerName: theirs.trim() }, { ...opts, merge: true });
-  await set("settings", "accounts", { slots: { [uid]: "first" } }, { ...opts, merge: true });
+  const yourName = mine.trim();
+  const partnerName = theirs.trim();
+  // One transaction that reads the names first: it fails offline rather than
+  // waiting to land later, and it never writes over names that were already
+  // set (asked by mistake, or by both of you at once). Phase 5 review B1.
+  await transact(async (tx, database) => {
+    const wedding = doc(database, "settings", "wedding");
+    const stored = (await tx.get(wedding)).data();
+    const hasNames = !!(stored?.yourName || stored?.partnerName);
+    if (hasNames && (stored?.yourName !== yourName || stored?.partnerName !== partnerName)) {
+      throw new WriteError("changed", "The names were already set");
+    }
+    if (!hasNames) tx.set(wedding, { yourName, partnerName, ...stamp(database) }, { merge: true });
+    tx.set(doc(database, "settings", "accounts"), { slots: { [uid]: "first" }, ...stamp(database) }, { merge: true });
+  }, opts);
 }
 
 /**

@@ -17,9 +17,12 @@ export function useAccountSlots() {
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) return;
+    // A cached "no document" while offline isn't "nobody is paired" (see `useWeddingSettings`).
     return onSnapshot(
       doc(db, COLLECTION, DOC_ID),
+      { includeMetadataChanges: true },
       (snapshot) => {
+        if (snapshot.metadata.fromCache && !snapshot.exists()) return;
         setSlots(readSlots(snapshot.data()?.slots));
         setLoading(false);
       },

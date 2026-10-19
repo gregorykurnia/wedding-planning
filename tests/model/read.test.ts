@@ -14,6 +14,10 @@ describe("readOf", () => {
     // A read that is still waiting has brought nothing, so there is nothing to keep.
     expect(readOf("offline", [idle, { loading: true, error: null }], 5)).toEqual({ status: "offline", data: null });
   });
+  it("has no data when a read failed before its first answer, so the screen says it didn't load (Phase 5 review)", () => {
+    expect(readOf("online", [idle, { loading: false, error: "denied", arrived: false }], 5)).toEqual({ status: "error", data: null });
+    expect(readOf("online", [{ loading: false, error: "denied", arrived: true }], 5)).toEqual({ status: "error", data: 5 });
+  });
   it("is loading, with no data, until every source has answered", () => {
     expect(readOf("online", [idle, { loading: true, error: null }], 5)).toEqual({ status: "loading", data: null });
     expect(readOf("online", [idle, idle], 5)).toEqual({ status: "ready", data: 5 });

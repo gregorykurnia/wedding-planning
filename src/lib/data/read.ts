@@ -10,13 +10,16 @@ import type { Loaded, ReadStatus } from "./settings";
  */
 export function readOf<T>(
   connection: Connection,
-  sources: readonly { loading: boolean; error: string | null }[],
+  sources: readonly { loading: boolean; error: string | null; arrived?: boolean }[],
   data: T,
 ): Loaded<T> {
   if (connection === "demo") return { status: "demo", data: null };
   // Dev only (`?fault=load`): the read failed before any data arrived.
   if (devFaults().load) return { status: "error", data: null };
-  if (sources.some((s) => s.error)) return { status: "error", data };
+  // A read that failed before its first answer has nothing to show, not an empty list (guide §6.5).
+  if (sources.some((s) => s.error)) {
+    return { status: "error", data: sources.some((s) => s.error && s.arrived === false) ? null : data };
+  }
   if (connection === "offline") return { status: "offline", data: sources.some((s) => s.loading) ? null : data };
   if (sources.some((s) => s.loading)) return { status: "loading", data: null };
   return { status: "ready", data };

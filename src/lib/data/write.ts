@@ -52,31 +52,61 @@ function withTimeout<T>(promise: Promise<T>): Promise<T> {
  * still be on its way, so `retry()` waits for it first and runs the write again
  * only if it failed: a late first delete can't make the retry fail as missing,
  * and a late first append can't land twice.
+ *
+ * A screen's Try again usually runs the whole operation again rather than
+ * `retry()`, so a write that can't simply run twice (a remove: the second try
+ * finds the record gone) passes a `key` naming what it writes. After a timeout
+ * the attempt still on its way is kept under that key for a while, and the
+ * next write with the same key takes its result, or runs again if it failed.
  */
-export function guarded<T>(run: () => Promise<T>): Promise<T> {
+export function guarded<T>(run: () => Promise<T>, key?: string): Promise<T> {
   const fault = devFaults().save;
   if (fault) {
     // Dev only (`?fault=save`): fails before anything is sent, and so does the retry.
     const failure = new WriteError(fault);
-    failure.retry = () => guarded(run);
+    failure.retry = () => guarded(run, key);
     return Promise.reject(failure);
   }
+  const earlier = key === undefined ? undefined : takeLate<T>(key);
   let first: Promise<T>;
-  try {
-    first = run();
-  } catch (err) {
-    first = Promise.reject(err);
+  if (earlier) {
+    first = earlier.catch(() => run());
+  } else {
+    try {
+      first = run();
+    } catch (err) {
+      first = Promise.reject(err);
+    }
   }
-  return attempt(run, first);
+  return attempt(run, first, key);
 }
 
-async function attempt<T>(run: () => Promise<T>, inFlight: Promise<T>): Promise<T> {
+/** How long a timed-out write is kept for the next try of the same write. */
+const LATE_KEPT_MS = 120_000;
+const late = new Map<string, Promise<unknown>>();
+
+function takeLate<T>(key: string): Promise<T> | undefined {
+  const earlier = late.get(key);
+  late.delete(key);
+  return earlier as Promise<T> | undefined;
+}
+
+async function attempt<T>(run: () => Promise<T>, inFlight: Promise<T>, key?: string): Promise<T> {
   try {
     return await withTimeout(inFlight);
   } catch (err) {
     const failure = toWriteError(err);
-    failure.retry = () =>
-      failure.code === "timeout" ? attempt(run, inFlight.catch(() => run())) : guarded(run);
+    if (failure.code === "timeout" && key !== undefined) {
+      late.set(key, inFlight);
+      setTimeout(() => {
+        if (late.get(key) === inFlight) late.delete(key);
+      }, LATE_KEPT_MS);
+    }
+    failure.retry = () => {
+      if (failure.code !== "timeout") return guarded(run, key);
+      if (key !== undefined && late.get(key) === inFlight) late.delete(key);
+      return attempt(run, inFlight.catch(() => run()), key);
+    };
     throw failure;
   }
 }
@@ -145,10 +175,10 @@ export async function remove(
  */
 export async function transact<T>(
   run: (tx: Transaction, database: Firestore) => Promise<T>,
-  opts: WriteOptions = {},
+  opts: WriteOptions & { key?: string } = {},
 ): Promise<T> {
   const database = requireDb(opts.db);
-  return guarded(() => runTransaction(database, (tx) => run(tx, database)));
+  return guarded(() => runTransaction(database, (tx) => run(tx, database)), opts.key);
 }
 
 /**

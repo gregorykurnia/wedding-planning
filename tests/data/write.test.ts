@@ -167,6 +167,46 @@ describe("a write that times out", () => {
     expect(kept).toMatchObject({ name: "Dapur Lestari Catering" });
     expect(await read(bella, "vendors", "v1")).toBeUndefined();
   });
+
+  // Phase 5 review B1: a confirm's Try again runs the whole operation again, not `retry()`.
+  it("gives a remove run again after a timeout the late first try's copy, so its undo still works", async () => {
+    await seedVendor();
+    setWriteTimeout(1);
+    try {
+      await removeWithUndo("vendors", "v1", { db: gregory.db });
+    } catch (err) {
+      expect((err as WriteError).code).toBe("timeout");
+    } finally {
+      setWriteTimeout(null);
+    }
+    await expect.poll(async () => await read(bella, "vendors", "v1"), { timeout: 10_000 }).toBeUndefined();
+
+    const again = await removeWithUndo("vendors", "v1", { db: gregory.db });
+    expect(again.data).toMatchObject({ name: "Dapur Lestari Catering" });
+    await again.undo();
+    expect(await read(bella, "vendors", "v1")).toMatchObject({ name: "Dapur Lestari Catering" });
+  });
+
+  it("gives a part's remove run again after a timeout the late first try's part, so its undo still works", async () => {
+    await seedVendor();
+    setWriteTimeout(1);
+    try {
+      await removeElementWithUndo("vendors", "v1", "subEntries", "p2", { db: gregory.db });
+    } catch (err) {
+      expect((err as WriteError).code).toBe("timeout");
+    } finally {
+      setWriteTimeout(null);
+    }
+    await expect
+      .poll(async () => (await read(bella, "vendors", "v1"))?.subEntries.length, { timeout: 10_000 })
+      .toBe(1);
+
+    const again = await removeElementWithUndo("vendors", "v1", "subEntries", "p2", { db: gregory.db });
+    expect(again.element).toMatchObject({ id: "p2" });
+    await again.undo();
+    const data = await read(bella, "vendors", "v1");
+    expect(data?.subEntries.map((s: { id: string }) => s.id)).toEqual(["p1", "p2"]);
+  });
 });
 
 describe("embedded arrays", () => {

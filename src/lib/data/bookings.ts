@@ -356,8 +356,16 @@ export async function recordPayment(
       };
     };
     const parts = withElementIds<Element>(data.subEntries);
-    if (target.partId) {
-      const index = parts.findIndex((p) => p.id === target.partId);
+    // A try that landed is updated where it is now, even if that isn't the target: the partner
+    // may have split the booking before Try again, moving it into a part (Phase 5 review B2).
+    const holds = (holder: Record<string, unknown>) =>
+      withElementIds<Element>(holder.payments).some((p) => p.id === paymentId);
+    const heldIn = parts.findIndex(holds);
+    if (heldIn < 0 && holds(data)) {
+      const changed = recorded(data);
+      if (changed) tx.update(ref, { ...changed, ...stamp(database) });
+    } else if (heldIn >= 0 || target.partId) {
+      const index = heldIn >= 0 ? heldIn : parts.findIndex((p) => p.id === target.partId);
       if (index < 0) throw new WriteError("missing", `part ${target.partId} is gone`);
       const changed = recorded(parts[index]);
       if (!changed) return;

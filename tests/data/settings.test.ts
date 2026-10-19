@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { saveCoupleName, saveWeddingDate } from "@/lib/data/settings";
-import { swapNames } from "@/lib/data/who";
+import { startNames, swapNames } from "@/lib/data/who";
 import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
 
 // Task 4.25: the settings screen's writes, against the emulators (guide §5.3).
@@ -74,5 +74,27 @@ describe("Swap them (N3)", () => {
 
     await done?.undo();
     expect(await slots()).toEqual({ [gregory.uid]: "first", [bella.uid]: "second" });
+  });
+});
+
+// Phase 5 review B1: asked for the names by mistake (offline, the settings not yet read).
+describe("the first sign-in's names", () => {
+  it("writes both names and holds the first place for this account", async () => {
+    await startNames(" Greg ", "Bella", g());
+    expect(await wedding()).toMatchObject({ yourName: "Greg", partnerName: "Bella" });
+    expect(await slots()).toEqual({ [gregory.uid]: "first" });
+  });
+
+  it("never writes over names already set, and leaves the pairing alone", async () => {
+    await setDoc(doc(gregory.db, "settings", "wedding"), { yourName: "Greg", partnerName: "Bella" });
+    await expect(startNames("Bella", "Greg", b())).rejects.toMatchObject({ code: "changed" });
+    expect(await wedding()).toMatchObject({ yourName: "Greg", partnerName: "Bella" });
+    expect(await slots()).toBeUndefined();
+  });
+
+  it("is safe to try again once the first try landed", async () => {
+    await startNames("Greg", "Bella", g());
+    await startNames("Greg", "Bella", g());
+    expect(await wedding()).toMatchObject({ yourName: "Greg", partnerName: "Bella" });
   });
 });

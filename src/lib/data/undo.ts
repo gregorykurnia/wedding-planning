@@ -33,7 +33,8 @@ export async function removeWithUndo(
     opts.guard?.(snap.data());
     tx.delete(ref);
     return snap.data();
-  }, { db: database });
+    // A try after a timeout takes the earlier try's copy if that one landed late (`guarded`).
+  }, { db: database, key: `remove:${collectionName}/${id}` });
   return {
     data,
     undo: () => guarded(() => setDoc(ref, { ...data, ...stamp(database) })),

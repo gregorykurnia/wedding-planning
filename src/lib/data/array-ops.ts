@@ -53,7 +53,7 @@ export async function mutateArray<R>(
   docId: string,
   field: string,
   change: (items: Element[], data: DocumentData) => ArrayChange<R>,
-  opts: WriteOptions = {},
+  opts: WriteOptions & { key?: string } = {},
 ): Promise<R> {
   return transact(async (tx, database) => {
     const ref = doc(database, collectionName, docId);
@@ -132,7 +132,8 @@ export function updateElement<T extends Element>(
 
 /**
  * Removes one element and returns it with its index, so undo can put it back.
- * Returns null if it was already gone (a retried remove).
+ * Returns null if it was already gone. A try after a timeout takes the earlier
+ * try's result if that one landed late, so its undo isn't lost (`guarded`).
  */
 export function removeElement<T extends Element>(
   collectionName: string,
@@ -153,7 +154,7 @@ export function removeElement<T extends Element>(
         result: { element: items[index] as T, index },
       };
     },
-    opts,
+    { ...opts, key: `remove:${collectionName}/${docId}/${field}/${elementId}` },
   );
 }
 

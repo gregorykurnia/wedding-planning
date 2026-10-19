@@ -119,6 +119,20 @@ describe("Try again with a changed amount (P4-S2)", () => {
     expect(data.budgetSpent).toBe(10_000_000);
     expect(data.payments).toEqual([]);
   });
+
+  // Phase 5 review B2: the sheet re-picks the part left to pay (P4-S3), which isn't where the payment went.
+  it("doesn't record it twice when the partner split the booking before Try again", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendor());
+    await recordPayment({ kind: "vendor", id: "v1" }, { amount: 30_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1" });
+    await splitBooking({ kind: "vendor", id: "v1" }, b());
+    const balance = (await read("vendors", "v1")).subEntries[1].id;
+
+    await recordPayment({ kind: "vendor", id: "v1", partId: balance }, { amount: 30_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1" });
+    const data = await read("vendors", "v1");
+    expect(data.subEntries[0]).toMatchObject({ budgetSpent: 30_000_000, payments: [expect.objectContaining({ id: "pay1" })] });
+    expect(data.subEntries[1].budgetSpent ?? 0).toBe(0);
+    expect(data.subEntries[1].payments ?? []).toEqual([]);
+  });
 });
 
 describe("Split right after typing (P4-S5)", () => {

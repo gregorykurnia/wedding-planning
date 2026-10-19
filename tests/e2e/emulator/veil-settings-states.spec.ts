@@ -6,10 +6,9 @@ import { seed } from "../seed";
 // Task 5.7: the Wedding settings' states that no other spec reaches on this screen (guide §5.3, §6.1,
 // N6): a name that didn't save, the reminder states on this computer or phone, and installed on the home
 // screen. The browser's notification permission, the home-screen flag and push support are set in the
-// page, as the Task 5.5 spec does. Loading and offline-before-data are fixme: with the Firestore listener
-// aborted, the SDK answers from its empty cache after about ten seconds, and the app takes that for the
-// settings, so the names prompt appears instead (raised for the Phase 5 review; the read is in
-// src/lib/collections/settings.ts). The app server runs with NEXT_PUBLIC_VEIL_DEV=1 (playwright.config.ts).
+// page, as the Task 5.5 spec does. Also loading and offline-before-data: with the Firestore listener
+// aborted, the SDK answers from its empty cache, which the settings read now ignores, so no names prompt
+// appears (Phase 5 review B1). The app server runs with NEXT_PUBLIC_VEIL_DEV=1 (playwright.config.ts).
 
 const DOCS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -103,7 +102,7 @@ test.describe("Wedding settings states", () => {
     await expect(note).toContainText("They still arrive on your other devices where they’re allowed.");
   });
 
-  test.fixme("while the settings are read, Loading your settings keeps the page busy", async ({ page }) => {
+  test("while the settings are read, Loading your settings keeps the page busy", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
     await page.goto("/new/settings");
@@ -112,7 +111,7 @@ test.describe("Wedding settings states", () => {
     await expect(page.getByLabel("Second name")).toHaveCount(0);
   });
 
-  test.fixme("offline before any data has arrived, the offline message shows and no form does", async ({ page }) => {
+  test("offline before any data has arrived, the offline message shows and no form does", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
     await page.goto("/new/settings?fault=offline");

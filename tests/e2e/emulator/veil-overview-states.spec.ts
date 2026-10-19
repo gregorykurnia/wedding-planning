@@ -6,10 +6,8 @@ import { accountUids, seed } from "../seed";
 
 // Task 5.7: the overview's states that no other spec reaches on this screen (guide §5.2, §6.3, §6.5,
 // §6.6): nothing booked or dated yet, a read that failed (`?fault=load`), and a partner's payment
-// arriving. The loading and offline-before-data states are fixme: with the Firestore listener aborted,
-// the SDK answers from its empty cache after about ten seconds, and the app takes that for the settings,
-// so the screen shows an empty overview and the names prompt (raised for the Phase 5 review; the read is
-// in src/lib/collections/settings.ts). The app server runs with NEXT_PUBLIC_VEIL_DEV=1 (playwright.config.ts).
+// arriving, and the loading and offline-before-data states: with the Firestore listener aborted, the SDK
+// answers from its empty cache, which the settings read now ignores (Phase 5 review B1). The app server runs with NEXT_PUBLIC_VEIL_DEV=1 (playwright.config.ts).
 
 const DOCS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -105,7 +103,7 @@ test.describe("when a read fails, hasn't arrived, or the connection is down", ()
     await expect(failed).toBeVisible({ timeout: COMPILE_TIMEOUT });
   });
 
-  test.fixme("a read that hasn't arrived shows Loading your overview, with the page busy", async ({ page }) => {
+  test("a read that hasn't arrived shows Loading your overview, with the page busy", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
     await page.goto("/new");
@@ -114,7 +112,7 @@ test.describe("when a read fails, hasn't arrived, or the connection is down", ()
     await expect(page.getByRole("heading", { name: "Coming up", level: 2 })).toHaveCount(0);
   });
 
-  test.fixme("offline before any data has arrived, the full offline message shows and never an empty overview", async ({ page }) => {
+  test("offline before any data has arrived, the full offline message shows and never an empty overview", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
     await page.goto("/new?fault=offline");

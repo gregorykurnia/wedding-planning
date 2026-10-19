@@ -30,6 +30,8 @@ export function useCollection<T extends { id: string }>(
   const [loading, setLoading] = useState(isFirebaseConfigured);
   const [error, setError] = useState<string | null>(null);
   const arrived = useRef(false);
+  // For screens: whether any answer has come, so a read that fails before one isn't shown as empty.
+  const [answered, setAnswered] = useState(false);
   const held = useRef(false);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export function useCollection<T extends { id: string }>(
       if (!held.current) return;
       held.current = false;
       arrived.current = true;
+      setAnswered(true);
       setLoading(false);
     };
     window.addEventListener("online", onOnline);
@@ -60,6 +63,7 @@ export function useCollection<T extends { id: string }>(
         }
         held.current = false;
         arrived.current = true;
+        setAnswered(true);
         setData(snapshot.docs.map((d) => fromDoc(d.id, d.data())));
         setLoading(false);
         setError(null);
@@ -77,7 +81,7 @@ export function useCollection<T extends { id: string }>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName]);
 
-  return { data, loading, error };
+  return { data, loading, error, arrived: answered };
 }
 
 export async function addDocument(
