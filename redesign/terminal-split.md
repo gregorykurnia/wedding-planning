@@ -64,7 +64,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | **Review fixes (both lanes finish these before Phase 5; items in `redesign/reviews/triage.md`)** | |
 | [x] 4.F1 Money and bookings (L) · Opus 5.5 Medium | [x] 4.F3 Vendors, rules and scripts · Opus 5.5 Medium |
 | [x] 4.F2 Documents, files and uploads · Opus 5.5 Medium | [x] 4.F4 Schedule, items and guests · Opus 5.5 Medium |
-| — | [ ] 4.F5 Shared sheets and partner news · Opus 5.5 Medium |
+| — | [x] 4.F5 Shared sheets and partner news · Opus 5.5 Medium |
 | **Phase 5: states** | |
 | [ ] 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
 | [ ] 5.2 Budget states (L) · Haiku 5.5 Max | [ ] 5.3 Vendors states · Haiku 5.5 Max |

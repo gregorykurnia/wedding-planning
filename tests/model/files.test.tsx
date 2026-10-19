@@ -9,7 +9,7 @@ import { UploadSheet } from "@/veil/parts/files/upload-sheet";
 
 vi.mock("@/veil/shell/sheet", () => ({
   useSheets: () => ({ open: () => 1, close: () => {} }),
-  useSheet: () => ({ close: () => {}, setBusy: () => {}, titleId: "t" }),
+  useSheet: () => ({ close: () => {}, hold: () => () => {}, titleId: "t" }),
   Sheet: ({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) => (
     <section>
       <h2>{title}</h2>

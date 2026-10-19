@@ -31,7 +31,7 @@ const noop = () => {};
 const sheetStand = {
   close: noop,
   requestClose: noop,
-  setBusy: noop,
+  hold: () => noop,
   setGuard: noop,
   changed: () => false,
   focusFirstField: noop,

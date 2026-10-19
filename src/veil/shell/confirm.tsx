@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { confirmFailure, TRY_AGAIN } from "@/lib/model/confirm-text";
+import { toWriteError } from "@/lib/data/write-error";
+import { confirmFailure, TRY_AGAIN, type ConfirmFailure } from "@/lib/model/confirm-text";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
@@ -42,8 +43,7 @@ function busyLabel(action: string) {
  * under the body, "Nothing was removed." in bold and why. It is an alert, so
  * it is read out when it appears.
  */
-function Failure({ action }: { action: string }) {
-  const failure = confirmFailure(action);
+function Failure({ failure }: { failure: ConfirmFailure }) {
   return (
     <p className={styles.error} role="alert">
       <b>{failure.lead}</b> {failure.reason}
@@ -82,21 +82,21 @@ export function ConfirmSheet({
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
   // Once a try has failed the button asks again. It stays that way through the
   // next try, so the same button keeps focus while it is busy.
-  const [failedOnce, setFailedOnce] = useState(false);
+  const [failure, setFailure] = useState<ConfirmFailure | null>(null);
   const working = useRef(false);
 
   async function go() {
     if (working.current) return;
     working.current = true;
     setState("busy");
-    sheet.setBusy(true);
+    const release = sheet.hold();
     try {
       await run?.();
-    } catch {
+    } catch (err) {
       working.current = false;
-      sheet.setBusy(false);
-      setFailedOnce(true);
+      setFailure(confirmFailure(action, toWriteError(err).code));
       setState("failed");
+      release();
       return;
     }
     onAnswer(true);
@@ -112,21 +112,23 @@ export function ConfirmSheet({
 
   return (
     <Sheet title={title} sub={body}>
-      {state === "failed" && <Failure action={action} />}
+      {state === "failed" && failure && <Failure failure={failure} />}
       <SheetActions>
-        <Btn variant="quiet" autoFocus disabled={isBusy} onClick={keep}>
+        {/* When trying again can't help, Keep it is the one way on, so it takes focus. */}
+        <Btn key={failure && !failure.retry ? "only" : "keep"} variant="quiet" autoFocus disabled={isBusy} onClick={keep}>
           Keep it
         </Btn>
         {/* A new element after a failure, so Try again takes focus (guide §6.5). */}
         <Btn
-          key={failedOnce ? "again" : "first"}
+          key={failure ? "again" : "first"}
           variant={danger ? "danger" : "primary"}
-          autoFocus={failedOnce}
+          autoFocus={Boolean(failure?.retry)}
+          disabled={failure !== null && !failure.retry}
           busy={isBusy}
           busyLabel={busy ?? busyLabel(action)}
           onClick={() => void go()}
         >
-          {failedOnce ? TRY_AGAIN : action}
+          {failure?.retry ? TRY_AGAIN : action}
         </Btn>
       </SheetActions>
     </Sheet>
@@ -156,25 +158,25 @@ export interface InlineConfirmProps {
 export function InlineConfirm({ question, body, action, run, onKeep, onDone }: InlineConfirmProps) {
   const sheet = useSheet();
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
-  const [failedOnce, setFailedOnce] = useState(false);
+  const [failure, setFailure] = useState<ConfirmFailure | null>(null);
   const working = useRef(false);
 
   async function go() {
     if (working.current) return;
     working.current = true;
     setState("busy");
-    sheet.setBusy(true);
+    const release = sheet.hold();
     try {
       await run();
-    } catch {
+    } catch (err) {
       working.current = false;
-      sheet.setBusy(false);
-      setFailedOnce(true);
+      setFailure(confirmFailure(action, toWriteError(err).code));
       setState("failed");
+      release();
       return;
     }
     // The row goes with onDone, so the sheet is released first.
-    sheet.setBusy(false);
+    release();
     onDone();
   }
 
@@ -186,20 +188,21 @@ export function InlineConfirm({ question, body, action, run, onKeep, onDone }: I
         {question}
         {body !== undefined && <> {body}</>}
       </p>
-      {state === "failed" && <Failure action={action} />}
+      {state === "failed" && failure && <Failure failure={failure} />}
       <div className={styles.inlineActs}>
-        <TextLink autoFocus disabled={isBusy} onClick={onKeep}>
+        <TextLink key={failure && !failure.retry ? "only" : "keep"} autoFocus disabled={isBusy} onClick={onKeep}>
           Keep it
         </TextLink>
         <TextLink
-          key={failedOnce ? "again" : "first"}
+          key={failure ? "again" : "first"}
           tone="rose"
-          autoFocus={failedOnce}
+          autoFocus={Boolean(failure?.retry)}
+          disabled={failure !== null && !failure.retry}
           busy={isBusy}
           busyLabel={busyLabel(action)}
           onClick={() => void go()}
         >
-          {failedOnce ? TRY_AGAIN : action}
+          {failure?.retry ? TRY_AGAIN : action}
         </TextLink>
       </div>
     </div>

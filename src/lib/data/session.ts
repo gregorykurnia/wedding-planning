@@ -21,6 +21,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { recordMember } from "./members";
+import { watchReprobe } from "./reprobe";
 
 /**
  * Who is using the new UI, and whether they may.
@@ -124,7 +125,7 @@ export function useSessionSource(): Session {
   // changed (or signed out) is ignored.
   const generation = useRef(0);
   // True while the account is let in on trust because the probe couldn't
-  // reach the database; it is probed again when the device is back online.
+  // reach the database; it is probed again (`watchReprobe`) until it answers.
   const unconfirmed = useRef<User | null>(null);
 
   const probe = useCallback(async (user: User, gen: number) => {
@@ -159,7 +160,12 @@ export function useSessionSource(): Session {
       // Offline or the database didn't answer: can't tell, so let the account
       // in; screens show their own offline or couldn't-load states.
       unconfirmed.current = user;
-      setState({ status: "signed-in", user: toSessionUser(user), notice: null });
+      // A repeat probe that still can't tell changes nothing on screen.
+      setState((prev) =>
+        prev.status === "signed-in" && prev.user?.uid === user.uid && !prev.notice
+          ? prev
+          : { status: "signed-in", user: toSessionUser(user), notice: null },
+      );
     }
   }, []);
 
@@ -188,9 +194,14 @@ export function useSessionSource(): Session {
     });
   }, [probe]);
 
+  // An account let in on trust is asked again until the database answers.
+  const signedIn = state.status === "signed-in";
   useEffect(() => {
-    if (online && unconfirmed.current) void probe(unconfirmed.current, generation.current);
-  }, [online, probe]);
+    if (!signedIn) return;
+    return watchReprobe(() => {
+      if (unconfirmed.current) void probe(unconfirmed.current, generation.current);
+    });
+  }, [signedIn, probe]);
 
   const signInWithGoogle = useCallback(async (options?: { chooseAccount?: boolean }) => {
     if (!auth) throw new Error("Firebase is not configured.");

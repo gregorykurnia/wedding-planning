@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/data/session";
 import { SaveScopeContext } from "@/lib/data/use-autosave-field";
 import { TRY_AGAIN } from "@/lib/model/confirm-text";
+import { SheetHolds } from "@/lib/model/sheet-holds";
 import {
   CLOSED_WITHOUT,
   CLOSE_WITHOUT_ADDING,
@@ -64,8 +65,11 @@ export interface SheetControl {
   close(): void;
   /** Closes the way Escape does: busy holds it, and the sheet's guard may keep it open (N18). */
   requestClose(): void;
-  /** While busy, Escape and a tap on the scrim don't close it (a write is in flight). */
-  setBusy(busy: boolean): void;
+  /**
+   * Holds the sheet while a write is in flight: Escape and a tap on the scrim
+   * don't close it until every hold is released. Returns the release.
+   */
+  hold(): () => void;
   /** What Escape and a tap outside ask before closing; null takes it away. */
   setGuard(guard: DismissGuard | null): void;
   /** Whether anything in the sheet was typed or changed since it opened. */
@@ -120,7 +124,7 @@ function focusables(root: HTMLElement): HTMLElement[] {
 export function SheetHost({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const entriesRef = useRef<Entry[]>([]);
-  const busy = useRef(new Set<number>());
+  const [holds] = useState(() => new SheetHolds());
   const guards = useRef(new Map<number, DismissGuard>());
   const nextId = useRef(0);
   // Where focus goes once the sheet that just closed is gone.
@@ -145,13 +149,13 @@ export function SheetHost({ children }: { children: ReactNode }) {
       const target = id === undefined ? all[all.length - 1] : all.find((e) => e.id === id);
       if (!target) return;
       const wasTop = all[all.length - 1] === target;
-      busy.current.delete(target.id);
+      holds.clear(target.id);
       guards.current.delete(target.id);
       if (wasTop) returnFocusTo.current = target.opener;
       commit(all.filter((e) => e !== target));
       target.onClose?.();
     },
-    [commit],
+    [commit, holds],
   );
 
   const open = useCallback(
@@ -177,12 +181,12 @@ export function SheetHost({ children }: { children: ReactNode }) {
   // sheet with a guard may keep itself open to say a change hasn't saved (N18).
   const requestClose = useCallback(
     (id: number) => {
-      if (busy.current.has(id)) return;
+      if (holds.busy(id)) return;
       const guard = guards.current.get(id);
       if (guard && !guard()) return;
       close(id);
     },
-    [close],
+    [close, holds],
   );
 
   const top = entries[entries.length - 1];
@@ -226,19 +230,27 @@ export function SheetHost({ children }: { children: ReactNode }) {
 
   // Moving to another screen closes the sheets opened on the old one, except
   // a busy one: its write is in flight and must still report back (a confirm
-  // that resolved "no" here would lose the undo). Sheets the new screen opened
-  // as it mounted stay open.
+  // that resolved "no" here would lose the undo). It closes once its last hold
+  // is released. Sheets the new screen opened as it mounted stay open.
   useEffect(() => {
     [...entriesRef.current]
       .reverse()
-      .filter((e) => e.path !== pathname && !busy.current.has(e.id))
+      .filter((e) => e.path !== pathname && !holds.busy(e.id))
       .forEach((e) => close(e.id));
-  }, [pathname, close]);
+  }, [pathname, close, holds]);
 
-  const setBusy = useCallback((id: number, value: boolean) => {
-    if (value) busy.current.add(id);
-    else busy.current.delete(id);
-  }, []);
+  const hold = useCallback(
+    (id: number) => {
+      const release = holds.hold(id);
+      return () => {
+        if (!release()) return;
+        // Freed on a screen it no longer belongs to: it closes now.
+        const entry = entriesRef.current.find((e) => e.id === id);
+        if (entry && entry.path !== pathRef.current) close(id);
+      };
+    },
+    [holds, close],
+  );
 
   const setGuard = useCallback((id: number, guard: DismissGuard | null) => {
     if (guard) guards.current.set(id, guard);
@@ -257,7 +269,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
           active={entry === top}
           close={close}
           requestClose={requestClose}
-          setBusy={setBusy}
+          hold={hold}
           setGuard={setGuard}
         />
       ))}
@@ -270,14 +282,14 @@ function SheetFrame({
   active,
   close,
   requestClose,
-  setBusy,
+  hold,
   setGuard,
 }: {
   entry: Entry;
   active: boolean;
   close: (id: number) => void;
   requestClose: (id: number) => void;
-  setBusy: (id: number, busy: boolean) => void;
+  hold: (id: number) => () => void;
   setGuard: (id: number, guard: DismissGuard | null) => void;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
@@ -302,7 +314,7 @@ function SheetFrame({
     () => ({
       close: () => close(entry.id),
       requestClose: () => requestClose(entry.id),
-      setBusy: (value) => setBusy(entry.id, value),
+      hold: () => hold(entry.id),
       setGuard: (guard) => setGuard(entry.id, guard),
       changed: () => dialog.current !== null && opened.current !== null && typedIn(dialog.current) !== opened.current,
       focusFirstField: () => {
@@ -314,7 +326,7 @@ function SheetFrame({
       },
       titleId,
     }),
-    [close, requestClose, setBusy, setGuard, entry.id, titleId],
+    [close, requestClose, hold, setGuard, entry.id, titleId],
   );
 
   // Tab stays inside the sheet (guide §8).
@@ -405,10 +417,7 @@ export function SheetActions({ children }: { children: ReactNode }) {
  * write has to report back (guide §6.2).
  */
 function useBusy(sheet: SheetControl, busy: boolean) {
-  useEffect(() => {
-    sheet.setBusy(busy);
-    return () => sheet.setBusy(false);
-  }, [sheet, busy]);
+  useEffect(() => (busy ? sheet.hold() : undefined), [sheet, busy]);
 }
 
 /**

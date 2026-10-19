@@ -24,6 +24,16 @@ describe("confirmFailure", () => {
     expect(confirmFailure("Removed").lead).toBe("Nothing was removed.");
   });
 
+  it("says why from the write's error, and offers Try again only when it could work (review P3-S5)", () => {
+    expect(confirmFailure("Remove booking", "offline").retry).toBe(true);
+    expect(confirmFailure("Remove booking", "timeout").reason).toBe(confirmFailure("Remove booking").reason);
+    const demo = confirmFailure("Delete task", "demo");
+    expect(demo).toMatchObject({ lead: "Nothing was deleted.", retry: false });
+    expect(demo.reason).toContain("demonstration mode");
+    expect(confirmFailure("Remove booking", "denied")).toMatchObject({ retry: false });
+    expect(confirmFailure("Remove booking", "missing").reason).toContain("removed already");
+  });
+
   it("gives the button the guide's label", () => {
     expect(TRY_AGAIN).toBe("Try again");
   });

@@ -1,4 +1,4 @@
-Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32, N33, N34, N35, N36, N37. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32, N33, N34, N35, N36, N37, N38. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -39,3 +39,4 @@ Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32
 | N35 | When I take back something I've just done, but I've changed that same thing again myself since (on this device or my other one), I want to be told it can't be taken back without my partner being named as the one who changed it, so that I'm never told my partner did something they didn't. | Step 7 | open |
 | N36 | When I'm about to remove one of the people who pay, and they're also down to pay for some of the costs we're only considering, I want to be told that those move to nobody too, so that removing them never quietly changes what our what-if figures say. | Step 7 | open |
 | N37 | When I open a document and the planner can't show what's in it (something in it it doesn't understand), I want to be told so, and for nothing I do there to change what's stored, so that a document is never wiped out just because it couldn't be shown. | Step 7 | open |
+| N38 | When I ask to remove or delete something and it can't be done for a reason trying again won't fix (I'm only looking around, the planner didn't accept my account just now, or it was already removed), I want to be told that reason and not be offered to try again, so that I don't keep trying something that can't work. | Step 7 | open |

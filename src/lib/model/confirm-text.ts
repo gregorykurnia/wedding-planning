@@ -10,17 +10,49 @@ export interface ConfirmFailure {
   lead: string;
   /** Why, and what to do: nothing changed, so Try again or Keep it. */
   reason: string;
+  /** Whether trying again could work; when it can't, the action isn't offered again. */
+  retry: boolean;
 }
 
 /** "Delete for good" and "Empty …" are deletions; every other action is a removal. */
 const DELETES = /^(delete|empty)\b/i;
 
-export function confirmFailure(action: string): ConfirmFailure {
-  return {
-    lead: DELETES.test(action) ? "Nothing was deleted." : "Nothing was removed.",
-    reason:
-      "The planner couldn’t reach its database, so everything is just as it was. Try again, or keep it for now.",
-  };
+/**
+ * `code` is the write's `WriteError` code (src/lib/data/write-error.ts). The
+ * guide words only the database being out of reach; demonstration mode, a
+ * refused account and a thing already gone are provisional (G38/N38).
+ */
+export function confirmFailure(action: string, code?: string): ConfirmFailure {
+  const deletes = DELETES.test(action);
+  const lead = deletes ? "Nothing was deleted." : "Nothing was removed.";
+  switch (code) {
+    case "demo":
+      return {
+        lead,
+        reason: "This is demonstration mode, so nothing can be changed and everything is just as it was.",
+        retry: false,
+      };
+    case "denied":
+      return {
+        lead,
+        reason:
+          "The planner didn’t accept this account just now, so everything is just as it was. Sign in again, then try again.",
+        retry: false,
+      };
+    case "missing":
+      return {
+        lead,
+        reason: `It isn’t there any more: it was ${deletes ? "deleted" : "removed"} already, perhaps on another device.`,
+        retry: false,
+      };
+    default:
+      return {
+        lead,
+        reason:
+          "The planner couldn’t reach its database, so everything is just as it was. Try again, or keep it for now.",
+        retry: true,
+      };
+  }
 }
 
 /** What a confirm's button says once its write has failed: it asks again. */

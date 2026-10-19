@@ -45,6 +45,15 @@ export function saveLine(statuses: Iterable<FieldStatus>, demo = false): SaveLin
 /** The words under a field whose change didn't save, before its Try again (guide §4.9). */
 export const FIELD_FAILED = "Couldn’t save this change. What you typed is kept.";
 
+/**
+ * What a field that wrote on its own says when the write was refused, from the
+ * `WriteError` code: demonstration mode can't save, so it says so and offers
+ * no Try again.
+ */
+export function fieldFailure(code?: string): { text: string; retry: boolean } {
+  return code === "demo" ? { text: SAVE_DEMO, retry: false } : { text: FIELD_FAILED, retry: true };
+}
+
 /** The same failure in a sheet's save line, which covers every field in the sheet (guide §6.1). */
 export const SHEET_FAILED = "Couldn’t save. What you typed is kept.";
 

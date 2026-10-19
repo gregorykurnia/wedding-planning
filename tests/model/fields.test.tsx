@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SaveScopeContext, type SaveScope } from "@/lib/data/use-autosave-field";
-import { saveLine, type FieldStatus } from "@/lib/model/save-state";
+import { FIELD_FAILED, saveLine, type FieldStatus } from "@/lib/model/save-state";
 import {
   Check,
   DateInput,
@@ -224,6 +224,16 @@ describe("notes", () => {
   it("offers Edit when there are notes, and none in demonstration mode", () => {
     expect(render(<Notes value="Ask about the tasting" />)).toContain(">Edit<");
     expect(render(<Notes value="" disabled />)).not.toContain("<button");
+  });
+
+  it("keeps a failed save's line and Try again under the reading text after Done (review P3-S3)", () => {
+    const html = render(
+      <Notes value="Ask about the tasting" field={{ failed: true, retry: noop, disabled: false }} />,
+    );
+    expect(html).toContain("Ask about the tasting");
+    expect(html).toContain(FIELD_FAILED);
+    expect(html).toContain("Try again");
+    expect(render(<Notes value="Ask" field={{ failed: false, retry: noop, disabled: false }} />)).not.toContain(FIELD_FAILED);
   });
 });
 

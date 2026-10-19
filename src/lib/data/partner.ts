@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useActivitySince } from "@/lib/collections/activity";
+import { useEffect, useRef, useState } from "react";
+import { useActivityNews, type ActivityEntry } from "@/lib/collections/activity";
 import { localIso } from "@/lib/model/dates";
 import {
   flashTargets,
@@ -45,45 +45,48 @@ export interface PartnerNews {
 export function usePartnerNews(onNews: (news: PartnerNews) => void) {
   const { user } = useSession();
   const { partnerName: name, myName, ready } = useWho();
-  const [since] = useState(() => Date.now());
-  const { data } = useActivitySince(since);
-  const seen = useRef(new Set<string>());
-  const latest = useRef(onNews);
+  // New entries wait here until the names are known.
+  const waiting = useRef<ActivityEntry[]>([]);
+  const deliver = useRef(() => {});
 
   useEffect(() => {
-    latest.current = onNews;
-  });
-
-  useEffect(() => {
-    // Wait for the name, so the first toast isn't "Your partner".
-    if (!ready || !user) return;
-    for (const entry of data) {
-      if (seen.current.has(entry.id)) continue;
-      seen.current.add(entry.id);
-      if (!entry.by || isRemoval(entry.kind)) continue;
-      const today = localIso(new Date());
-      if (entry.by === user.uid) {
-        // This account on another device, never this one (entries from before
-        // the device was kept, and every one made here, are not news).
-        if (!entry.device || entry.device === deviceId()) continue;
-        latest.current({
+    deliver.current = () => {
+      // Wait for the name, so the first toast isn't "Your partner".
+      if (!ready || !user) return;
+      const entries = waiting.current;
+      waiting.current = [];
+      for (const entry of entries) {
+        if (!entry.by || isRemoval(entry.kind)) continue;
+        const today = localIso(new Date());
+        if (entry.by === user.uid) {
+          // This account on another device, never this one (entries from before
+          // the device was kept, and every one made here, are not news).
+          if (!entry.device || entry.device === deviceId()) continue;
+          onNews({
+            id: entry.id,
+            name: myName || "You",
+            own: true,
+            text: ownToast(entry.kind, entry.params, today, entry.deviceKind ?? "phone"),
+            flash: flashTargets(entry.target),
+          });
+          continue;
+        }
+        onNews({
           id: entry.id,
-          name: myName || "You",
-          own: true,
-          text: ownToast(entry.kind, entry.params, today, entry.deviceKind ?? "phone"),
+          name,
+          own: false,
+          text: partnerToast(name, entry.kind, entry.params, today),
           flash: flashTargets(entry.target),
         });
-        continue;
       }
-      latest.current({
-        id: entry.id,
-        name,
-        own: false,
-        text: partnerToast(name, entry.kind, entry.params, today),
-        flash: flashTargets(entry.target),
-      });
-    }
-  }, [data, ready, user, name, myName]);
+    };
+    deliver.current();
+  });
+
+  useActivityNews((entries) => {
+    waiting.current.push(...entries);
+    deliver.current();
+  });
 }
 
 /**
@@ -95,13 +98,14 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
 export function useRemovedByPartner(record: EntryTarget): { by: string } | null {
   const { user } = useSession();
   const { name } = usePartnerName();
-  const [since] = useState(() => Date.now());
-  const { data } = useActivitySince(since);
   const { kind, id } = record;
   const mine = user?.uid;
+  // The record this was said about, so moving to another one forgets it.
+  const [hit, setHit] = useState<string | null>(null);
 
-  return useMemo(() => {
-    const hit = data.find((e) => e.by && e.by !== mine && removes(e, { kind, id }));
-    return hit ? { by: name } : null;
-  }, [data, mine, name, kind, id]);
+  useActivityNews((entries) => {
+    if (entries.some((e) => e.by && e.by !== mine && removes(e, { kind, id }))) setHit(`${kind}/${id}`);
+  });
+
+  return hit === `${kind}/${id}` ? { by: name } : null;
 }

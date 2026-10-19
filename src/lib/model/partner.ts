@@ -136,9 +136,49 @@ export interface PresenceEntry {
   at: number | null;
 }
 
-/** "Bella is also in this document": another account with a fresh heartbeat. */
+/**
+ * "Bella is also in this document": another account with a fresh heartbeat.
+ * Fresh is measured against this account's own latest heartbeat in the same
+ * entries, a server time like theirs, so a device clock that runs fast or slow
+ * doesn't matter. `now` (the device clock) stands in only until this account's
+ * first heartbeat has landed.
+ */
 export function partnerIsHere(entries: PresenceEntry[], myUid: string | null, now: number): boolean {
+  const mine = entries
+    .filter((e) => e.uid === myUid && e.at !== null)
+    .reduce<number | null>((latest, e) => Math.max(latest ?? -Infinity, e.at!), null);
+  const reference = mine ?? now;
   return entries.some(
-    (e) => e.uid !== "" && e.uid !== myUid && e.at !== null && now - e.at < PRESENCE_FRESH_MS,
+    (e) => e.uid !== "" && e.uid !== myUid && e.at !== null && reference - e.at < PRESENCE_FRESH_MS,
   );
+}
+
+/** One snapshot of the latest activity entries, as the news tracker reads it. */
+export interface ActivitySnapshot {
+  /** From the local cache, before the server has answered. */
+  fromCache: boolean;
+  /** Entries this snapshot added, by id. */
+  added: string[];
+}
+
+/**
+ * Which activity entries are news (Phase 2 review S3). Everything in the first
+ * snapshot from the server was there before this device was looking, so it is
+ * taken as seen; after that, each entry the server adds is news, once. No
+ * device clock is compared with the server's times, so a clock that runs fast
+ * or slow neither replays old changes nor drops new ones.
+ */
+export function activityNews(): (snapshot: ActivitySnapshot) => string[] {
+  let settled = false;
+  const seen = new Set<string>();
+  return ({ fromCache, added }) => {
+    if (!settled) {
+      added.forEach((id) => seen.add(id));
+      if (!fromCache) settled = true;
+      return [];
+    }
+    const fresh = added.filter((id) => !seen.has(id));
+    fresh.forEach((id) => seen.add(id));
+    return fresh;
+  };
 }

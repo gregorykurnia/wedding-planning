@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { linkParts } from "@/lib/model/format";
+import { FIELD_FAILED } from "@/lib/model/save-state";
 import { FieldText, Fields, FieldRow, type Bound } from "./fields";
 import styles from "./fields.module.css";
 
@@ -47,7 +48,8 @@ type NotesProps = Bound<string> & {
  * The Notes section of a detail screen (guide §4.9): a heading with Edit (or
  * Add notes), the notes as reading text, and "Nothing written yet." when empty.
  * Edit turns them into a textarea with a Done button below; the text saves on
- * blur as every field does, and Done leaves the editor.
+ * blur as every field does, and Done leaves the editor. A save that failed
+ * keeps its line and Try again under the reading text, so it never looks saved.
  */
 export function Notes({ value, onChange, onCommit, disabled, label = "Notes", empty = "Nothing written yet.", field }: NotesProps) {
   const [editing, setEditing] = useState(false);
@@ -87,6 +89,14 @@ export function Notes({ value, onChange, onCommit, disabled, label = "Notes", em
       ) : (
         <p className={styles.notesEmpty}>{empty}</p>
       )}
+      {!editing && field?.failed ? (
+        <p className={styles.err} role="alert">
+          <span>{FIELD_FAILED}</span>
+          <button type="button" className={`${styles.link} ${styles.rose}`} onClick={field.retry}>
+            Try again
+          </button>
+        </p>
+      ) : null}
     </section>
   );
 }

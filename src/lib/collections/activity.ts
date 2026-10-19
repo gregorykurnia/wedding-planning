@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  Timestamp,
-  where,
-  type DocumentData,
-} from "firebase/firestore";
+import { useEffect, useRef } from "react";
+import { collection, limit, onSnapshot, orderBy, query, type DocumentData } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { isObject, millis, str, strOrNull } from "@/lib/data/adapters/common";
 import type { ActivityParams, ActivityTarget } from "@/lib/data/activity";
-import type { DeviceKind } from "@/lib/model/partner";
+import { activityNews, type DeviceKind } from "@/lib/model/partner";
 
 // Partner news written by logActivity() (src/lib/data/activity.ts). Entries
 // are never edited; the screen keeps only those from the other account.
@@ -51,24 +43,37 @@ export function activityFromDoc(id: string, data: DocumentData): ActivityEntry {
   };
 }
 
-/** Entries made since `sinceMs` (usually when the screen opened), oldest first. */
-export function useActivitySince(sinceMs: number) {
-  const [data, setData] = useState<ActivityEntry[]>([]);
-  const [error, setError] = useState<string | null>(null);
+/** How many of the latest entries are watched: more than two people make between two snapshots. */
+const WINDOW = 50;
+
+/**
+ * Calls `onNews` with each batch of entries added after this mounted, oldest
+ * first (`activityNews` in src/lib/model/partner.ts says which are new). Only
+ * the latest entries are watched, so a tab left open for days holds no more.
+ */
+export function useActivityNews(onNews: (entries: ActivityEntry[]) => void) {
+  const latest = useRef(onNews);
+  useEffect(() => {
+    latest.current = onNews;
+  });
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) return;
-    const q = query(
-      collection(db, COLLECTION),
-      where("at", ">", Timestamp.fromMillis(sinceMs)),
-      orderBy("at", "asc"),
-    );
-    return onSnapshot(
-      q,
-      (snapshot) => setData(snapshot.docs.map((d) => activityFromDoc(d.id, d.data()))),
-      (err) => setError(err.message),
-    );
-  }, [sinceMs]);
-
-  return { data, error };
+    const news = activityNews();
+    const q = query(collection(db, COLLECTION), orderBy("at", "desc"), limit(WINDOW));
+    // Metadata changes too, so the move from the cache to the server's answer
+    // is seen even when it changes no entry.
+    return onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+      const changes = snapshot.docChanges().filter((c) => c.type === "added");
+      const fresh = new Set(
+        news({ fromCache: snapshot.metadata.fromCache, added: changes.map((c) => c.doc.id) }),
+      );
+      if (fresh.size === 0) return;
+      const entries = changes
+        .filter((c) => fresh.has(c.doc.id))
+        .map((c) => activityFromDoc(c.doc.id, c.doc.data()))
+        .sort((a, b) => (a.at ?? Infinity) - (b.at ?? Infinity));
+      latest.current(entries);
+    });
+  }, []);
 }

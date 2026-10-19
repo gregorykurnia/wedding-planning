@@ -6,6 +6,7 @@ import {
   isRemoval,
   ownToast,
   partnerIsHere,
+  activityNews,
   partnerToast,
   removes,
 } from "@/lib/model/partner";
@@ -126,6 +127,34 @@ describe("presence", () => {
 
   it("counts an entry as the partner's when I'm not signed in to anything yet", () => {
     expect(partnerIsHere([{ uid: "bella", at: NOW }], null, NOW)).toBe(true);
+  });
+
+  it("measures against my own latest server time, not the device clock (review P2-S2)", () => {
+    const both = [
+      { uid: "bella", at: NOW - 30_000 },
+      { uid: "greg", at: NOW - 40_000 },
+      { uid: "greg", at: NOW - 25_000 },
+    ];
+    // The device clock runs two minutes fast, then two minutes slow.
+    expect(partnerIsHere(both, "greg", NOW + 120_000)).toBe(true);
+    const stale = [{ uid: "bella", at: NOW - 60_000 }, { uid: "greg", at: NOW }];
+    expect(partnerIsHere(stale, "greg", NOW - 120_000)).toBe(false);
+  });
+});
+
+describe("activityNews (review P2-S3)", () => {
+  it("takes the first server snapshot as seen, then says each later entry once", () => {
+    const news = activityNews();
+    expect(news({ fromCache: false, added: ["a", "b"] })).toEqual([]);
+    expect(news({ fromCache: false, added: ["c"] })).toEqual(["c"]);
+    expect(news({ fromCache: false, added: ["c", "d"] })).toEqual(["d"]);
+  });
+
+  it("waits for the server: cached entries and the server's first answer are both old", () => {
+    const news = activityNews();
+    expect(news({ fromCache: true, added: ["a"] })).toEqual([]);
+    expect(news({ fromCache: false, added: ["b"] })).toEqual([]);
+    expect(news({ fromCache: false, added: ["c"] })).toEqual(["c"]);
   });
 });
 
