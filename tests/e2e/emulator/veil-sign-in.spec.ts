@@ -18,6 +18,17 @@ test("the tab reads Sign in · Our wedding planner", async ({ page }) => {
   await expect(page).toHaveTitle("Sign in · Our wedding planner");
 });
 
+test("the normal gate: Google, or with email, the two fields and Sign in, and no note", async ({ page }) => {
+  await open(page);
+  await expect(page.getByRole("heading", { name: "Our wedding planner", level: 1 })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeEnabled();
+  await expect(page.getByText("or with email", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Email")).toBeEditable();
+  await expect(page.getByLabel("Password")).toBeEditable();
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeEnabled();
+  await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
+});
+
 test("a wrong password keeps the email, rings the password and says so", async ({ page }) => {
   const { email } = TEST_ACCOUNTS[0];
   await open(page);

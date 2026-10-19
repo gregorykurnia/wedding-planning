@@ -70,7 +70,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 5.2 Budget states (L) · Haiku 5.5 Max | [x] 5.3 Vendors states · Haiku 5.5 Max |
 | [ ] 5.4 Documents and files states · Sonnet 5.5 High | [x] 5.5 Schedule states · Haiku 5.5 Max |
 | — | [x] 5.6 Items and guests states · Haiku 5.5 Max |
-| — | [ ] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
+| — | [x] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
 | 🛑 [ ] Phase 5 review · Opus 5.5 Medium | wait |
 | 🛑 [ ] Phase 6 review · Opus 5.5 Medium | wait |
 | **Phase 7: switch-over (one terminal only)** | |
