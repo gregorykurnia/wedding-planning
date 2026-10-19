@@ -984,7 +984,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.F4 Review fixes: schedule, items and guests | Opus 5.5 Medium | $1.34 | Same; includes a reminder sent twice (P4-S17) | 2026-10-19 · lane t2, 4b8277b; S23 noted in G31, reply sentence in G35 | [x] |
 | 4 | 4.F5 Review fixes: shared sheets and partner news | Opus 5.5 Medium | $1.34 | Same; shared parts every Phase 5 state builds on | 2026-10-19 · lane t2, 306a578; reasons in G38 | [x] |
 | 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | 2026-10-19 · lane t1, 70fd120; how to use it is in the task | [x] |
-| 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | 2026-10-19 · lane t1; the Next card flash and P1-S16 are new, the rest was built earlier | [x] |
+| 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | 2026-10-19 · lane t1, d34ed3b; the Next card flash and P1-S16 are new, the rest was built earlier | [x] |
 | 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
 | 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | | [ ] |
 | 5 | 5.5 Schedule and tasks states | Haiku 5.5 Max | $0.21 | Same as 5.3 | | [ ] |
