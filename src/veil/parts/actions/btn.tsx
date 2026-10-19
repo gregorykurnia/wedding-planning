@@ -17,6 +17,8 @@ type BtnProps = {
   busyLabel?: ReactNode;
   /** Renders a link to this path rather than a button. */
   href?: string;
+  /** With `href`: an address outside the app. It opens in a new tab, or saves the file when `download` is set. */
+  external?: { download?: boolean };
   type?: "button" | "submit";
   disabled?: boolean;
   autoFocus?: boolean;
@@ -38,6 +40,7 @@ export function Btn({
   busy = false,
   busyLabel,
   href,
+  external,
   type = "button",
   disabled = false,
   autoFocus = false,
@@ -65,6 +68,20 @@ export function Btn({
   // A busy button stays focusable (aria-disabled, not disabled), so focus doesn't drop.
   const busyAria = busy ? { "aria-busy": true, "aria-disabled": true } : {};
 
+  if (href !== undefined && external) {
+    // A plain anchor: next/link is for the app's own routes.
+    return (
+      <a
+        href={href}
+        className={classes}
+        {...(external.download ? { download: "" } : { target: "_blank" })}
+        rel="noreferrer"
+        onClick={onClick}
+      >
+        {content}
+      </a>
+    );
+  }
   if (href !== undefined) {
     return (
       <Link href={href} className={classes} onClick={busy ? holdNavigation : onClick} {...busyAria}>

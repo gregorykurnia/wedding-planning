@@ -44,6 +44,24 @@ describe("Btn", () => {
     );
   });
 
+  it("opens an outside address in a new tab, or saves it when asked to download", () => {
+    const open = markup(
+      <Btn href="https://example.com/q.pdf" external={{}}>
+        Open
+      </Btn>,
+    );
+    expect(open).toMatch(/^<a [^>]*href="https:\/\/example\.com\/q\.pdf"/);
+    expect(open).toContain('target="_blank"');
+    expect(open).toContain('rel="noreferrer"');
+    const save = markup(
+      <Btn href="https://example.com/q.pdf" external={{ download: true }}>
+        Download
+      </Btn>,
+    );
+    expect(save).toContain('download=""');
+    expect(save).not.toContain("target=");
+  });
+
   it("keeps Google's four brand colours in its mark", () => {
     const google = markup(<Btn variant="google">Continue with Google</Btn>);
     expect(google).toContain('fill="#4285F4"');

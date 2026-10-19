@@ -23,7 +23,7 @@ import {
 import { addFunderWithUndo, newFunderId, removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
 import { removeCategory, renameCategory } from "@/lib/data/categories";
 import { bookFinalist, copyToShortlist, moveFinalistToVendors, removeFinalist } from "@/lib/data/shortlist";
-import { moveFile, moveFolder } from "@/lib/data/files";
+import { createFolder, deleteFolder, moveFile, moveFolder, renameFolder, setFileField } from "@/lib/data/files";
 import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
 
 let gregory: Partner;
@@ -607,3 +607,75 @@ describe("moving files and folders", () => {
     expect((await read("weddingFiles", "f1"))?.folderId).toBe("b");
   });
 });
+
+describe("folders and a file's details in Files", () => {
+  beforeEach(async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "a"), { name: "Vendors", parentId: null });
+    await setDoc(doc(gregory.db, "fileFolders", "b"), { name: "Kebun", parentId: "a" });
+    await setDoc(doc(gregory.db, "weddingFiles", "f1"), { name: "Quote.pdf", folderId: "b", category: "Quote", description: "" });
+  });
+
+  it("makes a folder with the id it is given, so a retry never makes two", async () => {
+    await createFolder("  Rings ", "a", { ...g(), id: "r1" });
+    await createFolder("Rings", "a", { ...g(), id: "r1" });
+    expect(await read("fileFolders", "r1")).toMatchObject({ name: "Rings", parentId: "a" });
+    const all = await getDocs(collection(gregory.db, "fileFolders"));
+    expect(all.docs.filter((d) => d.get("name") === "Rings")).toHaveLength(1);
+  });
+
+  it("renames a folder with undo, but not over the partner's later rename", async () => {
+    const renamed = await renameFolder("b", " Garden ", g());
+    expect(renamed.changed).toBe(true);
+    expect((await read("fileFolders", "b"))?.name).toBe("Garden");
+    await renamed.undo();
+    expect((await read("fileFolders", "b"))?.name).toBe("Kebun");
+
+    const again = await renameFolder("b", "Garden", g());
+    await renameFolder("b", "Courtyard", b());
+    await expect(again.undo()).rejects.toMatchObject({ code: "changed" });
+    expect((await read("fileFolders", "b"))?.name).toBe("Courtyard");
+
+    expect((await renameFolder("b", "Courtyard", g())).changed).toBe(false);
+    await expect(renameFolder("gone", "X", g())).rejects.toMatchObject({ code: "missing" });
+  });
+
+  it("deletes an empty folder with undo, and refuses one that holds a folder or a file", async () => {
+    await expect(deleteFolder("a", g())).rejects.toMatchObject({ code: "failed" });
+    await expect(deleteFolder("b", g())).rejects.toMatchObject({ code: "failed" });
+    expect(await exists("fileFolders", "a")).toBe(true);
+    expect(await exists("fileFolders", "b")).toBe(true);
+
+    await setDoc(doc(gregory.db, "fileFolders", "e"), { name: "Empty", parentId: "a", note: "kept" });
+    const removed = await deleteFolder("e", g());
+    expect(await exists("fileFolders", "e")).toBe(false);
+    await removed.undo();
+    expect(await read("fileFolders", "e")).toMatchObject({ name: "Empty", parentId: "a", note: "kept" });
+  });
+
+  it("won't undo a folder move after the partner moved it again", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "z"), { name: "Z", parentId: null });
+    const moved = await moveFolder("b", "z", g());
+    await moveFolder("b", null, b());
+    await expect(moved.undo()).rejects.toMatchObject({ code: "changed" });
+    expect((await read("fileFolders", "b"))?.parentId).toBeNull();
+  });
+
+  it("changes a file's name, category and description, each with an undo that respects later edits", async () => {
+    const renamed = await setFileField("f1", "name", " Final quote.pdf ", g());
+    expect((await read("weddingFiles", "f1"))?.name).toBe("Final quote.pdf");
+    await renamed.undo();
+    expect((await read("weddingFiles", "f1"))?.name).toBe("Quote.pdf");
+
+    await setFileField("f1", "category", "Contract", g());
+    await setFileField("f1", "description", "Signed on Friday", g());
+    expect(await read("weddingFiles", "f1")).toMatchObject({ category: "Contract", description: "Signed on Friday" });
+
+    const first = await setFileField("f1", "name", "A.pdf", g());
+    await setFileField("f1", "name", "B.pdf", b());
+    await expect(first.undo()).rejects.toMatchObject({ code: "changed" });
+    expect((await read("weddingFiles", "f1"))?.name).toBe("B.pdf");
+
+    expect((await setFileField("f1", "name", "B.pdf", g())).changed).toBe(false);
+  });
+});
+

@@ -1,3 +1,4 @@
+import type { FileItem, FolderItem } from "@/lib/model/files";
 import { isObject, legacyFiles, millis, num, str, strOrNull } from "./common";
 
 export type RecordKind = "vendor" | "venue" | "booking" | "finalist";
@@ -46,6 +47,26 @@ export function fileFromDoc(id: string, data: Record<string, unknown>): FileDoc 
     publicId: str(data.publicId),
     recordRef: recordRef(data.recordRef),
     createdAt: millis(data.createdAt),
+  };
+}
+
+/** A folder as Files shows it. A nameless one reads "Untitled folder". */
+export function folderItemFromDoc(id: string, data: Record<string, unknown>): FolderItem {
+  return { id, name: str(data.name).trim() || "Untitled folder", parentId: strOrNull(data.parentId) };
+}
+
+/** A file as Files shows it: everything its row and its sheet read. */
+export function fileItemFromDoc(id: string, data: Record<string, unknown>): FileItem {
+  return {
+    id,
+    name: str(data.name).trim() || "Uploaded file",
+    category: str(data.category),
+    description: str(data.description),
+    folderId: strOrNull(data.folderId),
+    url: str(data.url),
+    size: num(data.fileSize),
+    mime: str(data.fileType),
+    addedAt: millis(data.createdAt),
   };
 }
 
