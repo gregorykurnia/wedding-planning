@@ -12,9 +12,16 @@ describe("readAmount", () => {
     expect(readAmount("0")).toBe(0);
   });
 
-  it("rounds to whole rupiah", () => {
-    expect(readAmount("2,6")).toBe(3);
-    expect(readAmount("1.5")).toBe(2);
+  it("reads a price written with ,- or ,00, refuses cents and reads -0 as 0 (review P3-S4)", () => {
+    expect(readAmount("Rp 1.000.000,-")).toBe(1_000_000);
+    expect(readAmount("1.000.000,-")).toBe(1_000_000);
+    expect(readAmount("Rp 1.000.000,00")).toBe(1_000_000);
+    expect(readAmount("2,6")).toBeUndefined();
+    expect(readAmount("1.5")).toBeUndefined();
+    expect(readAmount("12,5")).toBeUndefined();
+    expect(Object.is(readAmount("-0"), 0)).toBe(true);
+    expect(amountProblem("Rp 1.000.000,-")).toBeNull();
+    expect(amountProblem("12,5")).toBe("decimals");
   });
 
   it("reads a blank field, or just Rp, as no amount", () => {

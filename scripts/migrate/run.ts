@@ -6,7 +6,11 @@
  *   npx tsx scripts/migrate/run.ts 3-bookings     dry run of one
  *   npx tsx scripts/migrate/run.ts all --apply    writes, then records the run
  *                                                 in appMeta/migrations
+ *   ... --apply --force                           runs again one already recorded
  *
+ * --apply refuses a migration already recorded in appMeta/migrations unless
+ * --force is given: run again, migrations 1 and 5 would bring back a funder or
+ * a file deleted since (review P1-S14). Re-runs before the switch-over use it.
  * --apply needs a backup taken in the last 24 hours (scripts/migrate/backup.ts)
  * unless it runs against the emulator. Migrations run in order, each planned
  * after the one before has been written.
@@ -29,10 +33,20 @@ function recentBackup(projectId: string): string | null {
   return files.sort().at(-1) ?? null;
 }
 
-export async function run(names: string[], apply: boolean, log: (line: string) => void = console.log) {
+export async function run(
+  names: string[],
+  apply: boolean,
+  log: (line: string) => void = console.log,
+  force = false,
+) {
   const { db, projectId, emulator } = connect();
   const chosen = names.includes("all") ? MIGRATIONS : MIGRATIONS.filter((m) => names.includes(m.name));
   if (chosen.length === 0) throw new Error(`Name a migration or "all": ${MIGRATIONS.map((m) => m.name).join(", ")}`);
+  if (apply && !force) {
+    const recorded = (await db.doc("appMeta/migrations").get()).data() ?? {};
+    const ran = chosen.filter((m) => m.name in recorded).map((m) => m.name);
+    if (ran.length) throw new Error(`Already run: ${ran.join(", ")}. Add --force to run again.`);
+  }
   if (apply && !emulator) {
     const found = recentBackup(projectId);
     if (!found) throw new Error("No backup from the last 24 hours. Run scripts/migrate/backup.ts first.");
@@ -60,7 +74,7 @@ export async function run(names: string[], apply: boolean, log: (line: string) =
 
 if (process.argv[1]?.endsWith("run.ts")) {
   const args = process.argv.slice(2);
-  run(args.filter((a) => !a.startsWith("--")), args.includes("--apply")).catch((err) => {
+  run(args.filter((a) => !a.startsWith("--")), args.includes("--apply"), console.log, args.includes("--force")).catch((err) => {
     console.error(err instanceof Error ? err.message : err);
     process.exit(1);
   });

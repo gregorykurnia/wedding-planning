@@ -4,17 +4,22 @@ import { parseNumber } from "./formulas";
 /** Past this a figure stops fitting anywhere in the design; 15 digits is also far below 2^53. */
 const LIMIT = 1e15;
 
+/** "Rp 1.000.000,-", the usual way to write a price: the ",-" says there are no cents. */
+const withoutDash = (text: string) => String(text ?? "").trim().replace(/,\s*-$/, "");
+
 /**
  * Reads what was typed in a money field (guide §4.9): "Rp 12.500.000",
- * "12500000" and "12,5" all work. Returns null for a blank field (no amount),
- * and undefined when the text isn't an amount a booking can hold: words, a
- * negative number or an absurdly big one. Amounts are whole rupiah.
+ * "12500000", "Rp 1.000.000,-" and "1.000.000,00" all work. Returns null for a
+ * blank field (no amount), and undefined when the text isn't an amount a
+ * booking can hold: words, a negative number, cents (rupiah are whole, so
+ * "12,5" isn't rounded to 13) or an absurdly big one.
  */
 export function readAmount(text: string): number | null | undefined {
-  const parsed = parseNumber(text);
+  const parsed = parseNumber(withoutDash(text));
   if (parsed.blank) return null;
-  if (parsed.text || parsed.value < 0 || parsed.value >= LIMIT) return undefined;
-  return Math.round(parsed.value);
+  if (parsed.text || parsed.value < 0 || parsed.value >= LIMIT || !Number.isInteger(parsed.value)) return undefined;
+  // "-0" is 0, not minus zero.
+  return parsed.value + 0;
 }
 
 export type AmountProblem = "words" | "minus" | "decimals" | "big";
@@ -22,11 +27,10 @@ export type AmountProblem = "words" | "minus" | "decimals" | "big";
 /**
  * Why a money field can't use what was typed (N16, guide §4.9, §6.9): words, a
  * minus, decimals or more than 15 digits. `null` for a blank field or a usable
- * amount. Rupiah has no decimals, so "12,5" is refused here rather than
- * rounded the way `readAmount` does.
+ * amount. Rupiah has no decimals, so "12,5" is refused, as `readAmount` does.
  */
 export function amountProblem(text: string): AmountProblem | null {
-  const typed = String(text ?? "").trim();
+  const typed = withoutDash(text);
   if (/^[-−–]/.test(typed)) return "minus";
   const parsed = parseNumber(typed);
   if (parsed.blank) return null;

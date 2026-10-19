@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { collection, doc, getDocs, limit, query, where } from "firebase/firestore";
+import { collection, deleteField, doc, getDocs, limit, query, where } from "firebase/firestore";
 import { useCollection } from "@/lib/use-collection";
 import type { IsoDate } from "@/lib/model/bookings";
 import { isVendorBooked } from "@/lib/model/bookings";
@@ -13,7 +13,7 @@ import { withElementIds, mutateArray, type Element } from "./array-ops";
 import { bookingMark, vendorFromDoc, type VendorDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
 import { fileFromDoc, filesForRecord, type FileDoc, type RecordRef } from "./adapters/files";
-import { finalistFromDoc, MAIN_PACKAGE_ID, type FinalistDoc, type Package } from "./adapters/shortlist";
+import { finalistBookingId, finalistBookingVendorId, finalistFromDoc, MAIN_PACKAGE_ID, type FinalistDoc, type Package } from "./adapters/shortlist";
 import { requireDb } from "./db";
 import { mergeStatus, readOf } from "./read";
 import { useSession } from "./session";
@@ -39,8 +39,12 @@ export function useFinalists(): Loaded<FinalistListItem[]> {
   const { connection } = useSession();
   // No ordering: a document without `createdAt` must not drop out of the list.
   const finalists = useCollection<FinalistDoc>(SHORTLIST, finalistFromDoc, []);
-  const items = useMemo(() => finalists.data.map(finalistListItem), [finalists.data]);
-  return readOf(connection, [finalists], items);
+  const vendors = useCollection<VendorDoc>(VENDORS, vendorFromDoc, []);
+  const items = useMemo(() => {
+    const byId = new Map(vendors.data.map((v) => [v.id, v]));
+    return finalists.data.map((f) => finalistListItem({ ...f, bookingId: finalistBookingId(f, byId) }));
+  }, [finalists.data, vendors.data]);
+  return readOf(connection, [finalists, vendors], items);
 }
 
 /** The finalists and the category list as one read, for the screen and its add sheet. */
@@ -226,13 +230,19 @@ function vendorFromFinalist(f: FinalistDoc, chosen: Package | null, extra: Recor
   };
 }
 
+/** The fields as they were, with `deleteField()` for those that were missing, so an undo doesn't leave a `null` behind. */
+function fieldsBefore(raw: Record<string, unknown>, keys: readonly string[]) {
+  return Object.fromEntries(keys.map((k) => [k, k in raw ? raw[k] : deleteField()]));
+}
+
 /**
  * Book it (guide §5.14): the chosen package becomes the booking's estimate,
  * and its agreed price when none is set yet. A finalist copied from a vendor
  * books that vendor; one added straight to the shortlist becomes a new
- * vendor record that is a booking. Never twice: a finalist that's already a
- * booking returns that booking. Undo takes the booking back and, for a new
- * record, removes it.
+ * vendor record that is a booking. Never twice: when that vendor is already
+ * booked (here, from its own screen, or as Chosen or Done in the old screens)
+ * it returns that booking and writes nothing. Undo takes the booking back and,
+ * for a new record, removes it.
  */
 export async function bookFinalist(
   finalistId: string,
@@ -249,46 +259,36 @@ export async function bookFinalist(
     if (!finalistSnap.exists()) throw new WriteError("missing", "That finalist is gone");
     const raw = finalistSnap.data();
     const finalist = finalistFromDoc(finalistId, raw);
-    if (finalist.movedTo?.kind === "booking") {
-      const vendorId = finalist.movedTo.id.replace(/^vendor-/, "");
-      return { vendorId, already: true, created: false, vendorBefore: null, finalistBefore: null, name: finalist.name };
+    const targetId = finalistBookingVendorId(finalist);
+    const targetRef = targetId ? doc(database, VENDORS, targetId) : null;
+    const targetSnap = targetRef ? await tx.get(targetRef) : null;
+    if (targetRef && targetSnap?.exists() && isVendorBooked(vendorFromDoc(targetRef.id, targetSnap.data()))) {
+      return { vendorId: targetRef.id, already: true, created: false, vendorBefore: null, finalistBefore: null, name: finalist.name };
     }
     // No package at all books it without a price, as the sheet says.
     const chosen = packageId === null ? null : (finalist.packages.find((p) => p.id === packageId) ?? null);
     if (packageId !== null && !chosen) throw new WriteError("missing", "That package is gone");
     const price = chosen?.price ?? 0;
 
-    const sourceRef = finalist.sourceVendorId ? doc(database, VENDORS, finalist.sourceVendorId) : null;
-    const sourceSnap = sourceRef ? await tx.get(sourceRef) : null;
-    const finalistBefore = {
-      movedTo: raw.movedTo ?? null,
-      preferredPackageId: raw.preferredPackageId ?? null,
-      sourceVendorId: raw.sourceVendorId ?? null,
-    };
+    const finalistBefore = fieldsBefore(raw, ["movedTo", "preferredPackageId", "sourceVendorId"]);
     const booking = { on, from: "finalist", removed: false };
 
     let vendorId: string;
     let created = false;
     let vendorBefore: Record<string, unknown> | null = null;
-    if (sourceRef && sourceSnap?.exists()) {
-      vendorId = sourceRef.id;
-      const v = sourceSnap.data();
+    if (targetRef && targetSnap?.exists()) {
+      // Not booked (checked above): never booked, or its booking was removed.
+      vendorId = targetRef.id;
+      const v = targetSnap.data();
       const mark = bookingMark(v.booking);
-      vendorBefore = {
-        booking: v.booking ?? null,
-        contractStatus: v.contractStatus ?? null,
-        estimate: v.estimate ?? null,
-        totalPrice: v.totalPrice ?? 0,
-      };
-      if (!mark || mark.removed) {
-        tx.update(sourceRef, {
-          booking: mark ? { ...mark, removed: false } : booking,
-          contractStatus: v.contractStatus === "Done" ? "Done" : "Chosen",
-          estimate: price,
-          totalPrice: num(v.totalPrice) > 0 ? num(v.totalPrice) : price,
-          ...stamp(database),
-        });
-      }
+      vendorBefore = fieldsBefore(v, ["booking", "contractStatus", "estimate", "totalPrice"]);
+      tx.update(targetRef, {
+        booking: mark ? { ...mark, on: on ?? mark.on, removed: false } : booking,
+        contractStatus: v.contractStatus === "Done" ? "Done" : "Chosen",
+        estimate: price,
+        totalPrice: num(v.totalPrice) > 0 ? num(v.totalPrice) : price,
+        ...stamp(database),
+      });
     } else {
       vendorId = plannedVendorId;
       created = true;
@@ -448,7 +448,7 @@ export function useFinalist(id: string): Loaded<FinalistPage> {
       packageFiles[p.id] = tiles([{ kind: "finalist", id, partId: p.id }], p.files, false);
     }
     return {
-      finalist: finalistDetail(doc, {
+      finalist: finalistDetail({ ...doc, bookingId: finalistBookingId(doc, new Map(vendors.data.map((v) => [v.id, v]))) }, {
         sourceVendor: vendorDoc ? { id: vendorDoc.id, name: vendorDoc.name, booked: isVendorBooked(vendorDoc) } : null,
         files: tiles(refs, doc.files, true),
         packageFiles,

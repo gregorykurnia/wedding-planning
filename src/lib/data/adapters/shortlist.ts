@@ -1,4 +1,6 @@
 import { withElementIds } from "@/lib/data/array-ops";
+import { isVendorBooked } from "@/lib/model/bookings";
+import type { VendorDoc } from "./bookings";
 import { isObject, legacyFiles, millis, num, numOrNull, str, strOrNull, type LegacyFile } from "./common";
 
 /** The finalist's own top-level price and description, read as a package with this id. */
@@ -95,4 +97,27 @@ export function finalistFromDoc(id: string, data: Record<string, unknown>): Fina
     updatedAt: millis(data.updatedAt),
     updatedBy: strOrNull(data.updatedBy),
   };
+}
+
+/**
+ * The vendor a finalist books, or became a booking as: where Book it put it, or
+ * the vendor it was copied from (a from-scratch finalist's new vendor is its
+ * source too).
+ */
+export function finalistBookingVendorId(f: Pick<FinalistDoc, "movedTo" | "sourceVendorId">): string | null {
+  return f.movedTo?.kind === "booking" ? f.movedTo.id.replace(/^vendor-/, "") : f.sourceVendorId;
+}
+
+/**
+ * The booking a finalist is, while that vendor is booked: "Now a booking" follows
+ * the vendor, so a removed booking can be booked again and a vendor booked from
+ * its own screen flags its finalist (review P4-S10).
+ */
+export function finalistBookingId(
+  f: Pick<FinalistDoc, "movedTo" | "sourceVendorId">,
+  vendors: ReadonlyMap<string, VendorDoc>,
+): string | null {
+  const vendorId = finalistBookingVendorId(f);
+  const vendor = vendorId ? vendors.get(vendorId) : undefined;
+  return vendor && isVendorBooked(vendor) ? `vendor-${vendor.id}` : null;
 }

@@ -26,7 +26,7 @@ export interface VendorSource {
   keen: boolean;
   rating: number | null;
   reviewers: number | null;
-  priceOptions: readonly { description: string; price: number; selected: boolean }[];
+  priceOptions: readonly { description: string; price: number; selected: boolean; includes?: string }[];
   createdAt: number | null;
 }
 
@@ -46,7 +46,7 @@ export interface VendorListItem {
   bridestoryReviewCount: number | null;
   createdAt: number | null;
   /** Every price option, in the order they were added. */
-  options: { description: string; price: number; leaning: boolean }[];
+  options: { description: string; price: number; leaning: boolean; includes: string }[];
   /** The option we're leaning towards, if one is chosen. */
   leaning: { description: string; price: number } | null;
   /** The row's price: the option we lean towards, else the first one; `null` when there is none or it is 0. */
@@ -66,7 +66,12 @@ export interface VendorExtras {
 }
 
 export function vendorListItem(v: VendorSource, extras: VendorExtras): VendorListItem {
-  const options = v.priceOptions.map((o) => ({ description: o.description, price: o.price, leaning: o.selected }));
+  const options = v.priceOptions.map((o) => ({
+    description: o.description,
+    price: o.price,
+    leaning: o.selected,
+    includes: o.includes ?? "",
+  }));
   const leaning = options.find((o) => o.leaning) ?? null;
   const shown = leaning ?? options[0] ?? null;
   return {
@@ -150,6 +155,10 @@ const plainAmount = (n: number) => String(Math.round(n));
 
 const yesNo = (value: boolean) => (value ? "Yes" : "No");
 
+/** "Gold, 400 guests: Rp 161.000.000 (Buffet, 7 dishes)", what it includes left out when nothing's written. */
+const optionCell = (o: VendorListItem["options"][number]) =>
+  `${o.description}: ${rp(o.price)}${o.includes.trim() ? ` (${o.includes.trim()})` : ""}`;
+
 /**
  * The columns, named the way the planner names them and in the order of the vendor
  * screen. Empty fields are empty cells, never "No rating yet"; ratings use a
@@ -168,7 +177,7 @@ export const VENDOR_COLUMNS: readonly CsvColumn<VendorListItem>[] = [
   { header: "Leaning towards", value: (v) => v.leaning?.description ?? "" },
   { header: "Its price (Rp)", value: (v) => (v.leaning ? plainAmount(v.leaning.price) : "") },
   { header: "Price options", value: (v) => v.optionCount },
-  { header: "All price options", value: (v) => v.options.map((o) => `${o.description}: ${rp(o.price)}`).join("; ") },
+  { header: "All price options", value: (v) => v.options.map(optionCell).join("; ") },
   { header: "On the shortlist", value: (v) => yesNo(v.finalistId !== null) },
   { header: "Booked", value: (v) => yesNo(v.booked) },
   { header: "Files", value: (v) => v.fileCount },

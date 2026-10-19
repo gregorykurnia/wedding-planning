@@ -19,6 +19,8 @@ type InlineRenameProps = {
    * and shows the reason, in the same look as a field that couldn't save.
    */
   check?: (name: string) => string | null;
+  /** The most characters it takes while typing; 60 unless the name has its own cap (a category's 40). */
+  maxLength?: number;
 };
 
 /**
@@ -27,7 +29,7 @@ type InlineRenameProps = {
  * press. An empty name, or the same name, is a cancel: the old one stays. If
  * the write fails the input stays as typed, with the usual line and Try again.
  */
-export function InlineRename({ name, label, onSave, onClose, check }: InlineRenameProps) {
+export function InlineRename({ name, label, onSave, onClose, check, maxLength = 60 }: InlineRenameProps) {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(name);
@@ -80,7 +82,7 @@ export function InlineRename({ name, label, onSave, onClose, check }: InlineRena
         dir="auto"
         className={styles.renameInput}
         value={text}
-        maxLength={60}
+        maxLength={maxLength}
         readOnly={busy}
         aria-invalid={state === "failed" || problem !== null || undefined}
         onChange={(event) => {

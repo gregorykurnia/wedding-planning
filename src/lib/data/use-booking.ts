@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { vendorFromDoc, venueFromDoc, type VendorDoc, type VenueDoc } from "@/lib/data/adapters/bookings";
 import { fileFromDoc, filesForRecord, type FileDoc, type RecordRef } from "@/lib/data/adapters/files";
+import { finalistBookingVendorId, finalistFromDoc, type FinalistDoc } from "@/lib/data/adapters/shortlist";
 import {
   bookingFromVendor,
   bookingFromVenue,
@@ -48,8 +49,9 @@ export interface BookingPage {
 /**
  * One booking with what its screen shows beside it: the funders, the category
  * list and the files (Files first, then legacy ones not imported yet). A
- * booking's files include those of the vendor or venue it came from (plan
- * §2.7). A booking that was removed reads as not being here.
+ * booking's files include those of the vendor or venue it came from, and of
+ * the finalist booked as it (plan §2.7). A booking that was removed reads as
+ * not being here.
  */
 export function useBooking(bookingId: string): Loaded<BookingPage> {
   const { connection } = useSession();
@@ -57,6 +59,7 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
   const vendors = useCollection<VendorDoc>("vendors", vendorFromDoc, []);
   const venues = useCollection<VenueDoc>("venues", venueFromDoc, []);
   const files = useCollection<FileDoc>("weddingFiles", fileFromDoc, []);
+  const finalists = useCollection<FinalistDoc>("shortlist", finalistFromDoc, []);
   const funders = useFunders();
   const categories = useCategories();
 
@@ -91,6 +94,13 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
     };
     const recordRef = (partId?: string): RecordRef => ({ kind: target.kind, id: target.id, ...(partId ? { partId } : {}) });
     const bookingRef = (partId?: string): RecordRef => ({ kind: "booking", id: bookingId, ...(partId ? { partId } : {}) });
+    // The finalist's own files, not its packages': a package isn't one of the booking's parts.
+    const finalistRefs: RecordRef[] =
+      target.kind === "vendor"
+        ? finalists.data
+            .filter((f) => finalistBookingVendorId(f) === target.id)
+            .map((f) => ({ kind: "finalist", id: f.id }))
+        : [];
     const partFiles: Record<string, BookingFile[]> = {};
     for (const part of record.subEntries) {
       partFiles[part.id] = tiles([bookingRef(part.id), recordRef(part.id)], part.files);
@@ -99,11 +109,11 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
       ...base,
       booking,
       categories: known.includes(booking.category) || booking.kind === "venue" ? known : [...known, booking.category],
-      files: tiles([bookingRef(), recordRef()], record.files),
+      files: tiles([bookingRef(), recordRef(), ...finalistRefs], record.files),
       partFiles,
     };
-  }, [bookingId, vendors.data, venues.data, files.data, funders.data, categories.data, today]);
+  }, [bookingId, vendors.data, venues.data, files.data, finalists.data, funders.data, categories.data, today]);
 
-  const status = mergeStatus(readOf(connection, [vendors, venues, files], page), funders, categories);
+  const status = mergeStatus(readOf(connection, [vendors, venues, files, finalists], page), funders, categories);
   return { status, data: status === "demo" ? null : page };
 }

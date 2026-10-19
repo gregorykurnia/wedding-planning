@@ -9,6 +9,7 @@ import {
   buildCategories,
   categoryRows,
   charactersLeft,
+  MAX_CATEGORY_LENGTH,
   validateCategoryName,
   type CategoryRow,
 } from "@/lib/model/categories";
@@ -98,6 +99,7 @@ export function CategoriesSheet({
           <InlineRename
             name={row.name}
             label={`Rename ${row.name}`}
+            maxLength={MAX_CATEGORY_LENGTH}
             check={(next) => validateCategoryName(next, categories.list.filter((c) => c !== row.name))}
             onSave={async (next) => {
               const renamed = await renameCategory(categoryId, next);

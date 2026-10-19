@@ -38,7 +38,7 @@ const source = (over: Partial<FinalistDetailSource> = {}): FinalistDetailSource 
   packages: [pkg("main", "Silver", 45_000_000)],
   preferredPackageId: "main",
   sourceVendorId: null,
-  movedTo: null,
+  bookingId: null,
   ...over,
 });
 
@@ -95,11 +95,10 @@ describe("finalistDetail", () => {
     expect(finalistDetail(source(), extras())).toMatchObject({ sourceVendor: null, sourceGone: false });
   });
 
-  it("knows a finalist that became a booking, and the booking to open", () => {
-    const booked = finalistDetail(source({ movedTo: { kind: "booking", id: "vendor-v1" } }), extras());
+  it("knows a finalist that is a booking, and the booking to open", () => {
+    const booked = finalistDetail(source({ bookingId: "vendor-v1" }), extras());
     expect(booked).toMatchObject({ booked: true, bookingId: "vendor-v1", hasBooking: true });
-    // Moved into Vendors is not a booking.
-    const moved = finalistDetail(source({ movedTo: { kind: "vendor", id: "v1" } }), extras());
+    const moved = finalistDetail(source({ sourceVendorId: "v1" }), extras());
     expect(moved).toMatchObject({ booked: false, bookingId: null, hasBooking: false });
     // A booked vendor behind the copy counts for what removing leaves behind, though the finalist isn't flagged.
     const behind = finalistDetail(

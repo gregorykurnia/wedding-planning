@@ -234,5 +234,11 @@ describe("InlineRename", () => {
     expect(html).toContain("Save name");
     expect(html).toContain("Cancel");
     expect(html).toMatch(/<label[^>]*class="sr"[^>]*>Funder&#x27;s name<\/label>/);
+    expect(html).toContain('maxLength="60"');
+  });
+
+  it("takes a name's own cap while typing, such as a category's 40 (review P4-S12)", () => {
+    const html = render(<InlineRename name="Food" label="Rename Food" maxLength={40} onSave={async () => {}} onClose={noop} />);
+    expect(html).toContain('maxLength="40"');
   });
 });

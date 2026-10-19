@@ -27,7 +27,7 @@ const source = (id: string, name: string, over: Partial<FinalistSource> = {}): F
   reviewers: null,
   igFollowers: null,
   step: "",
-  movedTo: null,
+  bookingId: null,
   ...over,
 });
 
@@ -62,9 +62,8 @@ describe("finalistListItem", () => {
     expect(named.packages).toHaveLength(1);
   });
 
-  it("is booked only when it became a booking", () => {
-    expect(item("a", "A", { movedTo: { kind: "booking" } }).booked).toBe(true);
-    expect(item("a", "A", { movedTo: { kind: "vendor" } }).booked).toBe(false);
+  it("is booked only while it is a booking", () => {
+    expect(item("a", "A", { bookingId: "vendor-v1" }).booked).toBe(true);
     expect(item("a", "A").booked).toBe(false);
   });
 });

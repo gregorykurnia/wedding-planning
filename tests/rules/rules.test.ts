@@ -155,6 +155,10 @@ describe("presence", () => {
     await assertSucceeds(bella().firestore().collection("presence").get());
     await assertFails(bella().firestore().doc("presence/doc1_uid-gregory").delete());
     await assertFails(bella().firestore().doc("presence/doc1_uid-x").set({ documentId: "doc1", uid: "uid-gregory" }));
+    // Neither can take over the other's entry by writing their own uid onto it (review P1-S22).
+    await assertFails(bella().firestore().doc("presence/doc1_uid-gregory").set({ documentId: "doc1", uid: "uid-bella" }));
+    await assertFails(bella().firestore().doc("presence/doc1_uid-gregory").update({ uid: "uid-bella" }));
+    await assertSucceeds(g.doc("presence/doc1_uid-gregory").set({ documentId: "doc1", uid: "uid-gregory", at: 2 }));
     await assertSucceeds(g.doc("presence/doc1_uid-gregory").delete());
   });
 
@@ -175,6 +179,10 @@ describe("pushSubscriptions", () => {
     await assertFails(bella().firestore().doc("pushSubscriptions/s1").delete());
     await assertFails(bella().firestore().doc("pushSubscriptions/s2").set({ uid: "uid-gregory" }));
     await assertSucceeds(bella().firestore().doc("pushSubscriptions/s2").set({ uid: "uid-bella" }));
+    // Neither can take over the other's subscription (review P1-S22).
+    await assertFails(bella().firestore().doc("pushSubscriptions/s1").set({ uid: "uid-bella", endpoint: "e" }));
+    await assertFails(g.doc("pushSubscriptions/s2").set({ uid: "uid-gregory" }));
+    await assertSucceeds(g.doc("pushSubscriptions/s1").set({ uid: "uid-gregory", endpoint: "e2" }));
     await assertSucceeds(g.doc("pushSubscriptions/s1").delete());
     await assertSucceeds(g.doc("pushSubscriptions/s1").get());
   });
