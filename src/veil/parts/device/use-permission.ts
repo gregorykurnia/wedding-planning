@@ -1,34 +1,72 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
-import type { Permission } from "./notification-state";
+import { useCallback, useEffect, useReducer, useSyncExternalStore } from "react";
+import {
+  pushSetupState,
+  pushState,
+  setUpThisDevice,
+  subscribePushSetup,
+  type PushState,
+  type SetupState,
+} from "@/lib/data/push";
+import { useSession } from "@/lib/data/session";
 
-/** `unsupported` is a browser with no notification API (N6, which Task 6.2 words); nothing is shown for it yet. */
-export type DevicePermission = Permission | "unsupported";
+/** `checking` until the browser has been asked, so the server's page shows no note at all. */
+export type DevicePermission = PushState | "checking";
 
-const read = (): DevicePermission => {
-  if (typeof Notification === "undefined") return "unsupported";
-  return Notification.permission;
-};
+export type { SetupState };
 
-// The browser has no event for a changed permission that every browser sends, so the screen re-reads after asking.
-const subscribe = () => () => {};
+const read = (): DevicePermission => pushState();
+
+/** Browsers that have the Permissions API say when the permission changes in their own settings. */
+function subscribePermission(onChange: () => void) {
+  let status: PermissionStatus | null = null;
+  let gone = false;
+  navigator.permissions
+    ?.query({ name: "notifications" as PermissionName })
+    .then((s) => {
+      if (gone) return;
+      status = s;
+      s.addEventListener("change", onChange);
+    })
+    .catch(() => {});
+  return () => {
+    gone = true;
+    status?.removeEventListener("change", onChange);
+  };
+}
 
 /**
- * What this device allows, read from the browser, and a way to ask. Asking only
- * raises the browser's own question; storing the subscription so reminders reach
- * this device belongs to Task 6.2.
+ * What this device allows for reminders, and a way to ask (S10, N6). Once
+ * allowed, and on every visit after while signed in, this device is saved so
+ * the daily run reaches it. Demonstration mode only reads.
  */
-export function useNotificationPermission(): { permission: DevicePermission; allow: () => Promise<DevicePermission> } {
-  // The server and the first client render agree on "unsupported"; the real answer comes right after.
-  const current = useSyncExternalStore(subscribe, read, () => "unsupported" as DevicePermission);
-  const [asked, setAsked] = useState<DevicePermission | null>(null);
+export function useNotificationPermission(): {
+  permission: DevicePermission;
+  allow: () => Promise<DevicePermission>;
+  setup: SetupState;
+  retrySetup: () => void;
+} {
+  const permission = useSyncExternalStore(subscribePermission, read, () => "checking" as DevicePermission);
+  const setup = useSyncExternalStore(subscribePushSetup, pushSetupState, () => "idle" as SetupState);
+  const [, reread] = useReducer((n: number) => n + 1, 0);
+  const { status } = useSession();
+  const signedIn = status === "signed-in";
+
+  useEffect(() => {
+    if (signedIn && permission === "granted") void setUpThisDevice();
+  }, [signedIn, permission]);
+
   const allow = useCallback(async () => {
-    if (typeof Notification === "undefined") return "unsupported" as const;
+    if (typeof Notification === "undefined") return read();
     await Notification.requestPermission();
+    reread();
     const now = read();
-    setAsked(now);
+    if (now === "granted" && signedIn) void setUpThisDevice(true);
     return now;
-  }, []);
-  return { permission: asked ?? current, allow };
+  }, [signedIn]);
+
+  const retrySetup = useCallback(() => void setUpThisDevice(true), []);
+
+  return { permission, allow, setup, retrySetup };
 }

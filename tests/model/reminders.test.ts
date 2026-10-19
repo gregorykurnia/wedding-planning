@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EventRecord } from "@/lib/model/agenda";
-import { remindersDue } from "@/lib/model/reminders";
-
-// Built in the local zone, which is the zone reminders are worked out in.
-const at = (y: number, mo: number, d: number, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi).getTime();
+import { TEST_PUSH, plannerClock, reminderPush, remindersDue } from "@/lib/model/reminders";
 
 const event = (over: Partial<EventRecord> = {}): EventRecord => ({
   id: "e",
@@ -21,86 +18,122 @@ const event = (over: Partial<EventRecord> = {}): EventRecord => ({
   ...over,
 });
 
-const minutes = (events: EventRecord[], now: number) => remindersDue(events, now).map((r) => [r.event.id, r.minutes]);
+const due = (events: EventRecord[], today: string, now = "07:00") =>
+  remindersDue(events, today as `${number}-${number}-${number}`, now).map((r) => [r.event.id, r.minutes]);
 
-describe("remindersDue", () => {
-  it("is due once its moment has come: '1 day before' an 11:00 event is 11:00 the day before", () => {
-    const e = event({ id: "a" });
-    expect(minutes([e], at(2026, 10, 15, 10, 59))).toEqual([]);
-    expect(minutes([e], at(2026, 10, 15, 11, 0))).toEqual([["a", 1440]]);
-    expect(minutes([e], at(2026, 10, 15, 23, 0))).toEqual([["a", 1440]]);
+describe("remindersDue (N11: once a day, in the morning)", () => {
+  it("sends 'the morning before' on the morning of the day before, whatever time the event is", () => {
+    for (const startAt of ["2026-10-16T08:00", "2026-10-16T11:00", "2026-10-16T19:30", "2026-10-16"]) {
+      const e = event({ id: "a", startAt, allDay: startAt.length === 10 });
+      expect(due([e], "2026-10-14")).toEqual([]);
+      expect(due([e], "2026-10-15")).toEqual([["a", 1440]]);
+    }
   });
 
-  it("stays due until the event starts, and is useless after", () => {
-    const e = event({ id: "a" });
-    expect(minutes([e], at(2026, 10, 16, 10, 59))).toEqual([["a", 1440]]);
-    expect(minutes([e], at(2026, 10, 16, 11, 0))).toEqual([]);
-    expect(minutes([e], at(2026, 10, 17, 9, 0))).toEqual([]);
-  });
-
-  it("only reaches a morning run on the event's own day when the event is in the afternoon", () => {
-    // A once-a-day run at 07:00 sees an afternoon event's "1 day before" (15:00 the day before) the next morning. Need N11 covers this.
-    const e = event({ id: "a", startAt: "2026-10-16T15:00" });
-    expect(minutes([e], at(2026, 10, 15, 7, 0))).toEqual([]);
-    expect(minutes([e], at(2026, 10, 16, 7, 0))).toEqual([["a", 1440]]);
-  });
-
-  it("sends '1 week before' a week ahead", () => {
+  it("sends 'a week before' seven mornings ahead", () => {
     const e = event({ id: "a", reminderMinutes: [10080] });
-    expect(minutes([e], at(2026, 10, 9, 10, 59))).toEqual([]);
-    expect(minutes([e], at(2026, 10, 9, 11, 0))).toEqual([["a", 10080]]);
+    expect(due([e], "2026-10-08")).toEqual([]);
+    expect(due([e], "2026-10-09")).toEqual([["a", 10080]]);
   });
 
-  it("reads 'when it starts' as due at the start time, which is already the end of its use for a timed event", () => {
-    const e = event({ id: "a", reminderMinutes: [0] });
-    expect(minutes([e], at(2026, 10, 16, 10, 59))).toEqual([]);
-    expect(minutes([e], at(2026, 10, 16, 11, 0))).toEqual([]);
+  it("catches up a morning missed yesterday, but not older ones", () => {
+    const week = event({ id: "w", startAt: "2026-10-20T11:00", reminderMinutes: [10080] });
+    expect(due([week], "2026-10-14")).toEqual([["w", 10080]]);
+    expect(due([week], "2026-10-15")).toEqual([]);
+    // The morning before a 15:00 event, missed: still sent on its own morning, while it's still to come.
+    const day = event({ id: "d", startAt: "2026-10-16T15:00" });
+    expect(due([day], "2026-10-16", "07:00")).toEqual([["d", 1440]]);
+    expect(due([day], "2026-10-16", "15:00")).toEqual([]);
   });
 
-  it("treats all-day events as starting at midnight and useful all day", () => {
-    const e = event({ id: "a", startAt: "2026-11-28", allDay: true, reminderMinutes: [1440, 0] });
-    expect(minutes([e], at(2026, 11, 26, 23, 59))).toEqual([]);
-    expect(minutes([e], at(2026, 11, 27, 0, 0))).toEqual([["a", 1440]]);
-    expect(minutes([e], at(2026, 11, 28, 7, 0))).toEqual([["a", 1440], ["a", 0]]);
-    expect(minutes([e], at(2026, 11, 28, 23, 59))).toEqual([["a", 1440], ["a", 0]]);
-    expect(minutes([e], at(2026, 11, 29, 0, 0))).toEqual([]);
+  it("sends nothing for an event that has started or passed; all day lasts until midnight", () => {
+    expect(due([event({ id: "a", startAt: "2026-10-16T07:00" })], "2026-10-16", "07:00")).toEqual([]);
+    expect(due([event({ id: "b", startAt: "2026-10-16", allDay: true })], "2026-10-16", "23:59")).toEqual([["b", 1440]]);
+    expect(due([event({ id: "c", startAt: "2026-10-15T11:00" })], "2026-10-16")).toEqual([]);
+  });
+
+  it("never sends a reminder set for a time of day: it can't arrive, and the schedule names it", () => {
+    for (const minutes of [0, 15, 60]) {
+      expect(due([event({ id: "a", startAt: "2026-10-15T11:00", reminderMinutes: [minutes] })], "2026-10-15")).toEqual([]);
+    }
   });
 
   it("skips what was already sent, and sends the rest", () => {
-    const e = event({ id: "a", reminderMinutes: [10080, 1440], remindersSent: [10080] });
-    expect(minutes([e], at(2026, 10, 15, 12, 0))).toEqual([["a", 1440]]);
-    expect(minutes([event({ id: "b", remindersSent: [1440] })], at(2026, 10, 15, 12, 0))).toEqual([]);
+    const e = event({ id: "a", startAt: "2026-10-16T11:00", reminderMinutes: [10080, 1440], remindersSent: [10080] });
+    expect(due([e], "2026-10-15")).toEqual([["a", 1440]]);
+    expect(due([event({ id: "b", remindersSent: [1440] })], "2026-10-15")).toEqual([]);
   });
 
-  it("skips completed and cancelled events and events with no reminder", () => {
-    const now = at(2026, 10, 15, 12, 0);
-    expect(minutes([event({ id: "a", status: "completed" }), event({ id: "b", status: "cancelled" }), event({ id: "c", reminderMinutes: [] })], now)).toEqual([]);
+  it("skips completed and cancelled events, events with no reminder, and dates that aren't real", () => {
+    const today = "2026-10-15";
+    expect(
+      due(
+        [
+          event({ id: "a", status: "completed" }),
+          event({ id: "b", status: "cancelled" }),
+          event({ id: "c", reminderMinutes: [] }),
+          event({ id: "d", startAt: "2026-02-30T10:00" }),
+          event({ id: "e", reminderMinutes: [-5, NaN] }),
+        ],
+        today,
+      ),
+    ).toEqual([]);
   });
 
-  it("skips an event whose date isn't real, and nonsense minutes", () => {
-    const now = at(2026, 10, 15, 12, 0);
-    expect(minutes([event({ id: "a", startAt: "2026-02-30T10:00" })], now)).toEqual([]);
-    expect(minutes([event({ id: "b", reminderMinutes: [-5, NaN] })], now)).toEqual([]);
-  });
-
-  it("lists each reminder once, earliest first", () => {
-    const e1 = event({ id: "a", startAt: "2026-10-16T09:00", reminderMinutes: [1440, 1440, 60] });
-    const e2 = event({ id: "b", startAt: "2026-10-15T09:30", reminderMinutes: [60] });
-    expect(remindersDue([e1, e2], at(2026, 10, 15, 8, 0))).toEqual([]);
-    const out = remindersDue([e1, e2], at(2026, 10, 15, 9, 15));
-    expect(out.map((r) => [r.event.id, r.minutes])).toEqual([["b", 60], ["a", 1440]]);
-    expect(out[0].at).toBeLessThan(out[1].at);
-  });
-
-  it("says when each was due and when the event starts", () => {
-    const [r] = remindersDue([event({ id: "a" })], at(2026, 10, 15, 12, 0));
-    expect(r.at).toBe(at(2026, 10, 15, 11, 0));
-    expect(r.startsAt).toBe(at(2026, 10, 16, 11, 0));
+  it("lists each reminder once, soonest event first", () => {
+    const e1 = event({ id: "a", startAt: "2026-10-16T15:00", reminderMinutes: [1440, 1440] });
+    const e2 = event({ id: "b", startAt: "2026-10-16T09:30" });
+    const e3 = event({ id: "c", startAt: "2026-10-22", allDay: true, reminderMinutes: [10080] });
+    const out = remindersDue([e3, e1, e2], "2026-10-15", "07:00");
+    expect(out.map((r) => [r.event.id, r.minutes])).toEqual([["b", 1440], ["a", 1440], ["c", 10080]]);
+    expect(out[0]).toMatchObject({ morning: "2026-10-15", date: "2026-10-16" });
   });
 
   it("works across a month and a year end", () => {
-    const e = event({ id: "a", startAt: "2027-01-01T09:00", reminderMinutes: [1440] });
-    expect(minutes([e], at(2026, 12, 31, 8, 59))).toEqual([]);
-    expect(minutes([e], at(2026, 12, 31, 9, 0))).toEqual([["a", 1440]]);
+    const e = event({ id: "a", startAt: "2027-01-01T09:00" });
+    expect(due([e], "2026-12-30")).toEqual([]);
+    expect(due([e], "2026-12-31")).toEqual([["a", 1440]]);
+  });
+});
+
+describe("plannerClock", () => {
+  it("reads the day and time in Jakarta: the 00:00 UTC run is 07:00 the same day", () => {
+    expect(plannerClock(new Date("2026-10-15T00:05:00Z"))).toEqual({ today: "2026-10-15", now: "07:05" });
+    expect(plannerClock(new Date("2026-10-15T17:30:00Z"))).toEqual({ today: "2026-10-16", now: "00:30" });
+    expect(plannerClock(new Date("2026-10-15T00:05:00Z"), "Asia/Makassar")).toEqual({ today: "2026-10-15", now: "08:05" });
+  });
+});
+
+describe("reminderPush", () => {
+  const href = (id: string) => `/new/schedule?event=${id}`;
+
+  it("names the event, its day and time, and the place", () => {
+    const [r] = remindersDue([event({ id: "a", location: "Sendok Emas, Kemang" })], "2026-10-15", "07:00");
+    expect(reminderPush(r, "2026-10-15", href)).toEqual({
+      title: "Tasting at Sendok Emas",
+      body: "Tomorrow, Friday 16 October, 11:00\nSendok Emas, Kemang",
+      url: "/new/schedule?event=a",
+      tag: "reminder-a-1440",
+    });
+  });
+
+  it("says all day, leaves out a call link, and has a title when the event has none", () => {
+    const [r] = remindersDue(
+      [event({ id: "b", title: " ", startAt: "2026-10-22", allDay: true, location: "https://meet.example/x", reminderMinutes: [10080] })],
+      "2026-10-15",
+      "07:00",
+    );
+    const push = reminderPush(r, "2026-10-15", href);
+    expect(push.title).toBe("Something in the schedule");
+    expect(push.body).toBe("Thursday 22 October, all day");
+  });
+
+  it("says Today for a morning caught up on the event's own day", () => {
+    const [r] = remindersDue([event({ id: "c", startAt: "2026-10-16T15:00" })], "2026-10-16", "07:00");
+    expect(reminderPush(r, "2026-10-16", href).body).toBe("Today, Friday 16 October, 15:00");
+  });
+
+  it("has a test push", () => {
+    expect(TEST_PUSH.title).toBe("Test reminder");
   });
 });

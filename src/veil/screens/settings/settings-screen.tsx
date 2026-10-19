@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useMembers } from "@/lib/collections/members";
 import { useScheduleEvents } from "@/lib/collections/schedule-events";
+import { forgetThisDevice, sendTestReminder } from "@/lib/data/push";
 import { useSession } from "@/lib/data/session";
 import { saveCoupleName, saveWeddingDate, useSettings } from "@/lib/data/settings";
 import { useToday } from "@/lib/data/use-today";
@@ -55,13 +56,14 @@ import { useToast } from "@/veil/shell/toasts";
 import styles from "./settings.module.css";
 
 const ALLOWED_TOAST = "Notifications allowed on this device";
+const TEST_SENT = "Test reminder sent. It should appear in a moment.";
 
 /**
  * Wedding settings (guide §5.3; O5, O6, A3, A5, S10): the two names and the
  * wedding date, saved as you go, who can open the planner with Swap them and
  * Sign out, what this device allows for reminders, the install steps, and the
- * doors to Who pays and Vendor categories. The notification block shows the
- * browser's permission; storing the subscription and sending the test are Task 6.2's.
+ * doors to Who pays and Vendor categories. Allowing notifications saves this
+ * device for the daily reminders, and signing out stops them arriving here.
  */
 export function SettingsScreen() {
   const read = useSettings();
@@ -93,7 +95,7 @@ function Settings() {
   const who = useWho();
   const members = useMembers().data;
   const toast = useToast();
-  const { permission, allow } = useNotificationPermission();
+  const { permission, allow, setup, retrySetup } = useNotificationPermission();
   const installed = useInstalled();
   const events = useScheduleEvents().data;
   const today = useToday();
@@ -120,6 +122,8 @@ function Settings() {
   const [swapFailed, setSwapFailed] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutFailed, setSignOutFailed] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testFailed, setTestFailed] = useState(false);
 
   const badReminders = useMemo(() => events.filter((event) => reminderCantArrive(event, today)).length, [events, today]);
 
@@ -147,11 +151,25 @@ function Settings() {
     setSigningOut(true);
     setSignOutFailed(false);
     try {
+      await forgetThisDevice();
       await signOut();
     } catch {
       setSignOutFailed(true);
       setSigningOut(false);
     }
+  }
+
+  async function test() {
+    if (testing) return;
+    setTesting(true);
+    setTestFailed(false);
+    try {
+      await sendTestReminder();
+      toast.confirmation(TEST_SENT);
+    } catch {
+      setTestFailed(true);
+    }
+    setTesting(false);
   }
 
   const doors: DoorItem[] = [
@@ -229,13 +247,16 @@ function Settings() {
       <Section>
         Reminders on this <Device />
       </Section>
-      {permission === "unsupported" ? null : (
-        <NotificationState
-          permission={permission}
-          disabled={demo}
-          onAllow={() => void allow().then((now) => now === "granted" && toast.confirmation(ALLOWED_TOAST))}
-        />
-      )}
+      <NotificationState
+        permission={permission}
+        disabled={demo}
+        onAllow={() => void allow().then((now) => now === "granted" && toast.confirmation(ALLOWED_TOAST))}
+        onTest={() => void test()}
+        testing={testing}
+        testFailed={testFailed}
+        setupFailed={setup === "failed" && !demo}
+        onRetrySetup={retrySetup}
+      />
       {badReminders > 0 && !demo && (
         <p className={`${styles.note} ${styles.rose}`}>
           {reminderCantArriveLine(badReminders)}{" "}

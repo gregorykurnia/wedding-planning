@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, storedDocs } from "../helpers";
 
 // Task 4.25: Wedding settings against the emulators. The names and the date
 // save as you go, the two accounts are listed with Swap them and Undo, Sign out
@@ -205,3 +205,84 @@ test("the doors lead to Who pays and open the vendor categories", async ({ page 
   await expect(page.getByRole("dialog", { name: "Vendor categories" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page).toHaveURL("/new/vendors");
 });
+
+// Task 6.2: reminders on this device. The browser's permission and push
+// manager are stubs (a headless browser has no push service); the subscription it hands out is
+// saved through the real rules, the test request is answered here, and signing
+// out takes the device off again.
+const ENDPOINT = "https://push.example.com/settings-spec-device";
+
+async function stubPush(page: Page) {
+  await page.addInitScript((endpoint) => {
+    const w = window as unknown as { __pushSubscribed: number; __pushUnsubscribed: number };
+    w.__pushSubscribed = 0;
+    w.__pushUnsubscribed = 0;
+    let key: ArrayBuffer | null = null;
+    let live = false;
+    const subscription = {
+      endpoint,
+      get options() {
+        return { applicationServerKey: key, userVisibleOnly: true };
+      },
+      toJSON: () => ({ endpoint, keys: { p256dh: "spec-p256dh", auth: "spec-auth" } }),
+      unsubscribe: async () => {
+        live = false;
+        w.__pushUnsubscribed++;
+        return true;
+      },
+    };
+    const registration = {
+      pushManager: {
+        getSubscription: async () => (live ? subscription : null),
+        subscribe: async (opts: { applicationServerKey: Uint8Array }) => {
+          key = opts.applicationServerKey.slice().buffer;
+          live = true;
+          w.__pushSubscribed++;
+          return subscription;
+        },
+      },
+    };
+    // Headless Chromium answers "denied" whatever the context grants.
+    Object.defineProperty(Notification, "permission", { get: () => "granted" });
+    const sw = navigator.serviceWorker;
+    Object.defineProperty(sw, "ready", { get: () => Promise.resolve(registration) });
+    sw.getRegistration = async () => registration as unknown as ServiceWorkerRegistration;
+  }, ENDPOINT);
+}
+
+test("allowed notifications save this computer for reminders, send a test, and signing out takes it off", async ({ page }) => {
+  await stubPush(page);
+  const tests: unknown[] = [];
+  await page.route("**/api/push/test", async (route) => {
+    tests.push(route.request().postDataJSON());
+    await route.fulfill({ json: { result: "sent" } });
+  });
+
+  await openSettings(page);
+  await expect(page.getByText("and your other devices, even when the planner is closed.")).toBeVisible();
+  const saved = (doc: Record<string, unknown>) => doc.endpoint === ENDPOINT && doc.device === "Mac";
+  await expect.poll(async () => (await storedDocs("pushSubscriptions")).filter(saved).length, { timeout: 15_000 }).toBe(1);
+
+  await page.getByRole("button", { name: "Send a test reminder" }).click();
+  await expect(page.getByText("Test reminder sent. It should appear in a moment.")).toBeVisible();
+  expect(tests).toEqual([{ endpoint: ENDPOINT }]);
+
+  await page.getByRole("button", { name: "Sign out of this computer" }).click();
+  await expect(page).toHaveURL(/\/new\/sign-in/, { timeout: COMPILE_TIMEOUT });
+  expect((await storedDocs("pushSubscriptions")).filter(saved)).toEqual([]);
+  expect(await page.evaluate(() => (window as unknown as { __pushUnsubscribed: number }).__pushUnsubscribed)).toBe(1);
+});
+
+test("a test that can't be sent says so in rose", async ({ page }) => {
+  await stubPush(page);
+  await page.route("**/api/push/test", (route) => route.fulfill({ status: 502, json: { error: "push-failed" } }));
+  await openSettings(page);
+  await page.getByRole("button", { name: "Send a test reminder" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Couldn’t send a test reminder. Try again." })).toBeVisible();
+  await write(`pushSubscriptions/${await subscriptionDocId()}`, null);
+});
+
+async function subscriptionDocId() {
+  const docs = await storedDocs("pushSubscriptions");
+  return String(docs.find((d) => d.endpoint === ENDPOINT)?.id ?? "none");
+}

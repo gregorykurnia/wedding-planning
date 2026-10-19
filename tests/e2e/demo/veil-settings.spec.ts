@@ -52,7 +52,7 @@ test("has the reminders, the install steps and the two doors", async ({ page }) 
 
 test("the notification button is off in demonstration mode", async ({ page }) => {
   await openSettings(page);
-  // A browser that has no notifications at all (N6) shows nothing yet; one that has them offers Allow, off here.
+  // A browser that has notifications offers Allow, off here; one without them (N6) says so instead.
   const allow = page.getByRole("button", { name: "Allow notifications" });
   if (await allow.count()) await expect(allow).toBeDisabled();
 });

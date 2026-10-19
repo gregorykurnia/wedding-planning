@@ -10,6 +10,8 @@ const PERMISSIONS: { value: Permission; label: string }[] = [
   { value: "granted", label: "Allowed" },
   { value: "default", label: "Not yet allowed" },
   { value: "denied", label: "Turned off" },
+  { value: "install", label: "iPhone, not installed" },
+  { value: "unsupported", label: "Browser can’t" },
 ];
 
 /**

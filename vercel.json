@@ -4,5 +4,11 @@
     "deploymentEnabled": {
       "redesign": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

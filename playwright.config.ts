@@ -45,6 +45,9 @@ const emulatorAppEnv = {
   // stub every request to api.cloudinary.com, so nothing leaves the machine.
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",
   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "test-preset",
+  // A throwaway VAPID public key: the specs stub the browser's push manager,
+  // and no private key exists for it.
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: "BFQ4oSwuS89KgDx5UcyfB-URJxEU9HvlFEOdcm_V3k9TTUhvRVAbEE_RVRYrOoUvTM5QvDGAm2aPFtl9LZoWOCE",
 };
 
 // Demo mode: every Firebase variable empty. Values already in the process

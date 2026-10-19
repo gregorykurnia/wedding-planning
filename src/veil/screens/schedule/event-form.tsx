@@ -8,6 +8,7 @@ import { ChipGroup } from "@/veil/parts/chips/chip";
 import { NotificationState } from "@/veil/parts/device/notification-state";
 import { useNotificationPermission } from "@/veil/parts/device/use-permission";
 import { Check, DateInput, FieldInput, FieldRow, Fields, FieldSelect, FieldText, Hint, type Bound } from "@/veil/parts/fields/fields";
+import { veilHref } from "@/veil/href";
 import { useToast } from "@/veil/shell/toasts";
 import { TITLE_PLACEHOLDER, allowedToast } from "./schedule-text";
 import styles from "./event-form.module.css";
@@ -51,7 +52,7 @@ export interface EventFormProps {
 export function EventForm(props: EventFormProps) {
   const { kind, title, date, allDay, start, end, related, where, notes, remind, withChoices, today, problems, failed } = props;
   const toast = useToast();
-  const { permission, allow } = useNotificationPermission();
+  const { permission, allow, setup, retrySetup } = useNotificationPermission();
   const id = useId();
 
   const options = [{ value: "", label: "Nothing" }, ...withChoices];
@@ -116,13 +117,14 @@ export function EventForm(props: EventFormProps) {
           <div>
             <FieldSelect {...remind} options={remindOptions} />
             {old ? null : <Hint>{REMINDER_HINT}</Hint>}
-            {permission === "unsupported" ? null : (
-              <NotificationState
-                permission={permission}
-                where="sheet"
-                onAllow={() => void allow().then((now) => now === "granted" && toast.confirmation(allowedToast))}
-              />
-            )}
+            <NotificationState
+              permission={permission}
+              where="sheet"
+              onAllow={() => void allow().then((now) => now === "granted" && toast.confirmation(allowedToast))}
+              setupFailed={setup === "failed"}
+              onRetrySetup={retrySetup}
+              installHref={`${veilHref("/settings")}#install`}
+            />
           </div>
         </FieldRow>
       </Fields>
