@@ -980,7 +980,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-19 (lane t1): first pass found 4 blockers (B1 in 4.6, B2 in 4.14, B3 in 4.12, B4 in 4.22–4.24, which is Phase 3 S11), all fixed in the same session; the 36 full-suite e2e failures were timeouts and a leak between specs (the accounts' pairing), fixed; no Haiku drift in 4.3 and 4.5, small in 4.21; screenshots of 4.8, 4.16, 4.18 and 4.19 compared; 24 should-fix items stay open (S1–S24); see `redesign/reviews/phase-4-review.md` | [x] |
 | 4 | 4.F1 Review fixes: money and bookings (L) | Opus 5.5 Medium | $2.68 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` | | [ ] |
 | 4 | 4.F2 Review fixes: documents, files and uploads | Opus 5.5 Medium | $1.34 | Same; includes a document that can be overwritten (P4-S14) | | [ ] |
-| 4 | 4.F3 Review fixes: vendors, rules and scripts | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | 2026-10-19 · lane t2; rules deploy with the owner still open | [x] |
+| 4 | 4.F3 Review fixes: vendors, rules and scripts | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | 2026-10-19 · lane t2, 328f846; rules deploy with the owner still open | [x] |
 | 4 | 4.F4 Review fixes: schedule, items and guests | Opus 5.5 Medium | $1.34 | Same; includes a reminder sent twice (P4-S17) | | [ ] |
 | 4 | 4.F5 Review fixes: shared sheets and partner news | Opus 5.5 Medium | $1.34 | Same; shared parts every Phase 5 state builds on | | [ ] |
 | 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | | [ ] |
