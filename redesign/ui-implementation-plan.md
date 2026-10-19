@@ -908,6 +908,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 - **Escalation.** The first time a model gets a task wrong twice, redo it one row stronger and log the change in the table. When an end-of-phase review rejects a task's work, the fix is done one row stronger too, and that task's pick is updated (redesign plan, "Move up after a failed check").
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
+  - **Every open item gets a home.** Before the review commits, it routes each open "should fix" item (its own and any still open from earlier reviews) to exactly one place in a new section of `redesign/reviews/triage.md`: a fix task `N.F1`, `N.F2`… (rows added to this table and to `redesign/terminal-split.md` before the next phase, Opus 5.5 Medium unless an item needs more), a named later task whose section then points to it, or dropped with a reason. Anything that loses, corrupts or duplicates data, or shows a failed write as saved, gets a fix task. (Phases 1–4 left 59 items only in their review files; by 2026-10-19 six had been fixed along the way, five partly, and one had got worse.)
   - **Running the full e2e suite in a review:** fix what the reviewers find first, then run the suite once, with the machine as free as it can be: the other lane idle, no fixer editing or running e2e in the same folder, heavy browser tabs closed. Right after it ends, copy `test-results/.last-run.json` to the scratchpad and rerun the failures with `--last-failed --last-failed-file <copy>`, because any other e2e run overwrites that file. (The Phase 4 review's suite took 1 h 40 min with a fixer editing and testing alongside it; most of its 36 failures were 100-second page-load timeouts while the Mac was swapping, and the fixer's run wiped the failure list.)
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 - **Parallel terminals.** `redesign/terminal-split.md` sets out which tasks run at the same time. From 2026-10-18 it's two terminals: more made this 8 GB Mac swap so hard that every task slowed down.
@@ -977,6 +978,11 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.24 Guests | Sonnet 5.5 High → **Opus 5.5 Medium** for the fix | $0.88 | Guest sheet, RSVP switch, headcounts | 2026-10-19 · lane t2, 829f95d; compared with `guests.html` at 1440px and 390px by screenshot; G32 is new; the Phase 4 review rejected it (B4, a second failure cleared the first one (Phase 3 S11)), so the fix moved one row up; fixed 2026-10-19 in the review session on Opus 5.5 Medium | [x] |
 | 4 | 4.25 Wedding settings | Sonnet 5.5 High | $0.88 | Settings fields, accounts, notifications | 2026-10-18 · lane t2, commit c734798; compared with `settings.html` at 1440px and 390px by screenshot (demonstration mode); G28 is new | [x] |
 | 4 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-19 (lane t1): first pass found 4 blockers (B1 in 4.6, B2 in 4.14, B3 in 4.12, B4 in 4.22–4.24, which is Phase 3 S11), all fixed in the same session; the 36 full-suite e2e failures were timeouts and a leak between specs (the accounts' pairing), fixed; no Haiku drift in 4.3 and 4.5, small in 4.21; screenshots of 4.8, 4.16, 4.18 and 4.19 compared; 24 should-fix items stay open (S1–S24); see `redesign/reviews/phase-4-review.md` | [x] |
+| 4 | 4.F1 Review fixes: money and bookings (L) | Opus 5.5 Medium | $2.68 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` | | [ ] |
+| 4 | 4.F2 Review fixes: documents, files and uploads | Opus 5.5 Medium | $1.34 | Same; includes a document that can be overwritten (P4-S14) | | [ ] |
+| 4 | 4.F3 Review fixes: vendors, rules and scripts | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | | [ ] |
+| 4 | 4.F4 Review fixes: schedule, items and guests | Opus 5.5 Medium | $1.34 | Same; includes a reminder sent twice (P4-S17) | | [ ] |
+| 4 | 4.F5 Review fixes: shared sheets and partner news | Opus 5.5 Medium | $1.34 | Same; shared parts every Phase 5 state builds on | | [ ] |
 | 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | | [ ] |
 | 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | | [ ] |
 | 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
@@ -1344,6 +1350,11 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 #### Task 4.25: Wedding settings · Sonnet 5.5 High
 - **Guide:** §5.3. **Prototype:** `settings.html`. Names and date saving as you go (no whole-document overwrite, §5 #26), who can open the planner from `members`, sign out, the notification block (wired in 6.2), install steps and installed state, doors to Who pays and Vendor categories. The accounts list also carries the N3 note and **Swap them** (`SWAP_NOTE`, `SWAP_LINK` and `swapToast` in `src/lib/model/who.ts`; the write and its undo are `swapNames` in `src/lib/data/who.ts`, which takes `useWho().settings`, the account's email and `useMembers()`); the toast is `toast.undoable(swapToast(name), undo)`.
 
+#### Tasks 4.F1–4.F5: Review fixes · Opus 5.5 Medium
+- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5"). Read each item in its review file; that's the whole brief, plus the files it names.
+- **Do:** fix each item, with a test that fails before the fix (an emulator test for any write, a model test for any rule). Where the item offers two fixes, take the one that changes less. A fix that needs a design decision becomes a gap (§9.1, `needs.md`) instead.
+- **Done when:** every listed item is fixed or turned into a gap, named by ID in the commit body. Both lanes finish their 4.F tasks before Phase 5 starts; the Phase 5 review re-checks them.
+
 ### Phase 5: Every state on every screen
 
 Uses the shared state components from Phases 2–3; most work is wiring each screen's hook status and data cases. **Done when:** every row in §5.1 that doesn't wait for a need can be reached on the preview with the state harness and matches the prototype; the review passes.
@@ -1354,12 +1365,15 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 5.2: Budget group states (L) · Haiku 5.5 Max
 - **Screens:** Budget, Bookings, A booking, Add a booking, Payments due, Who pays, What-if. **Prototype:** each file's `?state=` list. Includes overpaid, paid in full, late, removed by Bella (`status: 'gone'`), just added, stress.
+- **Also:** review items P1-S16 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 5.3: Vendors group states · Haiku 5.5 Max
 - **Screens:** Vendors, A vendor, Shortlist, A finalist, Venues.
+- **Also:** review items P4-S11 (second half) (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 5.4: Documents and files states · Sonnet 5.5 High
 - **Screens:** Documents, A document, Files. Includes the editor's not saved yet, saving, couldn't save, offline while writing, partner in the document, deleted by the partner, demo (not editable), stress tables.
+- **Also:** review items P4-S16 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 5.5: Schedule and tasks states · Haiku 5.5 Max
 - **Screens:** Agenda, Month, Tasks.
@@ -1421,6 +1435,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 #### Task 7.1: Switch-over commit · Opus 5.5 High
 - **Risk:** breaks production for both of you at once.
 - **Do, in one commit titled "Switch to the new UI":** move `src/app/(veil)/new/*` to `src/app/(veil)/*`; move `src/app/(legacy)/*` (except the root layout) into `src/app/(legacy)/old/*`; set `LEGACY_BASE = '/old'`; replace every `/new` prefix in the new UI's links (they all go through one `veilHref()` helper from Task 2.4, so this is one constant); add permanent redirects in `next.config.ts` for old addresses with no new page (`/login` → `/sign-in`, `/confirmed` → `/budget/bookings`, `/master-list` → `/items`, `/todo` → `/schedule/tasks`, `/notes` → `/documents`, `/checklist` → `/schedule/tasks`); `/new/:path*` redirects to `/:path*`; bump the service-worker cache version.
+- **Before switching:** review items P1-S11, P1-S12, P1-S13, P1-S15 and P3-S13 (`redesign/reviews/triage.md`): re-check production for the old UI's drift and re-run the affected migrations (with 4.F3's `--force` guard), check `weddingFiles` for doubled package files (read only), add the gallery-off test and check Vercel's production variables.
 - **Done when:** the preview passes every e2e test at the new paths, and the old UI works at `/old`.
 
 #### Task 7.2: Rollback rehearsal · Sonnet 5.5 High
@@ -1441,9 +1456,11 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 8.3: Fix passes from the screenshots · Haiku 5.5 Max (four sessions: budget and vendors; documents and files; schedule, items and guests; shell, overview, sign-in, settings)
 - Each session fixes the differences in its group, using only tokens and the prototype's CSS. Differences that come from real data rather than the design are noted, not "fixed".
+- **Also:** review items P4-S1, P4-S24, P3-S10 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 8.4: Accessibility check · Sonnet 5.5 High
 - `@axe-core/playwright` on every screen and state; plus the guide §8 checklist: focus order and return, Escape, Alt+arrows, Tab in tables, labels on icon controls, live regions, `aria-busy`, `dir="auto"`, 24px and 34px targets, reduced motion, contrast pairs from `tokens.css`.
+- **Also:** review items P3-S8, P3-S12, P4-S19 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 8.5: Real-device checklist · Haiku 5.5 xHigh
 - Write `redesign/device-checklist.md` for the owner: iPhone (installed and in Safari), Android Chrome, Mac Safari and Chrome; sign in, add and edit with the keyboard open, editor docking, uploads from the camera roll, reminders, offline, the partner's change arriving on the other device.

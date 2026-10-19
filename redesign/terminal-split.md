@@ -5,7 +5,7 @@ How the Step 7 rebuild (`redesign/ui-implementation-plan.md` §7) runs in more t
 **Two terminals from 2026-10-18.** Phases 2 and 3 and the first half of Phase 4 ran in three or four. On this Mac (8 GB) that filled 13.6 GB of swap and kept the load near 28, so every test, build and session slowed down; one e2e run took five hours. Two lanes finish more per hour than four here. Don't go back above two without more memory.
 
 - **Each terminal goes down its own list** at its own pace, one task per session.
-- **🛑 rows stop both.** At each phase review, both terminals wait until it passes. Don't start a later phase's tasks before then.
+- **🛑 rows stop both.** At each phase review, both terminals wait until it passes, then do the fix tasks it added (`N.F…`). Don't start a later phase's tasks before then.
 - **Set the model and effort shown** before each task (`/model`, `/effort`). They come from the §7.0 table; if §7.0 changes a pick, change it here too.
 - **Tick the box here too** when a task is done: `[ ]` becomes `[x]`, in the same commit as its §7.0 Done tick. §7.0 holds the date and commit; this file is each lane's own checklist. If a merge conflicts here, keep both sides' ticks.
 - **One e2e run at a time.** `npm run test:e2e` waits while another copy of the repo runs it. Run e2e only through that script, never `npx playwright test` directly.
@@ -61,6 +61,10 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 6.4 Manifest, icons, install · Haiku 5.5 Max | [x] 4.24 Guests · Sonnet 5.5 High |
 | [x] 6.5 Not found and error screens · Haiku 5.5 Max | [x] 6.2 Push reminders (after 4.25) · Opus 5.5 High |
 | 🛑 [x] Phase 4 review · Opus 5.5 Medium | wait |
+| **Review fixes (both lanes finish these before Phase 5; items in `redesign/reviews/triage.md`)** | |
+| [ ] 4.F1 Money and bookings (L) · Opus 5.5 Medium | [ ] 4.F3 Vendors, rules and scripts · Opus 5.5 Medium |
+| [ ] 4.F2 Documents, files and uploads · Opus 5.5 Medium | [ ] 4.F4 Schedule, items and guests · Opus 5.5 Medium |
+| — | [ ] 4.F5 Shared sheets and partner news · Opus 5.5 Medium |
 | **Phase 5: states** | |
 | [ ] 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
 | [ ] 5.2 Budget states (L) · Haiku 5.5 Max | [ ] 5.3 Vendors states · Haiku 5.5 Max |
