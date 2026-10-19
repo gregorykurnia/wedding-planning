@@ -1005,14 +1005,14 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 7 | Review | **Opus 5.5 High** | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
 | 8 | 8.1 Behaviour tests on the new UI (L) | Sonnet 5.5 High | $1.76 | One test per story group, against the emulator | | [ ] |
 | 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | | [ ] |
-| 8 | 8.3 Fix passes from the screenshots (4 sessions) | Haiku 5.5 Max | $0.84 | Each diff points at an exact prototype rule | | [ ] |
+| 8 | 8.3 Fix passes from the screenshots (1–2 sessions) | Haiku 5.5 Max | $0.42 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | | [ ] |
 | 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | | [ ] |
 | 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | | [ ] |
 | 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | | [ ] |
 | 8 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
 | 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
-| 9 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 9 | Review (only if needed) | Opus 5.5 Medium | $1.34 | Skipped when 9.1 raises no new needs and 9.2's build, tests and no-exclusions old-names check pass (owner, 2026-10-19) | | [ ] |
 | any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design). **Result (2026-10-18): Haiku wasn't as good, so Sonnet 5.5 High stays for the ★ tasks (4.5, 4.8, 4.13, 4.16, 4.21).** At 1440px and 390px against `funders.html`: Sonnet's build matches the normal, adding, demonstration and remove states and the phone line wraps; Haiku's rows run about 4px off the prototype's heights with different phone wraps, and its add row isn't the prototype's (input, then Add funder and Cancel beneath): it bent the shared `InlineRename` into an add row, so the links and the demonstration line sit beside the input in the serif font. Its add also makes a new funder id on each try, so Try again after a timeout can add two (the guide asks for one id per row), and it has no line for a failed add (G19). Its rename and remove states and its 12 model tests are fine. Real costs weren't both known, so the decision is on quality. 4.3 was already built on Haiku before this result: the Phase 4 review checks it for the same kind of drift | [x] |
 | any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
@@ -1456,8 +1456,8 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 #### Task 8.2: Screenshot comparison · Sonnet 5.5 High
 - Playwright serves `redesign/design/prototype/` statically and the build with the matching emulator fixture, captures each §5.1 row at 390px and 1440px (light), with fonts loaded and motion reduced, and writes side-by-side images plus a pixel-difference score to `tests/screenshots/report/`. The prototype's fixed "today" (14 October 2026, 11:30) is set in the browser clock for both.
 
-#### Task 8.3: Fix passes from the screenshots · Haiku 5.5 Max (four sessions: budget and vendors; documents and files; schedule, items and guests; shell, overview, sign-in, settings)
-- Each session fixes the differences in its group, using only tokens and the prototype's CSS. Differences that come from real data rather than the design are noted, not "fixed".
+#### Task 8.3: Fix passes from the screenshots · Haiku 5.5 Max (two sessions at most: budget, vendors, documents and files; schedule, items, guests, shell, overview, sign-in and settings)
+- When 8.2's report shows few differences, one session covers every group. Each session fixes the differences in its group, using only tokens and the prototype's CSS. Differences that come from real data rather than the design are noted, not "fixed".
 - **Also:** review items P4-S1, P4-S24, P3-S10 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 8.4: Accessibility check · Sonnet 5.5 High
@@ -1471,6 +1471,8 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 - Update `CLAUDE.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
 
 ### Phase 9: After launch (on `main`)
+
+**Review:** run only when 9.1 raised a new need or a 9.2 check (build, tests, old-names check with no exclusions) failed; otherwise tick it as skipped with the date (owner's decision, 2026-10-19).
 
 #### Task 9.1: After-launch check · Sonnet 5.5 High
 - About a week after launch: Vercel runtime logs and errors, failed cron runs, Firestore usage, Cloudinary usage; ask the owner what anyone stumbled on. Anything new goes through the design-gap loop as a need.
