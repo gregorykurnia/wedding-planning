@@ -395,12 +395,28 @@ describe("sortTableRows", () => {
     expect(order[0]).toBe(0);
     expect(order[3]).toBe(3);
     expect(order[6]).toBe(6);
-    expect(applyRowOrder(t, order).map((r) => r[0])).toEqual(["Idea", "a", "d", "Subtotal", "c", "b", "Total"]);
+    expect(applyRowOrder(t, order).map((r) => r[0])).toEqual(["Idea", "a", "b", "Subtotal", "d", "c", "Total"]);
+  });
+
+  it("sorts each run between totals on its own, so no row crosses a subtotal", () => {
+    const t = grid(["Idea | Cost", "b | 30", "a | 5", "Subtotal | =SUM(B2:B3)", "c | 20", "d | 1", "Total | =SUM(B5:B6)"]);
+    const before = evaluateTable(t);
+    const moved = applyRowOrder(t, sortTableRows(t, 1, "desc"));
+    expect(moved.map((r) => r[0])).toEqual(["Idea", "b", "a", "Subtotal", "c", "d", "Total"]);
+    const after = evaluateTable(moved);
+    expect(after[3][1].value).toBe(before[3][1].value);
+    expect(after[6][1].value).toBe(before[6][1].value);
+  });
+
+  it("decides number or text from the whole column, across runs", () => {
+    // As numbers, 1.000 (a thousand) would come after 5; as text it comes first.
+    const t = grid(["h | h", "y | 5", "x | 1.000", "Total | =SUM(B2:B3)", "z | TBD", "w | 2"]);
+    expect(sorted(t, 1, "asc")).toEqual(["h", "x", "y", "Total", "w", "z"]);
   });
 
   it("holds a total in a different column than the one sorted", () => {
-    const t = grid(["h | h | h", "b | 2 | 1", "Total | 9 | =SUM(C2:C)", "a | 1 | 2"]);
-    expect(sorted(t, 1, "asc")).toEqual(["h", "a", "Total", "b"]);
+    const t = grid(["h | h | h", "c | 3 | 1", "b | 2 | 1", "Total | 9 | =SUM(C2:C3)", "a | 1 | 2"]);
+    expect(sorted(t, 1, "asc")).toEqual(["h", "b", "c", "Total", "a"]);
   });
 
   it("sorts every row when there's no title row", () => {

@@ -140,6 +140,8 @@ export function UploadSheet({ queue }: { queue: UploadQueue }) {
   const [over, setOver] = useState(false);
   const categoriesId = useId();
   const announcement = useAnnouncement(items);
+  // Closing may not blur the field being typed in (Escape, the scrim): save what changed (P3-S9).
+  useEffect(() => () => void queue.commitAll(), [queue]);
 
   const add = (list: FileList | null) => {
     if (list && list.length) queue.add(Array.from(list));

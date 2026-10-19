@@ -143,13 +143,17 @@ export interface DirectBookingInput {
   step: string;
   /** The `weddingFiles` ids attached while adding: each is linked to the booking in the same write (§5.7). */
   files?: readonly string[];
+  /** The booking's own folder in Files (`Files › Bookings › <name>`), which the attached files move into (P4-S6). */
+  folderId?: string;
 }
 
 /**
  * Add a booking (guide §5.7): something booked outside Vendors and Venues. It's
  * a vendor record with `booking.from = "direct"`, left out of the Vendors list.
  * The record and the links to its attached files are one write, so a failure
- * leaves neither. Pass the same `id` to retry after a failure.
+ * leaves neither. Pass the same `id` to retry after a failure. An attached file
+ * deleted before the add lands is left out, so Try again can't fail on it for
+ * ever (P4-S6).
  */
 export async function addDirectBooking(
   input: DirectBookingInput,
@@ -161,6 +165,11 @@ export async function addDirectBooking(
   const id = opts.id ?? newId("vendors", opts);
   const bookingId = bookingIdOf({ kind: "vendor", id });
   await transact(async (tx, database) => {
+    const files = [];
+    for (const fileId of input.files ?? []) {
+      const ref = doc(database, "weddingFiles", fileId);
+      if ((await tx.get(ref)).exists()) files.push(ref);
+    }
     tx.set(doc(database, "vendors", id), {
       name,
       category: input.category,
@@ -186,8 +195,9 @@ export async function addDirectBooking(
       estimate: null,
       ...stamp(database, true),
     });
-    for (const fileId of input.files ?? []) {
-      tx.update(doc(database, "weddingFiles", fileId), { recordRef: { kind: "booking", id: bookingId }, ...stamp(database) });
+    const place = input.folderId ? { folderId: input.folderId } : {};
+    for (const ref of files) {
+      tx.update(ref, { recordRef: { kind: "booking", id: bookingId }, ...place, ...stamp(database) });
     }
   }, opts);
   void logActivity("booking.added", { name }, { kind: "booking", id: bookingId }, opts);

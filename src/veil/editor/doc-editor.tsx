@@ -33,6 +33,12 @@ type DocEditorProps = {
   saveState: ReactNode;
   /** Between the toolbar and the page: "Bella is also in this document". */
   banner?: ReactNode;
+  /**
+   * The stored content holds something the editor can't read (P4-S14). The
+   * editor opens empty and read-only from then on, so nothing typed can save
+   * the empty page over what's stored.
+   */
+  onUnreadable: () => void;
 };
 
 /** The JSON the editor itself would make of `doc`, so a comparison isn't fooled by default attributes. */
@@ -61,24 +67,36 @@ export function DocEditor({
   onChange,
   saveState,
   banner,
+  onUnreadable,
 }: DocEditorProps) {
   const sheets = useSheets();
   const [title, setTitle] = useState(initial.title);
   const [startContent] = useState(initial.content);
   const [bubble, setBubble] = useState<HTMLAnchorElement | null>(null);
+  const [unreadable, setUnreadable] = useState(false);
+  const unreadableRef = useRef(false);
   const titleRef = useRef(initial.title);
   const onChangeRef = useRef(onChange);
+  const onUnreadableRef = useRef(onUnreadable);
   const editableRef = useRef(editable);
   useEffect(() => {
     onChangeRef.current = onChange;
-    editableRef.current = editable;
+    onUnreadableRef.current = onUnreadable;
+    editableRef.current = editable && !unreadable;
   });
+  const canEdit = editable && !unreadable;
 
   const [extensions] = useState(docExtensions);
   const editor = useEditor({
     extensions,
     content: startContent,
     editable,
+    enableContentCheck: true,
+    onContentError: () => {
+      unreadableRef.current = true;
+      setUnreadable(true);
+      onUnreadableRef.current();
+    },
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
     editorProps: {
@@ -93,13 +111,14 @@ export function DocEditor({
     },
     onUpdate: ({ editor: e }) => {
       setBubble(null);
+      if (unreadableRef.current) return;
       onChangeRef.current({ title: titleRef.current, content: e.getJSON() });
     },
   });
 
   useEffect(() => {
-    if (editor && editor.isEditable !== editable) editor.setEditable(editable, false);
-  }, [editor, editable]);
+    if (editor && editor.isEditable !== canEdit) editor.setEditable(canEdit, false);
+  }, [editor, canEdit]);
 
   // A change the server has that isn't from this page.
   const lastIncoming = useRef<string | null>(null);
@@ -114,7 +133,7 @@ export function DocEditor({
     }
     if (key === lastIncoming.current) return;
     lastIncoming.current = key;
-    if (!doc || hasUnsaved()) return;
+    if (!doc || hasUnsaved() || unreadableRef.current) return;
     if (key === keyOf(titleRef.current, editor.getJSON())) return;
     const { from, to } = editor.state.selection;
     editor.chain().setMeta("addToHistory", false).setContent(doc, { emitUpdate: false }).run();
@@ -151,6 +170,7 @@ export function DocEditor({
   }, [editor]);
 
   const changeTitle = (next: string) => {
+    if (unreadableRef.current) return;
     titleRef.current = next;
     setTitle(next);
     if (editor) onChange({ title: next, content: editor.getJSON() });
@@ -161,16 +181,16 @@ export function DocEditor({
   return (
     <>
       {editor && (
-        <EditorToolbar editor={editor} disabled={!editable} onLink={openLink} saveState={saveState} />
+        <EditorToolbar editor={editor} disabled={!canEdit} onLink={openLink} saveState={saveState} />
       )}
-      {editor && editable && <TableBar editor={editor} />}
+      {editor && canEdit && <TableBar editor={editor} />}
       {banner}
       <Paper
         title={title}
         onTitle={changeTitle}
         onTitleEnter={() => editor?.commands.focus("start")}
-        readOnly={!editable}
-        focusTitle={focusTitle && editable}
+        readOnly={!canEdit}
+        focusTitle={focusTitle && canEdit}
         meta={meta}
       >
         <div className={content.body}>
@@ -182,7 +202,7 @@ export function DocEditor({
           link={bubble}
           onClose={closeBubble}
           onEdit={
-            editable
+            canEdit
               ? () => {
                   setBubble(null);
                   openLink();

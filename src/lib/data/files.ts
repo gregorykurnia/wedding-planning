@@ -144,14 +144,51 @@ export async function moveFolder(
   };
 }
 
-/** Moves a file into a folder, or to the top with `null`. Undo moves it back. */
-export function moveFile(fileId: string, folderId: string | null, opts: WriteOptions = {}): Promise<Undoable> {
-  return patchWithUndo(
-    FILES,
-    fileId,
-    (data) => ((data.folderId ?? null) === folderId ? null : { patch: { folderId } }),
-    opts,
-  );
+/**
+ * Puts a file in a folder (or at the top with `null`) and returns where it was.
+ * The folder is read in the same transaction, so a file never lands in a folder
+ * deleted meanwhile: a delete that commits first makes this retry and refuse
+ * with `missing` (P4-S15).
+ */
+function placeFile(
+  fileId: string,
+  folderId: string | null,
+  opts: WriteOptions,
+  /** Undo only: the folder this move gave it. Anywhere else now, it was moved again and stays. */
+  expected?: string | null,
+): Promise<string | null | undefined> {
+  return transact(async (tx, database) => {
+    const ref = doc(database, FILES, fileId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new WriteError("missing", `${FILES}/${fileId} is gone`);
+    if (folderId !== null && !(await tx.get(doc(database, FOLDERS, folderId))).exists()) {
+      throw new WriteError("missing", "That folder is gone");
+    }
+    const was = typeof snap.data().folderId === "string" ? (snap.data().folderId as string) : null;
+    if (expected !== undefined && was !== expected) {
+      throw new WriteError("changed", `${FILES}/${fileId} was moved after this, so undo would erase that move`);
+    }
+    if (was === folderId) return undefined;
+    tx.update(ref, { folderId, ...stamp(database) });
+    return was;
+  }, opts);
+}
+
+/**
+ * Moves a file into a folder, or to the top with `null`. Undo moves it back,
+ * unless it was moved again since (`changed`) or that folder is gone (`missing`).
+ */
+export async function moveFile(fileId: string, folderId: string | null, opts: WriteOptions = {}): Promise<Undoable> {
+  const was = await placeFile(fileId, folderId, opts);
+  // A second tap on Undo after one that worked does nothing.
+  let undone = false;
+  return {
+    undo: async () => {
+      if (was === undefined || undone) return;
+      await placeFile(fileId, was, opts, folderId);
+      undone = true;
+    },
+  };
 }
 
 /**
@@ -218,17 +255,28 @@ export function renameFolder(
  * Deletes an empty folder (R8). A folder that still holds a folder or a file
  * refuses, so nothing is ever left without its folder; the screen asks first and
  * explains. Undo puts the folder back with the same id and fields.
+ *
+ * A query can't run inside a transaction, so something can still land in the
+ * folder between the check and the delete (P4-S15). It's checked again after:
+ * if anything arrived, the folder is put back and the delete refuses.
  */
 export async function deleteFolder(folderId: string, opts: WriteOptions = {}): Promise<Undoable> {
   const database = requireDb(opts.db);
-  const [childFolders, childFiles] = await guarded(() =>
-    Promise.all([
-      getDocs(query(collection(database, FOLDERS), where("parentId", "==", folderId))),
-      getDocs(query(collection(database, FILES), where("folderId", "==", folderId))),
-    ]),
-  );
-  if (!childFolders.empty || !childFiles.empty) throw new WriteError("failed", "That folder still holds things");
+  const holdsAnything = async () => {
+    const [childFolders, childFiles] = await guarded(() =>
+      Promise.all([
+        getDocs(query(collection(database, FOLDERS), where("parentId", "==", folderId))),
+        getDocs(query(collection(database, FILES), where("folderId", "==", folderId))),
+      ]),
+    );
+    return !childFolders.empty || !childFiles.empty;
+  };
+  if (await holdsAnything()) throw new WriteError("failed", "That folder still holds things");
   const { undo } = await removeWithUndo(FOLDERS, folderId, opts);
+  if (await holdsAnything()) {
+    await undo();
+    throw new WriteError("failed", "That folder still holds things");
+  }
   return { undo };
 }
 

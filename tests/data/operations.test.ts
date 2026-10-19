@@ -133,10 +133,21 @@ describe("addDirectBooking", () => {
     expect((await read("weddingFiles", "contract1"))?.recordRef).toEqual({ kind: "booking", id: bookingId });
   });
 
-  it("writes neither the booking nor a link when an attached file isn't there", async () => {
-    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["no-such-file"] };
-    await expect(addDirectBooking(input, null, { ...g(), id: "direct3" })).rejects.toThrow();
-    expect(await exists("vendors", "direct3")).toBe(false);
+  it("adds the booking when an attached file was deleted meanwhile, linking the rest (P4-S6)", async () => {
+    await setDoc(doc(gregory.db, "weddingFiles", "kept1"), { name: "Receipt", folderId: null, url: "https://example.test/r.pdf" });
+    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["no-such-file", "kept1"] };
+    const { bookingId } = await addDirectBooking(input, null, { ...g(), id: "direct3" });
+    expect(await exists("vendors", "direct3")).toBe(true);
+    expect(await exists("weddingFiles", "no-such-file")).toBe(false);
+    expect((await read("weddingFiles", "kept1"))?.recordRef).toEqual({ kind: "booking", id: bookingId });
+  });
+
+  it("puts the attached files in the booking's own folder, in the same write (P4-S6)", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "own"), { name: "Wedding rings", parentId: "root" });
+    await setDoc(doc(gregory.db, "weddingFiles", "contract2"), { name: "Contract", folderId: null, url: "https://example.test/c.pdf" });
+    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["contract2"], folderId: "own" };
+    await addDirectBooking(input, null, { ...g(), id: "direct4" });
+    expect((await read("weddingFiles", "contract2"))?.folderId).toBe("own");
   });
 });
 

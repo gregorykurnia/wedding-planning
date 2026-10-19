@@ -153,9 +153,28 @@ export class UploadQueue {
     void this.run(id);
   }
 
-  /** Reopening the sheet starts it clean: finished, refused and demo entries go; running and failed ones stay. */
+  /**
+   * Reopening the sheet starts it clean: finished, refused and demo entries go;
+   * running and failed ones stay, and so does a finished one whose name,
+   * category or description didn't save or isn't saved yet (P3-S9).
+   */
   clearFinished() {
-    this.dispatch({ type: "clear-finished" });
+    const keep = this.snapshot.items.filter((item) => item.status === "done" && this.unsaved(item.id)).map((item) => item.id);
+    this.dispatch({ type: "clear-finished", keep });
+  }
+
+  private unsaved(id: string) {
+    const written = this.written.get(id);
+    const fields = this.snapshot.fields[id];
+    return Boolean(this.snapshot.fieldErrors[id]) || Boolean(written && fields && !sameFields(fields, written));
+  }
+
+  /**
+   * The sheet closing, however it closes (Done, Escape, a tap outside): every
+   * changed field is saved, since leaving a field may not have happened (P3-S9).
+   */
+  commitAll(): Promise<void> {
+    return Promise.all(this.snapshot.items.map((item) => this.commitField(item.id))).then(() => undefined);
   }
 
   private async run(id: string) {

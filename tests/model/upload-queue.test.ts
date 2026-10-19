@@ -229,6 +229,41 @@ describe("UploadQueue", () => {
     expect(rename).not.toHaveBeenCalled();
   });
 
+  it("saves every changed field when the sheet closes, even one never left (P3-S9)", async () => {
+    const rename = vi.fn(async () => {});
+    const queue = new UploadQueue(TARGET, makeDeps({ rename }));
+    queue.add([file("a.pdf", MB, "application/pdf"), file("b.pdf", MB, "application/pdf")]);
+    await settled(queue);
+    const [a, b] = queue.getSnapshot().items;
+    queue.setField(b.id, "description", "Signed copy");
+    await queue.commitAll();
+    expect(rename).toHaveBeenCalledTimes(1);
+    expect(rename).toHaveBeenCalledWith(b.fileId, "b.pdf", { name: "b", category: "", description: "Signed copy" });
+    expect(a.status).toBe("done");
+  });
+
+  it("keeps an entry whose details didn't save, or aren't saved yet, when the sheet reopens (P3-S9)", async () => {
+    const rename = vi.fn(async () => {});
+    const queue = new UploadQueue(TARGET, makeDeps({ rename }));
+    queue.add([file("a.pdf", MB, "application/pdf"), file("b.pdf", MB, "application/pdf"), file("c.pdf", MB, "application/pdf")]);
+    await settled(queue);
+    const [a, b, c] = queue.getSnapshot().items;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    rename.mockRejectedValueOnce(new Error("offline"));
+    queue.setField(a.id, "name", "Contract");
+    await queue.commitField(a.id);
+    queue.setField(b.id, "category", "Quote");
+    queue.clearFinished();
+    expect(queue.getSnapshot().items.map((i) => i.id)).toEqual([a.id, b.id]);
+    expect(queue.getSnapshot().fields[a.id].name).toBe("Contract");
+    expect(c.status).toBe("done");
+
+    // Once they save, the next reopen clears them.
+    await queue.commitAll();
+    queue.clearFinished();
+    expect(queue.getSnapshot().items).toEqual([]);
+  });
+
   it("tells listeners when anything changes", async () => {
     const queue = new UploadQueue(TARGET, makeDeps());
     const seen = vi.fn();

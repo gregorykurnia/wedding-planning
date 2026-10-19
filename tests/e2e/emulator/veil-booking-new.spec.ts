@@ -90,3 +90,54 @@ test("asks for a name before it writes anything, and keeps the form", async ({ p
   await expect(page.getByLabel("What it is")).toBeFocused();
   await expect(page).toHaveURL("/new/budget/bookings/new");
 });
+
+/** Every document in a collection, with its fields as the REST API gives them. */
+async function all(collection: string): Promise<{ id: string; fields: Record<string, Record<string, unknown>> }[]> {
+  const res = await fetch(`${DOCS}/${collection}?pageSize=300`, { headers: ADMIN });
+  const body = (await res.json()) as { documents?: { name: string; fields?: Record<string, Record<string, unknown>> }[] };
+  return (body.documents ?? []).map((d) => ({ id: d.name.split("/").at(-1)!, fields: d.fields ?? {} }));
+}
+
+test("a file attached while adding goes into Files › Bookings › its name (P4-S6)", async ({ page }) => {
+  const name = `Sakura ${Date.now()}`;
+  await page.route("https://api.cloudinary.com/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify({
+        public_id: "test-upload/b7-file",
+        secure_url: "https://res.cloudinary.com/test-cloud/raw/upload/v1/test-upload/b7-file.pdf",
+        resource_type: "raw",
+        format: "pdf",
+        bytes: 24,
+      }),
+    }),
+  );
+  await signInAndOpenForm(page);
+  await page.getByLabel("What it is").fill(name);
+  await page.getByRole("button", { name: "Attach a contract or receipt" }).click();
+  const sheet = page.getByRole("dialog", { name: "Upload files" });
+  await expect(sheet.getByText(`Into Files › Bookings › ${name}`)).toBeVisible();
+  await sheet.locator('input[type="file"]').setInputFiles({ name: "Invoice.pdf", mimeType: "application/pdf", buffer: Buffer.alloc(24, "x") });
+  await expect(sheet.getByText("Uploaded", { exact: true })).toBeVisible();
+  await sheet.getByRole("button", { name: "Done" }).click();
+  await page.getByRole("button", { name: "Add booking" }).click();
+  await expect(page).toHaveURL("/new/budget/bookings", { timeout: COMPILE_TIMEOUT });
+
+  const file = (await all("weddingFiles")).find((f) => f.fields.originalFilename?.stringValue === "Invoice.pdf")!;
+  const folders = await all("fileFolders");
+  const own = folders.find((f) => f.id === file.fields.folderId?.stringValue);
+  const root = folders.find((f) => f.id === own?.fields.parentId?.stringValue);
+  try {
+    expect(own?.fields.name).toEqual({ stringValue: name });
+    expect(root?.fields.name).toEqual({ stringValue: "Bookings" });
+    expect(root?.fields.parentId).toEqual({ nullValue: null });
+  } finally {
+    const vendor = (file.fields.recordRef?.mapValue as { fields?: Record<string, { stringValue?: string }> })?.fields?.id?.stringValue;
+    if (vendor) added.push(vendor.replace("vendor-", ""));
+    await remove("weddingFiles", file.id);
+    if (own) await remove("fileFolders", own.id);
+    if (root) await remove("fileFolders", root.id);
+  }
+});

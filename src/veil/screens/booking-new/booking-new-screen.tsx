@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { addDirectBooking, bookingIdOf } from "@/lib/data/bookings";
 import { mergeStatus } from "@/lib/data/read";
 import { useSession } from "@/lib/data/session";
+import { recordFolderPath, type RecordRef } from "@/lib/data/adapters/files";
 import type { UploadTarget } from "@/lib/data/upload-queue";
-import { useUploadQueue, useUploads } from "@/lib/data/uploads";
+import { recordFolder, useUploadQueue, useUploads } from "@/lib/data/uploads";
 import { useFunders } from "@/lib/data/use-funders";
 import { useToday } from "@/lib/data/use-today";
 import { useCategories } from "@/lib/data/vendors";
@@ -83,12 +84,15 @@ function AddForm({ funders, categories, inDemo }: { funders: Funder[]; categorie
   const toast = useToast();
   const flash = useFlasher();
   const today = useToday();
-  const target: UploadTarget = { kind: "folder", folderId: null, path: [] };
+  const [name, setName] = useState("");
+  // There's no booking to file under until it's added: files wait at the top of
+  // Files and move into the booking's own folder with the add (P4-S6), which is
+  // where the sheet says they go.
+  const target: UploadTarget = { kind: "folder", folderId: null, path: recordFolderPath({ kind: "booking", id: "" }, name) };
   const queue = useUploadQueue(target, undefined, inDemo);
   const { items } = useUploads(queue);
   const openUploads = useUploadSheet(queue);
 
-  const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState<number | null>(null);
   const [paid, setPaid] = useState<number | null>(null);
@@ -126,7 +130,10 @@ function AddForm({ funders, categories, inDemo }: { funders: Funder[]; categorie
       files: items.flatMap((i) => (i.status === "done" && i.fileId ? [i.fileId] : [])),
     });
     try {
-      await addDirectBooking(draft, today, { id: recordId });
+      // Found by what it belongs to, so Try again reuses the folder a failed add made.
+      const ref: RecordRef = { kind: "booking", id: bookingIdOf({ kind: "vendor", id: recordId }) };
+      const folderId = draft.files?.length ? await recordFolder(ref, recordFolderPath(ref, draft.name)) : undefined;
+      await addDirectBooking({ ...draft, folderId }, today, { id: recordId });
     } catch {
       setAdding(false);
       setFailed(true);

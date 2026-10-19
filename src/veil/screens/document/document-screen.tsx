@@ -31,7 +31,7 @@ import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
 import { useSheets } from "@/veil/shell/sheet";
 import { useEditorToasts, useToast } from "@/veil/shell/toasts";
-import { DELETED_HERE, DEMO_NONE, NOT_HERE, deletedElsewhere, lostOnLeave, partnerHere } from "./document-text";
+import { DELETED_HERE, DEMO_NONE, NOT_HERE, UNREADABLE, deletedElsewhere, lostOnLeave, partnerHere } from "./document-text";
 import { LeaveSheet } from "./leave-sheet";
 import styles from "./document-screen.module.css";
 
@@ -159,6 +159,8 @@ function OpenDocument({ docId, fresh, created, onCreated, initial, read }: OpenD
 
   const demo = connection === "demo";
   const [deleted, setDeleted] = useState<"no" | "deleting" | "yes">("no");
+  const [unreadable, setUnreadable] = useState(false);
+  const onUnreadable = useCallback(() => setUnreadable(true), []);
   const createdRef = useRef(created);
   const titleRef = useRef(initial.title);
 
@@ -297,9 +299,14 @@ function OpenDocument({ docId, fresh, created, onCreated, initial, read }: OpenD
         focusTitle={fresh}
         meta={meta}
         onChange={onChange}
+        onUnreadable={onUnreadable}
         saveState={<DocSaveState kind={autosave.kind} savedAgo={savedAgo} onRetry={autosave.retry} />}
         banner={
-          presence.partnerHere ? (
+          unreadable ? (
+            <div className={styles.banner}>
+              <Banner role="status">{UNREADABLE}</Banner>
+            </div>
+          ) : presence.partnerHere ? (
             <div className={styles.banner}>
               <Banner>
                 <span className={styles.syncDot} aria-hidden="true" />

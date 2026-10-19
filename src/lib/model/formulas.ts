@@ -231,7 +231,9 @@ export interface SortOptions {
  * Sorts a table by one column (R3). Returns where each row goes: the new list
  * of original row numbers. It's numeric when every non-blank value in the
  * column is a number, and text otherwise (natural order, accents ignored).
- * Blanks go last. The title row and any row holding a total stay where they are.
+ * Blanks go last. The title row and any row holding a total stay where they are,
+ * and each run of rows between them is sorted on its own, so no row moves across
+ * a subtotal and changes it.
  */
 export function sortTableRows(
   cells: readonly (readonly string[])[],
@@ -240,14 +242,21 @@ export function sortTableRows(
   { titleRow = true }: SortOptions = {},
 ): number[] {
   const order = cells.map((_, i) => i);
-  const movable = order.filter((i) => !(titleRow && i === 0) && !cells[i].some(isFormula));
-  const parsed = movable.map((i) => {
+  const fixed = (i: number) => (titleRow && i === 0) || cells[i].some(isFormula);
+  const parsed = order.map((i) => {
     const text = (cells[i][column] ?? "").trim();
     return { i, text, n: parseNumber(text) };
   });
-  const numeric = parsed.filter((p) => !p.n.blank).every((p) => !p.n.text);
-  const sorted = sortBy(parsed, (p) => (numeric ? (p.n.blank ? null : p.n.value) : p.text), direction);
-  sorted.forEach((p, slot) => (order[movable[slot]] = p.i));
+  const numeric = parsed.filter((p) => !fixed(p.i) && !p.n.blank).every((p) => !p.n.text);
+  const runs: (typeof parsed)[] = [[]];
+  for (const p of parsed) {
+    if (fixed(p.i)) runs.push([]);
+    else runs[runs.length - 1].push(p);
+  }
+  for (const run of runs) {
+    const sorted = sortBy(run, (p) => (numeric ? (p.n.blank ? null : p.n.value) : p.text), direction);
+    sorted.forEach((p, slot) => (order[run[slot].i] = p.i));
+  }
   return order;
 }
 

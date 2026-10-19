@@ -120,7 +120,8 @@ export type UploadAction =
   | { type: "failed"; id: string }
   | { type: "too-large"; id: string; stillOver: number }
   | { type: "retry"; id: string }
-  | { type: "clear-finished" };
+  /** `keep`: finished entries that stay anyway (details not saved yet, P3-S9). */
+  | { type: "clear-finished"; keep?: readonly string[] };
 
 const FINISHED: UploadStatus[] = ["done", "too-large", "demo"];
 
@@ -171,7 +172,7 @@ export function uploadReducer(items: UploadItem[], action: UploadAction): Upload
         loaded: 0,
       }));
     case "clear-finished":
-      return items.filter((item) => !FINISHED.includes(item.status));
+      return items.filter((item) => !FINISHED.includes(item.status) || action.keep?.includes(item.id));
   }
 }
 

@@ -132,6 +132,20 @@ test("an upload is filed in the record's folder, with the typed fields, and show
   await expect(tiles(page).getByText("Florist quote.pdf")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
+test("a description typed after the upload saves when Escape closes the sheet (P3-S9)", async ({ page }) => {
+  await stub(page);
+  await openGallery(page);
+  await openSheet(page);
+  const dialog = sheet(page);
+  await dialog.locator('input[type="file"]').setInputFiles(pdf("Quote.pdf"));
+  await expect(dialog.getByText("Uploaded", { exact: true })).toBeVisible();
+  await expect.poll(async () => (await list("weddingFiles")).length).toBe(1);
+  await dialog.getByLabel("Description for Quote.pdf").fill("Typed, then Escape");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect.poll(async () => (await list("weddingFiles"))[0]?.description).toBe("Typed, then Escape");
+});
+
 test("two files uploaded together share one folder", async ({ page }) => {
   await stub(page);
   await openGallery(page);

@@ -178,6 +178,27 @@ test("an old document opens complete, with its fonts and sizes mapped and colour
   expect(textOf((await read(id))?.content)).toContain('"fontFamily":"Inter"');
 });
 
+test("a document the editor can't read opens read-only with a line, and typing saves nothing over it (P4-S14)", async ({
+  page,
+}) => {
+  const id = docId("unreadable");
+  const stored = body(para("Before the mystery."), { type: "mysteryBlock", content: [para("Inside it.")] });
+  await put(id, { title: "Vendor contract notes", content: stored });
+  await signIn(page);
+  await page.goto(`/new/documents/${id}`);
+  await expect(page.getByText(/can’t show/)).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByLabel("Title")).toHaveAttribute("readonly", "");
+  await expect(bodyOf(page)).toHaveAttribute("contenteditable", "false");
+  await bodyOf(page).click();
+  await page.keyboard.type("Overwritten");
+  await page.getByLabel("Title").click();
+  await page.keyboard.type(" again");
+  await page.waitForTimeout(2500);
+  const after = await read(id);
+  expect(after?.title).toBe("Vendor contract notes");
+  expect(textOf(after?.content)).toBe(textOf(stored));
+});
+
 test("a change that can't save keeps the text and says so; Try again and coming back online save it", async ({
   page,
   context,

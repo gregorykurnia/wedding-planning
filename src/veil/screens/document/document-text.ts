@@ -24,7 +24,14 @@ export function deletedElsewhere(by: string | null) {
   };
 }
 
-export const partnerHere = (partner: string) =>
+/**
+ * The stored document holds something the editor can't read (P4-S14), so it
+ * opens empty and can't be changed here. Provisional (G37/N37).
+ */
+export const UNREADABLE =
+  "This document holds something the planner can’t show, so it opens empty and can’t be changed here. What’s stored in it is kept as it is.";
+
+export const partnerHere =(partner: string) =>
   `${partner} is also in this document. Their changes appear as they type.`;
 
 /**
