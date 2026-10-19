@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // The test runs start two dev servers from this folder; each needs its own
   // build folder (tests set NEXT_DIST_DIR). Normal runs use .next.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // The dev disk cache (on by default since 16.1) never shrinks; in the test
+  // folders it reached 4 GB each per lane. Test servers start cold instead.
+  experimental: {
+    turbopackFileSystemCacheForDev: !process.env.NEXT_DIST_DIR,
+  },
   async headers() {
     return [
       {
