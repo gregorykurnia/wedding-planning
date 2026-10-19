@@ -122,6 +122,13 @@ async function seedShortlist(withFinalists = true) {
       nextAction: "x".repeat(130),
     }),
   );
+  // "Now a booking" follows the vendor's booking (review P4-S10).
+  await put("vendors", "v9", {
+    name: "Dapur Lestari Catering",
+    category: "Food",
+    contractStatus: "Chosen",
+    booking: { on: "2026-09-01", from: "finalist", removed: false },
+  });
 }
 
 // This spec empties Firestore, so the specs after it get the accounts paired again.

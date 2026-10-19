@@ -143,7 +143,7 @@ describe("focus and keen counts", () => {
 describe("the spreadsheet (N5)", () => {
   const options = [
     { description: "Silver, 300 guests", price: 45_000_000, selected: false },
-    { description: "Gold, 400 guests", price: 161_000_000, selected: true },
+    { description: "Gold, 400 guests", price: 161_000_000, selected: true, includes: "Buffet, 7 dishes" },
   ];
   const full = item({ priceOptions: options }, { booked: true, fileCount: 2, finalistId: "f1" });
   const cells = (v: VendorListItem) => Object.fromEntries(VENDOR_COLUMNS.map((c) => [c.header, c.value(v)]));
@@ -187,7 +187,8 @@ describe("the spreadsheet (N5)", () => {
     expect(row["Date added"]).toBe("2026-05-02");
     expect(row["Leaning towards"]).toBe("Gold, 400 guests");
     expect(row["Price options"]).toBe(2);
-    expect(row["All price options"]).toBe("Silver, 300 guests: Rp 45.000.000; Gold, 400 guests: Rp 161.000.000");
+    // What each includes, when it says (review P4-S9).
+    expect(row["All price options"]).toBe("Silver, 300 guests: Rp 45.000.000; Gold, 400 guests: Rp 161.000.000 (Buffet, 7 dishes)");
     const empty = cells(item({ rating: null, reviewers: null, contactPhone: "", createdAt: null }));
     expect([empty["Rating (out of 5)"], empty["Number of reviewers"], empty["WhatsApp"], empty["Date added"]]).toEqual([
       "",

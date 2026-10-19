@@ -282,6 +282,18 @@ test("a finalist that became a booking carries the flag and a way to the booking
   await expect(page.getByRole("heading", { name: "Chosen this one?" })).toHaveCount(0);
 });
 
+test("the flag follows the vendor: booked from its own screen, or its booking removed (review P4-S10)", async ({ browser }) => {
+  await put("vendors", "v1", vendor("Kebun Bunga Atelier", { category: "Decoration", contractStatus: "Chosen", booking: { on: "2026-09-01", from: "vendor", removed: false } }));
+  const page = await signInAs(browser, TEST_ACCOUNTS[0], "s1");
+  await expect(page.getByText("Now a booking", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the booking" })).toHaveAttribute("href", "/new/budget/bookings/vendor-v1");
+  await expect(page.getByRole("button", { name: "Book it", exact: true })).toHaveCount(0);
+
+  await put("vendors", "v1", vendor("Kebun Bunga Atelier", { category: "Decoration", contractStatus: "Chosen", booking: { on: "2026-09-01", from: "vendor", removed: true } }));
+  await expect(page.getByText("Now a booking", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Book it", exact: true })).toBeVisible();
+});
+
 test("fields save as you go, say so, and survive a reload", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0], "s1");
 
@@ -444,6 +456,9 @@ test("Book it: the package chips lean on the one we like, and booking makes a bo
 
   await toasts(page).getByRole("button", { name: "Open" }).click();
   await expect(page).toHaveURL("/new/budget/bookings/vendor-v1");
+  // The finalist's own files come along with the vendor's (review P4-S11).
+  await expect(page.getByText("Moodboard.pdf")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Vendor-quote.pdf")).toBeVisible();
 });
 
 test("Move into Vendors makes a vendor at Considering with the packages as price options, and undo takes it back", async ({ browser }) => {
@@ -495,7 +510,8 @@ test("removing a finalist asks first, says it in place, and can be undone", asyn
   await toasts(page).getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kebun Bunga Atelier");
   await expect(page.getByLabel("Contact person")).toHaveValue("Bu Ayu");
-  expect((await stored("shortlist", "s1"))?.name).toBe("Kebun Bunga Atelier");
+  // The screen shows the undo before the write reaches the server.
+  await expect.poll(async () => (await stored("shortlist", "s1"))?.name).toBe("Kebun Bunga Atelier");
 });
 
 test("removing one with no vendor behind it says its own files stay, and a booking stays in the budget", async ({ browser }) => {

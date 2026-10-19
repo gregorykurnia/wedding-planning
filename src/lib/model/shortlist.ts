@@ -20,7 +20,8 @@ export interface FinalistSource {
   reviewers: number | null;
   igFollowers: number | null;
   step: string;
-  movedTo: { kind: string } | null;
+  /** The booking it is, while that booking stands (the data layer reads the vendor). */
+  bookingId: string | null;
 }
 
 export interface FinalistPackage {
@@ -60,7 +61,7 @@ export function finalistListItem(f: FinalistSource): FinalistListItem {
     reviewers: f.reviewers,
     followers: f.igFollowers,
     step: f.step,
-    booked: f.movedTo?.kind === "booking",
+    booked: f.bookingId !== null,
   };
 }
 

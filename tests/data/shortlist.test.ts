@@ -283,7 +283,7 @@ describe("Book it, Move into Vendors and removing a finalist", () => {
     expect(await read("s1")).toMatchObject({ movedTo: { kind: "booking", id: "vendor-new1" } });
     await booked.undo();
     expect((await getDoc(doc(gregory.db, "vendors", "new1"))).exists()).toBe(false);
-    expect((await read("s1"))?.movedTo).toBeNull();
+    expect(await read("s1")).not.toHaveProperty("movedTo");
   });
 
   it("still says the package is gone when the one chosen was removed", async () => {

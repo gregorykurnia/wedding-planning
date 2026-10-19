@@ -4,7 +4,7 @@ import { bookingsFrom, isVendorBooked, isVenueBooked } from "@/lib/model/booking
 import { byFunder } from "@/lib/model/money";
 import { bookingMark, vendorFromDoc, venueFromDoc } from "@/lib/data/adapters/bookings";
 import { fundersFrom, funderFromDoc, LEGACY_FUNDERS } from "@/lib/data/adapters/funders";
-import { finalistFromDoc, MAIN_PACKAGE_ID } from "@/lib/data/adapters/shortlist";
+import { finalistBookingId, finalistFromDoc, MAIN_PACKAGE_ID } from "@/lib/data/adapters/shortlist";
 import { guestFromDoc, numberGuests } from "@/lib/data/adapters/guests";
 import { fileFromDoc, filesForRecord, recordRef } from "@/lib/data/adapters/files";
 import { whatIfFromDoc } from "@/lib/data/adapters/what-if";
@@ -176,6 +176,23 @@ describe("shortlist: main package and the preferred one", () => {
       id: "v1",
     });
     expect(finalistFromDoc("s1", { ...doc, movedTo: { kind: "x", id: "v1" } }).movedTo).toBeNull();
+  });
+
+  it("is a booking only while the vendor it books is booked (review P4-S10)", () => {
+    const vendors = (...list: [string, Record<string, unknown>][]) =>
+      new Map(list.map(([id, data]) => [id, vendorFromDoc(id, { name: id, ...data })]));
+    const bookedAs = finalistFromDoc("s1", { ...doc, sourceVendorId: "v1", movedTo: { kind: "booking", id: "vendor-v1" } });
+    const live = { booking: { on: null, from: "finalist", removed: false } };
+    expect(finalistBookingId(bookedAs, vendors(["v1", live]))).toBe("vendor-v1");
+    // Its booking was removed, or the vendor is gone: not a booking any more.
+    expect(finalistBookingId(bookedAs, vendors(["v1", { booking: { ...live.booking, removed: true } }]))).toBeNull();
+    expect(finalistBookingId(bookedAs, vendors())).toBeNull();
+    // Copied from a vendor that was booked from its own screen, or is Chosen in the old screens.
+    const copied = finalistFromDoc("s2", { ...doc, sourceVendorId: "v2" });
+    expect(finalistBookingId(copied, vendors(["v2", { booking: { on: null, from: "vendor", removed: false } }]))).toBe("vendor-v2");
+    expect(finalistBookingId(copied, vendors(["v2", { contractStatus: "Chosen" }]))).toBe("vendor-v2");
+    expect(finalistBookingId(copied, vendors(["v2", { contractStatus: "Consideration" }]))).toBeNull();
+    expect(finalistBookingId(finalistFromDoc("s3", doc), vendors(["v2", live]))).toBeNull();
   });
 });
 

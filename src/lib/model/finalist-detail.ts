@@ -53,7 +53,8 @@ export interface FinalistDetailSource {
   }[];
   preferredPackageId: string;
   sourceVendorId: string | null;
-  movedTo: { kind: string; id: string } | null;
+  /** The booking it is, while that booking stands (the data layer reads the vendor). */
+  bookingId: string | null;
 }
 
 export interface FinalistFile {
@@ -119,7 +120,7 @@ export function finalistDetail(f: FinalistDetailSource, extras: FinalistExtras):
       fileCount: main ? 0 : (extras.packageFiles[p.id]?.length ?? 0),
     };
   });
-  const booked = f.movedTo?.kind === "booking";
+  const booked = f.bookingId !== null;
   return {
     id: f.id,
     name: f.name,
@@ -135,7 +136,7 @@ export function finalistDetail(f: FinalistDetailSource, extras: FinalistExtras):
     sourceVendor: extras.sourceVendor,
     sourceGone: f.sourceVendorId !== null && extras.sourceVendor === null,
     booked,
-    bookingId: booked ? (f.movedTo as { id: string }).id : null,
+    bookingId: f.bookingId,
     hasBooking: booked || Boolean(extras.sourceVendor?.booked),
     files: extras.files,
     packageFiles: extras.packageFiles,

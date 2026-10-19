@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from "firebase/firestore";
 import { bookingsFrom, isVendorBooked, isVenueBooked } from "@/lib/model/bookings";
 import { byFunder, totals } from "@/lib/model/money";
 import { vendorFromDoc, venueFromDoc } from "@/lib/data/adapters/bookings";
@@ -539,8 +539,39 @@ describe("shortlist", () => {
     expect((await bookFinalist(finalistId, "main", null, g())).bookingId).toBe("vendor-v1");
 
     await booked.undo();
-    expect(await read("vendors", "v1")).toMatchObject({ contractStatus: "Consideration", booking: null });
-    expect(await read("shortlist", finalistId)).toMatchObject({ movedTo: null, preferredPackageId: "main" });
+    // Fields that were missing are missing again, not null (review P1-S9).
+    const vendor = await read("vendors", "v1");
+    expect(vendor).toMatchObject({ contractStatus: "Consideration", totalPrice: 100_000_000 });
+    expect(vendor).not.toHaveProperty("booking");
+    expect(vendor).not.toHaveProperty("estimate");
+    const finalist = await read("shortlist", finalistId);
+    expect(finalist).toMatchObject({ preferredPackageId: "main" });
+    expect(finalist).not.toHaveProperty("movedTo");
+  });
+
+  it("writes nothing for a vendor that's already booked, also as Chosen in the old screens (P1-S9, P4-S10)", async () => {
+    const { finalistId } = await copyToShortlist("v1", g());
+    for (const already of [{ contractStatus: "Chosen" }, { booking: { on: "2026-09-01", from: "vendor", removed: false } }]) {
+      await updateDoc(doc(gregory.db, "vendors", "v1"), already);
+      const before = await read("vendors", "v1");
+      const booked = await bookFinalist(finalistId, "main", "2026-10-14", b());
+      expect(booked.bookingId).toBe("vendor-v1");
+      expect(await read("vendors", "v1")).toEqual(before);
+      expect(await read("shortlist", finalistId)).not.toHaveProperty("movedTo");
+      await booked.undo();
+      expect(await read("vendors", "v1")).toEqual(before);
+    }
+  });
+
+  it("books a finalist again once its booking was removed (P4-S10)", async () => {
+    const { finalistId } = await copyToShortlist("v1", g());
+    await bookFinalist(finalistId, "main", "2026-10-14", g());
+    await removeBooking({ kind: "vendor", id: "v1" }, b());
+    const again = await bookFinalist(finalistId, "main", "2026-10-20", b());
+    expect(again.bookingId).toBe("vendor-v1");
+    expect(await read("vendors", "v1")).toMatchObject({ booking: { on: "2026-10-20", from: "finalist", removed: false } });
+    await again.undo();
+    expect(await read("vendors", "v1")).toMatchObject({ booking: { on: "2026-10-14", removed: true } });
   });
 
   it("books a finalist added straight to the shortlist as a new vendor booking; undo removes it", async () => {
@@ -559,7 +590,8 @@ describe("shortlist", () => {
     expect(await copyToShortlist("new1", b())).toMatchObject({ finalistId: "s1", created: false });
     await booked.undo();
     expect(await exists("vendors", "new1")).toBe(false);
-    expect(await read("shortlist", "s1")).toMatchObject({ movedTo: null, sourceVendorId: null });
+    expect(await read("shortlist", "s1")).not.toHaveProperty("movedTo");
+    expect(await read("shortlist", "s1")).not.toHaveProperty("sourceVendorId");
   });
 
   it("moves a from-scratch finalist into Vendors once; undo removes the vendor", async () => {

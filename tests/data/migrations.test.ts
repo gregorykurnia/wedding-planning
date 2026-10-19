@@ -148,6 +148,19 @@ describe("migrations", () => {
     expect(again.map((r) => r.planned)).toEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 
+  it("refuses to apply a migration already recorded, unless forced (review P1-S14)", async () => {
+    await run(["1-funders"], true, quiet);
+    await db.doc("funders/Bella Fam").delete();
+    await expect(run(["all"], true, quiet)).rejects.toThrow("Already run: 1-funders. Add --force to run again.");
+    // Nothing was written: the deleted funder stays deleted and no other migration ran.
+    expect(await get("funders/Bella Fam")).toBeUndefined();
+    expect((await get("appMeta/migrations"))?.runs).toHaveLength(1);
+    // A dry run still works, and --force runs it again.
+    await run(["1-funders"], false, quiet);
+    const [forced] = await run(["1-funders"], true, quiet, true);
+    expect(forced.written).toBeGreaterThan(0);
+  });
+
   it("refuses to overwrite a record changed after the plan", async () => {
     const { applyPlan } = await import("../../scripts/migrate/plan");
     const bookings = MIGRATIONS.find((m) => m.name === "3-bookings")!;

@@ -62,7 +62,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 6.5 Not found and error screens · Haiku 5.5 Max | [x] 6.2 Push reminders (after 4.25) · Opus 5.5 High |
 | 🛑 [x] Phase 4 review · Opus 5.5 Medium | wait |
 | **Review fixes (both lanes finish these before Phase 5; items in `redesign/reviews/triage.md`)** | |
-| [ ] 4.F1 Money and bookings (L) · Opus 5.5 Medium | [ ] 4.F3 Vendors, rules and scripts · Opus 5.5 Medium |
+| [ ] 4.F1 Money and bookings (L) · Opus 5.5 Medium | [x] 4.F3 Vendors, rules and scripts · Opus 5.5 Medium |
 | [ ] 4.F2 Documents, files and uploads · Opus 5.5 Medium | [ ] 4.F4 Schedule, items and guests · Opus 5.5 Medium |
 | — | [ ] 4.F5 Shared sheets and partner news · Opus 5.5 Medium |
 | **Phase 5: states** | |
