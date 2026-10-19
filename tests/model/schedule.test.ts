@@ -15,6 +15,7 @@ import {
   storedEvent,
   storedWhen,
   whenOf,
+  whenPatch,
 } from "@/lib/model/schedule";
 
 const TODAY = "2026-10-14";
@@ -154,6 +155,25 @@ describe("what an event needs (N9)", () => {
   it("counts what the save line holds", () => {
     expect(heldLine(["end"])).toBe("1 change not saved yet: the end time");
     expect(heldLine(["title", "date"])).toBe("2 changes not saved yet: the title and the date");
+  });
+});
+
+describe("changing an event's time (P4-S17)", () => {
+  const before = { date: "2026-10-16", allDay: false, start: "10:00", end: "11:00" };
+
+  it("keeps the sent reminders when the start or end moves on the same day", () => {
+    expect(whenPatch(before, { ...before, end: "12:00" })).toEqual({ startAt: "2026-10-16T10:00", endAt: "2026-10-16T12:00", allDay: false });
+    expect(whenPatch(before, { ...before, start: "09:00" })).not.toHaveProperty("remindersSent");
+    expect(whenPatch(before, { ...before, allDay: true })).not.toHaveProperty("remindersSent");
+  });
+
+  it("clears them when the day moves, so the new day's reminder still comes", () => {
+    expect(whenPatch(before, { ...before, date: "2026-10-20" })).toEqual({
+      startAt: "2026-10-20T10:00",
+      endAt: "2026-10-20T11:00",
+      allDay: false,
+      remindersSent: [],
+    });
   });
 });
 

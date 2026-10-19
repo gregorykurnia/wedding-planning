@@ -12,6 +12,7 @@ import {
   removeTitle,
   removedToast,
   rsvpConflict,
+  rsvpConflictOwn,
 } from "@/veil/screens/guests/guests-text";
 
 // Task 4.24: the words of the Guests screen and its sheets (guide §5.23, §6.2, §6.8).
@@ -74,5 +75,6 @@ describe("removing a guest", () => {
 
   it("says when Undo of a reply finds the guest changed since", () => {
     expect(rsvpConflict("Bella", "Wayan")).toBe("Can’t undo the reply: Bella has changed Wayan since. It’s kept as it is now.");
+    expect(rsvpConflictOwn("Wayan")).toBe("Can’t undo the reply: you’ve changed Wayan since. It’s kept as it is now.");
   });
 });

@@ -133,6 +133,16 @@ export function storedWhen(when: WhenDraft): { startAt: string; endAt: string | 
   };
 }
 
+/**
+ * What a change to an event's time writes. Reminders are mornings (§6.12), so
+ * only a new day clears what was already sent; a new start or end on the same
+ * day keeps it, and the morning-before reminder isn't sent twice (P4-S17).
+ */
+export function whenPatch(before: WhenDraft, next: WhenDraft): Record<string, unknown> {
+  const stored = storedWhen(next);
+  return before.date === next.date ? stored : { ...stored, remindersSent: [] };
+}
+
 /** Switching a timed event on again starts it at 10:00 (the sheet's default). */
 export const DEFAULT_START = "10:00";
 

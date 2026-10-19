@@ -220,6 +220,21 @@ test("one tap records a reply, tells the partner, moves the figure, and Undo tak
   await expect(reply(page, "g-lily", "Attending")).toBeFocused();
 });
 
+test("a double tap ends on the second reply, and Undo on the first says it was your own change (P4-S22)", async ({ browser }) => {
+  const page = await openGuests(browser);
+
+  await reply(page, "g-lily", "Attending").click();
+  await reply(page, "g-lily", "Not attending").click();
+  await expect(toasts(page).getByText("Tante Lily: not attending")).toBeVisible({ timeout: 30_000 });
+  await expect.poll(async () => (await read("g-lily"))?.rsvpStatus).toBe("no");
+  await expect(reply(page, "g-lily", "Not attending")).toHaveAttribute("aria-checked", "true");
+
+  // The first toast's Undo would erase the second tap: it refuses, naming you, not the partner.
+  await toasts(page).locator("[data-kind]", { hasText: "Tante Lily: attending" }).getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByText("Can’t undo the reply: you’ve changed Tante Lily since. It’s kept as it is now.")).toBeVisible();
+  expect((await read("g-lily"))?.rsvpStatus).toBe("no");
+});
+
 test("two replies that didn't save stay chosen together, another row's save clears neither, and each Try again saves its own", async ({ browser }) => {
   const page = await openGuests(browser);
   const lilyLine = row(page, "g-lily").getByText("Couldn’t save the reply for Tante Lily. Your choice is kept.");

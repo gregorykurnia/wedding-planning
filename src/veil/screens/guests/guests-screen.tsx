@@ -44,6 +44,7 @@ import {
   guestsSub,
   noMatchTitle,
   rsvpConflict,
+  rsvpConflictOwn,
 } from "./guests-text";
 
 /** Guests shown at a time (guide §5.23: 100 at a time). */
@@ -89,8 +90,12 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
   const [shown, setShown] = useState(PAGE);
 
   // The reply a tap chose, shown until it is saved; one that didn't save stays shown with its line,
-  // whatever happens on other rows, until its own Try again lands.
-  const [held, setHeld] = useState<Record<string, Rsvp>>({});
+  // whatever happens on other rows, until its own Try again lands. A row's replies are saved one after
+  // another in the order they were tapped, and only the last tap's landing lets go, so a double tap
+  // neither flickers nor ends on the first reply (Phase 4 review S22).
+  const [held, setHeld] = useState<Record<string, { rsvp: Rsvp; tap: number }>>({});
+  const replies = useRef(new Map<string, Promise<unknown>>());
+  const taps = useRef(0);
   const [failures, setFailures] = useState<ReadonlyMap<string, Failure>>(new Map());
   // A guest just added, to bring into view once their row exists.
   const [reveal, setReveal] = useState<string | null>(null);
@@ -105,7 +110,7 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
   // A guest just added is always on the page, however far down they are.
   const limit = Math.max(shown, reveal ? view.findIndex((g) => g.id === reveal) + 1 : 0);
   const rows = useMemo(
-    () => view.slice(0, limit).map((g) => (g.id in held ? { ...g, rsvpStatus: held[g.id] } : g)),
+    () => view.slice(0, limit).map((g) => (g.id in held ? { ...g, rsvpStatus: held[g.id].rsvp } : g)),
     [view, limit, held],
   );
 
@@ -153,13 +158,16 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
 
   /** One tap on a row's switch: shown at once, saved, then Undo; if it doesn't save the choice stays with Try again. */
   function reply(guest: GuestRecord, next: Rsvp) {
-    setHeld((h) => ({ ...h, [guest.id]: next }));
+    const tap = ++taps.current;
+    setHeld((h) => ({ ...h, [guest.id]: { rsvp: next, tap } }));
     const run = async () => {
+      const step = (replies.current.get(guest.id) ?? Promise.resolve()).then(() => setGuestRsvp(guest, next));
+      replies.current.set(guest.id, step.catch(() => undefined));
       try {
-        const { undo } = await setGuestRsvp(guest, next);
-        // A later tap on this row may already hold another reply: that one stays until it lands.
+        const { undo } = await step;
+        // A later tap on this row holds its own reply: that one stays until it lands.
         setHeld((h) => {
-          if (h[guest.id] !== next) return h;
+          if (h[guest.id]?.tap !== tap) return h;
           const rest = { ...h };
           delete rest[guest.id];
           return rest;
@@ -177,6 +185,7 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
             flash({ kind: "guest", id: guest.id });
           },
           rsvpConflict(partnerName, guest.name),
+          rsvpConflictOwn(guest.name),
         );
       } catch {
         setFailures((map) => new Map(map).set(guest.id, { retry: () => void run() }));

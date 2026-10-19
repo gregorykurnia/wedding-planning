@@ -116,7 +116,7 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
   );
   const summary = lateOrToday(all, today);
   const filter = { kind, query, showDone };
-  const items = filterAgenda(all, filter);
+  const items = filterAgenda(all, filter, (id) => data?.funderNames.get(id) ?? null);
   const groups = pageGroups(agendaGroups(items, today), shown);
   const more = Math.min(PAGE, items.length - shown);
 

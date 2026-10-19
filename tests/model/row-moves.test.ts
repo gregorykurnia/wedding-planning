@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MIN_SORT_GAP, dropEdge, dropId, moveId, neighboursOf, positionsBetween } from "@/lib/model/row-moves";
+import { MIN_SORT_GAP, dropEdge, dropId, inOrder, moveId, neighboursOf, positionsBetween, withRest } from "@/lib/model/row-moves";
 
 const ids = ["a", "b", "c", "d"];
 
@@ -96,5 +96,19 @@ describe("neighboursOf", () => {
     expect(neighboursOf(ids, "c")).toEqual({ above: "b", below: null });
     expect(neighboursOf(["a"], "a")).toEqual({ above: null, below: null });
     expect(neighboursOf(ids, "x")).toEqual({ above: null, below: null });
+  });
+});
+
+describe("a move on a page of the list (Phase 4 review S21)", () => {
+  it("puts the hidden rows after the page, so the last row on the page has the first hidden one below it", () => {
+    const next = withRest(["a", "c", "b"], ["a", "b", "c", "d", "e"]);
+    expect(next).toEqual(["a", "c", "b", "d", "e"]);
+    expect(neighboursOf(next, "b")).toEqual({ above: "c", below: "d" });
+  });
+
+  it("shows rows in a pending order, with any it doesn't name after them in their own order", () => {
+    const rows = ["a", "b", "c", "d"].map((id) => ({ id }));
+    expect(inOrder(rows, ["c", "a", "b"]).map((r) => r.id)).toEqual(["c", "a", "b", "d"]);
+    expect(inOrder(rows, []).map((r) => r.id)).toEqual(["a", "b", "c", "d"]);
   });
 });

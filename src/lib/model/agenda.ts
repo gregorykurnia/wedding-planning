@@ -8,7 +8,7 @@
  */
 import type { IsoDate } from "./bookings";
 import { addDays, dateLong, daysInMonth, dayTitle, isIsoDate, toIso, weekday } from "./dates";
-import { plural } from "./format";
+import { plural, rp } from "./format";
 import type { ScheduleKind } from "./labels";
 import { SCHEDULE_KINDS } from "./labels";
 import { SOON, type Due } from "./money";
@@ -226,10 +226,24 @@ const kindMatches = (i: AgendaItem, kind: AgendaFilterKey) => {
   }
 };
 
-/** Titles, places and notes. Completed and cancelled things stay out of sight unless asked for. */
-export const filterAgenda = (items: readonly AgendaItem[], f: AgendaFilter): AgendaItem[] =>
+/** A payment's amount as its row shows it ("Rp 60.000.000") and as typed ("60000000"), and who pays (P4-S20). */
+const paymentWords = (i: AgendaItem, funderName: (id: string) => string | null) =>
+  i.type === "payment" && i.amount !== null ? [rp(i.amount), String(i.amount), i.funder ? funderName(i.funder) : null] : [];
+
+/**
+ * Titles, places and notes, and a payment's amount and payer. Completed and
+ * cancelled things stay out of sight unless asked for.
+ */
+export const filterAgenda = (
+  items: readonly AgendaItem[],
+  f: AgendaFilter,
+  funderName: (id: string) => string | null = () => null,
+): AgendaItem[] =>
   items.filter(
-    (i) => (f.showDone || i.status === "scheduled") && kindMatches(i, f.kind) && matches(f.query, i.title, i.where, i.notes),
+    (i) =>
+      (f.showDone || i.status === "scheduled") &&
+      kindMatches(i, f.kind) &&
+      matches(f.query, i.title, i.where, i.notes, ...paymentWords(i, funderName)),
   );
 
 export interface AgendaGroup {

@@ -17,8 +17,8 @@ import {
   relatedValue,
   reminderMinutesOf,
   reminderState,
-  storedWhen,
   whenOf,
+  whenPatch,
   type EventField,
   type ReminderKey,
   type WhenDraft,
@@ -97,7 +97,7 @@ function Editor({
     const next = { ...before, ...change };
     whenRef.current = next;
     try {
-      await saveEvent(event.id, storedWhen(next));
+      await saveEvent(event.id, whenPatch(before, next));
     } catch (err) {
       whenRef.current = before;
       throw err;
@@ -167,7 +167,9 @@ function Editor({
     try {
       const { undo } = await setEventStatus(event.id, next);
       toast.undoable(STATUS_TOAST[next], undo);
-      sheet.close();
+      setStatusBusy(null);
+      // Closes the way Done does (N18): a field's change that is saving or didn't save holds it open.
+      sheet.requestClose();
     } catch {
       setStatusFailed(true);
       setStatusBusy(null);

@@ -34,6 +34,14 @@ async function put(collection: string, id: string, fields: Fields) {
   expect(res.ok).toBe(true);
 }
 
+/** Changes only the given fields of a stored document. */
+async function patch(collection: string, id: string, fields: Fields) {
+  const mask = Object.keys(fields).map((k) => `updateMask.fieldPaths=${k}`).join("&");
+  const body = { fields: Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, typed(v)])) };
+  const res = await fetch(`${DOCS}/${collection}/${id}?${mask}`, { method: "PATCH", headers: ADMIN, body: JSON.stringify(body) });
+  expect(res.ok).toBe(true);
+}
+
 async function del(collection: string, id: string) {
   await fetch(`${DOCS}/${collection}/${id}`, { method: "DELETE", headers: ADMIN });
 }
@@ -468,6 +476,40 @@ test("Mark completed, Cancel it and Back to scheduled act at once, close the she
   await sheet(page).getByRole("button", { name: "Back to scheduled" }).click();
   await expect(page.getByRole("status").getByText("Back to scheduled")).toBeVisible();
   await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.status).toBe("scheduled");
+});
+
+test("a status button doesn't close the sheet over a change that didn't save (P4-S18, N18)", async ({ browser }) => {
+  const page = await openSchedule(browser);
+  await openEvent(page, "Tasting at Sendok Emas");
+  const dialog = sheet(page);
+
+  await page.context().setOffline(true);
+  await dialog.getByLabel("Where, or a call link").fill("Jl. Danau Tamblingan 5");
+  await dialog.getByLabel("Notes").click();
+  await expect(dialog.getByRole("button", { name: "Try again" }).first()).toBeVisible({ timeout: 30_000 });
+  await page.context().setOffline(false);
+
+  // The status saves, but the sheet stays open and says the change isn't saved, with what was typed kept.
+  await dialog.getByRole("button", { name: "Mark completed" }).click();
+  await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.status, { timeout: 30_000 }).toBe("completed");
+  await expect(dialog.getByText("Your last change isn’t saved yet.")).toBeVisible();
+  await expect(dialog.getByLabel("Where, or a call link")).toHaveValue("Jl. Danau Tamblingan 5");
+});
+
+test("a new time on the same day keeps the sent reminder; a new day clears it (P4-S17)", async ({ browser }) => {
+  await patch("scheduleEvents", "sc-tasting", { remindersSent: [1440] });
+  const page = await openSchedule(browser);
+  await openEvent(page, "Tasting at Sendok Emas");
+  const dialog = sheet(page);
+
+  await dialog.getByLabel("Ends, optional").fill("12:00");
+  await dialog.getByLabel("Notes").click();
+  await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.endAt).toBe(`${inDays(1)}T12:00`);
+  expect((await read("scheduleEvents", "sc-tasting"))?.remindersSent).toEqual([1440]);
+
+  await dialog.getByLabel("Date").fill(inDays(5));
+  await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.startAt).toBe(`${inDays(5)}T10:00`);
+  expect((await read("scheduleEvents", "sc-tasting"))?.remindersSent).toEqual([]);
 });
 
 test("Delete asks first, then removes the event with an undo that brings it back exactly", async ({ browser }) => {

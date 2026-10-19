@@ -261,6 +261,15 @@ describe("filterAgenda", () => {
     expect(ids({ query: "florist" })).toEqual([]);
   });
 
+  it("searches a payment's amount, as shown or as typed, and who pays it (P4-S20)", () => {
+    const names = (id: string) => (id === "Gregory" ? "Greg" : null);
+    const found = (query: string) => filterAgenda(items, { ...NO_AGENDA_FILTER, query }, names).map((i) => i.id);
+    expect(found("60.000.000")).toEqual(["vendor-v1"]);
+    expect(found("60000000")).toEqual(["vendor-v1"]);
+    expect(found("greg")).toEqual(["vendor-v1"]);
+    expect(ids({ query: "greg" })).toEqual([]);
+  });
+
   it("combines kind, search and done", () => {
     expect(ids({ kind: "call", query: "rasa" })).toEqual([]);
     expect(ids({ kind: "call", query: "rasa", showDone: true })).toEqual(["cut"]);
