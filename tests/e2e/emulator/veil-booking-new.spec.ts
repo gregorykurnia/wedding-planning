@@ -43,14 +43,14 @@ test.afterAll(async () => {
   await remove("funders", GREGORY);
 });
 
-async function signInAndOpenForm(page: Page) {
+async function signInAndOpenForm(page: Page, query = "") {
   const { email, password } = TEST_ACCOUNTS[0];
   await page.goto("/new/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/bookings/new");
+  await page.goto(`/new/budget/bookings/new${query}`);
   await expect(page.getByRole("heading", { name: "Add a booking", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -89,6 +89,20 @@ test("asks for a name before it writes anything, and keeps the form", async ({ p
   await expect(page.getByText("Give the booking a name so you can find it later.")).toBeVisible();
   await expect(page.getByLabel("What it is")).toBeFocused();
   await expect(page).toHaveURL("/new/budget/bookings/new");
+});
+
+// Task 5.2: the couldn't-add state (guide §5.7), reached with `?fault=save`, which fails every write.
+test("a booking the planner can't add keeps what was typed, says it wasn't added, and offers Try again", async ({ page }) => {
+  const name = `Harp ${Date.now()}`;
+  await signInAndOpenForm(page, "?fault=save");
+  await page.getByLabel("What it is").fill(name);
+  await page.getByRole("button", { name: "Add booking" }).click();
+
+  await expect(
+    page.getByText("The booking wasn’t added: the planner lost its connection. Everything you entered is still here."),
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByLabel("What it is")).toHaveValue(name);
+  await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
 });
 
 /** Every document in a collection, with its fields as the REST API gives them. */

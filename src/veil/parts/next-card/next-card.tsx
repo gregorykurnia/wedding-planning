@@ -4,6 +4,7 @@ import { dateLong } from "@/lib/model/dates";
 import { rp } from "@/lib/model/format";
 import { type Due, type Funder } from "@/lib/model/money";
 import { Btn } from "@/veil/parts/actions/btn";
+import { useFlash } from "@/veil/shell/flash";
 import {
   bookingHref,
   flagText,
@@ -51,6 +52,10 @@ const toneClass = (urgency: Due["urgency"]) =>
  * amount, flag or button.
  */
 export function NextCard({ today, next, lateCount, funders, onRecord, onBooking = false }: NextCardProps) {
+  // A partner's change to this booking flashes the card, as the prototype's
+  // booking flash does (guide §5.4, §6.3). Nothing to pay has no booking, so
+  // the blank id never flashes.
+  const flash = useFlash({ kind: "booking", id: next?.booking.id ?? "" });
   if (!next) {
     return (
       <section className={styles.card} aria-label="Next payment">
@@ -61,7 +66,7 @@ export function NextCard({ today, next, lateCount, funders, onRecord, onBooking 
     );
   }
   return (
-    <section className={styles.card} aria-label="Next payment">
+    <section className={join(styles.card, flash)} aria-label="Next payment">
       <span className={styles.label}>{onBooking ? STEP_LABEL : nextLabel(lateCount)}</span>
       <span className={join(styles.flag, toneClass(next.urgency))}>{flagText(next, today)}</span>
       <h2 className={styles.name} dir={onBooking ? "auto" : undefined}>

@@ -5,11 +5,13 @@ import type { Booking } from "@/lib/model/bookings";
 import { dues, type Due, type Funder } from "@/lib/model/money";
 import { Doors, type DoorItem } from "@/veil/parts/doors/doors";
 import { AfterLine, NextCard } from "@/veil/parts/next-card/next-card";
+import { FlashProvider } from "@/veil/shell/flash";
 
 // Task 3.2: the next card, its after line and the doors as markup (guide §3,
 // §4.5, §4.6). The e2e test in tests/e2e/demo/veil-next.spec.ts checks the look.
 
-const markup = (node: ReactElement) => renderToStaticMarkup(node);
+// The card reads the flash state, so it draws inside the provider the app gives it.
+const markup = (node: ReactElement) => renderToStaticMarkup(<FlashProvider>{node}</FlashProvider>);
 const TODAY = "2026-10-14";
 
 /** The class names of the element whose text is `text`. CSS-module hashes stay in, so match on a part of a name. */

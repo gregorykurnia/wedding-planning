@@ -5,18 +5,21 @@ import type { BudgetOverview } from "@/lib/data/use-budget";
 import type { Booking } from "@/lib/model/bookings";
 import { budget, dues } from "@/lib/model/money";
 import { BudgetView } from "@/veil/screens/budget/budget-view";
+import { FlashProvider } from "@/veil/shell/flash";
 
 // Task 4.3: the budget screen as markup (guide §5.4): the hero, the next card,
 // the after line, the four doors, the closing line and the add button. The
 // e2e tests in tests/e2e/ check it against the emulator and in demonstration mode.
 
+/** The markup, drawn inside the provider the app gives every screen (the next card reads it). */
+const html = (node: ReactElement) => renderToStaticMarkup(<FlashProvider>{node}</FlashProvider>);
+
 /** The words on screen: the markup without its tags and React's comment markers. */
 const words = (node: ReactElement) =>
-  renderToStaticMarkup(node)
+  html(node)
     .replace(/<!--.*?-->/g, "")
     .replace(/<[^>]+>/g, "")
     .trim();
-const html = (node: ReactElement) => renderToStaticMarkup(node);
 
 const TODAY = "2026-10-14";
 const CK = { id: "ck", name: "CK" };

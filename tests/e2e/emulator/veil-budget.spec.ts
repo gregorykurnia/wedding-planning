@@ -110,8 +110,8 @@ test.afterAll(async () => {
   await remove("hypotheticalItems", "bd-idea");
 });
 
-async function openBudget(page: Page) {
-  const { email, password } = TEST_ACCOUNTS[0];
+async function openBudget(page: Page, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0]) {
+  const { email, password } = account;
   await page.goto("/new/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
@@ -184,4 +184,58 @@ test("Record payment opens the sheet, and the payment it records moves the figur
   ).toBeVisible();
   await expect(page.getByText("of Rp 35.000.000 committed, with Rp 15.000.000 already paid")).toBeVisible();
   await expect(page.locator(".num").filter({ hasText: "20.000.000" })).toBeVisible();
+});
+
+/** The partner's names and email: the only settings the partner test changes, put back afterwards. */
+const PARTNER_FIELDS = ["yourName", "partnerName", "partnerEmail"];
+
+async function readSettingStrings(fields: string[]): Promise<Record<string, string | null>> {
+  const res = await fetch(SETTINGS, { headers: ADMIN });
+  const body = (await res.json()) as { fields?: Record<string, { stringValue?: string }> };
+  return Object.fromEntries(fields.map((field) => [field, body.fields?.[field]?.stringValue ?? null]));
+}
+
+async function setSettingStrings(values: Record<string, string | null>) {
+  const mask = Object.keys(values).map((field) => `updateMask.fieldPaths=${field}`).join("&");
+  const res = await fetch(`${SETTINGS}?${mask}`, {
+    method: "PATCH",
+    headers: ADMIN,
+    body: JSON.stringify({ fields: Object.fromEntries(Object.entries(values).map(([k, v]) => [k, typed(v)])) }),
+  });
+  expect(res.ok).toBe(true);
+}
+
+// Task 5.2: the partner's change flashes the next payment card (guide §5.4, §6.3). Runs last, after the payment above.
+test.describe("with Bella signed in too", () => {
+  let previous: Record<string, string | null> = {};
+
+  test.beforeAll(async () => {
+    previous = await readSettingStrings(PARTNER_FIELDS);
+    await setSettingStrings({ yourName: "Greg", partnerName: "Bella", partnerEmail: TEST_ACCOUNTS[1].email });
+  });
+
+  test.afterAll(async () => {
+    await setSettingStrings(previous);
+  });
+
+  test("a payment Bella records flashes Greg's next payment card, with her toast", async ({ browser }) => {
+    const greg = await (await browser.newContext()).newPage();
+    const bella = await (await browser.newContext()).newPage();
+    await openBudget(greg);
+    await openBudget(bella, TEST_ACCOUNTS[1]);
+    const gregNext = greg.getByRole("region", { name: "Next payment" });
+    await expect(gregNext).not.toHaveClass(/\bflash\b/);
+
+    // A part of the same booking stays next, so the flash lands on the card Greg is looking at.
+    await bella.getByRole("region", { name: "Next payment" }).getByRole("button", { name: "Record payment" }).click();
+    const dialog = bella.getByRole("dialog", { name: "Record a payment" });
+    await dialog.getByLabel("Amount paid").fill("5000000");
+    await dialog.getByRole("button", { name: "Record payment", exact: true }).click();
+    await expect(dialog).toHaveCount(0, { timeout: 15_000 });
+
+    await expect(
+      greg.getByRole("status").filter({ hasText: "Bella recorded Rp 5.000.000 for Dapur Lestari Catering" }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(gregNext).toHaveClass(/\bflash\b/);
+  });
 });

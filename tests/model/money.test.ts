@@ -231,6 +231,10 @@ describe("partState", () => {
     expect(partState(p({ nextTargetDate: "2026-10-30" }), TODAY)).toBe("due");
     expect(partState(p({}), TODAY)).toBe("undated");
   });
+  it("reads a part with no price as unpriced, not paid, whatever its date (P1-S16)", () => {
+    expect(partState(p({ totalPrice: 0 }), TODAY)).toBe("unpriced");
+    expect(partState(p({ totalPrice: 0, nextTargetDate: "2026-10-12" }), TODAY)).toBe("unpriced");
+  });
 });
 
 describe("budget", () => {

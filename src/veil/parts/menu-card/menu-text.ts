@@ -27,11 +27,15 @@ export interface PartLineList {
   more: number;
 }
 
+/** A part with no price yet, on a line or in a summary (P1-S16). Same words as a booking's ledger row. */
+const NO_PRICE = "No price yet";
+
 /** A part's value on a ledger line (guide §4.8, "Parts in a list"). */
 export function partLineValue(part: Part, today: IsoDate): { value: string; tone: LineTone } {
   const left = leftOf(part);
   const state = partState(part, today);
   if (state === "over") return { value: `overpaid by ${rp(-left)}`, tone: "late" };
+  if (state === "unpriced") return { value: NO_PRICE, tone: "plain" };
   if (state === "paid") return { value: `paid ${rp(part.paid)}`, tone: "done" };
   if (part.due && state === "late") return { value: `${rp(left)}, was due ${dateShort(part.due, today)}`, tone: "late" };
   if (part.due) return { value: `${rp(left)}, ${dateShort(part.due, today)}`, tone: "plain" };
@@ -43,6 +47,7 @@ export function partStatus(part: Part, today: IsoDate): { value: string; tone: L
   const left = leftOf(part);
   const state = partState(part, today);
   if (state === "over") return { value: `overpaid by ${rp(-left)}`, tone: "late" };
+  if (state === "unpriced") return { value: NO_PRICE, tone: "plain" };
   if (state === "paid") return { value: "paid in full", tone: "done" };
   if (part.due && state === "late") return { value: `${rp(left)} ${dueText(part.due, today)}`, tone: "late" };
   if (part.due) return { value: `${rp(left)} due ${dateShort(part.due, today)}`, tone: "plain" };

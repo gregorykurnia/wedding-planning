@@ -66,12 +66,16 @@ export function totals(b: Booking): Totals {
   };
 }
 
-export type PartState = "paid" | "over" | "late" | "due" | "undated";
+export type PartState = "paid" | "over" | "late" | "due" | "undated" | "unpriced";
 
-/** Which of the part lines in guide §4.8 a part reads as. */
+/**
+ * Which of the part lines in guide §4.8 a part reads as. A part with no price
+ * (0 of 0) owes nothing, but it isn't paid in full: it reads "No price yet" (P1-S16).
+ */
 export function partState(p: Part, today: IsoDate): PartState {
   const left = leftOf(p);
   if (left < 0) return "over";
+  if (p.price === 0) return "unpriced";
   if (left === 0) return "paid";
   if (!p.due) return "undated";
   return urgency(p.due, today) === "late" ? "late" : "due";

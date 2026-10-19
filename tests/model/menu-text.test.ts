@@ -50,6 +50,11 @@ describe("partLineValue (a ledger line)", () => {
     const p = part({ id: "big", name: "Venue", price: 1_234_567_890_123 });
     expect(partLineValue(p, TODAY).value).toBe("Rp 1.234.567.890.123, no date");
   });
+
+  it("says No price yet for a part with no price, whatever its date (P1-S16)", () => {
+    const p = part({ id: "n", name: "Deposit", price: 0, due: "2026-10-10" });
+    expect(partLineValue(p, TODAY)).toEqual({ value: "No price yet", tone: "plain" });
+  });
 });
 
 describe("partStatus (a part's summary on a booking)", () => {
@@ -74,6 +79,10 @@ describe("partStatus (a part's summary on a booking)", () => {
       value: "Rp 5.000.000 to pay, no date",
       tone: "plain",
     });
+  });
+
+  it("says No price yet, not paid in full, for a part with no price (P1-S16)", () => {
+    expect(partStatus(part({ id: "n", name: "Deposit", price: 0 }), TODAY)).toEqual({ value: "No price yet", tone: "plain" });
   });
 });
 
