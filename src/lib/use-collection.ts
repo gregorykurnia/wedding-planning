@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   addDoc,
   collection,
@@ -29,15 +29,37 @@ export function useCollection<T extends { id: string }>(
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(isFirebaseConfigured);
   const [error, setError] = useState<string | null>(null);
+  const arrived = useRef(false);
+  const held = useRef(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) {
       return;
     }
+    arrived.current = false;
+    held.current = false;
+    // The connection is back: an empty collection sends no new answer, so stop waiting for one.
+    const onOnline = () => {
+      if (!held.current) return;
+      held.current = false;
+      arrived.current = true;
+      setLoading(false);
+    };
+    window.addEventListener("online", onOnline);
     const q = query(collection(db, collectionName), ...constraints);
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        // With no connection and nothing held on the device, the first answer is an empty one
+        // from the cache. That says "nothing has arrived", not "there is nothing": keep loading.
+        // (Only when the browser knows it is offline: an empty collection that is online
+        // gets no second answer to wait for.)
+        if (!arrived.current && snapshot.metadata.fromCache && snapshot.empty && !navigator.onLine) {
+          held.current = true;
+          return;
+        }
+        held.current = false;
+        arrived.current = true;
         setData(snapshot.docs.map((d) => fromDoc(d.id, d.data())));
         setLoading(false);
         setError(null);
@@ -48,7 +70,10 @@ export function useCollection<T extends { id: string }>(
         setLoading(false);
       },
     );
-    return () => unsubscribe();
+    return () => {
+      window.removeEventListener("online", onOnline);
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName]);
 

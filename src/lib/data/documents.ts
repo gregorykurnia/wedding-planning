@@ -157,7 +157,13 @@ export async function saveDocument(
     Object.entries(contentFields(content, undefined)).filter(([, v]) => v !== undefined),
   );
   await create(COLLECTION, { title: draft.title, ...fields }, { ...opts, id });
-  void logActivity("document.added", { name: titleOrUntitled(draft.title) }, { kind: "document", id }, opts);
+  // Named by the document, so a create that runs again (after a timeout) leaves one piece of news.
+  void logActivity(
+    "document.added",
+    { name: titleOrUntitled(draft.title) },
+    { kind: "document", id },
+    { ...opts, id: `document.added.${id}` },
+  );
 }
 
 /** Deletes a document for good (guide §6.2, R7). There is no undo. */

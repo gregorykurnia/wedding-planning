@@ -13,7 +13,7 @@ import styles from "./rows.module.css";
  * link. Cards only show when nobody is searching, so they never mark matches.
  */
 export function DocumentCard({ doc, href, now }: { doc: DocumentRowData; href: string; now: number }) {
-  const flash = useFlash({ kind: "doc", id: doc.id });
+  const flash = useFlash({ kind: "document", id: doc.id });
 
   return (
     <li className={flash}>

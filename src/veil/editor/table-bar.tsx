@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
 import { cellAddress, evaluateTable, isFormula } from "@/lib/model/formulas";
@@ -98,12 +98,22 @@ export function TableBar({ editor }: { editor: Editor }) {
   const [many, setMany] = useState(String(ADD_START));
   const [what, setWhat] = useState<"rows" | "columns">("rows");
   const height = useToolbarHeight();
+  // Undo puts the table back into this editor, so it goes when the editor does (P4-S16).
+  const removedToast = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (removedToast.current !== null) toast.dismiss(removedToast.current);
+    },
+    [toast],
+  );
 
   if (!spot) return null;
 
   const remove = () => {
     const undo = removeTable(editor);
-    if (undo) toast.undoable(TABLE_REMOVED, undo);
+    if (undo) {
+      removedToast.current = toast.undoable(TABLE_REMOVED, undo);
+    }
   };
 
   const addSeveral = () => {

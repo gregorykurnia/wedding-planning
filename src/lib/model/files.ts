@@ -348,7 +348,7 @@ export const MOVE_HERE = "Move here";
 /** Under a moved folder's title: what travels with it. */
 export const moveFolderSub = (held: { files: number; folders: number }) => {
   const text = holdingsText(held);
-  return text ? `With everything inside it: ${text}.` : "It’s empty, so nothing else moves with it.";
+  return text ? `With everything inside it: ${text}.` : "With everything inside it.";
 };
 export const moveFileSub = (place: string) => `Now in ${place}.`;
 export const movedToast = (place: string) => `Moved to ${place}`;

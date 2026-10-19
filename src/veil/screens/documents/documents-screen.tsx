@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDocuments } from "@/lib/data/documents";
 import {
   CLEAR_SEARCH,
@@ -69,6 +69,7 @@ function DocumentsList({ docs }: { docs: DocumentListItem[] }) {
   const now = useNow();
   const [query, setQuery] = useState("");
   const [shown, setShown] = useState(DOCS_PAGE);
+  const searchField = useRef<HTMLInputElement>(null);
 
   const searching = query.trim() !== "";
   const view = documentView(docs, query, shown, DOCS_PAGE);
@@ -112,7 +113,13 @@ function DocumentsList({ docs }: { docs: DocumentListItem[] }) {
     <>
       {hero}
       <div className={styles.tools}>
-        <SearchField label={SEARCH_LABEL} placeholder={SEARCH_PLACEHOLDER} value={query} onChange={search} />
+        <SearchField
+          label={SEARCH_LABEL}
+          placeholder={SEARCH_PLACEHOLDER}
+          value={query}
+          onChange={search}
+          inputRef={searchField}
+        />
       </div>
 
       {view.matched === 0 ? (
@@ -121,7 +128,13 @@ function DocumentsList({ docs }: { docs: DocumentListItem[] }) {
           inline
           title={noResultsTitle(query)}
           actions={
-            <Btn variant="quiet" onClick={() => search("")}>
+            <Btn
+              variant="quiet"
+              onClick={() => {
+                search("");
+                searchField.current?.focus();
+              }}
+            >
               {CLEAR_SEARCH}
             </Btn>
           }

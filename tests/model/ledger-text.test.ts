@@ -226,6 +226,13 @@ describe("documents", () => {
   it("with a search that finds nothing, shows the opening words", () => {
     expect(extractText("hello world", "zzz")).toBe("hello world");
   });
+
+  it("finds a match that only accents and capitals hide, so the window holds it (P4-S16)", () => {
+    const text = `${"a".repeat(300)} Café Rosé ${"b".repeat(200)}`;
+    const window = extractText(text, "cafe rose");
+    expect(window).toContain("Café Rosé");
+    expect(window.startsWith("…")).toBe(true);
+  });
 });
 
 describe("files and folders", () => {

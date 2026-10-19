@@ -514,6 +514,16 @@ test("the table bar adds and removes rows and columns, sorts, widens, and remove
   await expect(bodyOf(page).locator("table")).toHaveCount(1);
   await expect(bodyOf(page).locator('[data-cell="total"]')).toHaveAttribute("data-total", "Rp 23.500.000");
   await expect.poll(async () => textOf((await read(id))?.content), { timeout: 15_000 }).toContain("=SUM(B2:B)");
+
+  // Remove it again and leave: the Undo has nothing to put the table back into, so it goes too (P4-S16).
+  await select(page, "Flowers", true);
+  await bar.getByRole("button", { name: "Remove table" }).click();
+  const removed = page.getByRole("status").filter({ hasText: "Removed the table" });
+  await expect(removed).toBeVisible();
+  await expect(saveState(page)).toHaveText("Saved just now", { timeout: 15_000 });
+  await page.getByRole("link", { name: "Documents", exact: true }).click();
+  await expect(page).toHaveURL("/new/documents");
+  await expect(removed).toHaveCount(0);
 });
 
 test("Table opens an 8 × 8 size grid, and Tab moves between the new table's cells", async ({ page }) => {

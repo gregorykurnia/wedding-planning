@@ -1,5 +1,5 @@
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { documentFromDoc } from "@/lib/data/adapters/documents";
 import { deleteDocumentForGood, saveDocument } from "@/lib/data/documents";
 import { nestingDepth } from "@/lib/model/documents";
@@ -62,6 +62,19 @@ describe("saveDocument", () => {
     expect(stored).toMatchObject({ title: "Meeting: ", createdBy: gregory.uid, updatedBy: gregory.uid });
     expect(stored?.content).toEqual(body(para("Who was there:")));
     expect(stored?.contentJson).toBeUndefined();
+  });
+
+  it("a create that runs again leaves one piece of news, not two (P4-S16)", async () => {
+    const draft = { title: "Meeting: ", content: body(para("Who was there:")) };
+    await saveDocument("d-news", draft, { ...g(), created: false });
+    await saveDocument("d-news", draft, { ...g(), created: false });
+    const news = () => getDocs(collection(gregory.db, "activity"));
+    // The news is written without waiting; give the second try time to be refused.
+    await vi.waitFor(async () => expect((await news()).size).toBe(1));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const all = (await news()).docs.map((d) => d.data());
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ kind: "document.added", target: { kind: "document", id: "d-news" } });
   });
 
   it("saves the title and the content of an existing document, leaving its other fields", async () => {

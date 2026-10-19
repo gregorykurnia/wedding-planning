@@ -55,7 +55,7 @@ function Marked({ text, query }: { text: string; query: string }) {
  * marks its matches. The whole row is a link.
  */
 export function DocumentRow({ doc, href, now, query = "" }: DocumentRowProps) {
-  const flash = useFlash({ kind: "doc", id: doc.id });
+  const flash = useFlash({ kind: "document", id: doc.id });
 
   return (
     <li className={flash}>

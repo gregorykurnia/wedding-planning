@@ -41,17 +41,19 @@ export type ActivityParams = Record<string, string | number | boolean | null>;
 
 /**
  * Writes the entry. A failure here never fails the change it describes, so it
- * resolves false instead of throwing.
+ * resolves false instead of throwing. `id` names the entry, for a change that can
+ * run again (a retried create): the rules never allow an edit, so the second run is
+ * refused and the news stays one entry.
  */
 export async function logActivity(
   kind: ActivityKind,
   params: ActivityParams,
   target: ActivityTarget | null,
-  opts: WriteOptions = {},
+  opts: WriteOptions & { id?: string } = {},
 ): Promise<boolean> {
   try {
     const database = requireDb(opts.db);
-    const ref = doc(collection(database, "activity"));
+    const ref = opts.id ? doc(database, "activity", opts.id) : doc(collection(database, "activity"));
     // `device` lets the same account's other device tell this change from its own (N3).
     const entry = {
       by: uidOf(database),

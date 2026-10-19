@@ -11,6 +11,7 @@ import {
   type Funder,
   type WhatIfRecord,
 } from "@/lib/model/money";
+import { matchRanges } from "@/lib/model/search";
 import { mbText } from "@/lib/model/uploads";
 import type { LineTone, PartLine, PartLineList } from "@/veil/parts/menu-card/menu-text";
 import { paidByText } from "@/veil/parts/next-card/next-text";
@@ -127,10 +128,12 @@ export function extractText(text: string, query: string): string {
   const q = query.trim();
   if (!text) return "Empty";
   if (!q) return text.slice(0, 220);
-  const at = text.toLocaleLowerCase().indexOf(q.toLocaleLowerCase());
-  if (at < 0) return text.slice(0, 160);
-  const from = Math.max(0, at - 50);
-  return (from > 0 ? "…" : "") + text.slice(from, at + q.length + 120);
+  // The same folding as the search itself, so a match found only through an accent is still in the window.
+  const [first] = matchRanges(text, q);
+  if (!first) return text.slice(0, 160);
+  const [start, end] = first;
+  const from = Math.max(0, start - 50);
+  return (from > 0 ? "…" : "") + text.slice(from, end + 120);
 }
 
 /** "Vendors › Pelaminan Ayu", or "Files" for the top folder. */

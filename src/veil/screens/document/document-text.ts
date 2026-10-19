@@ -31,7 +31,7 @@ export function deletedElsewhere(by: string | null) {
 export const UNREADABLE =
   "This document holds something the planner can’t show, so it opens empty and can’t be changed here. What’s stored in it is kept as it is.";
 
-export const partnerHere =(partner: string) =>
+export const partnerHere = (partner: string) =>
   `${partner} is also in this document. Their changes appear as they type.`;
 
 /**

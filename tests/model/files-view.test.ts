@@ -210,7 +210,7 @@ describe("the move sheet's choices", () => {
     expect(holdings(tree, files, "catering")).toEqual({ files: 2, folders: 1 });
     expect(moveFolderSub({ files: 4, folders: 1 })).toBe("With everything inside it: 4 files and 1 folder.");
     expect(moveFolderSub({ files: 0, folders: 2 })).toBe("With everything inside it: 2 folders.");
-    expect(moveFolderSub({ files: 0, folders: 0 })).toBe("It’s empty, so nothing else moves with it.");
+    expect(moveFolderSub({ files: 0, folders: 0 })).toBe("With everything inside it.");
   });
 
   it("words Undo after the partner moved it again", () => {

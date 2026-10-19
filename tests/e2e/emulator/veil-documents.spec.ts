@@ -128,6 +128,8 @@ test("a search that finds nothing says so and clears", async ({ page }) => {
 
   await page.getByRole("button", { name: "Clear the search" }).click();
   await expect(page.getByRole("searchbox", { name: "Search documents" })).toHaveValue("");
+  // Focus goes back to the field, so typing carries on (P4-S16).
+  await expect(page.getByRole("searchbox", { name: "Search documents" })).toBeFocused();
   await expect(page.getByText("6 documents, newest first")).toBeVisible();
   await expect(page.locator("a[data-doc-id='n1']")).toBeVisible();
 });

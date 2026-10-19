@@ -5,7 +5,8 @@ import type { Loaded, ReadStatus } from "./settings";
 /**
  * The status of a read built from one or more collection listeners (plan §2.7),
  * worked out as `useSettings` does: demonstration mode has no data at all, an
- * error or being offline keep whatever has arrived, and loading has none yet.
+ * error or being offline keep whatever has arrived, and loading has none yet
+ * (offline with a read still waiting has none either, so the screen says so).
  */
 export function readOf<T>(
   connection: Connection,
@@ -16,7 +17,7 @@ export function readOf<T>(
   // Dev only (`?fault=load`): the read failed before any data arrived.
   if (devFaults().load) return { status: "error", data: null };
   if (sources.some((s) => s.error)) return { status: "error", data };
-  if (connection === "offline") return { status: "offline", data };
+  if (connection === "offline") return { status: "offline", data: sources.some((s) => s.loading) ? null : data };
   if (sources.some((s) => s.loading)) return { status: "loading", data: null };
   return { status: "ready", data };
 }

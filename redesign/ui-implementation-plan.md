@@ -986,7 +986,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | 2026-10-19 · lane t1, 70fd120; how to use it is in the task | [x] |
 | 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | 2026-10-19 · lane t1, d34ed3b; the Next card flash and P1-S16 are new, the rest was built earlier | [x] |
 | 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, 314fd7d; P4-S11 card line; fault and demo states in e2e | [x] |
-| 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | | [ ] |
+| 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | 2026-10-19 · lane t1, commit to follow; P4-S16 done; document flash and offline-read fixes are new | [x] |
 | 5 | 5.5 Schedule and tasks states | Haiku 5.5 Max | $0.21 | Same as 5.3 | | [ ] |
 | 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
 | 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
@@ -1376,6 +1376,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 #### Task 5.4: Documents and files states · Sonnet 5.5 High
 - **Screens:** Documents, A document, Files. Includes the editor's not saved yet, saving, couldn't save, offline while writing, partner in the document, deleted by the partner, demo (not editable), stress tables.
 - **Also:** review items P4-S16 (`redesign/reviews/triage.md`, "Folded into later tasks").
+- **As built (2026-10-19):** most states were built in Phase 4 and have specs; this task checked each against the guide's tables and added what was missing. Fixed: a partner's new document never flashed (the cards flashed as `doc`, the news says `document`); a list read offline with nothing arrived showed its empty state, so `useCollection` keeps waiting on an empty answer from the cache while the browser says it is offline (`readOf` then gives no data, and the screen says "You're offline"). P4-S16: Remove table's Undo toast goes with the editor, the empty-folder move line is "With everything inside it." (the prototype's), Clear the search refocuses the field, the extract finds accent-only matches (`matchRanges` in `search.ts`), and `document.added` has a fixed id so a re-run create leaves one entry. New specs: `tests/e2e/emulator/veil-document-states.spec.ts` (load, offline, saving, failed deletes, Bella starts a document or uploads a file, presence and deleted by Bella) and `veil-document-stress.spec.ts` (1.504 documents, 3.006 files, a title with no spaces, a wide table, 30 levels of folders). Demo states already have specs. Not covered: the offline state of a single document (only its code path, shared with Documents); with the database unreachable, a page load showed the first-sign-in names question (seen while testing; the settings read answers empty), to look at in the Phase 5 review.
 
 #### Task 5.5: Schedule and tasks states · Haiku 5.5 Max
 - **Screens:** Agenda, Month, Tasks.

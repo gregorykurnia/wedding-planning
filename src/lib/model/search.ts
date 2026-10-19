@@ -23,10 +23,13 @@ export interface Highlighted {
   match: boolean;
 }
 
-/** Cuts `text` into pieces, marking where the search matches (the champagne highlight). */
-export function highlight(text: string, query: string): Highlighted[] {
+/**
+ * Where the search matches in `text`, as `[start, end)` offsets into `text` itself,
+ * so a match found only by folding (case, accents) still points at the original letters.
+ */
+export function matchRanges(text: string, query: string): [number, number][] {
   const q = fold(query.trim());
-  if (!q) return text ? [{ text, match: false }] : [];
+  if (!q) return [];
   let folded = "";
   const at: number[] = [];
   let i = 0;
@@ -36,13 +39,24 @@ export function highlight(text: string, query: string): Highlighted[] {
     folded += f;
     i += ch.length;
   }
-  const out: Highlighted[] = [];
+  const ranges: [number, number][] = [];
   let last = 0;
   for (let from = folded.indexOf(q); from >= 0; from = folded.indexOf(q, from + q.length)) {
     const start = at[from];
     const lastChar = at[from + q.length - 1];
     const end = lastChar + String.fromCodePoint(text.codePointAt(lastChar) ?? 0).length;
     if (start < last) continue;
+    ranges.push([start, end]);
+    last = end;
+  }
+  return ranges;
+}
+
+/** Cuts `text` into pieces, marking where the search matches (the champagne highlight). */
+export function highlight(text: string, query: string): Highlighted[] {
+  const out: Highlighted[] = [];
+  let last = 0;
+  for (const [start, end] of matchRanges(text, query)) {
     if (start > last) out.push({ text: text.slice(last, start), match: false });
     out.push({ text: text.slice(start, end), match: true });
     last = end;
