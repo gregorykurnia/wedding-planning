@@ -989,7 +989,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | | [ ] |
 | 5 | 5.5 Schedule and tasks states | Haiku 5.5 Max | $0.21 | Same as 5.3 | 2026-10-19 · lane t2, e186a10; Everything done opens finished tasks; read-error gap raised | [x] |
 | 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, daab378; couldn't-load, failed-remove, partner-tick and dropped-connection specs; read-error and offline-save gaps raised | [x] |
-| 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2; new specs for nothing yet, load, partner payment, didn't-save and reminder states; loading and offline-before-data fixme, raised (cache read) | [x] |
+| 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, 37573d2; new specs for nothing yet, load, partner payment, didn't-save and reminder states; loading and offline-before-data fixme, raised (cache read) | [x] |
 | 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | 054f9c7; checked in Chromium against `next start`. The installed-phone check waits for the first HTTPS deploy | [x] |
 | 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | 2026-10-19 · lane t2, fe4d8e8; N6 built; G33 is new; real-key delivery check still open (Task 6.2) | [x] |
