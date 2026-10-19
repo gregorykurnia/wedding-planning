@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useSettings } from "@/lib/data/settings";
 import { veilHref } from "../href";
 import { MenuIndex, type Section } from "./menu-index";
@@ -9,6 +9,17 @@ import styles from "./top-bar.module.css";
 
 /** What the app is called when there are no names to show (guide §4.1). */
 const APP_NAME = "Our wedding planner";
+
+/** The event a screen dispatches to ask the top bar to open the menu (see openMenu). */
+const OPEN_MENU = "veil:open-menu";
+
+/**
+ * Opens the menu from outside the top bar, such as a screen's Open the menu
+ * button. The top bar listens for the request, as its own Menu button does.
+ */
+export function openMenu() {
+  window.dispatchEvent(new Event(OPEN_MENU));
+}
 
 /**
  * The top bar of every screen (guide §4.1): the couple's names on the left,
@@ -25,6 +36,12 @@ export function TopBar({ section }: { section?: Section }) {
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
     menuButton.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const open = () => setMenuOpen(true);
+    window.addEventListener(OPEN_MENU, open);
+    return () => window.removeEventListener(OPEN_MENU, open);
   }, []);
 
   return (

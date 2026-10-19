@@ -28,7 +28,9 @@ const READS: { label: string; read: Loaded<string> }[] = [
 export function StatesDemos() {
   const [choice, setChoice] = useState(0);
   const [retries, setRetries] = useState(0);
+  const [crash, setCrash] = useState(false);
   const { read } = READS[choice];
+  if (crash) throw new Error("A demonstration of an unexpected error, from the states gallery.");
 
   return (
     <>
@@ -90,6 +92,15 @@ export function StatesDemos() {
 
       <h2>Skeleton</h2>
       <Shimmer />
+
+      <h2>Something unexpected</h2>
+      <p>
+        A screen that throws while drawing shows the planner’s own message, with the top bar still
+        there.
+      </p>
+      <Btn variant="quiet" onClick={() => setCrash(true)}>
+        Make this page fail
+      </Btn>
     </>
   );
 }
