@@ -206,7 +206,7 @@ test.describe("item rows", () => {
     await expect(section.locator('[data-item-id="i5"]')).toHaveClass(/flash/);
   });
 
-  test("event chips toggle with aria-pressed and the person select saves a pick", async ({ page }) => {
+  test("event chips toggle with aria-pressed and the people menu ticks several people", async ({ page }) => {
     const section = await openSection(page);
     const row = section.locator('[data-item-id="i1"]');
     const sangjit = row.getByRole("group", { name: "Events for Wedding cake" }).getByRole("button", { name: "Sangjit" });
@@ -214,8 +214,17 @@ test.describe("item rows", () => {
     await sangjit.click();
     await expect(sangjit).toHaveAttribute("aria-pressed", "true");
 
-    await row.getByLabel("Who Wedding cake is for").selectOption("Bride");
-    await expect(log(section)).toHaveText("Wedding cake is for Bride");
+    // N12: a menu of checks. Ticking people clears General, and each tick saves at once.
+    await row.getByText("General", { exact: true }).click();
+    await row.getByRole("checkbox", { name: "Bride's mother" }).check();
+    await expect(log(section)).toHaveText("Wedding cake is for Bride's mother");
+    await row.getByRole("checkbox", { name: "Groom's father" }).check();
+    await expect(log(section)).toHaveText("Wedding cake is for Bride's mother, Groom's father");
+    await expect(row.getByText("Bride's mother, Groom's father", { exact: true })).toBeVisible();
+    // Clearing everyone means General.
+    await row.getByRole("checkbox", { name: "Bride's mother" }).uncheck();
+    await row.getByRole("checkbox", { name: "Groom's father" }).uncheck();
+    await expect(log(section)).toHaveText("Wedding cake is for General");
   });
 
   test("a vendor that doesn't save keeps what was typed, rings the field and saves on Try again", async ({ page }) => {

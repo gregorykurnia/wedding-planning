@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { NO_ITEM_FILTER, filterItems, isFilteringItems, itemCounts, workOnNext, type ItemRecord } from "@/lib/model/items";
+import {
+  NO_ITEM_FILTER,
+  filterItems,
+  isFilteringItems,
+  isFor,
+  itemCounts,
+  namedPeople,
+  peopleNames,
+  peopleText,
+  withEvent,
+  withPerson,
+  workOnNext,
+  type ItemRecord,
+} from "@/lib/model/items";
 
 let n = 0;
 const item = (over: Partial<ItemRecord> = {}): ItemRecord => ({
@@ -59,6 +72,21 @@ describe("filterItems", () => {
     expect(names({ people: ["Bride", "Groom Mom"] })).toEqual(["Bride's gown", "Groom's mother's kebaya", "新娘的头纱"]);
   });
 
+  it("finds an item for several people by any one of them, in the filter and in the search (N12)", () => {
+    const shared = [
+      ...list,
+      item({ item: "Makeup for both mothers", persons: ["Bride Mom", "Groom Mom"] }),
+      item({ item: "Ring bearer's pillow", persons: [] }),
+    ];
+    const found = (f: Partial<typeof NO_ITEM_FILTER>) => filterItems(shared, { ...NO_ITEM_FILTER, ...f }).map((i) => i.item);
+    expect(found({ people: ["Bride Mom"] })).toEqual(["Makeup for both mothers"]);
+    expect(found({ people: ["Groom Mom"] })).toEqual(["Groom's mother's kebaya", "Makeup for both mothers"]);
+    expect(found({ query: "bride's mother" })).toEqual(["Makeup for both mothers"]);
+    // General is the items for no one in particular, whether stored as none or as General.
+    expect(found({ people: ["General"] })).toEqual(["Wedding cake", "Sangjit trays", "Ring bearer's pillow"]);
+    expect(found({ query: "general" })).toEqual(["Wedding cake", "Sangjit trays", "Ring bearer's pillow"]);
+  });
+
   it("filters by confirmed or not, and by work on next", () => {
     expect(names({ confirmed: "yes" })).toEqual(["Bride's gown"]);
     expect(names({ confirmed: "no" })).toHaveLength(4);
@@ -85,5 +113,48 @@ describe("workOnNext", () => {
     expect(w.shown).toHaveLength(12);
     expect(w.more).toBe(4);
     expect(workOnNext([item()])).toEqual({ shown: [], more: 0 });
+  });
+});
+
+describe("who an item is for (N12)", () => {
+  it("reads as text: two names in full, past two 'and N more', none as General", () => {
+    expect(peopleText([])).toBe("General");
+    expect(peopleText(["General"])).toBe("General");
+    expect(peopleText(["Groom Dad"])).toBe("Groom's father");
+    expect(peopleText(["Groom Dad", "Groom Brother"])).toBe("Groom's father, Groom's brother");
+    expect(peopleText(["Bride", "Groom Dad", "Groom Brother", "Bride Mom"])).toBe("Bride, Groom's father and 2 more");
+    expect(peopleText(["Bride", "Groom Dad", "Groom Brother"])).toBe("Bride, Groom's father and 1 more");
+  });
+
+  it("names everyone in full for the menu's label", () => {
+    expect(peopleNames(["Bride", "Groom Dad", "Groom Brother"])).toBe("Bride, Groom's father, Groom's brother");
+    expect(peopleNames([])).toBe("General");
+  });
+
+  it("leaves General out of who is named", () => {
+    expect(namedPeople(["General", "Bride"])).toEqual(["Bride"]);
+    expect(isFor(["General"], "General")).toBe(true);
+    expect(isFor(["Bride"], "General")).toBe(false);
+    expect(isFor(["Bride", "Groom"], "Groom")).toBe(true);
+  });
+
+  it("ticking people clears General, ticking General clears everyone, and clearing everyone means General", () => {
+    expect(withPerson([], "Bride", true)).toEqual(["Bride"]);
+    expect(withPerson(["General"], "Bride", true)).toEqual(["Bride"]);
+    expect(withPerson(["Bride"], "Groom Dad", true)).toEqual(["Bride", "Groom Dad"]);
+    expect(withPerson(["Bride", "Groom Dad"], "General", true)).toEqual([]);
+    expect(withPerson(["Bride", "Groom Dad"], "Bride", false)).toEqual(["Groom Dad"]);
+    expect(withPerson(["Bride"], "Bride", false)).toEqual([]);
+    // Saying the same thing twice changes nothing, so Try again never undoes a change that landed.
+    expect(withPerson(["Bride"], "Bride", true)).toEqual(["Bride"]);
+    expect(withPerson([], "Bride", false)).toEqual([]);
+    expect(withPerson([], "General", false)).toEqual([]);
+  });
+
+  it("switches an event on or off without doing it twice", () => {
+    expect(withEvent(["Reception"], "Sangjit", true)).toEqual(["Reception", "Sangjit"]);
+    expect(withEvent(["Reception", "Sangjit"], "Sangjit", true)).toEqual(["Reception", "Sangjit"]);
+    expect(withEvent(["Reception", "Sangjit"], "Reception", false)).toEqual(["Sangjit"]);
+    expect(withEvent([], "Reception", false)).toEqual([]);
   });
 });

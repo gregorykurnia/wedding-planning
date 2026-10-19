@@ -1,6 +1,6 @@
 "use client";
 
-import type { DocumentData } from "firebase/firestore";
+import type { DocumentData, Firestore } from "firebase/firestore";
 import {
   collection,
   doc,
@@ -191,9 +191,9 @@ const RENUMBER_IN_ONE_TRANSACTION = 490;
  * inside the transaction, so a row moved or added meanwhile makes Firestore
  * retry rather than write a stale order.
  */
-export async function renumberMasterList() {
-  const database = db;
-  if (!isFirebaseConfigured || !database) {
+export async function renumberMasterList(target?: Firestore) {
+  const database = target ?? db;
+  if (!database || (!target && !isFirebaseConfigured)) {
     throw new Error("Firebase is not configured.");
   }
   const listed = await getDocs(query(collection(database, COLLECTION), orderBy("sortOrder", "asc")));

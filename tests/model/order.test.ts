@@ -256,6 +256,16 @@ describe("orderItems", () => {
     expect(ids(orderItems(list, "person", "asc"))).toEqual(["c", "a", "b", "d"]);
   });
 
+  it("treats an item for no one as General, and orders several people by the first shown (N12)", () => {
+    const people = [
+      item({ id: "p", persons: ["Bride Mom", "Groom Mom"], sortOrder: 1 }),
+      item({ id: "q", persons: [], sortOrder: 2 }),
+      item({ id: "r", persons: ["Groom"], sortOrder: 3 }),
+    ];
+    expect(ids(orderItems(people, "person", "asc"))).toEqual(["q", "r", "p"]);
+    expect(ids(orderItems(people, "person", "desc"))).toEqual(["p", "r", "q"]);
+  });
+
   it("copes with 2.000 items", () => {
     const many = Array.from({ length: 2000 }, (_, i) => item({ id: `i${i}`, item: `Item ${i + 1}`, sortOrder: 2000 - i }));
     const sorted = orderItems(many, "name", "asc");

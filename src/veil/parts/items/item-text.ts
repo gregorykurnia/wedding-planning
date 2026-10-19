@@ -1,12 +1,10 @@
-import type { ItemRecord } from "@/lib/model/items";
-import { ITEM_PEOPLE, type ItemPerson } from "@/lib/model/labels";
-
 /** The words of an item row (guide §4.28), ported from the prototype's items.html. */
 
-/** The person an item is for. Items made before there was one choice may list several (G12); the first one shows. */
-export const personOf = (item: Pick<ItemRecord, "persons">): ItemPerson => item.persons[0] ?? ITEM_PEOPLE[0].value;
+/** The first choice in the "who it's for" menu (N12): ticking it clears everyone else. */
+export const GENERAL_CHOICE = "General, no one in particular";
 
-export const PERSON_OPTIONS = ITEM_PEOPLE.map((p) => ({ value: p.value, label: p.label }));
+/** The label of the closed "who it's for" menu: "Who Wedding cake is for: Groom's father, Groom's mother". */
+export const whoLabel = (name: string, people: string) => `Who ${name} is for: ${people}`;
 
 export const VENDOR_PLACEHOLDER = "Vendor not known yet";
 

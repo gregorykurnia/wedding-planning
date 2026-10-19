@@ -1,0 +1,28 @@
+/* The Wedding items screen (guide §5.22), ported from items.html and veil.css (.filters, .chips, .banner). Tokens only; off-scale values take the nearest token, ties going up. */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* The event chips in the filters are the small ones: 13.5px text and 4px by 12px. */
+.chips button {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-caption);
+}
+
+.started {
+  margin-top: var(--space-7);
+}
+
+.notice {
+  margin-top: var(--space-5);
+}
+
+.demoLine {
+  margin-top: var(--space-3);
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
