@@ -125,6 +125,8 @@ export type EventType = "Both" | "Matrimony" | "Reception" | "Unsure (Abroad)" |
 
 export interface Guest {
   id: string;
+  /** Issued once and never reused; guests written before numbering have none. */
+  number?: number | null;
   name: string;
   connection: string;
   country: string;

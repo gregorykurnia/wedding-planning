@@ -58,7 +58,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 4.10 What-if · Sonnet 5.5 High | [x] 4.25 Settings · Sonnet 5.5 High |
 | [x] 4.16 Documents · Sonnet 5.5 High | [x] 4.22 Tasks · Sonnet 5.5 High |
 | [x] 4.19 Files (L) · Sonnet 5.5 High | [x] 4.23 Wedding items (L) · Sonnet 5.5 High |
-| [ ] 6.4 Manifest, icons, install · Haiku 5.5 Max | [ ] 4.24 Guests · Sonnet 5.5 High |
+| [ ] 6.4 Manifest, icons, install · Haiku 5.5 Max | [x] 4.24 Guests · Sonnet 5.5 High |
 | [ ] 6.5 Not found and error screens · Haiku 5.5 Max | [ ] 6.2 Push reminders (after 4.25) · Opus 5.5 High |
 | 🛑 [ ] Phase 4 review · Opus 5.5 Medium | wait |
 | **Phase 5: states** | |

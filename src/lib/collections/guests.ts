@@ -13,9 +13,10 @@ import type { EventType, Guest, RsvpStatus } from "@/lib/types";
 
 const COLLECTION = "guests";
 
-function fromDoc(id: string, data: DocumentData): Guest {
+export function guestFromDoc(id: string, data: DocumentData): Guest {
   return {
     id,
+    number: typeof data.number === "number" ? data.number : null,
     name: data.name ?? "",
     connection: data.connection ?? "",
     country: data.country ?? "",
@@ -30,7 +31,7 @@ function fromDoc(id: string, data: DocumentData): Guest {
 }
 
 export function useGuests() {
-  return useCollection<Guest>(COLLECTION, fromDoc);
+  return useCollection<Guest>(COLLECTION, guestFromDoc);
 }
 
 export function createGuest() {
@@ -58,6 +59,7 @@ export function deleteGuest(id: string) {
 
 export function restoreGuest(guest: Guest) {
   return setDocument(COLLECTION, guest.id, {
+    ...(guest.number != null ? { number: guest.number } : {}),
     name: guest.name,
     connection: guest.connection,
     country: guest.country,

@@ -1,0 +1,14 @@
+/* The Guests screen (guide §5.23), ported from the inline spacing of guests.html.
+   Tokens only; off-scale values take the nearest token. */
+
+/* The list starts 10px under the count line (the prototype's inline margin), 4px more than a bare ledger. */
+.list {
+  padding-top: var(--space-1);
+}
+
+.demoLine {
+  margin-top: var(--space-3);
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
