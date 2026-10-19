@@ -10,6 +10,7 @@ import { isObject } from "./adapters/common";
 import { logActivity } from "./activity";
 import { addElement, mutateArray } from "./array-ops";
 import { requireDb, uidOf } from "./db";
+import { devFaults } from "./dev-faults";
 import { useSession } from "./session";
 import {
   targetPath,
@@ -43,6 +44,12 @@ export function sendToCloudinary(
   onProgress: (loaded: number, total: number) => void,
 ): Promise<UploadedAsset> {
   return new Promise((resolve, reject) => {
+    if (devFaults().upload) {
+      // Dev only (`?fault=upload`): the upload gets part-way, then the connection drops.
+      onProgress(Math.round(file.size * 0.4), file.size);
+      setTimeout(() => reject(new Error("Upload failed. Check your connection.")), 600);
+      return;
+    }
     if (!isCloudinaryConfigured) {
       reject(new Error("Cloudinary isn't set up (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and _UPLOAD_PRESET)."));
       return;

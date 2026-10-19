@@ -983,7 +983,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 4 | 4.F3 Review fixes: vendors, rules and scripts | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | 2026-10-19 · lane t2, 328f846; rules (P1-S22) deployed to production by the owner 2026-10-19 | [x] |
 | 4 | 4.F4 Review fixes: schedule, items and guests | Opus 5.5 Medium | $1.34 | Same; includes a reminder sent twice (P4-S17) | 2026-10-19 · lane t2, 4b8277b; S23 noted in G31, reply sentence in G35 | [x] |
 | 4 | 4.F5 Review fixes: shared sheets and partner news | Opus 5.5 Medium | $1.34 | Same; shared parts every Phase 5 state builds on | 2026-10-19 · lane t2, 306a578; reasons in G38 | [x] |
-| 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | | [ ] |
+| 5 | 5.1 State harness and emulator data sets | Sonnet 5.5 High | $0.88 | Fault injection in the write layer for screenshots | 2026-10-19 · lane t1; how to use it is in the task | [x] |
 | 5 | 5.2 Budget group states (L) | Haiku 5.5 Max | $0.42 | States are shared components; reference each screen's `?state=` | | [ ] |
 | 5 | 5.3 Vendors group states | Haiku 5.5 Max | $0.21 | Same | | [ ] |
 | 5 | 5.4 Documents and files states | Sonnet 5.5 High | $0.88 | Editor offline, failed save, presence and deleted-by-partner | | [ ] |
@@ -1362,6 +1362,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 #### Task 5.1: State harness and emulator data sets · Sonnet 5.5 High
 - **Files:** `src/lib/data/dev-faults.ts` (only when `NEXT_PUBLIC_VEIL_DEV=1`: `?fault=save|load|offline|upload` makes the write layer or hooks fail), `tests/fixtures/{normal,empty,stress}.ts` built from the prototype's `assets/data*.js` sets and loaded into the emulator by `npm run seed:emulator -- <set>`.
 - **Done when:** each fixture loads; each fault produces the designed state on one screen.
+- **As built (2026-10-19):** `npm run seed:emulator -- normal|empty|stress` empties the emulators (start them with the command it prints), makes the two test accounts, paired, and loads the set; `npm run dev:emulator` runs the app against them (port 3000 plus this copy's offset, signed in as `gregory.kurnia@gmail.com` / `test-password-1`) with `?fault=` on. The sets are the prototype's own `data*.js`, run in a sandbox, so they follow the design when it is imported again; `tests/fixtures/build.ts` stores them as the app does (the prototype's "Catering" is stored "Food", a booking from Venues is a booked venue). Faults, comma-separated, kept for the tab, `?fault=off` clears: `save` or `save:<code>` (every write fails, Try again too), `load` (reads fail before any data), `offline` (reads offline, writes fail as offline), `upload` (fails part-way). Not covered: the prototype's today is 14 October 2026 and the app's is the real day, so due and late states depend on the date you open it; `load` reaches `readOf`, settings and a document, not one file's page.
 
 #### Task 5.2: Budget group states (L) · Haiku 5.5 Max
 - **Screens:** Budget, Bookings, A booking, Add a booking, Payments due, Who pays, What-if. **Prototype:** each file's `?state=` list. Includes overpaid, paid in full, late, removed by Bella (`status: 'gone'`), just added, stress.

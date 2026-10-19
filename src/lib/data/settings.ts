@@ -2,6 +2,7 @@
 
 import { useWeddingSettings } from "@/lib/collections/settings";
 import type { WeddingSettings } from "@/lib/types";
+import { devFaults } from "./dev-faults";
 import { useSession } from "./session";
 import { set, type WriteOptions } from "./write";
 
@@ -22,6 +23,7 @@ export function useSettings(): Loaded<WeddingSettings> {
   const { data, loading, error } = useWeddingSettings();
   const { connection } = useSession();
   if (connection === "demo") return { status: "demo", data: null };
+  if (devFaults().load) return { status: "error", data: null };
   if (error) return { status: "error", data };
   if (connection === "offline") return { status: "offline", data };
   if (loading) return { status: "loading", data: null };

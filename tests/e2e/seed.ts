@@ -94,12 +94,8 @@ export async function createAccount(email: string, password: string, verified = 
   return localId;
 }
 
-/**
- * Pairs the two test accounts again, as `seed()` left them. A spec that empties
- * Firestore (or the pairing) calls this in `afterAll`, so the specs after it
- * aren't asked "Which of you is this?".
- */
-export async function restorePairing() {
+/** The two test accounts' uids, in `TEST_ACCOUNTS` order (the first holds the first name). */
+export async function accountUids(): Promise<string[]> {
   const uids: string[] = [];
   for (const { email, password } of TEST_ACCOUNTS) {
     const res = await fetch(
@@ -113,7 +109,16 @@ export async function restorePairing() {
     await expectOk(res, `Finding ${email}`);
     uids.push(((await res.json()) as { localId: string }).localId);
   }
-  await pairAccounts(uids);
+  return uids;
+}
+
+/**
+ * Pairs the two test accounts again, as `seed()` left them. A spec that empties
+ * Firestore (or the pairing) calls this in `afterAll`, so the specs after it
+ * aren't asked "Which of you is this?".
+ */
+export async function restorePairing() {
+  await pairAccounts(await accountUids());
 }
 
 export default seed;

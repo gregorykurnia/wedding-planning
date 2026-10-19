@@ -41,6 +41,8 @@ const emulatorAppEnv = {
   NEXT_DIST_DIR: ".next-e2e",
   // Shows the new UI's dev-only gallery pages.
   NEXT_PUBLIC_VEIL_GALLERY: "1",
+  // Turns on `?fault=` (src/lib/data/dev-faults.ts).
+  NEXT_PUBLIC_VEIL_DEV: "1",
   // Fake Cloudinary config so the upload controls are enabled. The specs
   // stub every request to api.cloudinary.com, so nothing leaves the machine.
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",

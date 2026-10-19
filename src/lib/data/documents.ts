@@ -9,6 +9,7 @@ import { documentText, type DocumentListItem } from "@/lib/model/document-list";
 import { titleOrUntitled } from "@/lib/model/documents";
 import { logActivity } from "./activity";
 import { documentFromDoc, contentFields, type DocumentDoc } from "./adapters/documents";
+import { devFaults } from "./dev-faults";
 import { useRemovedByPartner, usePartnerName } from "./partner";
 import { readOf } from "./read";
 import { useSession } from "./session";
@@ -86,6 +87,7 @@ export function useDocument(id: string | null): DocumentRead {
   }, [id]);
 
   if (connection === "demo") return { status: "demo", data: null, pending: false, by: null };
+  if (devFaults().load) return { status: "error", data: null, pending: false, by: null };
   if (!id) return { status: "ready", data: null, pending: false, by: null };
   const current = state.id === id ? state : { data: null, status: "loading" as const, pending: false };
   const by = removed?.by ?? null;

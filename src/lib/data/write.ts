@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from "firebase/firestore";
 import { requireDb, uidOf } from "./db";
+import { devFaults } from "./dev-faults";
 import { toWriteError, WriteError } from "./write-error";
 
 export { WriteError, type WriteFailure } from "./write-error";
@@ -53,6 +54,13 @@ function withTimeout<T>(promise: Promise<T>): Promise<T> {
  * and a late first append can't land twice.
  */
 export function guarded<T>(run: () => Promise<T>): Promise<T> {
+  const fault = devFaults().save;
+  if (fault) {
+    // Dev only (`?fault=save`): fails before anything is sent, and so does the retry.
+    const failure = new WriteError(fault);
+    failure.retry = () => guarded(run);
+    return Promise.reject(failure);
+  }
   let first: Promise<T>;
   try {
     first = run();

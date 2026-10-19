@@ -20,6 +20,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import { devFaults } from "./dev-faults";
 import { recordMember } from "./members";
 import { watchReprobe } from "./reprobe";
 
@@ -94,7 +95,7 @@ function subscribeOnline(onChange: () => void) {
 function useOnline(): boolean {
   return useSyncExternalStore(
     subscribeOnline,
-    () => navigator.onLine,
+    () => navigator.onLine && !devFaults().offline,
     () => true,
   );
 }

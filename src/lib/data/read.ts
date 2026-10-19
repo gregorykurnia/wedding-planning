@@ -1,3 +1,4 @@
+import { devFaults } from "./dev-faults";
 import type { Connection } from "./session";
 import type { Loaded, ReadStatus } from "./settings";
 
@@ -12,6 +13,8 @@ export function readOf<T>(
   data: T,
 ): Loaded<T> {
   if (connection === "demo") return { status: "demo", data: null };
+  // Dev only (`?fault=load`): the read failed before any data arrived.
+  if (devFaults().load) return { status: "error", data: null };
   if (sources.some((s) => s.error)) return { status: "error", data };
   if (connection === "offline") return { status: "offline", data };
   if (sources.some((s) => s.loading)) return { status: "loading", data: null };
