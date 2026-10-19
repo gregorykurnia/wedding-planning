@@ -231,6 +231,8 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
     );
   }
 
+  // Finished tasks open at once when none is left open (guide §5.21), or when `?open=` names one of them.
+  const finishedOpen = open.length === 0 || Boolean(openParam && done.some((t) => t.id === openParam));
   const notices = [...failures.values()].filter((f) => f.kind === "notice");
   const paging = (list: readonly TaskRecord[], which: "open" | "done") =>
     list.length > shown[which] ? (
@@ -269,7 +271,7 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
           {ALL_DONE.body}
         </Message>
       )}
-      <FinishedTasks count={done.length} defaultOpen={Boolean(openParam && done.some((t) => t.id === openParam))}>
+      <FinishedTasks count={done.length} defaultOpen={finishedOpen}>
         <ul className={styles.list}>{done.slice(0, shown.done).map(row)}</ul>
         {paging(done, "done")}
       </FinishedTasks>

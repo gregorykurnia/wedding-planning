@@ -68,9 +68,9 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | **Phase 5: states** | |
 | [x] 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
 | [x] 5.2 Budget states (L) · Haiku 5.5 Max | [x] 5.3 Vendors states · Haiku 5.5 Max |
-| [x] 5.4 Documents and files states · Sonnet 5.5 High | [ ] 5.5 Schedule states · Haiku 5.5 Max |
-| — | [ ] 5.6 Items and guests states · Haiku 5.5 Max |
-| — | [ ] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
+| [x] 5.4 Documents and files states · Sonnet 5.5 High | [x] 5.5 Schedule states · Haiku 5.5 Max |
+| — | [x] 5.6 Items and guests states · Haiku 5.5 Max |
+| — | [x] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
 | 🛑 [ ] Phase 5 review · Opus 5.5 Medium | wait |
 | 🛑 [ ] Phase 6 review · Opus 5.5 Medium | wait |
 | **Phase 7: switch-over (one terminal only)** | |
@@ -80,14 +80,13 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | 🛑 [ ] Phase 7 review · Opus 5.5 High | off |
 | **Phase 8: QA** | |
 | [ ] 8.1 Behaviour tests (L) · Sonnet 5.5 High | [ ] 8.2 Screenshots · Sonnet 5.5 High |
-| [ ] 8.3 Fixes: budget and vendors (after 8.2) · Haiku 5.5 Max | [ ] 8.4 Accessibility · Sonnet 5.5 High |
-| [ ] 8.3 Fixes: documents and files · Haiku 5.5 Max | [ ] 8.3 Fixes: schedule, items and guests · Haiku 5.5 Max |
-| [ ] 8.5 Device checklist · Haiku 5.5 xHigh | [ ] 8.3 Fixes: shell, overview, sign-in, settings · Haiku 5.5 Max |
+| [ ] 8.3 Fixes: budget, vendors, documents and files (after 8.2; all groups if the report is small) · Haiku 5.5 Max | [ ] 8.4 Accessibility · Sonnet 5.5 High |
+| [ ] 8.5 Device checklist · Haiku 5.5 xHigh | [ ] 8.3 Fixes: schedule, items, guests, shell, overview, sign-in, settings (skip if the first session covered them) · Haiku 5.5 Max |
 | — | [ ] 8.6 Merge preparation · Haiku 5.5 Max |
 | 🛑 [ ] Phase 8 review · Opus 5.5 Medium | wait |
 | **Phase 9: after launch (one terminal only)** | |
 | [ ] 9.1 After-launch check · Sonnet 5.5 High | off |
 | [ ] 9.2 Remove the old UI · Sonnet 5.5 High | off |
-| 🛑 [ ] Phase 9 review · Opus 5.5 Medium | off |
+| 🛑 [ ] Phase 9 review, only if 9.1 raised a need or a 9.2 check failed · Opus 5.5 Medium | off |
 
 The earlier four-lane split, the 4.9 calibration trial steps and the N1–N18 studio round are in this file's git history (before 2026-10-18). Their results are in §7.0.
