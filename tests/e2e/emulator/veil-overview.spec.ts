@@ -213,12 +213,18 @@ test("no wedding date: the date form saves it, keeps the names, and the countdow
   expect(stored.fields.startedOn.stringValue).toBe(inDays(-73));
 });
 
-test("the install card shows on a phone, goes with Not now, and stays gone", async ({ page }) => {
+test("the install card shows on a phone once Chrome offers to install, goes with Not now, and stays gone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
   await openOverview(page);
+  await expect(page.locator("main").getByText("157", { exact: true })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
 
-  await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  // Desktop Chromium never offers to install, so the test makes the offer. The listener may not be attached yet, so it retries.
+  await expect(async () => {
+    await page.evaluate(() => window.dispatchEvent(new Event("beforeinstallprompt")));
+    await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/new/settings#install");
   await page.getByRole("button", { name: "Not now" }).click();
   await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
@@ -226,6 +232,19 @@ test("the install card shows on a phone, goes with Not now, and stays gone", asy
   await page.reload();
   await expect(page.locator("main").getByText("157", { exact: true })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
+});
+
+test.describe("on an iPhone", () => {
+  // iOS never offers to install, so its card comes with the steps and no offer.
+  test.use({ userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" });
+
+  test("the install card shows with no install offer, and Show me how links to the steps", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
+    await openOverview(page);
+    await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+    await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/new/settings#install");
+  });
 });
 
 test("a computer gets no install card", async ({ page }) => {

@@ -1,22 +1,21 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { isIphone, suggestInstall } from "@/lib/model/install";
+import { useCanInstall } from "@/veil/parts/device/use-can-install";
+import { useInstalled } from "@/veil/parts/device/use-installed";
 
 const DISMISSED = "veil.install-suggestion.dismissed";
 const PHONE = "(max-width: 760px)";
 
-function subscribe(onChange: () => void) {
+function subscribePhone(onChange: () => void) {
   const phone = window.matchMedia(PHONE);
   phone.addEventListener("change", onChange);
   return () => phone.removeEventListener("change", onChange);
 }
 
-/** On a phone, and not already running as an installed app. */
-function onPhoneBrowser() {
-  const installed =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  return window.matchMedia(PHONE).matches && !installed;
+function noChanges() {
+  return () => {};
 }
 
 function wasDismissed() {
@@ -29,13 +28,15 @@ function wasDismissed() {
 }
 
 /**
- * Whether to suggest adding the planner to the home screen (guide §4.30): on a
- * phone, not already installed, and not turned away before on this device.
- * Task 6.4 adds the Android install prompt and the iPhone steps; this is the
- * gate they share.
+ * Whether to suggest adding the planner to the home screen (guide §4.30), and the
+ * "Not now" that keeps it away on this device. The rules are in `suggestInstall`;
+ * this reads the device for them.
  */
 export function useInstallSuggestion() {
-  const eligible = useSyncExternalStore(subscribe, onPhoneBrowser, () => false);
+  const phone = useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE).matches, () => false);
+  const installed = useInstalled();
+  const installable = useCanInstall();
+  const iphone = useSyncExternalStore(noChanges, () => isIphone(navigator.userAgent), () => false);
   const [dismissed, setDismissed] = useState(wasDismissed);
 
   function dismiss() {
@@ -47,5 +48,5 @@ export function useInstallSuggestion() {
     }
   }
 
-  return { show: eligible && !dismissed, dismiss };
+  return { show: suggestInstall({ phone, installed, dismissed, iphone, installable }), dismiss };
 }
