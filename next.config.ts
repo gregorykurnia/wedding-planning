@@ -28,13 +28,14 @@ const nextConfig: NextConfig = {
     ];
   },
   // The component gallery is dev-only. With its switch off, its addresses are
-  // rewritten to a path that doesn't exist, so the server answers 404. A not-found
-  // page rendered while streaming would answer 200 instead. beforeFiles runs before
-  // the page match, so the gallery pages never render.
+  // rewritten to a path outside the new UI that doesn't exist, so the server answers
+  // 404. Under /new an unknown address reaches the not-found page (the catch-all in
+  // app/(veil)/new), which streams and answers 200, so the target must stay outside
+  // /new. beforeFiles runs before the page match, so the gallery pages never render.
   async rewrites() {
     if (process.env.NEXT_PUBLIC_VEIL_GALLERY === "1") return [];
     return {
-      beforeFiles: [{ source: "/new/gallery/:path*", destination: "/new/gallery-off" }],
+      beforeFiles: [{ source: "/new/gallery/:path*", destination: "/gallery-off" }],
       afterFiles: [],
       fallback: [],
     };

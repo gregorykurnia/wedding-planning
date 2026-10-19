@@ -78,3 +78,19 @@ test("a sign-in problem is announced as an alert", async ({ page }) => {
     page.getByRole("alert").filter({ hasText: "That email and password don’t match." }),
   ).toBeVisible();
 });
+
+// Task 6.5: a screen that throws while drawing shows the planner's own message,
+// and Try again draws the screen again. The gallery draws no top bar of its own,
+// so this test doesn't look for one.
+test("a page that hits something unexpected says so, and Try again draws it again", async ({
+  page,
+}) => {
+  await openDemos(page);
+  await page.getByRole("button", { name: "Make this page fail" }).click();
+  await expect(page.getByRole("heading", { name: "Something went wrong" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Go to the overview" })).toBeVisible();
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Screen states, messages and banners" }),
+  ).toBeVisible();
+});
