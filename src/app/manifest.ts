@@ -1,30 +1,42 @@
 import type { MetadataRoute } from "next";
+import { APP_IDENTITY } from "@/lib/model/app-identity";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Gregory & Partner's Wedding Planner",
-    short_name: "Wedding Planner",
-    description: "A cozy place to plan our big day.",
+    name: APP_IDENTITY.name,
+    short_name: APP_IDENTITY.shortName,
+    description: APP_IDENTITY.description,
+    lang: "en-GB",
     start_url: "/",
+    scope: "/",
     display: "standalone",
-    background_color: "#2b2f4a",
-    theme_color: "#2b2f4a",
+    orientation: "any",
+    background_color: APP_IDENTITY.backgroundColor,
+    theme_color: APP_IDENTITY.themeColor,
     icons: [
       {
         src: "/icon-192.png",
         sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/icon-512.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
       {
-        src: "/icon-512.png",
+        src: "/icon-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
+      },
+      {
+        src: "/icon-mono.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "monochrome",
       },
     ],
   };

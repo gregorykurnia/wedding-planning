@@ -7,6 +7,8 @@ import { useWho } from "@/lib/data/who";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { WhoScreen } from "@/veil/screens/who/who-screen";
 import { Shimmer } from "@/veil/parts/shimmer/shimmer";
+// Listens for the browser's install offer from the first screen on (see use-can-install).
+import "@/veil/parts/device/use-can-install";
 import { safeNext, sectionOf, showsTopBar, veilHref } from "../href";
 import { DemoBanner } from "./banner";
 import { BusyProvider, useBusy } from "./busy";
