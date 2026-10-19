@@ -139,7 +139,8 @@ export function RecordPaymentSheet({ booking, partId = null, funders, record, up
 
   function submit() {
     pressing.current = false;
-    if (busy || inDemo) return;
+    // Enter in the amount mustn't record past a receipt still uploading or failed (the button is held too).
+    if (busy || inDemo || uploading || receiptFailed) return;
     const kind = amountProblem(text);
     if (kind) {
       refuse(kind, text);

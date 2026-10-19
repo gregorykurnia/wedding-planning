@@ -60,7 +60,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 4.19 Files (L) · Sonnet 5.5 High | [x] 4.23 Wedding items (L) · Sonnet 5.5 High |
 | [x] 6.4 Manifest, icons, install · Haiku 5.5 Max | [x] 4.24 Guests · Sonnet 5.5 High |
 | [x] 6.5 Not found and error screens · Haiku 5.5 Max | [x] 6.2 Push reminders (after 4.25) · Opus 5.5 High |
-| 🛑 [ ] Phase 4 review · Opus 5.5 Medium | wait |
+| 🛑 [x] Phase 4 review · Opus 5.5 Medium | wait |
 | **Phase 5: states** | |
 | [ ] 5.1 State harness · Sonnet 5.5 High | wait for 5.1 |
 | [ ] 5.2 Budget states (L) · Haiku 5.5 Max | [ ] 5.3 Vendors states · Haiku 5.5 Max |

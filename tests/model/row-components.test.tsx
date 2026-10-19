@@ -85,7 +85,7 @@ describe("TaskRow", () => {
   });
 
   it("draws each step with its check, title, date and remove button, and the failed one with its line", () => {
-    const html = markup(<TaskRow task={task({ subtasks: steps })} today={TODAY} actions={{}} defaultOpen failedStepId="s2" />);
+    const html = markup(<TaskRow task={task({ subtasks: steps })} today={TODAY} actions={{}} defaultOpen failedStepIds={new Set(["s2"])} />);
     expect(count(html, /aria-label="Remove step"/g)).toBe(2);
     expect(count(html, /type="checkbox"/g)).toBe(2);
     expect(html).toContain('value="Buy the tickets"');
@@ -97,13 +97,29 @@ describe("TaskRow", () => {
   });
 
   it("rings a due date or notes that didn't save, with one line and Try again", () => {
-    const due = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedField="due" />);
+    const due = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedFields={new Set(["due"] as const)} />);
     expect(count(due, /Couldn’t save this change\. What you typed is kept\./g)).toBe(1);
     expect(due).toContain("Try again");
-    const notes = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedField="notes" />);
+    const notes = markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen failedFields={new Set(["notes"] as const)} />);
     expect(count(notes, /Couldn’t save this change\. What you typed is kept\./g)).toBe(1);
     expect(notes).toMatch(/<textarea[^>]*aria-invalid="true"/);
     expect(markup(<TaskRow task={task()} today={TODAY} actions={{}} defaultOpen />)).not.toContain("Couldn’t save");
+  });
+
+  it("shows several failures at once: two steps, the due date and the notes", () => {
+    const html = markup(
+      <TaskRow
+        task={task({ subtasks: steps })}
+        today={TODAY}
+        actions={{}}
+        defaultOpen
+        failedStepIds={new Set(["s1", "s2"])}
+        failedFields={new Set(["due", "notes"] as const)}
+      />,
+    );
+    expect(count(html, /Couldn’t save this step\. What you typed is kept\./g)).toBe(2);
+    expect(count(html, /Couldn’t save this change\. What you typed is kept\./g)).toBe(2);
+    expect(html).toMatch(/<textarea[^>]*aria-invalid="true"/);
   });
 
   it("makes every control inert in demonstration mode", () => {
@@ -186,19 +202,28 @@ describe("ItemRow", () => {
   });
 
   it("says what failed, keeps the vendor typed and offers Try again", () => {
-    const html = draw({ item: item({ vendor: "Bespoke Tailor Bali" }), failedField: "vendor" });
+    const html = draw({ item: item({ vendor: "Bespoke Tailor Bali" }), failedFields: new Set(["vendor"] as const) });
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain("Couldn’t save “Bespoke Tailor Bali”. What you typed is kept.");
     expect(html).toContain("Try again");
   });
 
   it("rings a one-tap control whose change didn't save and says the choice is kept", () => {
-    const html = draw({ item: item({ confirmed: true }), failedField: "confirmed" });
+    const html = draw({ item: item({ confirmed: true }), failedFields: new Set(["confirmed"] as const) });
     expect(html).toMatch(/class="[^"]*ringed[^"]*"[^>]*aria-pressed="true"[^>]*aria-label="Confirmed: Wedding cake"/);
     expect(count(html, /ringed/g)).toBe(1);
     expect(html).toContain("Couldn’t save the change to Wedding cake. Your choice is kept.");
     expect(html).not.toContain('aria-invalid="true"');
     expect(html).toContain("Try again");
+  });
+
+  it("rings every field that didn't save, with one line worded for the typed one and one Try again", () => {
+    const html = draw({ item: item({ vendor: "Bespoke Tailor Bali", confirmed: true }), failedFields: new Set(["vendor", "confirmed", "next"] as const) });
+    expect(html).toMatch(/aria-invalid="true"[^>]*/);
+    expect(count(html, /ringed/g)).toBe(2);
+    expect(html).toContain("Couldn’t save “Bespoke Tailor Bali”. What you typed is kept.");
+    expect(html).not.toContain("Your choice is kept.");
+    expect(count(html, /Try again/g)).toBe(1);
   });
 
   it("fades while dragged and shows the drop line on the edge it will land on", () => {

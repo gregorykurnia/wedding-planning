@@ -21,6 +21,8 @@ import {
 } from "./task-text";
 import styles from "./tasks.module.css";
 
+const NONE: ReadonlySet<never> = new Set();
+
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
 /** What a task row can ask its screen to do. Each is a write; leave one out and that control does nothing. */
@@ -52,18 +54,22 @@ interface StepRowProps {
   failed: boolean;
   /** Put the cursor in this step's title (a step was just added). */
   focus: boolean;
+  /** Called once the cursor is in it, so the screen can let the request go. */
+  onFocused?: (stepId: string) => void;
   disabled: boolean;
 }
 
 /** One step: a 24px check, a title, a date and a 32px ×. A change that didn't save keeps what was typed. */
-function StepRow({ task, step, actions, failed, focus, disabled }: StepRowProps) {
+function StepRow({ task, step, actions, failed, focus, onFocused, disabled }: StepRowProps) {
   const [title, setTitle] = useDraft(step.title);
   const [due, setDue] = useDraft(step.dueDate ?? "");
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (focus) input.current?.focus();
-  }, [focus]);
+    if (!focus) return;
+    input.current?.focus();
+    onFocused?.(step.id);
+  }, [focus, onFocused, step.id]);
 
   const commitTitle = (text: string) => {
     if (text !== step.title) actions.onStepTitle?.(task, step, text);
@@ -140,12 +146,14 @@ export interface TaskRowProps {
   /** Open when the screen first draws it; after that the reader opens and closes it. */
   defaultOpen?: boolean;
   onToggle?: (open: boolean) => void;
-  /** The step whose last change didn't save. */
-  failedStepId?: string | null;
+  /** The steps with a change that didn't save (any of title, tick, date or removal). */
+  failedStepIds?: ReadonlySet<string>;
   /** The step to put the cursor in (one just added). */
   focusStepId?: string | null;
-  /** A due date or notes change that didn't save: the field is ringed and keeps what was typed. */
-  failedField?: TaskField | null;
+  /** Told when that step has the cursor, so the request can be let go. */
+  onFocusedStep?: (stepId: string) => void;
+  /** Due date and notes changes that didn't save: each is ringed and keeps what was typed. */
+  failedFields?: ReadonlySet<TaskField>;
   /** Demonstration mode: every control is inert. */
   demo?: boolean;
 }
@@ -163,9 +171,10 @@ export function TaskRow({
   actions,
   defaultOpen = false,
   onToggle,
-  failedStepId = null,
+  failedStepIds = NONE,
   focusStepId = null,
-  failedField = null,
+  onFocusedStep,
+  failedFields = NONE,
   demo = false,
 }: TaskRowProps) {
   const flash = useFlash({ kind: "task", id: task.id });
@@ -228,8 +237,9 @@ export function TaskRow({
                 task={task}
                 step={step}
                 actions={actions}
-                failed={failedStepId === step.id}
+                failed={failedStepIds.has(step.id)}
                 focus={focusStepId === step.id}
+                onFocused={onFocusedStep}
                 disabled={demo}
               />
             ))}
@@ -240,7 +250,7 @@ export function TaskRow({
           <Fields className={styles.dueFields}>
             <FieldRow
               label="Due date"
-              field={failedField === "due" ? { failed: true, retry: () => actions.onRetryField?.(task, "due"), disabled: demo } : undefined}
+              field={failedFields.has("due") ? { failed: true, retry: () => actions.onRetryField?.(task, "due"), disabled: demo } : undefined}
             >
               <DateInput
                 value={due}
@@ -255,8 +265,8 @@ export function TaskRow({
           </label>
           <textarea
             id={`${task.id}-notes`}
-            className={join(styles.notes, failedField === "notes" && styles.notesFailed)}
-            aria-invalid={failedField === "notes" || undefined}
+            className={join(styles.notes, failedFields.has("notes") && styles.notesFailed)}
+            aria-invalid={failedFields.has("notes") || undefined}
             dir="auto"
             placeholder="Notes"
             value={notes}
@@ -264,7 +274,7 @@ export function TaskRow({
             onChange={(event) => setNotes(event.target.value)}
             onBlur={(event) => event.currentTarget.value !== task.notes && actions.onNotes?.(task, event.currentTarget.value)}
           />
-          {failedField === "notes" ? (
+          {failedFields.has("notes") ? (
             <p className={styles.rowErr} role="alert">
               <span>{FIELD_FAILED}</span>
               <TextLink tone="rose" onClick={() => actions.onRetryField?.(task, "notes")}>

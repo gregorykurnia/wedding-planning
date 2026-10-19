@@ -53,9 +53,8 @@ const BY_NUMBER: OrderState<GuestOrderKey> = { key: "number", direction: "asc" }
 
 const NO_BOOK: GuestBook = { guests: [], nextNumber: 1 };
 
-/** A reply that didn't save, and how to run it again. */
+/** A reply that didn't save, and how to run it again; one per guest, by id. */
 interface Failure {
-  id: string;
   retry: () => void;
 }
 
@@ -89,9 +88,10 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
   const [order, setOrder] = useState<OrderState<GuestOrderKey>>(BY_NUMBER);
   const [shown, setShown] = useState(PAGE);
 
-  // The reply a tap chose, shown until it is saved; one that didn't save stays shown with its line.
+  // The reply a tap chose, shown until it is saved; one that didn't save stays shown with its line,
+  // whatever happens on other rows, until its own Try again lands.
   const [held, setHeld] = useState<Record<string, Rsvp>>({});
-  const [failed, setFailed] = useState<Failure | null>(null);
+  const [failures, setFailures] = useState<ReadonlyMap<string, Failure>>(new Map());
   // A guest just added, to bring into view once their row exists.
   const [reveal, setReveal] = useState<string | null>(null);
 
@@ -157,12 +157,19 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
     const run = async () => {
       try {
         const { undo } = await setGuestRsvp(guest, next);
+        // A later tap on this row may already hold another reply: that one stays until it lands.
         setHeld((h) => {
+          if (h[guest.id] !== next) return h;
           const rest = { ...h };
           delete rest[guest.id];
           return rest;
         });
-        setFailed((f) => (f?.id === guest.id ? null : f));
+        setFailures((map) => {
+          if (!map.has(guest.id)) return map;
+          const rest = new Map(map);
+          rest.delete(guest.id);
+          return rest;
+        });
         toast.undoable(
           rsvpToast(guest.name, next),
           async () => {
@@ -172,7 +179,7 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
           rsvpConflict(partnerName, guest.name),
         );
       } catch {
-        setFailed({ id: guest.id, retry: () => void run() });
+        setFailures((map) => new Map(map).set(guest.id, { retry: () => void run() }));
       }
     };
     void run();
@@ -265,9 +272,9 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
                   key={guest.id}
                   guest={guest}
                   demo={demo}
-                  failed={failed?.id === guest.id}
+                  failed={failures.has(guest.id)}
                   onRsvp={reply}
-                  onRetry={() => failed?.retry()}
+                  onRetry={() => failures.get(guest.id)?.retry()}
                   onOpen={(g) => openGuest(g.id)}
                 />
               ))}

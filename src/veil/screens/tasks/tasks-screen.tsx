@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSession } from "@/lib/data/session";
 import {
   addStep,
@@ -57,12 +57,17 @@ interface Failure {
   /** A step's, a task field's, or a note above the list. */
   kind: "step" | "field" | "notice";
   taskId: string;
-  /** The step's id, the field's name, or the notice's words. */
+  /** The step's id and which of its writes (`<step>:title`), the field's name, or the notice's words. */
   what: string;
   retry: () => void;
 }
 
+/** The writes a step makes. Each fails, and is retried, on its own: a later tick doesn't clear a failed title. */
+type StepWrite = "title" | "done" | "due" | "remove";
+
 const keyOf = (f: Pick<Failure, "kind" | "taskId" | "what">) => `${f.kind}:${f.taskId}:${f.what}`;
+const stepWhat = (stepId: string, write: StepWrite) => `${stepId}:${write}`;
+const stepOf = (f: Failure) => f.what.slice(0, f.what.lastIndexOf(":"));
 
 /**
  * Tasks (guide §5.21; S8, S9): open tasks by due date with undated last, then
@@ -96,6 +101,8 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
   }));
   const [failures, setFailures] = useState<ReadonlyMap<string, Failure>>(new Map());
   const [focusStep, setFocusStep] = useState<string | null>(null);
+  // A new step takes the cursor once; it is let go then, so an Undo bringing the step back doesn't take it again.
+  const focused = useCallback((id: string) => setFocusStep((f) => (f === id ? null : f)), []);
 
   // A link from the agenda to another task while this screen is already showing.
   const [seenParam, setSeenParam] = useState(openParam);
@@ -149,13 +156,13 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
         toast.undoable(finish ? finishedToast(task.title) : reopenedToast(task.title), undo);
       }),
     onStepDone: (task, step, tick) =>
-      attempt({ kind: "step", taskId: task.id, what: step.id }, async () => void (await saveStep(task.id, step, { done: tick }))),
+      attempt({ kind: "step", taskId: task.id, what: stepWhat(step.id, "done") }, async () => void (await saveStep(task.id, step, { done: tick }))),
     onStepTitle: (task, step, title) =>
-      attempt({ kind: "step", taskId: task.id, what: step.id }, async () => void (await saveStep(task.id, step, { title }))),
+      attempt({ kind: "step", taskId: task.id, what: stepWhat(step.id, "title") }, async () => void (await saveStep(task.id, step, { title }))),
     onStepDue: (task, step, due) =>
-      attempt({ kind: "step", taskId: task.id, what: step.id }, async () => void (await saveStep(task.id, step, { dueDate: due }))),
+      attempt({ kind: "step", taskId: task.id, what: stepWhat(step.id, "due") }, async () => void (await saveStep(task.id, step, { dueDate: due }))),
     onRemoveStep: (task, step) =>
-      attempt({ kind: "step", taskId: task.id, what: step.id }, async () => {
+      attempt({ kind: "step", taskId: task.id, what: stepWhat(step.id, "remove") }, async () => {
         const { undo } = await removeStep(task.id, step.id);
         toast.undoable(REMOVED_STEP_TOAST, undo);
       }),
@@ -174,14 +181,17 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
     onDue: (task, due) => attempt({ kind: "field", taskId: task.id, what: "due" }, () => saveTask(task.id, { dueDate: due })),
     onNotes: (task, notes) => attempt({ kind: "field", taskId: task.id, what: "notes" }, () => saveTask(task.id, { notes })),
     onDelete: (task) => void remove(task),
-    onRetryStep: (task, step) => failures.get(keyOf({ kind: "step", taskId: task.id, what: step.id }))?.retry(),
+    // Every write of the step that didn't save runs again.
+    onRetryStep: (task, step) => stepFailures(task, step.id).forEach((f) => f.retry()),
     onRetryField: (task, field) => failures.get(keyOf({ kind: "field", taskId: task.id, what: field }))?.retry(),
   };
 
-  const failedStep = (task: TaskRecord): string | null =>
-    task.subtasks.find((s) => failures.has(keyOf({ kind: "step", taskId: task.id, what: s.id })))?.id ?? null;
-  const failedField = (task: TaskRecord): TaskField | null =>
-    (["due", "notes"] as const).find((f) => failures.has(keyOf({ kind: "field", taskId: task.id, what: f }))) ?? null;
+  function stepFailures(task: TaskRecord, stepId?: string) {
+    return [...failures.values()].filter((f) => f.kind === "step" && f.taskId === task.id && (stepId === undefined || stepOf(f) === stepId));
+  }
+  const failedSteps = (task: TaskRecord): ReadonlySet<string> => new Set(stepFailures(task).map(stepOf));
+  const failedFields = (task: TaskRecord): ReadonlySet<TaskField> =>
+    new Set((["due", "notes"] as const).filter((f) => failures.has(keyOf({ kind: "field", taskId: task.id, what: f }))));
 
   const row = (task: TaskRecord) => (
     <TaskRow
@@ -199,9 +209,10 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
           return next;
         })
       }
-      failedStepId={failedStep(task)}
+      failedStepIds={failedSteps(task)}
       focusStepId={focusStep}
-      failedField={failedField(task)}
+      onFocusedStep={focused}
+      failedFields={failedFields(task)}
       demo={demo}
     />
   );

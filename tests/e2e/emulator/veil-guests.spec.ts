@@ -220,6 +220,34 @@ test("one tap records a reply, tells the partner, moves the figure, and Undo tak
   await expect(reply(page, "g-lily", "Attending")).toBeFocused();
 });
 
+test("two replies that didn't save stay chosen together, another row's save clears neither, and each Try again saves its own", async ({ browser }) => {
+  const page = await openGuests(browser);
+  const lilyLine = row(page, "g-lily").getByText("Couldn’t save the reply for Tante Lily. Your choice is kept.");
+  const dewiLine = row(page, "g-dewi").getByText("Couldn’t save the reply for Dewi Lestari. Your choice is kept.");
+
+  await page.context().setOffline(true);
+  await reply(page, "g-lily", "Attending").click();
+  await reply(page, "g-dewi", "Not attending").click();
+  await expect(lilyLine).toBeVisible({ timeout: 30_000 });
+  await expect(dewiLine).toBeVisible({ timeout: 30_000 });
+
+  await page.context().setOffline(false);
+  await reply(page, "g-wayan", "Attending").click();
+  await expect.poll(async () => (await read("g-wayan"))?.rsvpStatus, { timeout: 30_000 }).toBe("yes");
+  await expect(lilyLine).toBeVisible();
+  await expect(dewiLine).toBeVisible();
+  await expect(reply(page, "g-lily", "Attending")).toHaveAttribute("aria-checked", "true");
+  await expect(reply(page, "g-dewi", "Not attending")).toHaveAttribute("aria-checked", "true");
+
+  await row(page, "g-lily").getByRole("button", { name: "Try again" }).click();
+  await expect(lilyLine).toHaveCount(0, { timeout: 30_000 });
+  await expect(dewiLine).toBeVisible();
+  await row(page, "g-dewi").getByRole("button", { name: "Try again" }).click();
+  await expect(dewiLine).toHaveCount(0, { timeout: 30_000 });
+  await expect.poll(async () => (await read("g-lily"))?.rsvpStatus).toBe("yes");
+  await expect.poll(async () => (await read("g-dewi"))?.rsvpStatus).toBe("no");
+});
+
 test("search, the two filters and Show everyone, and a search that finds nothing", async ({ browser }) => {
   const page = await openGuests(browser);
 

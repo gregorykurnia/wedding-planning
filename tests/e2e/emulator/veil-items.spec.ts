@@ -225,6 +225,40 @@ test("every change saves at once: name, vendor, events, people, star and tick", 
   await expect.poll(async () => (await all("activity")).map((a) => a.kind)).toContain("item.confirmed");
 });
 
+test("two changes that didn't save show together, a later save on the row clears neither, and Try again saves both", async ({ browser }) => {
+  const page = await openItems(browser);
+  const cake = row(page, "it-cake");
+  const vendor = cake.getByLabel("Vendor for Wedding cake");
+  const tick = cake.getByRole("button", { name: "Confirmed: Wedding cake" });
+  const line = cake.getByText("Couldn’t save “Manis Cake Studio”. What you typed is kept.");
+
+  await page.context().setOffline(true);
+  await vendor.fill("Manis Cake Studio");
+  await vendor.press("Enter");
+  await tick.click();
+  await expect(line).toBeVisible({ timeout: 30_000 });
+  await expect(vendor).toHaveAttribute("aria-invalid", "true");
+  await expect(tick).toHaveClass(/ringed/, { timeout: 30_000 });
+  await expect(tick).toHaveAttribute("aria-pressed", "true");
+
+  // The star saves; the vendor's and the tick's failures stay, with what was typed and chosen.
+  await page.context().setOffline(false);
+  await cake.getByRole("button", { name: "Work on next: Wedding cake" }).click();
+  await expect.poll(async () => (await read("it-cake"))?.next, { timeout: 30_000 }).toBe(false);
+  await expect(line).toBeVisible();
+  await expect(vendor).toHaveValue("Manis Cake Studio");
+  await expect(vendor).toHaveAttribute("aria-invalid", "true");
+  await expect(tick).toHaveClass(/ringed/);
+  await expect(tick).toHaveAttribute("aria-pressed", "true");
+
+  // One Try again runs both again.
+  await cake.getByRole("button", { name: "Try again" }).click();
+  await expect(line).toHaveCount(0, { timeout: 30_000 });
+  await expect(tick).not.toHaveClass(/ringed/);
+  await expect.poll(async () => (await read("it-cake"))?.vendor).toBe("Manis Cake Studio");
+  await expect.poll(async () => (await read("it-cake"))?.confirmed).toBe(true);
+});
+
 test("an emptied name comes back, and a vendor can be cleared", async ({ browser }) => {
   const page = await openItems(browser);
   const gown = row(page, "it-gown");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useBookings } from "@/lib/data/use-bookings";
 import type { UploadDeps } from "@/lib/data/upload-queue";
 import type { Booking } from "@/lib/model/bookings";
@@ -92,23 +92,25 @@ const withPaid = (b: Booking, partId: string | null, change: number): Booking =>
     ? { ...b, parts: b.parts.map((p) => (p.id === partId ? { ...p, paid: p.paid + change } : p)) }
     : { ...b, paid: b.paid + change };
 
+// The demo's switches, read by the stand-ins when they run (one gallery on the page).
+const FLAGS: Flags = { fail: false, slow: false };
+
 export function PaymentDemos() {
   const sheets = useSheets();
   const openReal = useRecordPayment();
   const real = useBookings();
   const [fakes, setFakes] = useState(START);
   const [demo, setDemo] = useState(false);
-  const flags = useRef<Flags>({ fail: false, slow: false });
-  const deps = useRef(standInDeps(() => flags.current));
+  const [deps] = useState(() => standInDeps(() => FLAGS));
 
   const rows = USE_EMULATOR ? (real.data ?? []) : fakes;
 
   const standIn =
     (id: string): RecordFn =>
     async ({ amount }, { partId }) => {
-      await pause(flags.current.slow ? 1500 : 300);
-      if (flags.current.fail) {
-        flags.current.fail = false;
+      await pause(FLAGS.slow ? 1500 : 300);
+      if (FLAGS.fail) {
+        FLAGS.fail = false;
         throw new Error("The write failed");
       }
       setFakes((all) => all.map((b) => (b.id === id ? withPaid(b, partId, amount) : b)));
@@ -129,7 +131,7 @@ export function PaymentDemos() {
         partId={partId}
         funders={FUNDERS}
         record={standIn(b.id)}
-        uploadDeps={deps.current}
+        uploadDeps={deps}
         demo={demo}
       />,
     );
@@ -142,11 +144,11 @@ export function PaymentDemos() {
           <input type="checkbox" checked={demo} onChange={(e) => setDemo(e.target.checked)} /> Demonstration mode
         </label>
         <label>
-          <input type="checkbox" onChange={(e) => (flags.current.fail = e.target.checked)} /> Make the next write or
+          <input type="checkbox" onChange={(e) => (FLAGS.fail = e.target.checked)} /> Make the next write or
           upload fail
         </label>
         <label>
-          <input type="checkbox" onChange={(e) => (flags.current.slow = e.target.checked)} /> Slow writes
+          <input type="checkbox" onChange={(e) => (FLAGS.slow = e.target.checked)} /> Slow writes
         </label>
       </div>
       <ul aria-label="Bookings">

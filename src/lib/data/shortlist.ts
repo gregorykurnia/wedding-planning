@@ -148,6 +148,7 @@ export async function copyToShortlist(
       contactPhone: vendor.contactPhone,
       price: main?.price ?? 0,
       priceDescription: main?.description ?? "",
+      includes: main?.includes ?? "",
       bridestoryReviewers: vendor.reviewers,
       igFollowers: null,
       nextAction: vendor.nextAction,
@@ -161,6 +162,7 @@ export async function copyToShortlist(
           type: vendor.category,
           price: o.price,
           priceDescription: o.description,
+          includes: o.includes,
           bridestoryReviewers: null,
           igFollowers: null,
           nextAction: "",
@@ -261,6 +263,7 @@ export async function bookFinalist(
     const finalistBefore = {
       movedTo: raw.movedTo ?? null,
       preferredPackageId: raw.preferredPackageId ?? null,
+      sourceVendorId: raw.sourceVendorId ?? null,
     };
     const booking = { on, from: "finalist", removed: false };
 
@@ -304,6 +307,9 @@ export async function bookFinalist(
     }
     tx.update(finalistRef, {
       movedTo: { kind: "booking", id: `vendor-${vendorId}` },
+      // A vendor made from the finalist is its source from now on (as Move into
+      // Vendors does), so the vendor finds it and Copy to the shortlist can't copy it twice.
+      ...(created ? { sourceVendorId: vendorId } : {}),
       ...(packageId !== null ? { preferredPackageId: packageId } : {}),
       ...stamp(database),
     });

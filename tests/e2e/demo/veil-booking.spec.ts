@@ -17,7 +17,8 @@ async function openBooking(page: Page) {
 test("says there are no bookings in demonstration mode, with a way back to Bookings", async ({ page }) => {
   await openBooking(page);
   await expect(page).toHaveTitle("Booking · Our wedding planner");
-  await expect(page.getByText("The planner isn’t connected to its database yet")).toBeVisible();
+  // The demonstration banner says the first half too, so match the message whole.
+  await expect(page.getByText("The planner isn’t connected to its database yet, so there are no bookings to open.")).toBeVisible();
   await expect(page.getByRole("link", { name: "See all bookings" })).toHaveAttribute("href", "/new/budget/bookings");
   await expect(page.getByRole("link", { name: "Bookings", exact: true })).toHaveAttribute("href", "/new/budget/bookings");
 });

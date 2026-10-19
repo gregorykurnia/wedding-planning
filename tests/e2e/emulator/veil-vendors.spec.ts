@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT } from "../helpers";
+import { restorePairing } from "../seed";
 
 // Task 4.11: the Vendors screen at /new/vendors, against the emulators (guide §5.11).
 
@@ -44,6 +45,9 @@ const vendor = (name: string, over: Record<string, Value> = {}): Record<string, 
   createdAt: new Date("2026-05-02T10:00:00Z"),
   ...over,
 });
+
+// This spec empties Firestore, so the specs after it get the accounts paired again.
+test.afterAll(restorePairing);
 
 test.beforeEach(async () => {
   const res = await fetch(`${DOCUMENTS.replace("/v1/", "/emulator/v1/")}`, { method: "DELETE" });

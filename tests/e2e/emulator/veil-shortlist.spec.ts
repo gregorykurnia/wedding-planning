@@ -1,6 +1,7 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT } from "../helpers";
+import { restorePairing } from "../seed";
 
 // Task 4.13: the Shortlist at /new/vendors/shortlist, against the emulators (guide §5.13).
 
@@ -122,6 +123,9 @@ async function seedShortlist(withFinalists = true) {
     }),
   );
 }
+
+// This spec empties Firestore, so the specs after it get the accounts paired again.
+test.afterAll(restorePairing);
 
 test.beforeEach(async () => {
   await seedShortlist();

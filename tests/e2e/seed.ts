@@ -94,4 +94,26 @@ export async function createAccount(email: string, password: string, verified = 
   return localId;
 }
 
+/**
+ * Pairs the two test accounts again, as `seed()` left them. A spec that empties
+ * Firestore (or the pairing) calls this in `afterAll`, so the specs after it
+ * aren't asked "Which of you is this?".
+ */
+export async function restorePairing() {
+  const uids: string[] = [];
+  for (const { email, password } of TEST_ACCOUNTS) {
+    const res = await fetch(
+      `http://${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=fake-api-key`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, returnSecureToken: true }),
+      },
+    );
+    await expectOk(res, `Finding ${email}`);
+    uids.push(((await res.json()) as { localId: string }).localId);
+  }
+  await pairAccounts(uids);
+}
+
 export default seed;

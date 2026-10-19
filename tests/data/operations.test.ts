@@ -186,6 +186,29 @@ describe("split, parts, payments and removing a booking", () => {
     expect((await bookingOf("vendor", "v1")).parts.map((p) => p.name)).toEqual(["Deposit", "Balance"]);
   });
 
+  it("comes to Rp 0 once every part is removed, and undo of the last removal brings that part back", async () => {
+    await splitBooking({ kind: "vendor", id: "v1" }, g());
+    const [deposit, balance] = (await bookingOf("vendor", "v1")).parts;
+    await removePart({ kind: "vendor", id: "v1" }, deposit.id!, g());
+    const last = await removePart({ kind: "vendor", id: "v1" }, balance.id!, g());
+    let booking = await bookingOf("vendor", "v1");
+    expect(booking).toMatchObject({ parts: [], price: 0, paid: 0, due: null, step: "" });
+
+    await last.undo();
+    booking = await bookingOf("vendor", "v1");
+    expect(booking.parts.map((p) => [p.name, p.price])).toEqual([["Balance", 70_000_000]]);
+    expect(totals(booking)).toMatchObject({ price: 70_000_000, paid: 0 });
+  });
+
+  it("empties a venue's own price when its last part goes, so it doesn't fall back to the estimate", async () => {
+    await setDoc(doc(gregory.db, "venues", "ve1"), {
+      name: "Kebun", status: "Booked", budgetEstimate: 80_000_000, budgetSpent: 10_000_000, nextTargetDate: "2026-12-01",
+      subEntries: [{ id: "only", name: "Balance", totalPrice: 70_000_000, budgetSpent: 0 }],
+    });
+    await removePart({ kind: "venue", id: "ve1" }, "only", g());
+    expect(await bookingOf("venue", "ve1")).toMatchObject({ parts: [], price: 0, paid: 0, due: null, estimate: 80_000_000 });
+  });
+
   it("records a payment on a single booking and on a part, keeps the history, and undo takes it out", async () => {
     const single = await recordPayment(
       { kind: "vendor", id: "v1" },
@@ -484,6 +507,20 @@ describe("shortlist", () => {
     expect(await exists("shortlist", copied.finalistId)).toBe(false);
   });
 
+  it("copies what each price option includes into its package", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({
+      priceOptions: [
+        { id: "o1", description: "Silver", price: 90_000_000, includes: "Buffet, 5 dishes", selected: false },
+        { id: "o2", description: "Gold", price: 120_000_000, includes: "Buffet, 7 dishes", selected: true },
+      ],
+    }));
+    const { finalistId } = await copyToShortlist("v1", g());
+    expect(await read("shortlist", finalistId)).toMatchObject({
+      includes: "Buffet, 7 dishes",
+      subEntries: [{ name: "Silver", includes: "Buffet, 5 dishes" }],
+    });
+  });
+
   it("books a copied finalist by booking its vendor, never twice; undo takes the booking back", async () => {
     const { finalistId } = await copyToShortlist("v1", g());
     const silver = (await read("shortlist", finalistId))?.subEntries[0].id;
@@ -517,9 +554,12 @@ describe("shortlist", () => {
       booking: { from: "finalist", removed: false },
     });
     expect((await bookingOf("vendor", "new1")).from).toBe("finalist");
+    // The new vendor is the finalist's source now, so copying it finds this finalist.
+    expect(await read("shortlist", "s1")).toMatchObject({ sourceVendorId: "new1" });
+    expect(await copyToShortlist("new1", b())).toMatchObject({ finalistId: "s1", created: false });
     await booked.undo();
     expect(await exists("vendors", "new1")).toBe(false);
-    expect(await read("shortlist", "s1")).toMatchObject({ movedTo: null });
+    expect(await read("shortlist", "s1")).toMatchObject({ movedTo: null, sourceVendorId: null });
   });
 
   it("moves a from-scratch finalist into Vendors once; undo removes the vendor", async () => {

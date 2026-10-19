@@ -23,6 +23,8 @@ import {
 import styles from "./items.module.css";
 import { PeopleMenu } from "./people-menu";
 
+const NONE: ReadonlySet<never> = new Set();
+
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
 /** What an item row can ask its screen to do. Each is a write; leave one out and that control does nothing. */
@@ -44,10 +46,11 @@ export interface ItemRowProps {
   /** Our own order, with no sort or filter on: the handle shows and Move up and Move down are in the menu. */
   reorderable: boolean;
   /**
-   * The control whose last change didn't save. A typed field keeps what was
-   * typed; a one-tap control keeps the choice, which the screen goes on showing.
+   * The controls whose last change didn't save; each is ringed. A typed field
+   * keeps what was typed; a one-tap control keeps the choice, which the screen
+   * goes on showing.
    */
-  failedField?: ItemField | null;
+  failedFields?: ReadonlySet<ItemField>;
   /** Demonstration mode: every control is inert. */
   demo?: boolean;
   /** A row being dragged fades to 40%. */
@@ -77,7 +80,7 @@ export function ItemRow({
   item,
   actions,
   reorderable,
-  failedField = null,
+  failedFields = NONE,
   demo = false,
   dragging = false,
   dropEdge = null,
@@ -144,19 +147,22 @@ export function ItemRow({
     onMoveKey?.(item, event.key === "ArrowUp" ? -1 : 1);
   };
 
-  const failedName = failedField === "name";
-  const failedVendor = failedField === "vendor";
+  const failedName = failedFields.has("name");
+  const failedVendor = failedFields.has("vendor");
+  const anyFailed = failedFields.size > 0;
+  // One line under the row; with several failures it words the first (a typed field before a choice),
+  // and its Try again runs every one of them again.
   const typedFailure = failedName ? name : vendor;
   const failedLine =
     failedName || failedVendor ? itemFailed(typedFailure) : itemChoiceFailed(item.item);
-  const ringed = (field: ItemField) => (failedField === field ? styles.ringed : undefined);
+  const ringed = (field: ItemField) => (failedFields.has(field) ? styles.ringed : undefined);
 
   return (
     <li
       className={join(
         styles.irow,
         item.next && styles.next,
-        failedField && styles.failed,
+        anyFailed && styles.failed,
         dragging && styles.dragging,
         dropEdge === "above" && styles.dropAbove,
         dropEdge === "below" && styles.dropBelow,
@@ -232,7 +238,7 @@ export function ItemRow({
         groupLabel="Who it’s for"
         picked={item.persons}
         muted={namedPeople(item.persons).length === 0}
-        ringed={failedField === "person"}
+        ringed={failedFields.has("person")}
         disabled={demo}
         onToggle={(person, on) => actions.onPerson?.(item, person, on)}
       />
@@ -270,7 +276,7 @@ export function ItemRow({
       >
         ⋯
       </button>
-      {failedField ? (
+      {anyFailed ? (
         <p className={styles.err} role="alert">
           <span>{failedLine}</span>
           <TextLink tone="rose" onClick={() => actions.onRetry?.(item)}>

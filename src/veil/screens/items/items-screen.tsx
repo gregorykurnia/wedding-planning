@@ -97,6 +97,16 @@ interface Failure {
   retry: () => void;
 }
 
+/** One failure, or one held choice, per item and field: a row can have several at once. */
+const keyOf = (id: string, field: ItemField) => `${id}:${field}`;
+
+const without = <T,>(map: ReadonlyMap<string, T>, key: string) => {
+  if (!map.has(key)) return map;
+  const next = new Map(map);
+  next.delete(key);
+  return next;
+};
+
 /** A change to the list as a whole that didn't land: a note above it, with Try again. */
 interface Notice {
   text: string;
@@ -137,9 +147,9 @@ function Items({ items }: { items: ItemRecord[] }) {
   const [order, setOrder] = useState<OrderState<ItemOrderKey>>(OWN);
   const [shown, setShown] = useState(PAGE);
 
-  // A row's last change that didn't save, and the choice it keeps showing meanwhile.
-  const [failed, setFailed] = useState<Failure | null>(null);
-  const [held, setHeld] = useState<Record<string, Partial<ItemRecord>>>({});
+  // Each row field's change that didn't save, and the choices the rows keep showing meanwhile.
+  const [failures, setFailures] = useState<ReadonlyMap<string, Failure>>(new Map());
+  const [held, setHeld] = useState<ReadonlyMap<string, Partial<ItemRecord>>>(new Map());
   const [notices, setNotices] = useState<ReadonlyMap<string, Notice>>(new Map());
 
   // The first time the tracker opens it fills itself in once (T10): asked when the screen opens on an
@@ -163,7 +173,20 @@ function Items({ items }: { items: ItemRecord[] }) {
 
   const matched = useMemo(() => filterItems(own, { query, confirmed, events, people, nextOnly }), [own, query, confirmed, events, people, nextOnly]);
   const view = useMemo(() => (order.key === "own" ? matched : orderItems(matched, order.key, order.direction)), [matched, order]);
-  const rows = useMemo(() => view.slice(0, shown).map((i) => (held[i.id] ? { ...i, ...held[i.id] } : i)), [view, shown, held]);
+  const rows = useMemo(() => {
+    if (held.size === 0) return view.slice(0, shown);
+    const kept = new Map<string, Partial<ItemRecord>>();
+    for (const [key, keep] of held) {
+      const id = key.slice(0, key.lastIndexOf(":"));
+      kept.set(id, { ...kept.get(id), ...keep });
+    }
+    return view.slice(0, shown).map((i) => (kept.has(i.id) ? { ...i, ...kept.get(i.id) } : i));
+  }, [view, shown, held]);
+  const failedFields = useMemo(() => {
+    const byItem = new Map<string, Set<ItemField>>();
+    for (const f of failures.values()) byItem.set(f.id, (byItem.get(f.id) ?? new Set()).add(f.field));
+    return byItem as ReadonlyMap<string, ReadonlySet<ItemField>>;
+  }, [failures]);
 
   const asked = useRef(false);
   useEffect(() => {
@@ -175,16 +198,17 @@ function Items({ items }: { items: ItemRecord[] }) {
       .finally(() => setChecking(false));
   }, [checking]);
 
-  // A row that was just added or jumped to scrolls into view as soon as it is drawn.
+  // A row that was just added or jumped to scrolls into view as soon as it is drawn, once per request.
+  const revealed = useRef<typeof reveal>(null);
   useEffect(() => {
-    if (!reveal) return;
+    if (!reveal || revealed.current === reveal) return;
     const row = document.querySelector<HTMLElement>(`[data-item-id="${CSS.escape(reveal.id)}"]`);
     if (!row) return;
+    revealed.current = reveal;
     if (reveal.type) {
       row.scrollIntoView({ block: "center" });
       row.querySelector<HTMLElement>("[data-item-name]")?.focus({ preventScroll: true });
     } else jumpToItem(reveal.id, flash);
-    setReveal(null);
   }, [reveal, rows, flash]);
 
   const narrow =
@@ -208,21 +232,16 @@ function Items({ items }: { items: ItemRecord[] }) {
    * it doesn't, the choice stays shown with the row's own line and Try again.
    */
   function attempt(item: Pick<ItemRecord, "id">, field: ItemField, write: () => Promise<unknown>, keep?: Partial<ItemRecord>) {
-    const release = () =>
-      setHeld((h) => {
-        if (!(item.id in h)) return h;
-        const { [item.id]: _gone, ...rest } = h;
-        void _gone;
-        return rest;
-      });
-    if (keep) setHeld((h) => ({ ...h, [item.id]: { ...h[item.id], ...keep } }));
+    // Only this field's failure and held choice are let go when it lands; another field's stay.
+    const key = keyOf(item.id, field);
+    if (keep) setHeld((h) => new Map(h).set(key, { ...h.get(key), ...keep }));
     const run = async () => {
       try {
         await write();
-        setFailed((f) => (f && f.id === item.id && f.field === field ? null : f));
-        release();
+        setFailures((map) => without(map, key));
+        setHeld((h) => without(h, key));
       } catch {
-        setFailed({ id: item.id, field, retry: () => void run() });
+        setFailures((map) => new Map(map).set(key, { id: item.id, field, retry: () => void run() }));
       }
     };
     void run();
@@ -327,7 +346,8 @@ function Items({ items }: { items: ItemRecord[] }) {
         if (next) reorder(next, item.id);
       }
     },
-    onRetry: () => failed?.retry(),
+    // Every change of the row that didn't save runs again.
+    onRetry: (item) => [...failures.values()].filter((f) => f.id === item.id).forEach((f) => f.retry()),
   };
 
   const hero = (
@@ -471,7 +491,7 @@ function Items({ items }: { items: ItemRecord[] }) {
             actions={actions}
             reorderable={reorderable}
             onReorder={reorder}
-            failed={failed ? { id: failed.id, field: failed.field } : null}
+            failed={failedFields}
             demo={demo}
           />
           <ShowMore more={Math.min(PAGE, view.length - rows.length)} onMore={() => setShown((n) => n + PAGE)} />

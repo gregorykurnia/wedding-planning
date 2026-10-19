@@ -81,6 +81,13 @@ const GUESTS: GuestRecord[] = [
   guest({ id: "g4", number: 12, name: "王小明", country: "Singapore", rsvpStatus: "pending", inviteSent: false, eventType: "Reception Shortlist", allergies: "Allergic to peanuts and shellfish; the children eat halal food only, and Grandma needs a soft meal without any spice or strong flavours at all" }),
 ];
 
+const dropKey = <T,>(map: ReadonlyMap<string, T>, key: string) => {
+  if (!map.has(key)) return map;
+  const next = new Map(map);
+  next.delete(key);
+  return next;
+};
+
 const replace = <T extends { id: string }>(list: T[], id: string, change: Partial<T>) =>
   list.map((x) => (x.id === id ? { ...x, ...change } : x));
 
@@ -92,9 +99,10 @@ export function RowsDemos() {
   const [guests, setGuests] = useState(GUESTS);
   const [sorted, setSorted] = useState(false);
   const [demo, setDemo] = useState(false);
-  const [failedStep, setFailedStep] = useState<{ task: string; step: string; retry: () => void } | null>(null);
-  const [failedItem, setFailedItem] = useState<{ id: string; field: ItemField; retry: () => void } | null>(null);
-  const [failedGuest, setFailedGuest] = useState<{ id: string; retry: () => void } | null>(null);
+  // Failures by what they were in, so several show at once and each clears only when its own retry lands.
+  const [failedSteps, setFailedSteps] = useState<ReadonlyMap<string, { task: string; step: string; retry: () => void }>>(new Map());
+  const [failedItems, setFailedItems] = useState<ReadonlyMap<string, { id: string; field: ItemField; retry: () => void }>>(new Map());
+  const [failedGuests, setFailedGuests] = useState<ReadonlyMap<string, () => void>>(new Map());
   const [focusStep, setFocusStep] = useState<string | null>(null);
   const [counter, setCounter] = useState(0);
 
@@ -112,11 +120,11 @@ export function RowsDemos() {
     onStepTitle: (task, s, title) => {
       const apply = () => {
         setTasks((list) => list.map((t) => (t.id === task.id ? { ...t, subtasks: replace(t.subtasks, s.id, { title }) } : t)));
-        setFailedStep(null);
+        setFailedSteps((map) => dropKey(map, `${task.id}:${s.id}`));
         say(`Saved the step “${title}”`);
       };
       if (failing) {
-        setFailedStep({ task: task.id, step: s.id, retry: apply });
+        setFailedSteps((map) => new Map(map).set(`${task.id}:${s.id}`, { task: task.id, step: s.id, retry: apply }));
         say("A step didn’t save");
       } else apply();
     },
@@ -147,19 +155,19 @@ export function RowsDemos() {
       setTasks((list) => list.filter((t) => t.id !== task.id));
       say(`Deleted ${task.title}`);
     },
-    onRetryStep: () => failedStep?.retry(),
+    onRetryStep: (task, s) => failedSteps.get(`${task.id}:${s.id}`)?.retry(),
   };
 
   const changeItem = (target: ItemRecord, change: Partial<ItemRecord>, message: string, field: ItemField) => {
     const apply = () => {
       setItems((list) => replace(list, target.id, change));
-      setFailedItem(null);
+      setFailedItems((map) => dropKey(map, `${target.id}:${field}`));
       say(message);
     };
     if (failing) {
       // A one-tap choice is kept and shown, as the screen would; a typed field keeps its own text.
       if (field !== "name" && field !== "vendor") setItems((list) => replace(list, target.id, change));
-      setFailedItem({ id: target.id, field, retry: apply });
+      setFailedItems((map) => new Map(map).set(`${target.id}:${field}`, { id: target.id, field, retry: apply }));
       say(`“${target.item}” didn’t save`);
     } else apply();
   };
@@ -187,7 +195,7 @@ export function RowsDemos() {
         }
       } else say(`Menu: ${action} for ${i.item}`);
     },
-    onRetry: () => failedItem?.retry(),
+    onRetry: (i) => [...failedItems.values()].filter((f) => f.id === i.id).forEach((f) => f.retry()),
   };
 
   const shownItems = sorted
@@ -197,16 +205,19 @@ export function RowsDemos() {
   const onRsvp = (g: GuestRecord, next: Rsvp) => {
     const apply = () => {
       setGuests((list) => replace(list, g.id, { rsvpStatus: next }));
-      setFailedGuest(null);
+      setFailedGuests((map) => dropKey(map, g.id));
       say(rsvpToast(g.name, next));
     };
     if (failing) {
       // The choice is kept and shown, as the screen would; the write is what failed.
       setGuests((list) => replace(list, g.id, { rsvpStatus: next }));
-      setFailedGuest({ id: g.id, retry: apply });
+      setFailedGuests((map) => new Map(map).set(g.id, apply));
       say(`The reply for ${g.name} didn’t save`);
     } else apply();
   };
+
+  const failedByItem = new Map<string, Set<ItemField>>();
+  for (const f of failedItems.values()) failedByItem.set(f.id, (failedByItem.get(f.id) ?? new Set()).add(f.field));
 
   const open = openTasks(tasks);
   const done = finishedTasks(tasks);
@@ -237,7 +248,7 @@ export function RowsDemos() {
             actions={taskActions}
             demo={demo}
             defaultOpen={task.id === "t1"}
-            failedStepId={failedStep?.task === task.id ? failedStep.step : null}
+            failedStepIds={new Set([...failedSteps.values()].filter((f) => f.task === task.id).map((f) => f.step))}
             focusStepId={focusStep}
           />
         ))}
@@ -257,7 +268,7 @@ export function RowsDemos() {
         actions={itemActions}
         reorderable={!sorted}
         demo={demo}
-        failed={failedItem ? { id: failedItem.id, field: failedItem.field } : null}
+        failed={failedByItem}
         onReorder={(ids, moved) => {
           setItems((list) => list.map((x) => ({ ...x, sortOrder: ids.indexOf(x.id) + 1 })));
           say(`Moved ${items.find((x) => x.id === moved)?.item ?? ""}`);
@@ -277,8 +288,8 @@ export function RowsDemos() {
             demo={demo}
             onRsvp={onRsvp}
             onOpen={(opened) => say(`Opened ${opened.name}`)}
-            failed={failedGuest?.id === g.id}
-            onRetry={() => failedGuest?.retry()}
+            failed={failedGuests.has(g.id)}
+            onRetry={() => failedGuests.get(g.id)?.()}
           />
         ))}
       </ul>

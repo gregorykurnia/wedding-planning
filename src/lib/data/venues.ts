@@ -42,11 +42,6 @@ export function useVenues(): Loaded<VenueListItem[]> {
   const { venues, files } = useVenueDocs();
 
   const items = useMemo(() => {
-    const count = new Map<string, number>();
-    for (const file of files.data) {
-      if (file.recordRef?.kind !== "venue") continue;
-      count.set(file.recordRef.id, (count.get(file.recordRef.id) ?? 0) + 1);
-    }
     return venues.data.filter(isListedVenue).map((v) =>
       venueListItem(v, {
         booked: isVenueBooked(v),

@@ -364,7 +364,7 @@ export function LedgerDemos() {
       </ul>
       <ul aria-label="Item rows in a state" style={{ listStyle: "none", margin: 0, padding: 0 }}>
         <ItemRow item={ITEMS[0]} actions={{}} reorderable={false} />
-        <ItemRow item={ITEMS[1]} actions={{}} reorderable={false} failedField="vendor" />
+        <ItemRow item={ITEMS[1]} actions={{}} reorderable={false} failedFields={new Set(["vendor"] as const)} />
       </ul>
       <p>Empty meta keeps its height: no category or funder on Hotel Ballroom, no contact on Studio Dimas, an untitled document with no words, a file with no category or description.</p>
     </div>

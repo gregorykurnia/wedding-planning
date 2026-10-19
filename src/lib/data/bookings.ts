@@ -189,7 +189,7 @@ export async function splitBooking(
       const booking = bookingOf(target.kind, target.id, data);
       if (booking.parts.length > 0) throw new WriteError("failed", "Already in parts");
       const parts = splitPlan(booking, makeId).map(storedPart);
-      return { patch: { subEntries: parts }, result: parts.map((p) => p.id) };
+      return { patch: { subEntries: parts, ...singleMoneyCleared(target.kind) }, result: parts.map((p) => p.id) };
     },
     opts,
   );
@@ -229,9 +229,36 @@ export async function addPart(
   };
 }
 
-/** Removes a booking's part; undo puts it back in its place. */
-export function removePart(target: RecordTarget, partId: string, opts: WriteOptions = {}) {
-  return removeElementWithUndo(collectionOf(target.kind), target.id, "subEntries", partId, opts);
+/**
+ * A split booking's own price, paid, due date and next step, emptied: once it
+ * has parts, they hold the money (as the prototype's split drops them), so
+ * removing every part leaves Rp 0 rather than the figures from before the split.
+ * A venue's price falls back to its estimate, so it gets an agreed price of 0.
+ */
+function singleMoneyCleared(kind: BookedKind): Record<string, unknown> {
+  const price = kind === "venue" ? { agreedPrice: 0 } : { totalPrice: 0 };
+  return { ...price, budgetSpent: 0, nextTargetDate: null, nextAction: "" };
+}
+
+/**
+ * Removes a booking's part; undo puts it back in its place. Removing the last
+ * one also empties the booking's own money (bookings split by the old app kept
+ * it), so the booking comes to Rp 0 as the confirm says; undo puts both back.
+ */
+export async function removePart(target: RecordTarget, partId: string, opts: WriteOptions = {}): Promise<Undoable> {
+  const col = collectionOf(target.kind);
+  const done = await patchWithUndo(
+    col,
+    target.id,
+    (data) => {
+      const parts = withElementIds<Element>(data.subEntries);
+      if (parts.length !== 1 || parts[0].id !== partId) return null;
+      return { patch: { subEntries: [], ...singleMoneyCleared(target.kind) } };
+    },
+    opts,
+  );
+  if (done.changed) return { undo: done.undo };
+  return removeElementWithUndo(col, target.id, "subEntries", partId, opts);
 }
 
 /* ---------- payments ---------- */

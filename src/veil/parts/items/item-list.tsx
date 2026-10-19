@@ -15,7 +15,8 @@ export interface ItemListProps {
   reorderable: boolean;
   /** The new order of every id, after a drag or Alt+↑/↓, and the one that moved. The screen writes it. */
   onReorder: (ids: string[], movedId: string) => void;
-  failed?: { id: string; field: ItemField } | null;
+  /** Each item's fields whose last change didn't save, by item id. */
+  failed?: ReadonlyMap<string, ReadonlySet<ItemField>>;
   demo?: boolean;
 }
 
@@ -25,7 +26,7 @@ export interface ItemListProps {
  * moves the row one place and keeps focus on its handle, and a screen reader
  * hears where it went. Nothing moves while a sort or filter is on.
  */
-export function ItemList({ items, actions, reorderable, onReorder, failed = null, demo = false }: ItemListProps) {
+export function ItemList({ items, actions, reorderable, onReorder, failed, demo = false }: ItemListProps) {
   const list = useRef<HTMLUListElement>(null);
   const [drag, setDrag] = useState<string | null>(null);
   const [over, setOver] = useState<{ id: string; edge: DropEdge } | null>(null);
@@ -98,7 +99,7 @@ export function ItemList({ items, actions, reorderable, onReorder, failed = null
             actions={actions}
             reorderable={reorderable}
             demo={demo}
-            failedField={failed?.id === item.id ? failed.field : null}
+            failedFields={failed?.get(item.id)}
             dragging={drag === item.id}
             dropEdge={over?.id === item.id ? over.edge : null}
             onMoveKey={moveByKey}

@@ -322,6 +322,56 @@ test("a step that can't be saved keeps what was typed, and Try again saves it", 
   await expect.poll(async () => ((await read("todos", "tk-rings"))?.subtasks as { title: string }[])[1].title).toBe("Pick the metal and the size");
 });
 
+test("a failed step title stays failed when a tick on the same step saves, and the notes' failure shows beside it", async ({ browser }) => {
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const rings = task(page, "tk-rings");
+  const first = rings.getByLabel("Step", { exact: true }).first();
+  const notes = rings.getByPlaceholder("Notes");
+  const stepLine = rings.getByText("Couldn’t save this step. What you typed is kept.");
+  const fieldLine = rings.getByText("Couldn’t save this change. What you typed is kept.");
+
+  await page.context().setOffline(true);
+  await first.fill("Visit the jeweller in Kemang");
+  await first.press("Enter");
+  await notes.fill("Bring the ring sizer");
+  await notes.blur();
+  // Two failures at once: the step's and the notes'.
+  await expect(stepLine).toBeVisible({ timeout: 30_000 });
+  await expect(fieldLine).toBeVisible({ timeout: 30_000 });
+  await expect(notes).toHaveAttribute("aria-invalid", "true");
+
+  // A tick on the same step lands; the title's failure, and the notes', stay until their own retry.
+  await page.context().setOffline(false);
+  await rings.getByRole("checkbox", { name: /^Step done: Visit the jeweller/ }).click();
+  await expect.poll(async () => ((await read("todos", "tk-rings"))?.subtasks as { done: boolean }[])[0].done, { timeout: 30_000 }).toBe(true);
+  await expect(stepLine).toBeVisible();
+  await expect(first).toHaveAttribute("aria-invalid", "true");
+  await expect(first).toHaveValue("Visit the jeweller in Kemang");
+  await expect(fieldLine).toBeVisible();
+
+  await rings.locator("li[data-step-id]").first().getByRole("button", { name: "Try again" }).click();
+  await expect(stepLine).toHaveCount(0, { timeout: 30_000 });
+  await expect(fieldLine).toBeVisible();
+  await rings.getByRole("button", { name: "Try again" }).click();
+  await expect(fieldLine).toHaveCount(0, { timeout: 30_000 });
+  await expect.poll(async () => (await read("todos", "tk-rings"))?.notes).toBe("Bring the ring sizer");
+});
+
+test("an added then removed step doesn't take the cursor back when Undo brings it back", async ({ browser }) => {
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const rings = task(page, "tk-rings");
+  await rings.getByRole("button", { name: "Add a step" }).click();
+  const added = rings.getByLabel("Step", { exact: true }).nth(2);
+  await expect(added).toBeFocused();
+  await rings.getByRole("button", { name: "Remove step" }).nth(2).click();
+  await expect(rings.getByLabel("Step", { exact: true })).toHaveCount(2);
+  const notes = rings.getByPlaceholder("Notes");
+  await notes.focus();
+  await toasts(page).getByRole("button", { name: "Undo" }).click();
+  await expect(rings.getByLabel("Step", { exact: true })).toHaveCount(3);
+  await expect(added).not.toBeFocused();
+});
+
 test("Bella finishes a step: Greg sees a toast", async ({ browser }) => {
   const greg = await openTasks(browser, TEST_ACCOUNTS[0]);
   const bella = await openTasks(browser, TEST_ACCOUNTS[1], "/new/schedule/tasks?open=tk-rings");
