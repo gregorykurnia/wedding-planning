@@ -259,6 +259,27 @@ test("two changes that didn't save show together, a later save on the row clears
   await expect.poll(async () => (await read("it-cake"))?.confirmed).toBe(true);
 });
 
+test("a name that didn't save is still there after a search hides its row and brings it back (P4-S23)", async ({ browser }) => {
+  const page = await openItems(browser);
+  const search = page.getByRole("searchbox", { name: "Search items, vendors and people" });
+  const name = row(page, "it-cake").getByLabel("Item", { exact: true });
+
+  await page.context().setOffline(true);
+  await name.fill("Wedding cake, three tiers");
+  await name.press("Enter");
+  await expect(row(page, "it-cake").getByRole("button", { name: "Try again" })).toBeVisible({ timeout: 30_000 });
+
+  await search.fill("gown");
+  await expect(row(page, "it-cake")).toHaveCount(0);
+  await search.fill("");
+  await expect(name).toHaveValue("Wedding cake, three tiers");
+  await expect(name).toHaveAttribute("aria-invalid", "true");
+
+  await page.context().setOffline(false);
+  await row(page, "it-cake").getByRole("button", { name: "Try again" }).click();
+  await expect.poll(async () => (await read("it-cake"))?.item, { timeout: 30_000 }).toBe("Wedding cake, three tiers");
+});
+
 test("an emptied name comes back, and a vendor can be cleared", async ({ browser }) => {
   const page = await openItems(browser);
   const gown = row(page, "it-gown");

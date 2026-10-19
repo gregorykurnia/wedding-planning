@@ -90,6 +90,14 @@ describe("guest numbers", () => {
     expect(again).toEqual(first);
     expect((await getDoc(doc(gregory.db, "guestMeta", "counter"))).data()?.next).toBe(2);
   });
+
+  it("a retried add writes what was changed before Try again (Phase 4 review S22)", async () => {
+    await createNumberedGuest({ name: "Maria", country: "" }, { db: gregory.db, id: "g1" });
+    const again = await createNumberedGuest({ name: "Maria Lestari", country: "Indonesia" }, { db: gregory.db, id: "g1" });
+    expect(again).toEqual({ id: "g1", number: 1 });
+    expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria Lestari", country: "Indonesia", number: 1 });
+    expect((await getDoc(doc(gregory.db, "guestMeta", "counter"))).data()?.next).toBe(2);
+  });
 });
 
 describe("presence", () => {

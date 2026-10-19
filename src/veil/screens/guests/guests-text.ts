@@ -40,6 +40,8 @@ export function countLine(matched: number, shown: number, total: number, filteri
 
 /** The 9-second toast when Undo of a reply finds the guest changed since (N13, provisional: G32). */
 export const rsvpConflict = (partner: string, name: string) => `Can’t undo the reply: ${partner} has changed ${name} since. It’s kept as it is now.`;
+/** The same for your own change since, such as a second tap on the switch. Provisional (G35/N35). */
+export const rsvpConflictOwn = (name: string) => `Can’t undo the reply: you’ve changed ${name} since. It’s kept as it is now.`;
 
 // ---------- the sheets ----------
 

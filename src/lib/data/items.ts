@@ -2,7 +2,7 @@
 
 import { arrayRemove, arrayUnion, doc, writeBatch, type DocumentData } from "firebase/firestore";
 import { useMemo } from "react";
-import { MASTER_LIST_INITIAL_ROWS, renumberMasterList, useMasterListItems } from "@/lib/collections/master-list";
+import { LIST_CHANGED, MASTER_LIST_INITIAL_ROWS, renumberMasterList, useMasterListItems } from "@/lib/collections/master-list";
 import type { ItemEvent, ItemPerson } from "@/lib/model/labels";
 import type { ItemRecord } from "@/lib/model/items";
 import { neighboursOf, positionsBetween } from "@/lib/model/row-moves";
@@ -11,7 +11,7 @@ import { requireDb } from "./db";
 import { readOf } from "./read";
 import { useSession } from "./session";
 import type { Loaded } from "./settings";
-import { removeWithUndo, type Undoable } from "./undo";
+import type { Undoable } from "./undo";
 import { guarded, newId, stamp, transact, update, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
@@ -90,6 +90,10 @@ export type Placed = Pick<ItemRecord, "id" | "sortOrder">;
 
 const rankOf = (ordered: readonly Placed[], id: string) => ordered.findIndex((r) => r.id === id);
 
+/** The list with the positions a renumber gave it, in that order; an item it didn't see keeps its own. */
+const renumbered = (ordered: readonly Placed[], positions: ReadonlyMap<string, number>): Placed[] =>
+  ordered.map((r) => ({ id: r.id, sortOrder: positions.get(r.id) ?? r.sortOrder })).sort((a, z) => a.sortOrder - z.sortOrder);
+
 /**
  * Adds items just below `afterId`, or at the end of the list when it is null,
  * in one transaction. `ordered` is the list in our own order as the screen
@@ -97,7 +101,7 @@ const rankOf = (ordered: readonly Placed[], id: string) => ordered.findIndex((r)
  * (inventory-notes §5 #27). The ids are the caller's, so a retry writes the
  * same items.
  */
-export async function addItems(rows: readonly NewItem[], afterId: string | null, ordered: readonly Placed[], opts: WriteOptions = {}, renumbered = false): Promise<void> {
+export async function addItems(rows: readonly NewItem[], afterId: string | null, ordered: readonly Placed[], opts: WriteOptions = {}, again = false): Promise<void> {
   if (rows.length < 1 || rows.length > 400) throw new Error("Add between 1 and 400 items.");
   const anchorAt = afterId === null ? ordered.length - 1 : rankOf(ordered, afterId);
   if (afterId !== null && anchorAt < 0) throw new WriteError("missing", `${COLLECTION}/${afterId} is gone`);
@@ -105,11 +109,10 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
   const after = afterId !== null && anchorAt < ordered.length - 1 ? ordered[anchorAt + 1].sortOrder : null;
   const positions = positionsBetween(before, after, rows.length);
   if (!positions) {
-    if (renumbered) throw new WriteError("failed", "There is no room left between those two items.");
-    await renumberMasterList(requireDb(opts.db));
-    // Every item now sits at its rank, so the gap is 1.
-    const ranks = ordered.map((r, index) => ({ id: r.id, sortOrder: index }));
-    return addItems(rows, afterId, ranks, opts, true);
+    if (again) throw new WriteError("failed", "There is no room left between those two items.");
+    // Every item now sits a whole step from the next, so there is room.
+    const positions = await renumberMasterList(requireDb(opts.db));
+    return addItems(rows, afterId, renumbered(ordered, positions), opts, true);
   }
 
   await transact(async (tx, database) => {
@@ -136,7 +139,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
         ...stamp(database, true),
       });
     });
-    if (start !== null) tx.set(metaRef, { nextSortOrder: start + rows.length, ...stamp(database) }, { merge: true });
+    tx.set(metaRef, { ...LIST_CHANGED, ...(start === null ? {} : { nextSortOrder: start + rows.length }), ...stamp(database) }, { merge: true });
   }, opts);
 }
 
@@ -144,22 +147,18 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
  * Moves one item to where `ids` (the whole list in its new order) puts it,
  * changing only that item's position. Refuses when a neighbour has been moved
  * meanwhile, so the order the partner made is never undone by a stale drop.
+ * Resolves with every item's position after the move, so the next move can
+ * start from it before the list is read again (Phase 4 review S21).
  */
-export async function moveItem(ordered: readonly Placed[], ids: readonly string[], movedId: string, opts: WriteOptions = {}, renumbered = false): Promise<void> {
+export async function moveItem(ordered: readonly Placed[], ids: readonly string[], movedId: string, opts: WriteOptions = {}, again = false): Promise<Placed[]> {
   const { above, below } = neighboursOf(ids, movedId);
   const sortOrderOf = (list: readonly Placed[], id: string | null) => (id === null ? null : (list.find((r) => r.id === id)?.sortOrder ?? null));
   const [high, low] = [sortOrderOf(ordered, above), sortOrderOf(ordered, below)];
   const positions = positionsBetween(high, low, 1);
   if (!positions) {
-    if (renumbered) throw new WriteError("failed", "There is no room left between those two items.");
-    await renumberMasterList(requireDb(opts.db));
-    return moveItem(
-      ordered.map((r, index) => ({ id: r.id, sortOrder: index })),
-      ids,
-      movedId,
-      opts,
-      true,
-    );
+    if (again) throw new WriteError("failed", "There is no room left between those two items.");
+    const positions = await renumberMasterList(requireDb(opts.db));
+    return moveItem(renumbered(ordered, positions), ids, movedId, opts, true);
   }
 
   await transact(async (tx, database) => {
@@ -177,11 +176,34 @@ export async function moveItem(ordered: readonly Placed[], ids: readonly string[
     await read(below, low);
     tx.update(movedRef, { sortOrder: positions[0], ...stamp(database) });
   }, opts);
+  return ordered.map((r) => (r.id === movedId ? { id: r.id, sortOrder: positions[0] } : r)).sort((a, z) => a.sortOrder - z.sortOrder);
 }
 
-/** Removes an item, with an undo that puts it back exactly, at the same place. */
-export function removeItem(id: string, opts: WriteOptions = {}): Promise<Undoable> {
-  return removeWithUndo(COLLECTION, id, opts);
+/**
+ * Removes an item, with an undo that puts it back exactly, at the same place.
+ * Both tell the list's marker, so a renumber running meanwhile lists again.
+ */
+export async function removeItem(id: string, opts: WriteOptions = {}): Promise<Undoable> {
+  const database = requireDb(opts.db);
+  const ref = doc(database, COLLECTION, id);
+  const metaRef = doc(database, META_COLLECTION, META_ID);
+  // Read and delete in one transaction, so the copy kept for undo includes any change the partner made up to the delete.
+  const data = await transact(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new WriteError("missing", `${COLLECTION}/${id} is gone`);
+    tx.delete(ref);
+    tx.set(metaRef, { ...LIST_CHANGED, ...stamp(database) }, { merge: true });
+    return snap.data();
+  }, opts);
+  return {
+    undo: () =>
+      guarded(() => {
+        const batch = writeBatch(database);
+        batch.set(ref, { ...data, ...stamp(database) });
+        batch.set(metaRef, { ...LIST_CHANGED, ...stamp(database) }, { merge: true });
+        return batch.commit();
+      }),
+  };
 }
 
 /** Takes added items out again (undo of an add). Items already gone are left. */
@@ -189,6 +211,7 @@ export async function removeItems(ids: readonly string[], opts: WriteOptions = {
   const database = requireDb(opts.db);
   const batch = writeBatch(database);
   ids.forEach((id) => batch.delete(doc(database, COLLECTION, id)));
+  batch.set(doc(database, META_COLLECTION, META_ID), { ...LIST_CHANGED, ...stamp(database) }, { merge: true });
   await guarded(() => batch.commit());
 }
 
@@ -223,7 +246,7 @@ export async function startWithCommonItems(onlyFirstUse: boolean, opts: WriteOpt
       added.push(row.id);
     });
     const markerNext = marker.exists() && typeof marker.data().nextSortOrder === "number" ? (marker.data().nextSortOrder as number) : 0;
-    tx.set(metaRef, { initialized: true, nextSortOrder: Math.max(markerNext, COMMON_ITEM_COUNT), ...stamp(database) }, { merge: true });
+    tx.set(metaRef, { ...LIST_CHANGED, initialized: true, nextSortOrder: Math.max(markerNext, COMMON_ITEM_COUNT), ...stamp(database) }, { merge: true });
     return added;
   }, opts);
 }

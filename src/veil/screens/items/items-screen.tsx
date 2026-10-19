@@ -13,6 +13,7 @@ import {
   addItems,
   moveItem,
   useItems,
+  type Placed,
 } from "@/lib/data/items";
 import { useSession } from "@/lib/data/session";
 import { n0 } from "@/lib/model/format";
@@ -29,7 +30,7 @@ import {
 } from "@/lib/model/items";
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import { ITEM_ORDERS, orderItems, ownOrder, type ItemOrderKey } from "@/lib/model/order";
-import { moveId } from "@/lib/model/row-moves";
+import { inOrder, moveId, withRest } from "@/lib/model/row-moves";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Chip } from "@/veil/parts/chips/chip";
@@ -160,11 +161,25 @@ function Items({ items }: { items: ItemRecord[] }) {
   // A row to bring into view (and, for a new blank one, to type in) once it is on the page.
   const [reveal, setReveal] = useState<{ id: string; type: boolean } | null>(null);
 
-  const own = useMemo(() => ownOrder(items), [items]);
+  // Moves run one after another, each from the positions the one before left, and the list shows the
+  // new order meanwhile, so three quick Alt+↓ presses move a row three places (Phase 4 review S21).
+  const [pending, setPending] = useState<readonly string[] | null>(null);
+  const moves = useRef<{ chain: Promise<unknown>; placed: Placed[] | null; running: number; failed: boolean }>({
+    chain: Promise.resolve(),
+    placed: null,
+    running: 0,
+    failed: false,
+  });
+  const stored = useMemo(() => ownOrder(items), [items]);
+  const own = useMemo(() => (pending ? inOrder(stored, pending) : stored), [stored, pending]);
   const latest = useRef(own);
   useEffect(() => {
     latest.current = own;
   });
+  // Once the moves have landed, the next read has them: the stored order takes over again.
+  useEffect(() => {
+    if (moves.current.running === 0) setPending(null);
+  }, [stored]);
 
   const filter: ItemFilter = { query, confirmed, events, people, nextOnly };
   const filtering = isFilteringItems(filter);
@@ -228,8 +243,8 @@ function Items({ items }: { items: ItemRecord[] }) {
   };
 
   /**
-   * Runs a write for a row. A tap's choice (`keep`) shows at once and is let go when the write lands; if
-   * it doesn't, the choice stays shown with the row's own line and Try again.
+   * Runs a write for a row. A tap's choice or typed text (`keep`) shows at once and is let go when the
+   * write lands; if it doesn't, it stays shown with the row's own line and Try again.
    */
   function attempt(item: Pick<ItemRecord, "id">, field: ItemField, write: () => Promise<unknown>, keep?: Partial<ItemRecord>) {
     // Only this field's failure and held choice are let go when it lands; another field's stay.
@@ -294,7 +309,28 @@ function Items({ items }: { items: ItemRecord[] }) {
 
   function reorder(ids: string[], movedId: string) {
     const name = latest.current.find((i) => i.id === movedId)?.item ?? "";
-    attemptList(`move:${movedId}`, moveFailed(name), () => moveItem(latest.current, ids, movedId));
+    // The list hands in the rows on the page; the rest of the list follows them.
+    const full = withRest(ids, latest.current.map((i) => i.id));
+    const m = moves.current;
+    setPending(full);
+    attemptList(`move:${movedId}`, moveFailed(name), () => {
+      m.running += 1;
+      const step = m.chain.then(async () => {
+        m.placed = await moveItem(m.placed ?? latest.current, full, movedId);
+      });
+      m.chain = step.catch(() => {
+        m.failed = true;
+        m.placed = null;
+      });
+      return step.finally(() => {
+        m.running -= 1;
+        if (m.running > 0) return;
+        m.placed = null;
+        // A move that didn't land shows the stored order again, beside its note.
+        if (m.failed) setPending(null);
+        m.failed = false;
+      });
+    });
   }
 
   async function remove(item: ItemRecord) {
@@ -323,8 +359,10 @@ function Items({ items }: { items: ItemRecord[] }) {
   }
 
   const actions: ItemActions = {
-    onName: (item, name) => attempt(item, "name", () => saveItem(item.id, { item: name })),
-    onVendor: (item, vendor) => attempt(item, "vendor", () => saveItem(item.id, { vendor })),
+    // What was typed is held here too, not only in the row, so a row that a filter, sort or page takes
+    // away and brings back still shows a change that hasn't saved (Phase 4 review S23).
+    onName: (item, name) => attempt(item, "name", () => saveItem(item.id, { item: name }), { item: name }),
+    onVendor: (item, vendor) => attempt(item, "vendor", () => saveItem(item.id, { vendor }), { vendor }),
     onToggleEvent: (item, event) => {
       const on = !item.types.includes(event);
       attempt(item, "events", () => setItemEvent(item.id, event, on), { types: withEvent(item.types, event, on) });

@@ -125,13 +125,12 @@ function untouchedSince(fields: NewEvent) {
 }
 
 /**
- * Saves some of an event's fields (the sheet saves as you go). Changing when it
- * happens, or its reminder, clears what was already sent, so the new reminder
- * can still come.
+ * Saves some of an event's fields (the sheet saves as you go). Changing its
+ * reminder clears what was already sent, so the new reminder can still come; a
+ * change of day does the same through `whenPatch`.
  */
 export function saveEvent(id: string, patch: Record<string, unknown>, opts: WriteOptions = {}): Promise<void> {
-  const resets = "startAt" in patch || "reminderMinutes" in patch;
-  return update(COLLECTION, id, resets ? { ...patch, remindersSent: [] } : patch, opts);
+  return update(COLLECTION, id, "reminderMinutes" in patch ? { ...patch, remindersSent: [] } : patch, opts);
 }
 
 /** Mark completed, Cancel it, Back to scheduled (S2): acts at once, with an undo that puts the status back. */

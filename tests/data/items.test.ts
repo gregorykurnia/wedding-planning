@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, orderBy, query, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   COMMON_ITEM_COUNT,
@@ -13,6 +13,7 @@ import {
   setItemPerson,
   startWithCommonItems,
 } from "@/lib/data/items";
+import { renumberMasterList } from "@/lib/collections/master-list";
 import { WriteError } from "@/lib/data/write-error";
 import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulator";
 
@@ -250,6 +251,71 @@ describe("moving an item", () => {
     const stale = await placed();
     await removeItem("c", b());
     await expect(moveItem(stale, ["a", "c", "b", "d"], "c", g())).rejects.toMatchObject({ code: "missing" });
+  });
+});
+
+describe("ordering under load (Phase 1 review S5, Phase 4 review S21)", () => {
+  const version = async () => (await getDoc(doc(gregory.db, "masterListMeta", "initialization"))).data()?.version ?? 0;
+
+  it("each move starts from where the one before left things, without reading the list again", async () => {
+    await seed("a", 0);
+    await seed("b", 1);
+    await seed("c", 2);
+    await seed("d", 3);
+    let placedNow = await placed();
+    placedNow = await moveItem(placedNow, ["b", "a", "c", "d"], "a", g());
+    placedNow = await moveItem(placedNow, ["b", "c", "a", "d"], "a", g());
+    await moveItem(placedNow, ["b", "c", "d", "a"], "a", g());
+    expect(await order()).toEqual(["b", "c", "d", "a"]);
+  });
+
+  it("bumps the list's version on every add and removal, and on undoing either", async () => {
+    await seed("a", 0);
+    const v0 = await version();
+    const [id] = newItemIds(1, g());
+    await addItems([{ id, item: "Cake", types: [], persons: [] }], null, await placed(), g());
+    expect(await version()).toBe(v0 + 1);
+    const { undo } = await removeItem("a", g());
+    expect(await version()).toBe(v0 + 2);
+    await undo();
+    expect(await version()).toBe(v0 + 3);
+    await removeItems([id], g());
+    expect(await version()).toBe(v0 + 4);
+  });
+
+  it("a renumber lists again when the partner adds a row after it listed, so no two rows share a place", async () => {
+    await seed("a", 0);
+    await seed("b", 0.5);
+    await seed("c", 1);
+    await setDoc(doc(gregory.db, "masterListMeta", "initialization"), { initialized: true, nextSortOrder: 2 });
+    let added = false;
+    await renumberMasterList(gregory.db, async () => {
+      if (added) return;
+      added = true;
+      await addItems([{ id: "late", item: "Late", types: [], persons: [] }], null, await placed(), b());
+    });
+    const snap = await getDocs(query(collection(gregory.db, "masterListItems"), orderBy("sortOrder", "asc")));
+    const positions = snap.docs.map((d) => d.data().sortOrder as number);
+    expect(snap.docs.map((d) => d.id)).toEqual(["a", "b", "c", "late"]);
+    expect(positions).toEqual([0, 1, 2, 3]);
+  });
+
+  it("above 490 items, the first move after a renumber goes through", async () => {
+    const total = 495;
+    for (let from = 0; from < total; from += 400) {
+      const batch = writeBatch(gregory.db);
+      for (let i = from; i < Math.min(total, from + 400); i++) {
+        batch.set(doc(gregory.db, "masterListItems", `i${String(i).padStart(3, "0")}`), { id: `i${i}`, item: "", vendor: "", confirmed: false, types: [], persons: [], next: false, sortOrder: i });
+      }
+      await batch.commit();
+    }
+    // No room between the first two.
+    await setDoc(doc(gregory.db, "masterListItems", "i001"), { sortOrder: 1e-9 }, { merge: true });
+    const before = await placed();
+    const ids = before.map((r) => r.id);
+    const next = [ids[0], ids[total - 1], ...ids.slice(1, total - 1)];
+    await moveItem(before, next, ids[total - 1], g());
+    expect(await order()).toEqual(next);
   });
 });
 

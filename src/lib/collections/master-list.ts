@@ -4,7 +4,9 @@ import type { DocumentData, Firestore } from "firebase/firestore";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
+  increment,
   orderBy,
   query,
   runTransaction,
@@ -108,6 +110,17 @@ export const MASTER_LIST_INITIAL_ROWS: readonly MasterListSeedRow[] = [
 
 const INITIAL_ROW_COUNT = MASTER_LIST_INITIAL_ROWS.length;
 
+/**
+ * Every add and removal of a row bumps `version` on the marker, in the same
+ * write. A renumber lists the rows before its transaction (a transaction can't
+ * run a query), so it checks the version inside: a row added or removed since
+ * the listing makes it list again rather than give two rows one position
+ * (Phase 1 review S5).
+ */
+export const LIST_CHANGED = { version: increment(1) };
+
+const versionOf = (data: DocumentData | undefined) => (typeof data?.version === "number" ? data.version : 0);
+
 export type MasterListMoveDirection = "up" | "down";
 
 function fromDocArray<T extends string>(value: unknown, options: readonly T[]): T[] {
@@ -165,6 +178,7 @@ export async function ensureMasterListInitialized() {
     }
 
     transaction.set(metaRef, {
+      ...LIST_CHANGED,
       initialized: true,
       nextSortOrder: INITIAL_ROW_COUNT,
       initializedAt: serverTimestamp(),
@@ -188,55 +202,68 @@ const RENUMBER_IN_ONE_TRANSACTION = 490;
 /**
  * Gives every row a whole-number position (0, 1, 2 …) in its current order and
  * moves the next-row marker after them. Order is unchanged. Rows are re-read
- * inside the transaction, so a row moved or added meanwhile makes Firestore
- * retry rather than write a stale order.
+ * inside the transaction, so a row moved meanwhile makes Firestore retry, and
+ * the marker's version is read there too, so a row added or removed since the
+ * listing makes it list again. Resolves with every row's new position, so a
+ * caller can go on from them without waiting for a fresh read.
+ * `afterListing` is for tests: it runs between the listing and the transaction.
  */
-export async function renumberMasterList(target?: Firestore) {
+export async function renumberMasterList(target?: Firestore, afterListing?: () => Promise<void>): Promise<Map<string, number>> {
   const database = target ?? db;
   if (!database || (!target && !isFirebaseConfigured)) {
     throw new Error("Firebase is not configured.");
   }
-  const listed = await getDocs(query(collection(database, COLLECTION), orderBy("sortOrder", "asc")));
-  const refs = listed.docs.map((snapshot) => snapshot.ref);
   const metaRef = doc(database, META_COLLECTION, META_ID);
 
-  if (refs.length > RENUMBER_IN_ONE_TRANSACTION) {
-    // Too many for one transaction: write in batches of positions that start
-    // above every current one, so rows already renumbered stay after the rest
-    // only until the last batch lands, and the final order is the same.
-    const start =
-      Math.ceil(
-        listed.docs.reduce((maximum, snapshot) => {
-          const value = snapshot.data().sortOrder;
-          return typeof value === "number" && Number.isFinite(value) ? Math.max(maximum, value) : maximum;
-        }, 0),
-      ) + 1;
-    for (let from = 0; from < refs.length; from += RENUMBER_IN_ONE_TRANSACTION) {
-      const batch = writeBatch(database);
-      refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION).forEach((ref, offset) => {
-        batch.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
-      });
-      await batch.commit();
-    }
-    await setDoc(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
-    return;
-  }
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const version = versionOf((await getDoc(metaRef)).data());
+    const listed = await getDocs(query(collection(database, COLLECTION), orderBy("sortOrder", "asc")));
+    const refs = listed.docs.map((snapshot) => snapshot.ref);
+    await afterListing?.();
 
-  await runTransaction(database, async (transaction) => {
-    const rows = await Promise.all(refs.map((ref) => transaction.get(ref)));
-    const present = rows
-      .filter((snapshot) => snapshot.exists())
-      .map((snapshot) => ({
-        ref: snapshot.ref,
-        sortOrder:
-          typeof snapshot.data()?.sortOrder === "number" ? (snapshot.data()!.sortOrder as number) : Number.MAX_SAFE_INTEGER,
-      }))
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-    present.forEach((row, index) => {
-      transaction.update(row.ref, { sortOrder: index, updatedAt: serverTimestamp() });
+    if (refs.length > RENUMBER_IN_ONE_TRANSACTION) {
+      // Too many for one transaction: write in batches of positions that start
+      // above every current one, so rows already renumbered stay after the rest
+      // only until the last batch lands, and the final order is the same.
+      const start =
+        Math.ceil(
+          listed.docs.reduce((maximum, snapshot) => {
+            const value = snapshot.data().sortOrder;
+            return typeof value === "number" && Number.isFinite(value) ? Math.max(maximum, value) : maximum;
+          }, 0),
+        ) + 1;
+      for (let from = 0; from < refs.length; from += RENUMBER_IN_ONE_TRANSACTION) {
+        const batch = writeBatch(database);
+        refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION).forEach((ref, offset) => {
+          batch.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
+        });
+        await batch.commit();
+      }
+      await setDoc(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
+      return new Map(refs.map((ref, index) => [ref.id, start + index]));
+    }
+
+    const placed = await runTransaction(database, async (transaction) => {
+      const meta = await transaction.get(metaRef);
+      if (versionOf(meta.data()) !== version) return null;
+      const rows = await Promise.all(refs.map((ref) => transaction.get(ref)));
+      const present = rows
+        .filter((snapshot) => snapshot.exists())
+        .map((snapshot) => ({
+          ref: snapshot.ref,
+          sortOrder:
+            typeof snapshot.data()?.sortOrder === "number" ? (snapshot.data()!.sortOrder as number) : Number.MAX_SAFE_INTEGER,
+        }))
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      present.forEach((row, index) => {
+        transaction.update(row.ref, { sortOrder: index, updatedAt: serverTimestamp() });
+      });
+      transaction.set(metaRef, { nextSortOrder: present.length, updatedAt: serverTimestamp() }, { merge: true });
+      return new Map(present.map((row, index) => [row.ref.id, index]));
     });
-    transaction.set(metaRef, { nextSortOrder: present.length, updatedAt: serverTimestamp() }, { merge: true });
-  });
+    if (placed) return placed;
+  }
+  throw new Error("The list kept changing while it was being renumbered. Try again.");
 }
 
 function newRowIds(count: number) {
@@ -356,7 +383,7 @@ export async function addMasterListItems(
         });
       });
 
-      transaction.set(metaRef, { updatedAt: serverTimestamp() }, { merge: true });
+      transaction.set(metaRef, { ...LIST_CHANGED, updatedAt: serverTimestamp() }, { merge: true });
       return;
     }
 
@@ -377,7 +404,7 @@ export async function addMasterListItems(
 
     transaction.set(
       metaRef,
-      { nextSortOrder: markerNextSortOrder + count, updatedAt: serverTimestamp() },
+      { ...LIST_CHANGED, nextSortOrder: markerNextSortOrder + count, updatedAt: serverTimestamp() },
       { merge: true },
     );
   });

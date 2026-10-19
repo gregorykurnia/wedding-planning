@@ -19,8 +19,12 @@ export async function createNumberedGuest(
     const guestRef = doc(database, "guests", id);
     const counterRef = doc(database, META, COUNTER);
     const [existing, counter] = await Promise.all([tx.get(guestRef), tx.get(counterRef)]);
-    // A retry after a timed-out attempt that did land: keep what was written.
-    if (existing.exists()) return { id, number: existing.data().number as number };
+    // A retry after a timed-out attempt that did land keeps its number and writes what the form says
+    // now, so a change made before Try again isn't dropped (Phase 4 review S22).
+    if (existing.exists()) {
+      tx.update(guestRef, { ...data, ...stamp(database) });
+      return { id, number: existing.data().number as number };
+    }
     const next = typeof counter.data()?.next === "number" ? (counter.data()!.next as number) : 1;
     tx.set(counterRef, { next: next + 1, ...stamp(database) }, { merge: true });
     tx.set(guestRef, { ...data, number: next, ...stamp(database, true) });

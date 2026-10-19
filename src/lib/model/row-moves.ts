@@ -58,3 +58,22 @@ export function neighboursOf(ids: readonly string[], id: string): { above: strin
   const at = ids.indexOf(id);
   return { above: at > 0 ? ids[at - 1] : null, below: at >= 0 && at < ids.length - 1 ? ids[at + 1] : null };
 }
+
+/**
+ * A move made on a page of the list (the first rows shown) as the whole list:
+ * the rows past the page follow it, so a row dropped last on the page lands
+ * above the first hidden one rather than tying with it (Phase 4 review S21).
+ */
+export const withRest = (pageIds: readonly string[], allIds: readonly string[]): string[] => {
+  const onPage = new Set(pageIds);
+  return [...pageIds, ...allIds.filter((id) => !onPage.has(id))];
+};
+
+/** `rows` in the order `ids` gives; any row it doesn't name keeps its place after them. */
+export function inOrder<T extends { id: string }>(rows: readonly T[], ids: readonly string[]): T[] {
+  const at = new Map(ids.map((id, i) => [id, i]));
+  return rows
+    .map((row, index) => ({ row, rank: at.get(row.id) ?? ids.length + index }))
+    .sort((a, z) => a.rank - z.rank)
+    .map((x) => x.row);
+}
