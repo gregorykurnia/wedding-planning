@@ -197,6 +197,33 @@ test("Undo takes the payment back out", async ({ page }) => {
   expect((await read("vendors", SINGLE)).payments).toEqual([]);
 });
 
+test("Undo after the partner split the booking says it can't take the payment back, and takes nothing", async ({ page }) => {
+  // Phase 4 review P4-S8 (G13): Undo used to do nothing, silently.
+  const section = await openGallery(page);
+  await section.getByRole("button", { name: "Record payment for Dapur Lestari Catering" }).click();
+  await dialogOf(page).getByLabel("Amount paid").fill("5000000");
+  await record(page).click();
+  const toast = page.getByRole("status").filter({ hasText: "Recorded Rp 5.000.000" });
+  await expect(toast).toBeVisible({ timeout: 15_000 });
+
+  const now = await read("vendors", SINGLE);
+  await put(
+    "vendors",
+    SINGLE,
+    booked("Dapur Lestari Catering", "pay-greg", 0, 0, {
+      subEntries: [{ ...part("c-deposit", "Deposit", 15_000_000, 15_000_000, null), payments: now.payments }],
+      payments: [],
+    }),
+  );
+  await toast.getByRole("button", { name: "Undo" }).click();
+  await expect(
+    page.getByText(/^Can’t take the payment back: .+ has changed Dapur Lestari Catering since\. It’s kept as it is now\.$/),
+  ).toBeVisible({ timeout: 15_000 });
+  const doc = await read("vendors", SINGLE);
+  expect((doc.subEntries as { budgetSpent: number }[])[0].budgetSpent).toBe(15_000_000);
+  expect(doc.budgetSpent).toBe(0);
+});
+
 test("a booking in parts records on the part pressed, and only that part", async ({ page }) => {
   const section = await openGallery(page);
   await section.getByRole("button", { name: "Record payment on Balance" }).click();
@@ -242,6 +269,34 @@ test("the line under the amount follows a payment the partner records while the 
   });
   // What was typed at opening stays: the amount doesn't jump under the cursor.
   await expect(dialog.getByLabel("Amount paid")).toHaveValue("Rp 20.000.000");
+});
+
+test("the partner splits the booking while the sheet is open: the payment goes on the part the sheet then names", async ({ page }) => {
+  // Phase 4 review P4-S3: the sheet kept recording on the booking itself, which a
+  // booking in parts refuses, so every Record failed.
+  const section = await openGallery(page);
+  await section.getByRole("button", { name: "Record payment for Dapur Lestari Catering" }).click();
+  const dialog = dialogOf(page);
+  await expect(dialog.getByLabel("Amount paid")).toHaveValue("Rp 20.000.000");
+
+  await put(
+    "vendors",
+    SINGLE,
+    booked("Dapur Lestari Catering", "pay-greg", 0, 0, {
+      subEntries: [part("c-deposit", "Deposit", 10_000_000, 10_000_000, null), part("c-balance", "Balance", 20_000_000, 0, "2026-10-30")],
+    }),
+  );
+  await expect(dialog).toContainText("Dapur Lestari Catering, balance", { timeout: 15_000 });
+  await dialog.getByLabel("Amount paid").fill("5000000");
+  await record(page).click();
+
+  await expect(dialog).toHaveCount(0, { timeout: 15_000 });
+  const doc = await read("vendors", SINGLE);
+  const [deposit, balance] = doc.subEntries as { id: string; budgetSpent: number; payments?: unknown[] }[];
+  expect(deposit.budgetSpent).toBe(10_000_000);
+  expect(balance).toMatchObject({ id: "c-balance", budgetSpent: 5_000_000 });
+  expect(balance.payments).toEqual([expect.objectContaining({ amount: 5_000_000 })]);
+  expect(doc.budgetSpent).toBe(0);
 });
 
 test("a receipt is filed in the booking's folder and linked to the payment", async ({ page }) => {

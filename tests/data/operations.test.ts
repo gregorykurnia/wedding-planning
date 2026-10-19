@@ -216,7 +216,11 @@ describe("split, parts, payments and removing a booking", () => {
       { ...b(), paymentId: "pay1" },
     );
     // A retry with the same id doesn't count it twice.
-    await recordPayment({ kind: "vendor", id: "v1" }, { amount: 20_000_000, paidOn: "2026-10-14", paidBy: "Gregory" }, { ...b(), paymentId: "pay1" });
+    await recordPayment(
+      { kind: "vendor", id: "v1" },
+      { amount: 20_000_000, paidOn: "2026-10-14", paidBy: "Gregory", receiptFileId: "f1" },
+      { ...b(), paymentId: "pay1" },
+    );
     let data = await read("vendors", "v1");
     expect(data?.budgetSpent).toBe(50_000_000);
     expect(data?.payments).toEqual([{ id: "pay1", amount: 20_000_000, paidOn: "2026-10-14", funder: "Gregory", receiptFileId: "f1" }]);

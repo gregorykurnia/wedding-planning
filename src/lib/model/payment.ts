@@ -66,6 +66,16 @@ export function previewLine(left: Rupiah, amount: Rupiah | null, badAmount: bool
 /** The toast after recording: "Recorded Rp 55.500.000 for Dapur Lestari Catering". */
 export const recordedText = (amount: Rupiah, name: string) => `Recorded ${rp(amount)} for ${name}`;
 
+/**
+ * Undo after the payment's booking changed since (guide §6.2, N13): the split,
+ * a part removed, the payment already taken back.
+ */
+export const paymentConflict = (partner: string, name: string) =>
+  `Can’t take the payment back: ${partner} has changed ${name} since. It’s kept as it is now.`;
+/** The same for your own change since. Provisional (G35/N35). */
+export const paymentConflictOwn = (name: string) =>
+  `Can’t take the payment back: you’ve changed ${name} since. It’s kept as it is now.`;
+
 /** The value of the Not assigned chip: funder ids are document ids, so this can't be one. */
 export const NOT_ASSIGNED = "";
 

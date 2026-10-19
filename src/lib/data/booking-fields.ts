@@ -1,5 +1,5 @@
 import type { FunderId, IsoDate, Rupiah } from "@/lib/model/bookings";
-import { collectionOf, type RecordTarget } from "./bookings";
+import { collectionOf, setVenueEstimate, type RecordTarget } from "./bookings";
 import { updateElement } from "./array-ops";
 import { update, type WriteOptions } from "./write";
 
@@ -36,9 +36,9 @@ function storedBooking(kind: RecordTarget["kind"], field: keyof BookingFields, v
       return { category: value, confirmedType: value };
     case "price":
       return kind === "venue" ? { agreedPrice: value } : { totalPrice: value };
-    // A venue always has an estimate (its budget estimate), so blank means none: 0.
+    // A venue's goes through `setVenueEstimate`.
     case "estimate":
-      return kind === "venue" ? { budgetEstimate: value ?? 0 } : { estimate: value };
+      return { estimate: value };
     case "paid":
       return { budgetSpent: value };
     case "funder":
@@ -56,6 +56,7 @@ export function setBookingField<K extends keyof BookingFields>(
   value: BookingFields[K],
   opts: WriteOptions = {},
 ): Promise<void> {
+  if (field === "estimate" && target.kind === "venue") return setVenueEstimate(target.id, value as number | null, opts);
   return update(collectionOf(target.kind), target.id, storedBooking(target.kind, field, value), opts);
 }
 

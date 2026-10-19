@@ -6,6 +6,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  waitForPendingWrites,
   type Firestore,
   type Transaction,
 } from "firebase/firestore";
@@ -46,14 +47,28 @@ function withTimeout<T>(promise: Promise<T>): Promise<T> {
 
 /**
  * Runs a write with the timeout, turning any failure into a WriteError whose
- * `retry()` runs the same write again.
+ * `retry()` runs the same write again. After a timeout the first attempt may
+ * still be on its way, so `retry()` waits for it first and runs the write again
+ * only if it failed: a late first delete can't make the retry fail as missing,
+ * and a late first append can't land twice.
  */
-export async function guarded<T>(run: () => Promise<T>): Promise<T> {
+export function guarded<T>(run: () => Promise<T>): Promise<T> {
+  let first: Promise<T>;
   try {
-    return await withTimeout(run());
+    first = run();
+  } catch (err) {
+    first = Promise.reject(err);
+  }
+  return attempt(run, first);
+}
+
+async function attempt<T>(run: () => Promise<T>, inFlight: Promise<T>): Promise<T> {
+  try {
+    return await withTimeout(inFlight);
   } catch (err) {
     const failure = toWriteError(err);
-    failure.retry = () => guarded(run);
+    failure.retry = () =>
+      failure.code === "timeout" ? attempt(run, inFlight.catch(() => run())) : guarded(run);
     throw failure;
   }
 }
@@ -126,4 +141,16 @@ export async function transact<T>(
 ): Promise<T> {
   const database = requireDb(opts.db);
   return guarded(() => runTransaction(database, (tx) => run(tx, database)));
+}
+
+/**
+ * Waits until every write this device has started has reached the database.
+ * A transaction reads from the server, so one that builds on a field saved a
+ * moment ago (typed, then Split pressed, which saves it on blur) waits for that
+ * save first; otherwise the save could land after it, on a field the result no
+ * longer reads.
+ */
+export function afterOwnWrites(opts: WriteOptions = {}): Promise<void> {
+  const database = requireDb(opts.db);
+  return guarded(() => waitForPendingWrites(database));
 }

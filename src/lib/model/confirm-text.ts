@@ -35,3 +35,10 @@ export const TRY_AGAIN = "Try again";
 export function undoConflict(partner: string): string {
   return `Can’t undo: ${partner} has changed this since. It’s kept as it is now.`;
 }
+
+/**
+ * The same when the later change was your own (this device or your other one),
+ * so the partner isn't named for it. Provisional (G35/N35): the guide words
+ * only the partner's case.
+ */
+export const UNDO_CONFLICT_OWN = "Can’t undo: you’ve changed this since. It’s kept as it is now.";

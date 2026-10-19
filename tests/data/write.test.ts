@@ -147,6 +147,26 @@ describe("a write that times out", () => {
     const data = await read(bella, "vendors", "v1");
     expect(data?.subEntries.map((s: { id: string }) => s.id)).toEqual(["p1", "p2", "p3"]);
   });
+
+  it("waits for a timed-out delete that lands late instead of failing the retry as missing", async () => {
+    await seedVendor();
+    setWriteTimeout(1);
+    let failure: WriteError | undefined;
+    try {
+      await removeWithUndo("vendors", "v1", { db: gregory.db });
+    } catch (err) {
+      failure = err as WriteError;
+    } finally {
+      setWriteTimeout(null);
+    }
+    expect(failure?.code).toBe("timeout");
+
+    // The retry waits for the first attempt, which deleted the record, so it
+    // doesn't read the record again and find it gone.
+    const kept = await failure!.retry!();
+    expect(kept).toMatchObject({ name: "Dapur Lestari Catering" });
+    expect(await read(bella, "vendors", "v1")).toBeUndefined();
+  });
 });
 
 describe("embedded arrays", () => {

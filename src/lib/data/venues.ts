@@ -8,7 +8,7 @@ import { isVenueBooked, type IsoDate } from "@/lib/model/bookings";
 import { isListedVenue } from "@/lib/model/search";
 import { venueListItem, type VenueDetail, type VenueFile, type VenueListItem } from "@/lib/model/venues";
 import { logActivity } from "./activity";
-import { bookingIdOf, markBooked, removeVenue } from "./bookings";
+import { bookingIdOf, markBooked, removeVenue, setVenueEstimate } from "./bookings";
 import { patchWithUndo, removeWithUndo, updateWithUndo, type Undoable } from "./undo";
 import { readOf } from "./read";
 import { useSession } from "./session";
@@ -161,6 +161,7 @@ const STORED: { [K in keyof VenueFields]: (value: VenueFields[K]) => Record<stri
   name: (value) => ({ name: value }),
   location: (value) => ({ location: value }),
   // A cleared cost or capacity is saved as 0 (the model reads 0 as unknown).
+  // The cost is saved by `setVenueEstimate`, which keeps a booked venue's price.
   cost: (value) => ({ budgetEstimate: value ?? 0 }),
   guests: (value) => ({ guestMax: value ?? 0 }),
   notes: (value) => ({ notes: value }),
@@ -173,6 +174,7 @@ export function setVenueField<K extends keyof VenueFields>(
   value: VenueFields[K],
   opts: WriteOptions = {},
 ): Promise<void> {
+  if (field === "cost") return setVenueEstimate(id, value as number | null, opts);
   return update("venues", id, STORED[field](value), opts);
 }
 

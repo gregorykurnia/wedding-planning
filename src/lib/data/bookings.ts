@@ -1,12 +1,21 @@
 import { doc, type DocumentData } from "firebase/firestore";
-import { bookingFromVendor, bookingFromVenue, isVendorBooked, isVenueBooked, type FunderId, type IsoDate, type Part } from "@/lib/model/bookings";
+import {
+  bookingFromVendor,
+  bookingFromVenue,
+  isVendorBooked,
+  isVenueBooked,
+  leaningOptionPrice,
+  type FunderId,
+  type IsoDate,
+  type Part,
+} from "@/lib/model/bookings";
 import { splitPlan } from "@/lib/model/money";
 import { logActivity } from "./activity";
 import { bookingMark, vendorFromDoc, venueFromDoc } from "./adapters/bookings";
 import { num } from "./adapters/common";
 import { withElementIds, type Element } from "./array-ops";
-import { patchWithUndo, removeAddedElement, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
-import { newId, stamp, transact, type WriteOptions } from "./write";
+import { changedSince, patchWithUndo, removeAddedElement, sameValue, removeElementWithUndo, removeWithUndo, type Undoable } from "./undo";
+import { afterOwnWrites, newId, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
@@ -90,11 +99,8 @@ export async function markBooked(
       };
       if (kind === "vendor") {
         if (data.contractStatus !== "Chosen" && data.contractStatus !== "Done") patch.contractStatus = "Chosen";
-        if (typeof data.estimate !== "number") {
-          const vendor = vendorFromDoc(id, data);
-          const leaning = vendor.priceOptions.find((o) => o.selected);
-          patch.estimate = leaning ? leaning.price : null;
-        }
+        // A stored null is "No estimate", cleared on purpose, and stays.
+        if (data.estimate === undefined) patch.estimate = leaningOptionPrice(vendorFromDoc(id, data));
       } else {
         if (data.status !== "Booked") patch.status = "Booked";
         if (typeof data.agreedPrice !== "number") patch.agreedPrice = num(data.budgetEstimate);
@@ -107,6 +113,24 @@ export async function markBooked(
     void logActivity(`${kind}.booked`, { name }, { kind: "booking", id: bookingIdOf(target) }, opts);
   }
   return done;
+}
+
+/**
+ * A venue's estimate, `budgetEstimate` (blank is stored as 0). Until migration
+ * 1.11 gives a booked venue its own agreed price, its price reads from the
+ * estimate, so that price is first kept as its own: changing the estimate never
+ * changes what was agreed. A venue not booked yet takes its estimate as its
+ * price when it's booked (`markBooked`), so it's left alone.
+ */
+export async function setVenueEstimate(id: string, value: number | null, opts: WriteOptions = {}): Promise<void> {
+  await transact(async (tx, database) => {
+    const ref = doc(database, "venues", id);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new WriteError("missing", `venues/${id} is gone`);
+    const data = snap.data();
+    const keep = typeof data.agreedPrice !== "number" && isBooked("venue", id, data) ? { agreedPrice: num(data.budgetEstimate) } : {};
+    tx.update(ref, { budgetEstimate: value ?? 0, ...keep, ...stamp(database) });
+  }, opts);
 }
 
 export interface DirectBookingInput {
@@ -182,6 +206,8 @@ export async function splitBooking(
   target: RecordTarget,
   opts: WriteOptions = {},
 ): Promise<Undoable & { partIds: string[] }> {
+  // A price, paid or due date typed just before pressing Split is saved first, so the parts take it.
+  await afterOwnWrites(opts);
   const done = await patchWithUndo<string[]>(
     collectionOf(target.kind),
     target.id,
@@ -189,7 +215,13 @@ export async function splitBooking(
       const booking = bookingOf(target.kind, target.id, data);
       if (booking.parts.length > 0) throw new WriteError("failed", "Already in parts");
       const parts = splitPlan(booking, makeId).map(storedPart);
-      return { patch: { subEntries: parts, ...singleMoneyCleared(target.kind) }, result: parts.map((p) => p.id) };
+      // The first part takes what's paid, so it takes the payments behind it too:
+      // left at the top level, a payment's undo would take its amount off a
+      // booking whose own paid is now 0.
+      const history = withElementIds<Element>(data.payments);
+      if (history.length > 0) parts[0] = { ...parts[0], payments: history };
+      const payments = history.length > 0 ? { payments: [] } : {};
+      return { patch: { subEntries: parts, ...singleMoneyCleared(target.kind), ...payments }, result: parts.map((p) => p.id) };
     },
     opts,
   );
@@ -274,8 +306,10 @@ export interface PaymentInput {
  * Record a payment (guide §5.4). Adds the amount to what's paid (`budgetSpent`,
  * which stays the total) and keeps the payment in `payments[]` (§9.2 Q5) on
  * the part, or on the booking when it has no parts. Paying more than what's
- * left is allowed and shows as overpaid. Idempotent by `paymentId`. Undo takes
- * that payment back out.
+ * left is allowed and shows as overpaid. One payment per `paymentId`: Try again
+ * after a failure that landed after all writes over it, so an amount changed
+ * before trying again is the one recorded, and the toast and Undo agree with
+ * it. Undo takes that payment back out.
  */
 export async function recordPayment(
   target: RecordTarget & { partId?: string | null },
@@ -301,20 +335,28 @@ export async function recordPayment(
     if (!snap.exists()) throw new WriteError("missing", `${col}/${target.id} is gone`);
     const data = snap.data();
     name = String(data.name ?? "");
+    // The holder with this payment in it, or null when it's there as it is already.
+    const recorded = (holder: Record<string, unknown>) => {
+      const history = withElementIds<Element>(holder.payments);
+      const earlier = history.find((p) => p.id === paymentId);
+      if (earlier && sameValue(earlier, entry)) return null;
+      return {
+        budgetSpent: num(holder.budgetSpent) - num(earlier?.amount) + amount,
+        payments: earlier ? history.map((p) => (p.id === paymentId ? entry : p)) : [...history, entry],
+      };
+    };
     const parts = withElementIds<Element>(data.subEntries);
     if (target.partId) {
       const index = parts.findIndex((p) => p.id === target.partId);
       if (index < 0) throw new WriteError("missing", `part ${target.partId} is gone`);
-      const part = parts[index];
-      const history = withElementIds<Element>(part.payments);
-      if (history.some((p) => p.id === paymentId)) return;
-      parts[index] = { ...part, budgetSpent: num(part.budgetSpent) + amount, payments: [...history, entry] };
+      const changed = recorded(parts[index]);
+      if (!changed) return;
+      parts[index] = { ...parts[index], ...changed };
       tx.update(ref, { subEntries: parts, ...stamp(database) });
     } else {
       if (parts.length > 0) throw new WriteError("failed", "Record the payment on one of its parts");
-      const history = withElementIds<Element>(data.payments);
-      if (history.some((p) => p.id === paymentId)) return;
-      tx.update(ref, { budgetSpent: num(data.budgetSpent) + amount, payments: [...history, entry], ...stamp(database) });
+      const changed = recorded(data);
+      if (changed) tx.update(ref, { ...changed, ...stamp(database) });
     }
   }, opts);
 
@@ -327,31 +369,32 @@ export async function recordPayment(
 
   return {
     paymentId,
+    // Refuses with `changed`, writing nothing, when the payment is no longer
+    // where it was recorded (the booking was split, its part removed, the
+    // payment already taken back) or what's paid has been set below it since.
     undo: () =>
       transact(async (tx, database) => {
         const ref = doc(database, col, target.id);
         const snap = await tx.get(ref);
         if (!snap.exists()) throw new WriteError("missing", `${col}/${target.id} is gone`);
         const data = snap.data();
+        const conflict = () => changedSince(`payment ${paymentId}`, data, database);
         const takeOut = (holder: Record<string, unknown>) => {
           const history = withElementIds<Element>(holder.payments);
           const found = history.find((p) => p.id === paymentId);
-          if (!found) return null;
-          return {
-            budgetSpent: num(holder.budgetSpent) - num(found.amount),
-            payments: history.filter((p) => p.id !== paymentId),
-          };
+          const paid = num(holder.budgetSpent) - num(found?.amount);
+          if (!found || paid < 0) throw conflict();
+          return { budgetSpent: paid, payments: history.filter((p) => p.id !== paymentId) };
         };
         const parts = withElementIds<Element>(data.subEntries);
-        const index = target.partId ? parts.findIndex((p) => p.id === target.partId) : -1;
-        if (index >= 0) {
-          const changed = takeOut(parts[index]);
-          if (!changed) return;
-          parts[index] = { ...parts[index], ...changed };
+        if (target.partId) {
+          const index = parts.findIndex((p) => p.id === target.partId);
+          if (index < 0) throw conflict();
+          parts[index] = { ...parts[index], ...takeOut(parts[index]) };
           tx.update(ref, { subEntries: parts, ...stamp(database) });
-        } else if (!target.partId) {
-          const changed = takeOut(data);
-          if (changed) tx.update(ref, { ...changed, ...stamp(database) });
+        } else {
+          if (parts.length > 0) throw conflict();
+          tx.update(ref, { ...takeOut(data), ...stamp(database) });
         }
       }, opts),
   };
@@ -421,6 +464,7 @@ function whatIfPart(id: string, name: string, totalPrice: number, funder: unknow
  * split does by deleting the item's `funder`.
  */
 export async function splitWhatIf(id: string, opts: WriteOptions = {}): Promise<Undoable & { partIds: string[] }> {
+  await afterOwnWrites(opts);
   const done = await patchWithUndo<string[]>(
     WHAT_IF,
     id,

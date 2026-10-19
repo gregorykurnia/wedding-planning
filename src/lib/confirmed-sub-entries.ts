@@ -80,10 +80,11 @@ export function addSubEntryFile(
   subId: string,
   file: VendorFile,
 ) {
-  return updateElement<StoredSubEntry>(collection, parent.id, "subEntries", subId, (s) => ({
-    ...s,
-    files: [...(Array.isArray(s.files) ? s.files : []), file],
-  }));
+  // A retry after a timeout may find the first attempt landed: a URL already there isn't added twice.
+  return updateElement<StoredSubEntry>(collection, parent.id, "subEntries", subId, (s) => {
+    const files = Array.isArray(s.files) ? s.files : [];
+    return files.some((f) => f.url === file.url) ? s : { ...s, files: [...files, file] };
+  });
 }
 
 export function removeSubEntryFile(

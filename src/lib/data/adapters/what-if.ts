@@ -30,3 +30,29 @@ export function whatIfFromDoc(id: string, data: Record<string, unknown>): WhatIf
     updatedBy: strOrNull(data.updatedBy),
   };
 }
+
+/**
+ * A what-if part stored with `funder: null` reads as the item's funder (old
+ * parts always stored null), so null alone can't say "nobody" while the item
+ * has a funder. The item's funder first moves down into each part that
+ * inherits it, and the item keeps none; then the parts `nobody` picks are
+ * stored null and really are Not assigned. What every other part reads as stays.
+ */
+export function whatIfPartsWithNobody<P extends Record<string, unknown> & { id: string }>(
+  item: Record<string, unknown>,
+  parts: readonly P[],
+  nobody: (part: P) => boolean,
+): { subEntries: P[]; funder: null } {
+  const inherited = funderOf(item.funder);
+  return {
+    subEntries: parts.map((p) => {
+      if (nobody(p)) return { ...p, funder: null };
+      return funderOf(p.funder) === null ? { ...p, funder: inherited } : p;
+    }),
+    funder: null,
+  };
+}
+
+/** Who pays a what-if part: its own funder, or the item's when it has none. */
+export const whatIfPartFunder = (item: Record<string, unknown>, part: Record<string, unknown>): FunderId =>
+  funderOf(part.funder) ?? funderOf(item.funder);

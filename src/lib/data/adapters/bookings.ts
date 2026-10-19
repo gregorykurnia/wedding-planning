@@ -110,7 +110,8 @@ export function vendorFromDoc(id: string, data: Record<string, unknown>): Vendor
       selected: o.selected === true,
     })),
     ...(booking !== undefined ? { booking } : {}),
-    estimate: numOrNull(data.estimate),
+    // Missing stays missing: the model then falls back to the price options.
+    ...("estimate" in data ? { estimate: numOrNull(data.estimate) } : {}),
     contactName: str(data.contactName),
     contactPhone: str(data.contactPhone),
     contactEmail: str(data.contactEmail),

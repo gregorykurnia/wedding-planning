@@ -1,6 +1,6 @@
-import { deleteField, doc, FieldValue, setDoc, type DocumentData } from "firebase/firestore";
+import { deleteField, doc, FieldValue, setDoc, type DocumentData, type Firestore } from "firebase/firestore";
 import { insertAt, removeElement, withElementIds, type Element } from "./array-ops";
-import { requireDb } from "./db";
+import { requireDb, uidOf } from "./db";
 import { guarded, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
@@ -64,18 +64,26 @@ export function sameValue(a: unknown, b: unknown): boolean {
  * A `deleteField()` must still be missing; other sentinels (server times)
  * can't be compared and are let through.
  */
-function stillAsWritten(data: DocumentData, written: Record<string, unknown>, what: string) {
+function stillAsWritten(data: DocumentData, written: Record<string, unknown>, what: string, database: Firestore) {
   for (const [key, value] of Object.entries(written)) {
     if (value instanceof FieldValue) {
-      if (value.isEqual(deleteField()) && data[key] !== undefined) throw changedSince(what);
+      if (value.isEqual(deleteField()) && data[key] !== undefined) throw changedSince(what, data, database);
       continue;
     }
-    if (!sameValue(data[key], value)) throw changedSince(what);
+    if (!sameValue(data[key], value)) throw changedSince(what, data, database);
   }
 }
 
-const changedSince = (what: string) =>
-  new WriteError("changed", `${what} changed after this, so undo would erase that change`);
+/**
+ * The `changed` refusal, saying who changed the record last (its `updatedBy`):
+ * you, on this device or another, or the partner.
+ */
+export function changedSince(what: string, data: DocumentData, database: Firestore): WriteError {
+  const failure = new WriteError("changed", `${what} changed after this, so undo would erase that change`);
+  const uid = uidOf(database);
+  failure.by = uid !== null && data.updatedBy === uid ? "you" : "partner";
+  return failure;
+}
 
 /**
  * Works out a change from the record as it is now, writes it, and returns an
@@ -120,7 +128,7 @@ export async function patchWithUndo<R = undefined>(
       await transact(async (tx) => {
         const snap = await tx.get(ref);
         if (!snap.exists()) throw new WriteError("missing", `${collectionName}/${id} is gone`);
-        stillAsWritten(snap.data(), written, `${collectionName}/${id}`);
+        stillAsWritten(snap.data(), written, `${collectionName}/${id}`, database);
         tx.update(ref, { ...before, ...stamp(database) });
       }, { db: database });
       undone = true;
@@ -150,7 +158,7 @@ export function removeAddedElement(
     const now = items.find((item) => item.id === added.id);
     // Already gone: write nothing, so the record isn't stamped as edited.
     if (!now) return;
-    if (!sameValue(now, added)) throw changedSince(`${field} ${added.id}`);
+    if (!sameValue(now, added)) throw changedSince(`${field} ${added.id}`, snap.data(), database);
     tx.update(ref, { [field]: items.filter((item) => item.id !== added.id), ...stamp(database) });
   }, opts);
 }

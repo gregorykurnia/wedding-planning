@@ -87,6 +87,13 @@ describe("old booking parts helpers", () => {
     expect(stored.subEntries[0].files).toEqual([{ name: "receipt.pdf", url: "https://x/receipt.pdf" }]);
   });
 
+  it("attaches a file to a part once, so a retry after a timeout that landed adds nothing (P1-S2)", async () => {
+    const file = { name: "receipt.pdf", url: "https://x/receipt.pdf" };
+    await addVendorSubEntryFile(staleVendor, "p1", file);
+    await addVendorSubEntryFile(staleVendor, "p1", file);
+    expect((await data("vendors", "v1")).subEntries[0].files).toEqual([file]);
+  });
+
   it("changes price options by id against the latest array", async () => {
     await updateElement("vendors", "v1", "priceOptions", "o2", { price: 250 }, { db: bella.db });
     await updateVendorPriceOption(staleVendor, "o1", { description: "Silver plus" });

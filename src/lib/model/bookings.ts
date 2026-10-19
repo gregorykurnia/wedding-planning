@@ -128,14 +128,17 @@ function partsFrom(records: PartRecord[] | undefined, parentFunder: FunderId): P
   }));
 }
 
-function selectedOptionPrice(v: VendorRecord): Rupiah | null {
-  const option = v.priceOptions?.find((o) => o.selected);
+/** The price option we were leaning towards, or the first one when none was marked (as the prototype's Chosen). */
+export function leaningOptionPrice(v: Pick<VendorRecord, "priceOptions">): Rupiah | null {
+  const option = v.priceOptions?.find((o) => o.selected) ?? v.priceOptions?.[0];
   return option ? rupiah(option.price) : null;
 }
 
 export function bookingFromVendor(v: VendorRecord): Booking {
+  // Only a record that never had an estimate falls back to the options: a stored
+  // null is "No estimate", cleared on purpose.
   const estimate =
-    typeof v.estimate === "number" ? rupiah(v.estimate) : selectedOptionPrice(v);
+    v.estimate === undefined ? leaningOptionPrice(v) : v.estimate === null ? null : rupiah(v.estimate);
   return {
     id: `vendor-${v.id}`,
     kind: "vendor",
@@ -171,7 +174,8 @@ export function bookingFromVenue(v: VenueRecord): Booking {
     due: dateOrNull(v.nextTargetDate),
     step: v.nextAction ?? "",
     parts: partsFrom(v.subEntries, v.funder ?? null),
-    estimate: typeof v.budgetEstimate === "number" ? rupiah(v.budgetEstimate) : null,
+    // A cleared estimate is stored as 0, which the old screens need, so 0 is none (as on Venues).
+    estimate: rupiah(v.budgetEstimate) > 0 ? rupiah(v.budgetEstimate) : null,
     bookedOn: v.booking?.on ?? null,
     from: v.booking?.from ?? null,
     direct: v.booking?.from === "direct",

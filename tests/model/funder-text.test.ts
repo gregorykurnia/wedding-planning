@@ -43,6 +43,13 @@ describe("Who pays: the words", () => {
     expect(removeBody({ count: 0, price: 0 })).toBe("Nothing is assigned to them. You can undo for a few seconds.");
   });
 
+  it("counts the what-if items that move to Not assigned with the funder", () => {
+    expect(removeBody({ count: 3, price: 30_000_000 }, 2)).toBe(
+      "3 costs (Rp 30.000.000) will move to Not assigned, and so will 2 what-if items. Payments already recorded stay as they are. You can undo for a few seconds.",
+    );
+    expect(removeBody({ count: 0, price: 0 }, 1)).toBe("1 what-if item will move to Not assigned. You can undo for a few seconds.");
+  });
+
   it("writes the closing totals with a true minus when the budget is over", () => {
     expect(totalsNote(10_000_000, 2_500_000)).toEqual({ paid: "Rp 10.000.000", left: "Rp 2.500.000" });
     expect(totalsNote(10, -5)).toEqual({ paid: "Rp 10", left: "−Rp 5" });

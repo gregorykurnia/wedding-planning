@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import type { WhatIfDoc } from "@/lib/data/adapters/what-if";
+import { doc } from "firebase/firestore";
+import { whatIfPartsWithNobody, type WhatIfDoc } from "@/lib/data/adapters/what-if";
 import type { FunderId, Rupiah } from "@/lib/model/bookings";
 import type { Funder } from "@/lib/model/money";
 import { logActivity } from "./activity";
-import { updateElement } from "./array-ops";
+import { updateElement, withElementIds, type Element } from "./array-ops";
 import { mergeStatus } from "./read";
 import type { Loaded } from "./settings";
 import { removeWithUndo, type Undoable } from "./undo";
@@ -13,7 +14,7 @@ import { useBudget } from "./use-budget";
 import { useFunders } from "./use-funders";
 import { useWhatIf } from "./use-what-if";
 import { useCategories } from "./vendors";
-import { create, update, type WriteOptions } from "./write";
+import { create, stamp, transact, update, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 const WHAT_IF = "hypotheticalItems";
@@ -127,7 +128,12 @@ export type WhatIfPartFields = Pick<WhatIfFields, "name" | "price" | "funder">;
 
 const STORED_PART: Record<keyof WhatIfPartFields, string> = { name: "name", price: "totalPrice", funder: "funder" };
 
-/** Saves one field of one part, inside the item as it is now, so another part's change in the meantime stays. */
+/**
+ * Saves one field of one part, inside the item as it is now, so another part's
+ * change in the meantime stays. Not assigned on a part of an item that still has
+ * a funder of its own goes through `whatIfPartsWithNobody`, since a part stored
+ * null would read as the item's funder.
+ */
 export async function setWhatIfPartField<K extends keyof WhatIfPartFields>(
   id: string,
   partId: string,
@@ -135,5 +141,17 @@ export async function setWhatIfPartField<K extends keyof WhatIfPartFields>(
   value: WhatIfPartFields[K],
   opts: WriteOptions = {},
 ): Promise<void> {
+  if (field === "funder" && value === null) {
+    await transact(async (tx, database) => {
+      const ref = doc(database, WHAT_IF, id);
+      const snap = await tx.get(ref);
+      if (!snap.exists()) throw new WriteError("missing", `${WHAT_IF}/${id} is gone`);
+      const data = snap.data();
+      const parts = withElementIds<Element>(data.subEntries);
+      if (!parts.some((p) => p.id === partId)) throw new WriteError("missing", `part ${partId} is gone`);
+      tx.update(ref, { ...whatIfPartsWithNobody(data, parts, (p) => p.id === partId), ...stamp(database) });
+    }, opts);
+    return;
+  }
   await updateElement(WHAT_IF, id, "subEntries", partId, { [STORED_PART[field]]: value }, opts);
 }

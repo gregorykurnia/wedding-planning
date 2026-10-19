@@ -16,6 +16,11 @@ export class WriteError extends Error {
   readonly code: WriteFailure;
   /** Runs the same write again with the same id and values. */
   retry?: () => Promise<unknown>;
+  /**
+   * `changed` only: who made the record's last change, read from its
+   * `updatedBy`, so the sentence doesn't name the partner for your own change.
+   */
+  by?: "you" | "partner";
 
   constructor(code: WriteFailure, message?: string, options?: { cause?: unknown }) {
     super(message ?? code, options);

@@ -94,6 +94,8 @@ export const splitToast = (parts: number) => `Split into ${plural(parts, "part")
 /** N13: the split can't be taken back once a part was changed since; the toast says who, and that both stay. */
 export const splitConflict = (partner: string) =>
   `Can’t undo the split: ${partner} has changed a part since. The parts stay as they are now.`;
+/** The same for your own change since, so the partner isn't named for it. Provisional (G35/N35). */
+export const SPLIT_CONFLICT_OWN = "Can’t undo the split: you’ve changed a part since. The parts stay as they are now.";
 export const removedToast = (name: string) => `Removed ${name}`;
 export const removedTitle = (name: string) => `${name} was removed`;
 export const REMOVED_NOTE = "It’s no longer part of the budget.";

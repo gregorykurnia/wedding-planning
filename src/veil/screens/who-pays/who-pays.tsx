@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { addFunderWithUndo, removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
 import { useFunderTotals, type FunderTotals } from "@/lib/data/use-funders";
-import { budget, byFunder } from "@/lib/model/money";
+import { useWhatIf } from "@/lib/data/use-what-if";
+import { budget, byFunder, whatIfParts } from "@/lib/model/money";
 import { Btn } from "@/veil/parts/actions/btn";
 import { Hero } from "@/veil/parts/hero/hero";
 import { BackLink } from "@/veil/shell/back-link";
@@ -38,6 +39,7 @@ export function WhoPays() {
 function Funders({ totals, demo }: { totals: FunderTotals; demo: boolean }) {
   const toast = useToast();
   const confirm = useConfirm();
+  const whatIf = useWhatIf();
   const [renaming, setRenaming] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLDivElement>(null);
@@ -67,7 +69,7 @@ function Funders({ totals, demo }: { totals: FunderTotals; demo: boolean }) {
     const removed: { undo?: () => Promise<void> } = {};
     const done = await confirm({
       title: removeTitle(row.name),
-      body: removeBody(row),
+      body: removeBody(row, (whatIf.data ?? []).filter((w) => whatIfParts(w).some((p) => p.funder === id)).length),
       action: "Remove funder",
       danger: true,
       run: async () => {

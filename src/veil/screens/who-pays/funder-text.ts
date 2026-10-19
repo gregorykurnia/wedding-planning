@@ -26,11 +26,20 @@ export function restText(row: Pick<FunderRow, "left">): { text: string; over: bo
   return row.left < 0 ? { text: `${rp(-row.left)} overpaid`, over: true } : { text: rp(row.left), over: false };
 }
 
-/** The remove confirm's body: what moves, what stays, and the undo window (guide §5.9). */
-export function removeBody(row: Pick<FunderRow, "count" | "price">): string {
-  return row.count
-    ? `${plural(row.count, "cost")} (${rp(row.price)}) will move to Not assigned. Payments already recorded stay as they are. You can undo for a few seconds.`
-    : "Nothing is assigned to them. You can undo for a few seconds.";
+/**
+ * The remove confirm's body: what moves, what stays, and the undo window (guide
+ * §5.9). `whatIf` counts the what-if items they would pay for, which move to Not
+ * assigned too; the guide's sentence names only costs, so that clause is
+ * provisional (G36/N36).
+ */
+export function removeBody(row: Pick<FunderRow, "count" | "price">, whatIf = 0): string {
+  const items = plural(whatIf, "what-if item");
+  if (row.count) {
+    const too = whatIf ? `, and so will ${items}` : "";
+    return `${plural(row.count, "cost")} (${rp(row.price)}) will move to Not assigned${too}. Payments already recorded stay as they are. You can undo for a few seconds.`;
+  }
+  if (whatIf) return `${items} will move to Not assigned. You can undo for a few seconds.`;
+  return "Nothing is assigned to them. You can undo for a few seconds.";
 }
 
 export const removeTitle = (name: string) => `Remove ${name}?`;

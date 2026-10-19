@@ -11,13 +11,16 @@ import {
   type ReactNode,
 } from "react";
 import { WriteError } from "@/lib/data/write-error";
-import { undoConflict } from "@/lib/model/confirm-text";
+import { UNDO_CONFLICT_OWN, undoConflict } from "@/lib/model/confirm-text";
 import styles from "./toasts.module.css";
 
 /** Guide §4.16: 6 seconds, and the undo window lasts exactly as long. */
 export const TOAST_MS = 6000;
 /** Partner toasts stay a little longer (guide §6.3). */
 export const PARTNER_TOAST_MS = 9000;
+
+/** A conflict sentence, or one made from the partner's name, which the host knows. */
+type Conflict = ReactNode | ((partner: string) => ReactNode);
 
 type ToastKind = "confirmation" | "undo" | "next" | "partner" | "demo";
 
@@ -31,7 +34,9 @@ interface ToastItem {
   own?: boolean;
   action?: { label: string; run: () => void | Promise<void> };
   /** What an Undo that finds the thing changed since says (N13); the generic line if not given. */
-  conflict?: ReactNode;
+  conflict?: Conflict;
+  /** The same, when the change since was your own (G35); the generic line if not given. */
+  ownConflict?: ReactNode;
   /** Undo was tapped and the restore hasn't finished. */
   restoring: boolean;
 }
@@ -44,8 +49,15 @@ export interface Toasts {
    * If it rejects with a `changed` WriteError (the partner, or you, changed the
    * same thing since), nothing is taken back and a 9-second partner toast says
    * so: `conflict` is its sentence, "Can’t undo the split: Bella recorded …".
+   * When the change since was your own, the toast says `ownConflict` instead,
+   * with no circle, rather than naming the partner for it.
    */
-  undoable(message: ReactNode, undo: () => void | Promise<void>, conflict?: ReactNode): number;
+  undoable(
+    message: ReactNode,
+    undo: () => void | Promise<void>,
+    conflict?: Conflict,
+    ownConflict?: ReactNode,
+  ): number;
   /** "Kebun Bunga Atelier is now a booking · Open". */
   next(message: ReactNode, label: string, open: () => void): number;
   /** "Bella recorded Rp 55.500.000 for Dapur Lestari Catering". */
@@ -148,17 +160,21 @@ export function ToastHost({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const toasts = useMemo<Toasts>(() => {
-    const add = (item: Omit<ToastItem, "id" | "restoring">, ms: number) => {
+  const add = useCallback(
+    (item: Omit<ToastItem, "id" | "restoring">, ms: number) => {
       const id = ++nextId.current;
       setItems((all) => [...all, { ...item, id, restoring: false }]);
       startTimer(id, ms);
       return id;
-    };
+    },
+    [startTimer],
+  );
+
+  const toasts = useMemo<Toasts>(() => {
     return {
       confirmation: (message) => add({ kind: "confirmation", message }, TOAST_MS),
-      undoable: (message, undo, conflict) =>
-        add({ kind: "undo", message, conflict, action: { label: "Undo", run: undo } }, TOAST_MS),
+      undoable: (message, undo, conflict, ownConflict) =>
+        add({ kind: "undo", message, conflict, ownConflict, action: { label: "Undo", run: undo } }, TOAST_MS),
       next: (message, label, open) =>
         add({ kind: "next", message, action: { label, run: open } }, TOAST_MS),
       partner: (name, message) =>
@@ -168,7 +184,7 @@ export function ToastHost({ children }: { children: ReactNode }) {
       demo: () => add({ kind: "demo", message: "Not saved: demonstration mode" }, TOAST_MS),
       dismiss,
     };
-  }, [startTimer, dismiss]);
+  }, [add, dismiss]);
 
   const setRestoring = useCallback((id: number, restoring: boolean) => {
     setItems((all) => all.map((t) => (t.id === id ? { ...t, restoring } : t)));
@@ -194,10 +210,13 @@ export function ToastHost({ children }: { children: ReactNode }) {
         // The same thing was changed since (N13): nothing is taken back, there
         // is nothing left to try, and what is there now stays. The toast says so.
         dismiss(item.id);
-        toasts.partner(
-          partnerNameRef.current,
-          item.conflict ?? undoConflict(partnerNameRef.current),
-        );
+        if (err.by === "you") {
+          add({ kind: "partner", message: item.ownConflict ?? UNDO_CONFLICT_OWN }, PARTNER_TOAST_MS);
+        } else {
+          const partner = partnerNameRef.current;
+          const said = typeof item.conflict === "function" ? item.conflict(partner) : item.conflict;
+          toasts.partner(partner, said ?? undoConflict(partner));
+        }
         return;
       }
       // Nothing was put back. The button goes back to Undo for another window

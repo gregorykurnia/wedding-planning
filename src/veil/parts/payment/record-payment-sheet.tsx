@@ -16,6 +16,8 @@ import {
   PAYMENT_ACTION,
   PAYMENT_BUSY,
   PAYMENT_TITLE,
+  paymentConflict,
+  paymentConflictOwn,
   paymentPart,
   paymentSub,
   previewLine,
@@ -82,7 +84,11 @@ export function RecordPaymentSheet({ booking, partId = null, funders, record, up
   const pressing = useRef(false);
 
   // The part is chosen when the sheet opens, so a partner's change can't move it to another part.
-  const [chosenId] = useState(() => paymentPart(booking, partId)?.id ?? null);
+  const [chosenId, setChosenId] = useState(() => paymentPart(booking, partId)?.id ?? null);
+  // The partner split the booking while the sheet was open: it no longer takes a
+  // payment of its own, so the payment goes on the part the sheet now names (its
+  // next step), chosen once, rather than failing every time.
+  if (chosenId === null && booking.parts.length > 0) setChosenId(paymentPart(booking, null)?.id ?? null);
   const part =
     partsOf(booking).find((p) => p.id === chosenId) ?? paymentPart(booking, chosenId) ?? partsOf(booking)[0];
   const [opening] = useState(() => ({ amount: startAmount(part) }));
@@ -169,7 +175,12 @@ export function RecordPaymentSheet({ booking, partId = null, funders, record, up
     attempt.then(
       ({ undo }) => {
         sheet.close();
-        toast.undoable(recordedText(value, booking.name), undo);
+        toast.undoable(
+          recordedText(value, booking.name),
+          undo,
+          (partner) => paymentConflict(partner, booking.name),
+          paymentConflictOwn(booking.name),
+        );
       },
       () => {
         if (alive.current) setState("failed");

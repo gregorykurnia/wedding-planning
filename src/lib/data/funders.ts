@@ -1,4 +1,5 @@
 import { doc, setDoc, type DocumentData } from "firebase/firestore";
+import { whatIfPartFunder, whatIfPartsWithNobody } from "./adapters/what-if";
 import { withElementIds, type Element } from "./array-ops";
 import { requireDb } from "./db";
 import { changeMany, listIds } from "./many";
@@ -22,10 +23,16 @@ export async function removeFunder(funderId: string, opts: WriteOptions = {}): P
 
   const changes = await changeMany(
     await listIds(RECORDS, { db: database }),
-    (_, __, data) => {
+    (collection, __, data) => {
       const patch: Record<string, unknown> = {};
       if (data.funder === funderId) patch.funder = null;
       const parts = withElementIds<Element>(data.subEntries);
+      if (collection === "hypotheticalItems" && parts.length > 0) {
+        // A what-if part stored null reads as the item's funder, so its parts
+        // go to Not assigned by `whatIfPartsWithNobody`, not by null alone.
+        const paidByIt = (p: Element) => whatIfPartFunder(data, p) === funderId;
+        return parts.some(paidByIt) || data.funder === funderId ? whatIfPartsWithNobody(data, parts, paidByIt) : null;
+      }
       if (parts.some((p) => p.funder === funderId)) {
         patch.subEntries = parts.map((p) => (p.funder === funderId ? { ...p, funder: null } : p));
       }

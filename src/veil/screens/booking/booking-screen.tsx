@@ -41,6 +41,7 @@ import {
   removedTitle,
   removedToast,
   splitConflict,
+  SPLIT_CONFLICT_OWN,
   splitToast,
 } from "@/lib/model/booking-detail";
 import { rp } from "@/lib/model/format";
@@ -218,7 +219,7 @@ function Detail({
       const done = await splitBooking(target);
       const last = done.partIds.at(-1);
       if (last) show(last);
-      toast.undoable(splitToast(done.partIds.length), done.undo, splitConflict(partnerName));
+      toast.undoable(splitToast(done.partIds.length), done.undo, splitConflict(partnerName), SPLIT_CONFLICT_OWN);
     } catch {
       setActionFailed(true);
     }
