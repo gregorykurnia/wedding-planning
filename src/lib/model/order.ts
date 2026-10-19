@@ -161,7 +161,8 @@ const itemValue: Record<Exclude<ItemOrderKey, "own">, (i: OrderableItem) => Sort
   vendor: (i) => i.vendor,
   confirmed: (i) => (i.confirmed ? 0 : 1),
   events: (i) => firstIndex(ITEM_EVENTS, i.types),
-  person: (i) => firstIndex(ITEM_PEOPLE, i.persons),
+  // An item for no one in particular is General, the first choice, not a blank (N12).
+  person: (i) => firstIndex(ITEM_PEOPLE, i.persons.filter((p) => p !== "General")) ?? 0,
   next: (i) => (i.next ? 0 : 1),
 };
 

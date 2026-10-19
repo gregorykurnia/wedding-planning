@@ -2,14 +2,14 @@ import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { GuestRecord } from "@/lib/model/guests";
-import type { ItemRecord } from "@/lib/model/items";
+import { peopleText, type ItemRecord } from "@/lib/model/items";
 import type { TaskRecord } from "@/lib/model/tasks";
 import { HeadcountsCard, SidesCard } from "@/veil/parts/guests/counts";
 import { GuestRow, RsvpSwitch } from "@/veil/parts/guests/guest-row";
 import { headcountRows, inviteLine, metaParts, notCountedLine, plusText, rsvpToast } from "@/veil/parts/guests/guest-text";
 import { ItemList } from "@/veil/parts/items/item-list";
 import { ItemRow } from "@/veil/parts/items/item-row";
-import { menuEntries, personOf } from "@/veil/parts/items/item-text";
+import { menuEntries } from "@/veil/parts/items/item-text";
 import { WorkOnNextCard } from "@/veil/parts/items/work-on-next-card";
 import { FinishedTasks } from "@/veil/parts/tasks/finished-tasks";
 import { TaskRow } from "@/veil/parts/tasks/task-row";
@@ -134,9 +134,9 @@ const item = (over: Partial<ItemRecord> = {}): ItemRecord => ({
 });
 
 describe("item words", () => {
-  it("shows the first person of an item that lists several, and General for none", () => {
-    expect(personOf({ persons: ["Groom Mom", "Bride Mom"] })).toBe("Groom Mom");
-    expect(personOf({ persons: [] })).toBe("General");
+  it("reads who an item is for, however many people it names (N12)", () => {
+    expect(peopleText(["Groom Mom", "Bride Mom"])).toBe("Groom's mother, Bride's mother");
+    expect(peopleText([])).toBe("General");
   });
 
   it("offers Move up and Move down only in our own order", () => {

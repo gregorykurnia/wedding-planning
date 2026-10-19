@@ -85,14 +85,21 @@ export function Figure({ amount, tone, md = false }: FigureProps) {
 type CountFigureProps = {
   /** A whole number, such as the schedule's things late or due today. */
   count: number;
+  /** "of 25" after the figure, small and muted: the wedding items confirmed out of all of them. */
+  of?: number;
   /** Rose when something is late. */
   tone?: "late";
 };
 
 /** The same figure for a count: serif, light and never wrapped, with no "Rp" (guide §5.19). */
-export function CountFigure({ count, tone }: CountFigureProps) {
+export function CountFigure({ count, of, tone }: CountFigureProps) {
   const classes = [styles.figure, "num", styles.md, tone && styles[tone]].filter(Boolean).join(" ");
-  return <p className={classes}>{n0(count)}</p>;
+  return (
+    <p className={classes}>
+      {n0(count)}
+      {of !== undefined && <span className={styles.of}>of {n0(of)}</span>}
+    </p>
+  );
 }
 
 /** The sentence under the figure, with each amount in <b> (ink, weight 450). */

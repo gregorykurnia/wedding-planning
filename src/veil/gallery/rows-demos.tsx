@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { headcounts, sides, type GuestRecord } from "@/lib/model/guests";
 import type { ItemRecord } from "@/lib/model/items";
-import { workOnNext } from "@/lib/model/items";
+import { peopleNames, withEvent, withPerson, workOnNext } from "@/lib/model/items";
 import type { ItemEvent, ItemPerson, Rsvp } from "@/lib/model/labels";
 import { finishedTasks, openTasks, type SubtaskRecord, type TaskRecord } from "@/lib/model/tasks";
 import { CountCards, HeadcountsCard, SidesCard } from "@/veil/parts/guests/counts";
@@ -168,8 +168,8 @@ export function RowsDemos() {
     onName: (i, name) => changeItem(i, { item: name }, `Renamed to ${name}`, "name"),
     onVendor: (i, vendor) => changeItem(i, { vendor }, `Vendor for ${i.item}: ${vendor || "none"}`, "vendor"),
     onToggleEvent: (i, event: ItemEvent) =>
-      changeItem(i, { types: i.types.includes(event) ? i.types.filter((e) => e !== event) : [...i.types, event] }, `Toggled ${event} on ${i.item}`, "events"),
-    onPerson: (i, person: ItemPerson) => changeItem(i, { persons: [person] }, `${i.item} is for ${person}`, "person"),
+      changeItem(i, { types: withEvent(i.types, event, !i.types.includes(event)) }, `Toggled ${event} on ${i.item}`, "events"),
+    onPerson: (i, person: ItemPerson, on) => changeItem(i, { persons: withPerson(i.persons, person, on) }, `${i.item} is for ${peopleNames(withPerson(i.persons, person, on))}`, "person"),
     onMark: (i, next) => changeItem(i, { next }, `${i.item}: work on next ${next ? "on" : "off"}`, "next"),
     onConfirmed: (i, confirmed) => changeItem(i, { confirmed }, `${i.item}: ${confirmed ? "confirmed" : "not confirmed"}`, "confirmed"),
     onMenu: (i, action) => {

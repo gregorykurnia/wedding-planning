@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type DragEventHandler, type KeyboardEvent } from "react";
-import type { ItemRecord } from "@/lib/model/items";
+import { namedPeople, peopleNames, peopleText, type ItemRecord } from "@/lib/model/items";
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import type { DropEdge } from "@/lib/model/row-moves";
 import { SixDotHandle } from "@/veil/icons/six-dot-handle";
@@ -11,17 +11,17 @@ import { TextLink } from "@/veil/parts/actions/text-link";
 import { useDraft } from "@/veil/parts/use-draft";
 import { useFlash } from "@/veil/shell/flash";
 import {
-  PERSON_OPTIONS,
   VENDOR_PLACEHOLDER,
   handleLabel,
   itemChoiceFailed,
   itemFailed,
   menuEntries,
-  personOf,
+  whoLabel,
   type ItemField,
   type ItemMenuAction,
 } from "./item-text";
 import styles from "./items.module.css";
+import { PeopleMenu } from "./people-menu";
 
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
@@ -30,7 +30,8 @@ export interface ItemActions {
   onName?: (item: ItemRecord, name: string) => void;
   onVendor?: (item: ItemRecord, vendor: string) => void;
   onToggleEvent?: (item: ItemRecord, event: ItemEvent) => void;
-  onPerson?: (item: ItemRecord, person: ItemPerson) => void;
+  /** One person ticked (`on`) or unticked in the "who it's for" menu; "General" clears everyone (N12). */
+  onPerson?: (item: ItemRecord, person: ItemPerson, on: boolean) => void;
   onMark?: (item: ItemRecord, next: boolean) => void;
   onConfirmed?: (item: ItemRecord, confirmed: boolean) => void;
   onMenu?: (item: ItemRecord, action: ItemMenuAction) => void;
@@ -66,7 +67,8 @@ export interface ItemRowProps {
 
 /**
  * One wedding item (guide §4.28). A desktop row reads: handle · item name
- * (serif input) · vendor · events (four small chips) · who it's for · star
+ * (serif input) · vendor · events (four small chips) · who it's for (a menu of
+ * checks, N12) · star
  * (work on next) · tick (confirmed) · ⋯. Under 860px it stacks, the handle,
  * name, star, tick and ⋯ on top. Every change saves at once; a change that
  * didn't save keeps what was typed, rings the field and offers Try again.
@@ -221,19 +223,19 @@ export function ItemRow({
           </button>
         ))}
       </div>
-      <select
-        className={join(styles.person, ringed("person"))}
-        value={personOf(item)}
+      <PeopleMenu
+        className={styles.who}
+        kind="row"
+        align="end"
+        summary={peopleText(item.persons)}
+        summaryLabel={whoLabel(item.item, peopleNames(item.persons))}
+        groupLabel="Who it’s for"
+        picked={item.persons}
+        muted={namedPeople(item.persons).length === 0}
+        ringed={failedField === "person"}
         disabled={demo}
-        aria-label={`Who ${item.item} is for`}
-        onChange={(event) => actions.onPerson?.(item, event.target.value as ItemPerson)}
-      >
-        {PERSON_OPTIONS.map((person) => (
-          <option key={person.value} value={person.value}>
-            {person.label}
-          </option>
-        ))}
-      </select>
+        onToggle={(person, on) => actions.onPerson?.(item, person, on)}
+      />
       <button
         type="button"
         className={join(styles.tog, styles.star, ringed("next"))}

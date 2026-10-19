@@ -73,6 +73,15 @@
   letter-spacing: 0;
 }
 
+/* "of 25" after a count: the prototype's .rp placed after the digits, level with them. */
+.of {
+  font-size: var(--text-figure-unit);
+  font-weight: var(--weight-display-light);
+  margin-left: 0.25em;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
+
 .context {
   margin-top: var(--space-4);
   font-size: var(--text-lead);

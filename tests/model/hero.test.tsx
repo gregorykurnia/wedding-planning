@@ -41,6 +41,12 @@ describe("CountFigure", () => {
     expect(markup(<CountFigure count={3} />)).not.toContain("Rp");
   });
 
+  it("can say how many there are in all: \"12 of 25\"", () => {
+    expect(markup(<CountFigure count={12} of={25} />)).toMatch(/>12<span class="[^"]*of[^"]*">of 25<\/span><\/p>$/);
+    expect(markup(<CountFigure count={1204} of={2004} />)).toContain("of 2.004");
+    expect(markup(<CountFigure count={12} />)).not.toContain("of");
+  });
+
   it("is rose when something is late", () => {
     expect(markup(<CountFigure count={2} tone="late" />)).toMatch(/class="[^"]*late/);
     expect(markup(<CountFigure count={2} />)).not.toMatch(/class="[^"]*late/);

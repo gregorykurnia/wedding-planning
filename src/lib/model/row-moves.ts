@@ -29,3 +29,32 @@ export function dropId(ids: readonly string[], id: string, targetId: string, edg
   next.splice(at, 0, id);
   return next.every((x, i) => x === ids[i]) ? null : next;
 }
+
+/**
+ * Inserting between two rows halves the gap each time, so after enough inserts
+ * the positions run out of precision. Below this gap the list is renumbered
+ * first (inventory-notes §5 #27).
+ */
+export const MIN_SORT_GAP = 1e-6;
+
+/**
+ * `count` positions for rows that go between two neighbours in the list we
+ * keep in our own order: `before` is the row above (`null` at the top) and
+ * `after` the row below (`null` at the end). `null` when there is no room left
+ * between them, so the list has to be renumbered first.
+ */
+export function positionsBetween(before: number | null, after: number | null, count = 1): number[] | null {
+  const at = (from: number, step: number) => Array.from({ length: count }, (_, i) => from + step * i);
+  if (before === null && after === null) return at(0, 1);
+  if (before === null) return at(after! - count, 1);
+  if (after === null) return at(before + 1, 1);
+  const spacing = (after - before) / (count + 1);
+  if (!Number.isFinite(spacing) || spacing < MIN_SORT_GAP) return null;
+  return at(before + spacing, spacing);
+}
+
+/** The ids on either side of `id` in a new order: the row above it and the row below it, `null` at an end. */
+export function neighboursOf(ids: readonly string[], id: string): { above: string | null; below: string | null } {
+  const at = ids.indexOf(id);
+  return { above: at > 0 ? ids[at - 1] : null, below: at >= 0 && at < ids.length - 1 ? ids[at + 1] : null };
+}

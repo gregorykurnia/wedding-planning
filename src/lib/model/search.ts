@@ -6,7 +6,7 @@
  * one must match.
  */
 import { partsOf, type Booking, type FunderId } from "./bookings";
-import { VENUE_RULED_OUT } from "./labels";
+import { ITEM_PEOPLE, VENUE_RULED_OUT } from "./labels";
 import { totals } from "./money";
 
 /** Lower case with accents removed, for comparing text. */
@@ -62,8 +62,14 @@ export interface GuestSearchFields {
 export const guestMatches = (g: GuestSearchFields, query: string) =>
   matches(query, g.name, g.connection, g.country, g.allergies);
 
-/** Item and vendor names. */
-export const itemMatches = (i: { item: string; vendor: string }, query: string) => matches(query, i.item, i.vendor);
+/** Item and vendor names, and who the item is for ("General" when it is for no one in particular, N12). */
+export const itemMatches = (i: { item: string; vendor: string; persons: readonly string[] }, query: string) =>
+  matches(query, i.item, i.vendor, ...peopleWords(i.persons));
+
+const peopleWords = (persons: readonly string[]): string[] => {
+  const named = persons.filter((p) => p !== "General");
+  return named.length ? named.map((p) => ITEM_PEOPLE.find((c) => c.value === p)?.label ?? p) : ["General"];
+};
 
 export interface VendorSearchFields {
   name: string;
