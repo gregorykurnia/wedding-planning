@@ -1,16 +1,92 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { getAuth } from "firebase/auth";
-import { doc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from "firebase/firestore";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
+import type { FileItem, FolderItem } from "@/lib/model/files";
+import { useCollection } from "@/lib/use-collection";
+import { fileItemFromDoc, folderItemFromDoc } from "./adapters/files";
 import { requireDb } from "./db";
-import { patchWithUndo, type Undoable } from "./undo";
-import { guarded, stamp, transact, type WriteOptions } from "./write";
+import { readOf } from "./read";
+import { useSession } from "./session";
+import type { Loaded } from "./settings";
+import { patchWithUndo, removeWithUndo, type Undoable } from "./undo";
+import { create, guarded, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
- * Moving files and folders in Files (R8, R12), each with undo (guide §6.2),
- * and deleting a file for good (R13), which has none.
+ * Files (guide §5.18; R8–R14): every folder and file read live, folders made,
+ * renamed, moved and deleted, a file's details changed and moved, each with
+ * undo (guide §6.2), and deleting a file for good (R13), which has none.
  */
 const FOLDERS = "fileFolders";
 const FILES = "weddingFiles";
+
+export interface FilesData {
+  folders: FolderItem[];
+  files: FileItem[];
+}
+
+/** Every folder, live. The tree is small, so the move sheet and the path read it whole. */
+export function useFolders(): Loaded<FolderItem[]> {
+  const { connection } = useSession();
+  const folders = useCollection<FolderItem>(FOLDERS, folderItemFromDoc, []);
+  return readOf(connection, [folders], folders.data);
+}
+
+/**
+ * Every folder and every file, live (R8, R14). Files are read whole so a folder
+ * opens, a search runs and a count updates with no further reads; a wedding's
+ * files number in the hundreds, the screen draws them 100 or 200 at a time.
+ */
+export function useFiles(): Loaded<FilesData> {
+  const { connection } = useSession();
+  const folders = useCollection<FolderItem>(FOLDERS, folderItemFromDoc, []);
+  const files = useCollection<FileItem>(FILES, fileItemFromDoc, []);
+  const data = useMemo(() => ({ folders: folders.data, files: files.data }), [folders.data, files.data]);
+  return readOf(connection, [folders, files], data);
+}
+
+/** Where an open file stands: `gone` is a file that was there and has been deleted since. */
+export interface FileRead {
+  status: "loading" | "ready" | "gone";
+  file: FileItem | null;
+}
+
+/**
+ * One file, live, for its sheet: edits show in place and a deleted file reads
+ * `gone` so the sheet can close. A snapshot from the device's cache that says
+ * "no such file" is not believed, as in `useDocument`.
+ */
+export function useFile(id: string): FileRead {
+  const [state, setState] = useState<{ id: string; file: FileItem | null; seen: boolean; gone: boolean }>({
+    id,
+    file: null,
+    seen: false,
+    gone: false,
+  });
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !db) return;
+    return onSnapshot(
+      doc(db, FILES, id),
+      (snap) => {
+        setState((prev) => {
+          const base = prev.id === id ? prev : { id, file: null, seen: false, gone: false };
+          if (snap.exists()) return { id, file: fileItemFromDoc(snap.id, snap.data()), seen: true, gone: false };
+          if (base.seen && !snap.metadata.fromCache) return { ...base, file: null, gone: true };
+          return base;
+        });
+      },
+      (err) => console.error(`Error reading file ${id}:`, err),
+    );
+  }, [id]);
+
+  const current = state.id === id ? state : { file: null, gone: false };
+  if (current.gone) return { status: "gone", file: null };
+  return current.file ? { status: "ready", file: current.file } : { status: "loading", file: null };
+}
 
 /** Deeper than any real folder tree; stops a loop in broken data from hanging. */
 const MAX_DEPTH = 100;
@@ -21,7 +97,13 @@ const MAX_DEPTH = 100;
  * write, so a folder never ends up inside itself, even when the partner moves
  * folders at the same moment.
  */
-function placeFolder(folderId: string, parentId: string | null, opts: WriteOptions): Promise<string | null | undefined> {
+function placeFolder(
+  folderId: string,
+  parentId: string | null,
+  opts: WriteOptions,
+  /** Undo only: the parent this move gave it. Anywhere else now, it was moved again and stays. */
+  expected?: string | null,
+): Promise<string | null | undefined> {
   return transact(async (tx, database) => {
     const ref = doc(database, FOLDERS, folderId);
     const snap = await tx.get(ref);
@@ -36,13 +118,19 @@ function placeFolder(folderId: string, parentId: string | null, opts: WriteOptio
       current = typeof parent.data().parentId === "string" ? (parent.data().parentId as string) : null;
     }
     const was = typeof snap.data().parentId === "string" ? (snap.data().parentId as string) : null;
+    if (expected !== undefined && was !== expected) {
+      throw new WriteError("changed", `fileFolders/${folderId} was moved after this, so undo would erase that move`);
+    }
     if (was === parentId) return undefined;
     tx.update(ref, { parentId, ...stamp(database) });
     return was;
   }, opts);
 }
 
-/** Moves a folder into another, or to the top with `null`. Undo moves it back. */
+/**
+ * Moves a folder into another, or to the top with `null`. Undo moves it back,
+ * unless the folder was moved again since (N13): then it refuses with `changed`.
+ */
 export async function moveFolder(
   folderId: string,
   parentId: string | null,
@@ -51,7 +139,7 @@ export async function moveFolder(
   const was = await placeFolder(folderId, parentId, opts);
   return {
     undo: async () => {
-      if (was !== undefined) await placeFolder(folderId, was, opts);
+      if (was !== undefined) await placeFolder(folderId, was, opts, parentId);
     },
   };
 }
@@ -100,4 +188,94 @@ export function deleteFileForGood(
       body?.message ?? `The server refused the delete (${res.status})`,
     );
   });
+}
+
+// ---------- folders: make, rename, delete (R8) ----------
+
+/** Makes a folder inside `parentId` (or at the top). A retried make with the same `id` writes the same folder. */
+export async function createFolder(
+  name: string,
+  parentId: string | null,
+  opts: WriteOptions & { id?: string } = {},
+): Promise<string> {
+  return create(FOLDERS, { name: name.trim(), parentId }, opts);
+}
+
+/**
+ * Renames a folder. Undo puts the old name back, unless the folder was renamed
+ * again since, which refuses with `changed`.
+ */
+export function renameFolder(
+  folderId: string,
+  name: string,
+  opts: WriteOptions = {},
+): Promise<Undoable & { changed: boolean }> {
+  const next = name.trim();
+  return patchWithUndo(FOLDERS, folderId, (data) => (data.name === next ? null : { patch: { name: next } }), opts);
+}
+
+/**
+ * Deletes an empty folder (R8). A folder that still holds a folder or a file
+ * refuses, so nothing is ever left without its folder; the screen asks first and
+ * explains. Undo puts the folder back with the same id and fields.
+ */
+export async function deleteFolder(folderId: string, opts: WriteOptions = {}): Promise<Undoable> {
+  const database = requireDb(opts.db);
+  const [childFolders, childFiles] = await guarded(() =>
+    Promise.all([
+      getDocs(query(collection(database, FOLDERS), where("parentId", "==", folderId))),
+      getDocs(query(collection(database, FILES), where("folderId", "==", folderId))),
+    ]),
+  );
+  if (!childFolders.empty || !childFiles.empty) throw new WriteError("failed", "That folder still holds things");
+  const { undo } = await removeWithUndo(FOLDERS, folderId, opts);
+  return { undo };
+}
+
+// ---------- a file's details (R11) ----------
+
+export type FileField = "name" | "category" | "description";
+
+/**
+ * Changes one field of a file, saved as you go. Undo (offered for a rename) puts
+ * the old text back, unless the field was changed again since.
+ */
+export function setFileField(
+  fileId: string,
+  field: FileField,
+  value: string,
+  opts: WriteOptions = {},
+): Promise<Undoable & { changed: boolean }> {
+  const next = value.trim();
+  return patchWithUndo(FILES, fileId, (data) => (data[field] === next ? null : { patch: { [field]: next } }), opts);
+}
+
+/**
+ * Where a file or a folder is now, as the folder names from the top, for the
+ * words of a refused undo (N13): "Can't move it back: Bella has since moved it
+ * to Files › Contracts". `null` when it no longer exists.
+ */
+export async function currentPlace(
+  kind: "file" | "folder",
+  id: string,
+  opts: WriteOptions = {},
+): Promise<string[] | null> {
+  const database = requireDb(opts.db);
+  const [folders, own] = await Promise.all([
+    getDocs(collection(database, FOLDERS)),
+    getDoc(doc(database, kind === "file" ? FILES : FOLDERS, id)),
+  ]);
+  if (!own.exists()) return null;
+  const parents = new Map(
+    folders.docs.map((d) => [d.id, { name: String(d.get("name") ?? ""), parentId: (d.get("parentId") as string | null) ?? null }]),
+  );
+  let at: string | null = (own.get(kind === "file" ? "folderId" : "parentId") as string | null) ?? null;
+  const names: string[] = [];
+  for (let depth = 0; at && depth < 100; depth++) {
+    const folder = parents.get(at);
+    if (!folder) break;
+    names.unshift(folder.name);
+    at = folder.parentId;
+  }
+  return names;
 }

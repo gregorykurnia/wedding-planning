@@ -1,0 +1,50 @@
+/* The Files screen (guide §5.18), ported from files.html (.folder-acts, .starts, .section-h).
+   Tokens only; off-scale values take the nearest token, ties going up. */
+
+/* Rename, Move and Delete folder, under a folder's name. */
+.folderActs {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: var(--text-label);
+}
+
+/* Upload files and New folder, centred under the sub-navigation. */
+.starts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+/* The search sits 36px under the buttons. */
+.tools {
+  margin-top: var(--space-8);
+}
+
+/* "Files   newest first": a section heading with a small note at the far end. */
+.section {
+  margin: var(--space-section) 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: var(--weight-display);
+}
+
+.section small {
+  font-family: var(--font-text);
+  font-size: var(--text-label);
+  font-weight: var(--weight-text);
+  color: var(--color-text-muted);
+}
+
+/* A search's results sit 12px under their count. */
+.results {
+  margin-top: var(--space-3);
+}
