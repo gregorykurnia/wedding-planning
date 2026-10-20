@@ -38,3 +38,29 @@ These lose, corrupt or duplicate data, or show a failed write as saved. Phase 5 
 | Item | Reason |
 |---|---|
 | P1-S3, P1-S4 (old UI: offline array edits lost, step date saved on every keystroke) | Old UI only, deleted in 7.3; production runs `main`, so a fix here wouldn't reach it before then |
+
+## Phase 5 (sorted 2026-10-19, in the review)
+
+All of Phase 4's routed items were re-checked: 4.F1–4.F5 fixed them, except P1-S2 and the P4-S3 fix's side effect, which were blockers B2 and B3 in `phase-5-review.md`, fixed in the review.
+
+### Before the Phase 6 review: fix tasks 5.F1–5.F3
+
+| Task | Lane | Items |
+|---|---|---|
+| 5.F1 Money, items and guests writes | t1 | P5-S1 (a late try overwrites the corrected amount), P5-S2 (funder confirm undercounts while what-if loads), P5-S4 (split of an overpaid booking), P5-S18 (add below during a pending move ties positions), P5-S19 (item text edited twice loses typing), P5-S20 (retried guest add drops a partner's edit), P5-S21 (ordering above 490 items, old UI's version bump, a screen test for quick moves) |
+| 5.F2 Documents, files and rules | t2 | P5-S6 (folder delete says nothing was deleted), P5-S8 (`canonical()` skips `.check()`, screen crashes), P5-S9 (move undo into a deleted folder has no words), P5-S10 (folder and upload into a just-deleted folder), P5-S11 (Add a booking's folder after giving up), P5-S13 and P5-S14 (`pushSubscriptions` and `presence` rules; deploy with the owner) |
+| 5.F3 States, wording and the harness | t1 | P5-S3 (split undo-conflict sentence), P5-S7 (offline hold on screens with several sources), P5-S12 (whole-screen nouns), P5-S15 (categories cap test), P5-S16 (offline save line), P5-S17 (Everything done opens finished tasks), P5-S22 (fault switch as a build constant), P5-S23 (cold-offline and held-loading faults, seed project id), P5-S24 (wiring tests for P3-S6, P3-S5, P2-S1; `google-failed` spec), P5-S26 (merge a burst of partner toasts), P5-S25 (raise it as a gap: §9.1 and `needs.md`) |
+
+### Folded into later tasks
+
+| Item | Task | Why there |
+|---|---|---|
+| P5-S5 (states the prototype has that §5.1 doesn't list) | 8.2 Screenshot comparison | Add the rows first, so the screenshots cover them |
+| P5-S8 second half (the content check refuses some documents that used to open) | 7.1 Switch-over | A read-only pass over production `notes` (`nodeFromJSON(normaliseDoc(c)).check()`) before switching |
+| P5-S22 second half (`NEXT_PUBLIC_VEIL_DEV` must not be set in Vercel production) | 7.1 Switch-over | Checked with the production variables, beside P3-S13 |
+
+### Dropped
+
+| Item | Reason |
+|---|---|
+| `readAmount("-0")` against `amountProblem("-0")` (no ID) | The field refuses it, so nothing is read or lost |

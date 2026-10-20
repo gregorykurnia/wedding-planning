@@ -803,34 +803,34 @@ Every place in the current code that produces something visible, from a full swe
 | `login/page.tsx:84-91` not-configured alert | Not connected, Look around (§5.1, §6.4) | [x] |
 | `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [x] |
 | account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
-| permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [ ] |
+| permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [x] |
 | `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [ ] |
 | **Native dialogs** | | |
 | `schedule/page.tsx:763` `window.confirm` delete event | `ConfirmSheet` + undo (§6.2) | [x] |
 | `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [ ] |
-| `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [ ] |
+| `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [x] |
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [x] |
 | `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [ ] |
 | **Deletes with no confirmation today** | | |
 | vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [ ] |
 | shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [ ] |
-| confirmed sub-entries `confirmed/page.tsx:883-884`, `:1136`, `:1224` | Remove this part / Remove booking / Remove what-if item, confirm and undo (§5.6, §5.10) | [ ] |
-| tasks and subtasks `todo/page.tsx:71`, `:121` | Delete task, remove step, confirm and undo (§4.27) | [ ] |
+| confirmed sub-entries `confirmed/page.tsx:883-884`, `:1136`, `:1224` | Remove this part / Remove booking / Remove what-if item, confirm and undo (§5.6, §5.10) | [x] |
+| tasks and subtasks `todo/page.tsx:71`, `:121` | Delete task, remove step, confirm and undo (§4.27) | [x] |
 | attached file X `files-cell.tsx:36` | file details sheet, Delete for good (§4.20) | [ ] |
 | budget and checklist deletes | dropped with their pages | n/a |
 | **Toasts and errors** | | |
-| `guests/page.tsx:332-374`, `:814-835` undo toast (10 s) | `ToastHost` undo (6 s, guide §2 Motion) | [ ] |
-| `master-list/page.tsx:556-598`, `:1002-1023` undo toast | same | [ ] |
-| inline load and save errors: notes `:140`, files `:425`, schedule `:872-882`, master list `:682-695`, guests `:790`, settings `:141`, master-list cell `:111-124` | Couldn't load message; failed field or row line with Try again; sheet save line (§6.1) | [ ] |
+| `guests/page.tsx:332-374`, `:814-835` undo toast (10 s) | `ToastHost` undo (6 s, guide §2 Motion) | [x] |
+| `master-list/page.tsx:556-598`, `:1002-1023` undo toast | same | [x] |
+| inline load and save errors: notes `:140`, files `:425`, schedule `:872-882`, master list `:682-695`, guests `:790`, settings `:141`, master-list cell `:111-124` | Couldn't load message; failed field or row line with Try again; sheet save line (§6.1) | [x] |
 | schedule form validation `schedule/page.tsx:250-270` (title, date, invalid date, end before start) | validation uses the failed-field look (§4.9), but the design words only two messages (a booking's missing name, a taken category name). A missing title or date and an end before the start: **gap N9** (§9.1 G9) | [x] |
-| category validation `vendor-categories.ts:49-60` | "There's already a category called …", characters left (§5.11) | [ ] |
+| category validation `vendor-categories.ts:49-60` | "There's already a category called …", characters left (§5.11) | [x] |
 | upload errors `cloudinary-upload-button.tsx:77`, `:86`, `:112-117` | Too large, Upload failed, Try again (§4.20) | [ ] |
 | **Dialogs, popovers, tooltips, dropdowns** | | |
 | schedule form dialog `:293` | event sheet (§4.14, §5.19) | [x] |
 | files: folder dialog `:592`, file details `:617` (with "Skip for now"), move `:664` | folder sheet, `FileDetailsSheet`, `UploadSheet` per-file fields, `MoveSheet` (§4.20) | [ ] |
-| guests delete dialog `:783` | `ConfirmSheet` naming plus-ones (§5.23) | [ ] |
+| guests delete dialog `:783` | `ConfirmSheet` naming plus-ones (§5.23) | [x] |
 | master list "Add multiple rows" `:915`, delete `:971` | add-items sheet (one per line), `ConfirmSheet` | [ ] |
-| `add-vendor-category-dialog.tsx` | categories sheet (§5.11) | [ ] |
+| `add-vendor-category-dialog.tsx` | categories sheet (§5.11) | [x] |
 | `venue-notes-cell.tsx:59-117` long-notes dialog | `NotesView` with Edit / Done on detail screens and the venue sheet (§4.9) | [ ] |
 | `venues-toolbar.tsx:87` filters popover | venue filters inline (§5.15) | [ ] |
 | tooltips (`cloudinary-upload-button.tsx:178`, add to budget, copy to shortlist) | none; add to budget dropped; Copy to the shortlist is a labelled action (§5.12); missing upload config is a deployment error, logged, shown as Upload failed | [ ] |
@@ -865,19 +865,19 @@ Every place in the current code that produces something visible, from a full swe
 | no install prompt | `InstallCard`, settings steps, installed state (§4.30) | [ ] |
 | **Sync, offline, loading, empty, demo** | | |
 | no sync or offline indicator | Offline message, flash and partner toasts, document offline note (§6.3, §6.5) | [ ] |
-| skeletons on 19 screens (list in the sweep) | `Shimmer` (§4.19) | [ ] |
+| skeletons on 19 screens (list in the sweep) | `Shimmer` (§4.19) | [x] |
 | spinners: login `:104`, settings `:135`, upload `:157` | `Btn busy` and save line "Saving" | [ ] |
-| empty states on 19 screens | nothing yet / no results / nothing in this slice (§6.7) | [ ] |
-| demo banner `app-shell.tsx:240-248` | gold demonstration banner and the one action rule (§6.4) | [ ] |
+| empty states on 19 screens | nothing yet / no results / nothing in this slice (§6.7) | [x] |
+| demo banner `app-shell.tsx:240-248` | gold demonstration banner and the one action rule (§6.4) | [x] |
 | **Uploads** | | |
 | `cloudinary-upload-button.tsx` progress label, sequential uploads, first failure stops the batch | `UploadSheet` and `UploadQueue`, per-file status, no batch stop (§4.20) | [ ] |
 | files page progress card `files/page.tsx:429-443` | upload queue bars | [ ] |
 | record uploaders `files-cell.tsx:43`, `vendor-files-cell.tsx`, venue photo button `venues-table.tsx:229` | `FileTiles` + shared `UploadSheet`, filing into a folder named after the record; venue photos dropped | [ ] |
 | **Hard-coded names** | | |
 | "Gregory & Partner's Wedding Planner", "Our Wedding", "Wedding Planner", "A cozy place to plan our big day." | names from settings (§4.1), "Our wedding planner" before sign-in; installed name: **gap N1** | [ ] |
-| settings placeholder "Gregory Kurnia" | settings fields per §5.3 | [ ] |
+| settings placeholder "Gregory Kurnia" | settings fields per §5.3 | [x] |
 | funders `CK`, `Gregory`, `Bella`, `Bella Fam` (`types.ts:37`) | `funders` collection seeded with those values (§2.7) | [ ] |
-| default wedding date 2027-06-12, 365-day window (`page.tsx:30-33`) | no wedding date state; time gone from `startedOn` (§5.2, §6.11) | [ ] |
+| default wedding date 2027-06-12, 365-day window (`page.tsx:30-33`) | no wedding date state; time gone from `startedOn` (§5.2, §6.11) | [x] |
 | Wedding Organizer import button (`vendors-table.tsx:57-82`) | dropped (§4 #5) | n/a |
 | file category suggestions (`files/page.tsx:61-78`) | the prototype's suggestion list (`app.js` `FILE_CATS`) | [ ] |
 | "Groom Big Family / Bride Big Family / Groom Business Connections" (`guests/page.tsx:644`) | Both sides card wording (§5.23) | [ ] |
@@ -991,6 +991,9 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 5 | 5.6 Items and guests states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, daab378; couldn't-load, failed-remove, partner-tick and dropped-connection specs; read-error and offline-save gaps raised | [x] |
 | 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, 37573d2; new specs for nothing yet, load, partner payment, didn't-save and reminder states; loading and offline-before-data fixme, raised (cache read) | [x] |
 | 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 5 | 5.F1 Review fixes: money, items and guests writes | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 5) | | [ ] |
+| 5 | 5.F2 Review fixes: documents, files and rules | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | | [ ] |
+| 5 | 5.F3 Review fixes: states, wording and the harness | Opus 5.5 Medium | $1.34 | Same; the harness must reach every §5.1 row before Task 8.2 | | [ ] |
 | 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | 054f9c7; checked in Chromium against `next start`. The installed-phone check waits for the first HTTPS deploy | [x] |
 | 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | 2026-10-19 · lane t2, fe4d8e8; N6 built; G33 is new; real-key delivery check still open (Task 6.2) | [x] |
 | 6 | 6.3 Delete for good | **Opus 5.5 High** | $1.82 | **Risk: permanent data loss.** A wrong id destroys the wrong file forever | 47806c1, 14ef42e; the real-Cloudinary test passed once the server key had the Master Admin role (a Media Library User key can't delete). R13's screen comes with 4.19 | [x] |
@@ -1350,8 +1353,8 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 #### Task 4.25: Wedding settings · Sonnet 5.5 High
 - **Guide:** §5.3. **Prototype:** `settings.html`. Names and date saving as you go (no whole-document overwrite, §5 #26), who can open the planner from `members`, sign out, the notification block (wired in 6.2), install steps and installed state, doors to Who pays and Vendor categories. The accounts list also carries the N3 note and **Swap them** (`SWAP_NOTE`, `SWAP_LINK` and `swapToast` in `src/lib/model/who.ts`; the write and its undo are `swapNames` in `src/lib/data/who.ts`, which takes `useWho().settings`, the account's email and `useMembers()`); the toast is `toast.undoable(swapToast(name), undo)`.
 
-#### Tasks 4.F1–4.F5: Review fixes · Opus 5.5 Medium
-- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5"). Read each item in its review file; that's the whole brief, plus the files it names.
+#### Tasks 4.F1–4.F5 and 5.F1–5.F3: Review fixes · Opus 5.5 Medium
+- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F). Read each item in its review file; that's the whole brief, plus the files it names.
 - **Do:** fix each item, with a test that fails before the fix (an emulator test for any write, a model test for any rule). Where the item offers two fixes, take the one that changes less. A fix that needs a design decision becomes a gap (§9.1, `needs.md`) instead.
 - **Done when:** every listed item is fixed or turned into a gap, named by ID in the commit body. Both lanes finish their 4.F tasks before Phase 5 starts; the Phase 5 review re-checks them.
 
