@@ -1,11 +1,32 @@
 import { expect, test } from "@playwright/test";
+import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR } from "../emulator-config";
 import {
   columnIndex,
   editCell,
   expectStored,
   signInAndGoto,
+  storedDocs,
   uniqueName,
 } from "../helpers";
+
+// The emulators are emptied once per run, and later specs (Bookings, Budget)
+// count every vendor, so the booking this test adds is removed at the end,
+// even when the test fails partway.
+let vendorsBefore = new Set<unknown>();
+
+test.beforeAll(async () => {
+  vendorsBefore = new Set((await storedDocs("vendors")).map((d) => d.id));
+});
+
+test.afterAll(async () => {
+  for (const { id } of await storedDocs("vendors")) {
+    if (vendorsBefore.has(id)) continue;
+    await fetch(
+      `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents/vendors/${id}`,
+      { method: "DELETE", headers: { Authorization: "Bearer owner" } },
+    );
+  }
+});
 
 test("split a confirmed booking into sub-entries and change a payment", async ({
   page,
