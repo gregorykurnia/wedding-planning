@@ -65,7 +65,25 @@ for a in "$@"; do
     echo "✋ Always start a brand-new session." >&2; exit 1;;
   esac
 done
+# tmux: the studio runs on its own tmux server (-L studio), never one shared with codebase sessions,
+# whose panes could otherwise be read or typed into from here.
+# Outside tmux, relaunch inside a new session on that server (skip with STUDIO_NO_TMUX=1).
+if [ -z "${TMUX:-}${STUDIO_NO_TMUX:-}" ] && [ -t 0 ] && [ -t 1 ] && command -v tmux >/dev/null; then
+  name=claude; n=1
+  while tmux -L studio has-session -t "=$name" 2>/dev/null; do n=$((n+1)); name="claude-$n"; done
+  exec tmux -L studio new-session -s "$name" -c "$PWD" -- "$PWD/start" "$@"
+fi
+if [ -n "${TMUX:-}" ] && [ "$(basename "${TMUX%%,*}")" != studio ]; then
+  echo "✋ This tmux server is shared with other sessions. From a new terminal window outside tmux, run:" >&2
+  echo "   cd \"$PWD\" && ./start     (it opens the studio's own tmux server)" >&2
+  exit 1
+fi
+unset TMUX TMUX_PANE
+# A terminal opened in the codebase's editor window carries its editor hooks; drop them.
+unset CLAUDE_CODE_SSE_PORT $(compgen -v VSCODE_)
 export ENABLE_CLAUDEAI_MCP_SERVERS=false CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 CLAUDE_CODE_DISABLE_ARTIFACT=1
+# No editor link: an IDE connection can push the open file or selection (possibly the codebase) into the session.
+export CLAUDE_CODE_AUTO_CONNECT_IDE=false CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1
 # Your arguments go first: --mcp-config takes several values and would swallow anything after it.
 exec claude "$@" --strict-mcp-config --mcp-config '{"mcpServers":{}}'
 START
@@ -172,6 +190,8 @@ case "${1:-}" in
 
 Open a NEW terminal window and run:
   cd "$STUDIO" && ./start
+With tmux installed, ./start opens its own session on the studio's tmux server (it refuses a shared one):
+  (detach: Ctrl-b d · list: tmux -L studio ls · come back: tmux -L studio attach -t claude)
 
 (Always ./start: a brand-new session with no connectors. To take screenshots,
  type  ! ./shoot  inside that session.)

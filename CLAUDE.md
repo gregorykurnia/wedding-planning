@@ -8,6 +8,7 @@ After making any change in this repo, commit and push it without waiting for exp
 - The plan is `redesign/redesign-plan.md` (from `~/.claude/playbooks/blank-slate-redesign.md`). Design happens in `../wedding-planning-studio`, a separate repo that never sees this codebase. Studio sessions start only with `./start` there.
 - Never read from the studio folder, and never send anything from this codebase into it, except `redesign/handoff/` through `redesign/studio.sh enter`.
 - Before every `enter`, run the banned-word scan on every file in `redesign/handoff/`.
+- On tmux, the studio runs on its own server (`tmux -L studio`). Never capture, read or send keys to its panes.
 - Don't save memories that describe the current UI.
 - At the start of each redesign session, check the model against the plan's "Picks per step" (or §7.0 in the implementation plan during the rebuild), using the table in `~/.claude/CLAUDE.md`. If the current model is lower, say so and suggest switching.
 - When the owner says **"Import the approved design"**: run `redesign/studio.sh import`, confirm `redesign/design/` arrived, tick the step it belongs to (5b, or the matching rows in `needs.md` and §9.1), and offer the next step.
