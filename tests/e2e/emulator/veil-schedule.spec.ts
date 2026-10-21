@@ -1,6 +1,8 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
+
+test.afterEach(closeOtherContexts);
 
 // Task 4.20: the Schedule at /new/schedule and its event sheet, against the
 // emulators (guide §5.19, §6.12). Everything is written as the emulator's owner

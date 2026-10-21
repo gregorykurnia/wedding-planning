@@ -1,6 +1,8 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
+
+test.afterEach(closeOtherContexts);
 
 // Task 4.24: Guests at /new/guests against the emulators (guide §5.23, §6.1, §6.2, G1–G8). Everything is
 // written as the emulator's owner (which skips the rules), so the numbers and counts read the same whenever

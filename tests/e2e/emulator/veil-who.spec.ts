@@ -1,6 +1,8 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
+
+test.afterEach(closeOtherContexts);
 
 // N3: who's who. The first sign-in of an account that holds neither name asks
 // "Which of you is this?" (or for the two names), once; the other account then

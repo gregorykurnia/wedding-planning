@@ -1,7 +1,9 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR } from "../emulator-config";
+
+test.afterEach(closeOtherContexts);
 
 // Task 2.7: two browsers, one account each, see each other's changes.
 

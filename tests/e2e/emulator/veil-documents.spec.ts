@@ -1,7 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { restorePairing } from "../seed";
+
+test.afterEach(closeOtherContexts);
 
 // Task 4.16: the Documents list at /new/documents, against the emulators (guide §5.16, R6).
 // Documents are written as the emulator's owner (which skips the rules); the screen reads them live.

@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT, storedDocs } from "../helpers";
+import { COMPILE_TIMEOUT, storedDocs, closeOtherContexts } from "../helpers";
+
+test.afterEach(closeOtherContexts);
 
 // Task 4.25: Wedding settings against the emulators. The names and the date
 // save as you go, the two accounts are listed with Swap them and Undo, Sign out

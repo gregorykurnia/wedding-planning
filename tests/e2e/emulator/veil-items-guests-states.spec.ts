@@ -1,8 +1,10 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadFixture } from "../../fixtures/load";
 import { TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { seed } from "../seed";
+
+test.afterEach(closeOtherContexts);
 
 // Task 5.6: the Wedding items' and Guests' states that a dev fault (Task 5.1, `?fault=`), a remove that
 // doesn't finish, the partner's tick or a dropped connection brings about (guide §5.22, §5.23, N12, N14).

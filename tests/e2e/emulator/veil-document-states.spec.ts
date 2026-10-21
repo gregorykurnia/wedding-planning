@@ -1,8 +1,10 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadFixture } from "../../fixtures/load";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { accountUids, seed } from "../seed";
+
+test.afterEach(closeOtherContexts);
 
 // Task 5.4: the states of Documents, a document and Files that a dev fault (Task 5.1, `?fault=`), the
 // partner or a slow connection brings about, on the "normal" fixture set (guide §5.16 to §5.18). The

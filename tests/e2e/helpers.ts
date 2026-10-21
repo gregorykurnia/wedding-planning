@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import {
   EMULATOR_PROJECT_ID,
   FIRESTORE_EMULATOR,
@@ -7,6 +7,16 @@ import {
 
 /** First visits compile pages in dev mode, which can be slow. */
 export const COMPILE_TIMEOUT = 100_000;
+
+/**
+ * For `test.afterEach`: closes the browser contexts a test opened itself (the partner's page, a page at
+ * another size). Playwright closes only its own `context`, so one left open stays signed in for the rest
+ * of the run and gets every write; a full run left dozens, and the stress fixture's thousands of writes
+ * then flooded the Firestore emulator until every later test timed out (review item P5-S29).
+ */
+export async function closeOtherContexts({ browser, context }: { browser: Browser; context: BrowserContext }) {
+  await Promise.all(browser.contexts().filter((other) => other !== context).map((other) => other.close()));
+}
 
 let counter = 0;
 

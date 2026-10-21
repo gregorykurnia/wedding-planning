@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
+
+test.afterEach(closeOtherContexts);
 
 // Task 4.3: the budget against the emulators. Funders, bookings, a what-if item
 // and the wedding date are written as the emulator's owner (which skips the
