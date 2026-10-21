@@ -91,6 +91,7 @@ Shared parts, harness, overview, sign-in, settings:
 - **S26.** After a long offline spell the partner news can raise up to 50 toasts at once; merge them.
 - **S27.** Specs that count every vendor (`veil-bookings`, `veil-budget`) give a confusing total mismatch when an earlier spec leaves a vendor behind, as `confirmed.spec.ts` did (fixed in `fe278df`). Check at their start that no other spec's vendors are left, and stop with a message naming them.
 - **S28.** Recheck whether Phase 4's 18 full-run failures that passed alone (put down to timeouts in `phase-4-review.md`) were the same leftover booking, and correct that review if so.
+- **S29.** A test leaves a live-update connection unread: from about five minutes into the 2026-10-20 full run, the Firestore emulator logged 7.3 million "too many pending messagings" warnings (3.7 GB in `firestore-debug.log`) and grew in memory. Find the spec and close its listener. `scripts/test-e2e.mjs` now stops a run once the log passes 200 MB, and the last tests it lists point at the cause.
 
 Small, dropped: `readAmount("-0")` is 0 while `amountProblem("-0")` says minus (the field refuses it; nothing is lost).
 

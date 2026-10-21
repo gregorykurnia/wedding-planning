@@ -4,8 +4,9 @@
 // at once overload the machine, so tests time out at random. The lock is a
 // folder in the shared .git folder; a run waits while another copy holds it.
 // A lock left by a run that died is taken over. E2E_LOCK=0 skips the lock.
+// It also stops a run whose emulator log floods (see LOG below).
 import { spawn, execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, statSync, truncateSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const WAIT_MS = 5000;
@@ -101,6 +102,32 @@ function serversFor(list) {
 
 const servers = process.env.E2E_SERVERS ?? serversFor(args);
 if (servers !== "all") console.log(`e2e: starting only the ${servers} servers for these specs.`);
+
+// The Firestore emulator writes its log here and keeps it until the next run.
+// Once a test leaves a live-update connection unread, it logs three warnings
+// for every later write: one full run (2026-10-20) wrote 3.7 GB that way, at
+// about 150 MB a minute. So each run starts the log empty, and a run whose log
+// passes the limit is stopped. Truncating rather than deleting keeps the
+// growth visible if a reused emulator still has the file open; disk blocks
+// are counted, not the length, because its next write leaves a sparse file.
+const LOG = "firestore-debug.log";
+const LOG_LIMIT_MB = Number(process.env.E2E_LOG_LIMIT_MB ?? 200);
+const watchLog = servers !== "demo";
+if (watchLog) {
+  try {
+    truncateSync(LOG);
+  } catch {}
+}
+
+function logBytes() {
+  try {
+    const stat = statSync(LOG);
+    return stat.blocks ? stat.blocks * 512 : stat.size;
+  } catch {
+    return 0;
+  }
+}
+
 const child = spawn("npx", ["playwright", "test", ...args], {
   stdio: "inherit",
   env: { ...process.env, E2E_SERVERS: servers },
@@ -108,7 +135,23 @@ const child = spawn("npx", ["playwright", "test", ...args], {
 for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
   process.on(signal, () => child.kill(signal));
 }
+
+let flooded = false;
+const watcher = watchLog
+  ? setInterval(() => {
+      if (flooded || logBytes() < LOG_LIMIT_MB * 1024 * 1024) return;
+      flooded = true;
+      console.error(
+        `\ne2e: ${LOG} passed ${LOG_LIMIT_MB} MB: a test left a live-update connection unread and the emulator is ` +
+          `flooding its log. Stopping the run. The flood began a minute or two ago, so the cause is among the ` +
+          `last tests listed above (look for "too many pending" in ${LOG}).`,
+      );
+      child.kill("SIGINT");
+    }, 10_000)
+  : null;
+
 child.on("exit", (code, signal) => {
+  if (watcher) clearInterval(watcher);
   release();
-  process.exit(code ?? (signal ? 1 : 0));
+  process.exit(flooded ? 1 : (code ?? (signal ? 1 : 0)));
 });
