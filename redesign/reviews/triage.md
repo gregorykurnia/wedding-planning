@@ -28,10 +28,10 @@ These lose, corrupt or duplicate data, or show a failed write as saved. Phase 5 
 | P4-S11 second half ("No packages yet" on a shortlist card) | 5.3 Vendors group states | Empty state |
 | P4-S16 (Remove table's dead Undo, move-sheet sentence, search refocus, accent-folded extract, double `document.added`) | 5.4 Documents and files states | Small state and wording items on those screens |
 | P3-S8 (focus lost after Show everything / Show more), P3-S12 (item menu Move skips refocus and announcement), P4-S19 (focus after finishing a task or removing a step) | 8.4 Accessibility check | Focus order and return is that task's checklist |
-| P4-S1 (spacing), P4-S24 (Files at 390px: decide and record in the guide; formula error clipped), P3-S10 (local copies of `Btn` and `TextLink`) | 8.3 Fix passes from the screenshots | Visual diffs against the prototype |
-| P1-S11, P1-S12 second half, P1-S13 (old UI drifting from migrated data: `startedOn` erased, unnumbered guests, venue prices in `budgetEstimate`) | 7.1 Switch-over | Re-check production and re-run the affected migrations just before switching (needs P1-S14 from 4.F3) |
-| P1-S15 (package files possibly filed twice) | 7.1 Switch-over | A read-only check of production `weddingFiles` before switching |
-| P3-S13 (no test that the gallery is off; `NEXT_PUBLIC_VEIL_GALLERY` in Vercel production) | 7.1 Switch-over | Add the test and check Vercel's production variables before switching |
+| P4-S1 (spacing), P4-S24 (Files at 390px: decide and record in the guide; formula error clipped), P3-S10 (local copies of `Btn` and `TextLink`) | 8.3a/8.3b Fix passes from the screenshots | Visual diffs against the prototype |
+| P1-S11, P1-S12 second half, P1-S13 (old UI drifting from migrated data: `startedOn` erased, unnumbered guests, venue prices in `budgetEstimate`) | 7.1 Switch-over (scripts, dry runs), then `redesign/before-merge.md` | Re-check production and re-run the affected migrations before the merge (needs P1-S14 from 4.F3) |
+| P1-S15 (package files possibly filed twice) | 7.1 Switch-over (the script), then `redesign/before-merge.md` | A read-only check of production `weddingFiles` before the merge |
+| P3-S13 (no test that the gallery is off; `NEXT_PUBLIC_VEIL_GALLERY` in Vercel production) | 7.1 Switch-over (the test), then `redesign/before-merge.md` | Add the test; the owner checks Vercel's production variables before the merge |
 
 ### Dropped
 
@@ -48,7 +48,7 @@ All of Phase 4's routed items were re-checked: 4.F1–4.F5 fixed them, except P1
 | Task | Lane | Items |
 |---|---|---|
 | 5.F1 Money, items and guests writes | t1 | P5-S1 (a late try overwrites the corrected amount), P5-S2 (funder confirm undercounts while what-if loads), P5-S4 (split of an overpaid booking), P5-S18 (add below during a pending move ties positions), P5-S19 (item text edited twice loses typing), P5-S20 (retried guest add drops a partner's edit), P5-S21 (ordering above 490 items, old UI's version bump, a screen test for quick moves) |
-| 5.F2 Documents, files and rules | t2 | P5-S6 (folder delete says nothing was deleted), P5-S8 (`canonical()` skips `.check()`, screen crashes), P5-S9 (move undo into a deleted folder has no words), P5-S10 (folder and upload into a just-deleted folder), P5-S11 (Add a booking's folder after giving up), P5-S13 and P5-S14 (`pushSubscriptions` and `presence` rules; deploy with the owner) |
+| 5.F2 Documents, files and rules | t2 | P5-S6 (folder delete says nothing was deleted), P5-S8 (`canonical()` skips `.check()`, screen crashes), P5-S9 (move undo into a deleted folder has no words), P5-S10 (folder and upload into a just-deleted folder), P5-S11 (Add a booking's folder after giving up), P5-S13 and P5-S14 (`pushSubscriptions` and `presence` rules; the deploy is the owner's, in `redesign/before-merge.md`) |
 | 5.F3 States, wording and the harness | t1 | P5-S3 (split undo-conflict sentence), P5-S7 (offline hold on screens with several sources), P5-S12 (whole-screen nouns), P5-S15 (categories cap test), P5-S16 (offline save line), P5-S17 (Everything done opens finished tasks), P5-S22 (fault switch as a build constant), P5-S23 (cold-offline and held-loading faults, seed project id), P5-S24 (wiring tests for P3-S6, P3-S5, P2-S1; `google-failed` spec), P5-S26 (merge a burst of partner toasts), P5-S27 (vendor-counting specs check for another spec's leftover vendors first), P5-S28 (recheck whether Phase 4's 18 "timeout" failures were the same leftover booking), P5-S29 (find the test that leaves a live-update connection unread; the emulator flooded its log), P5-S25 (raise it as a gap: §9.1 and `needs.md`) |
 
 ### Folded into later tasks
@@ -56,8 +56,8 @@ All of Phase 4's routed items were re-checked: 4.F1–4.F5 fixed them, except P1
 | Item | Task | Why there |
 |---|---|---|
 | P5-S5 (states the prototype has that §5.1 doesn't list) | 8.2 Screenshot comparison | Add the rows first, so the screenshots cover them |
-| P5-S8 second half (the content check refuses some documents that used to open) | 7.1 Switch-over | A read-only pass over production `notes` (`nodeFromJSON(normaliseDoc(c)).check()`) before switching |
-| P5-S22 second half (`NEXT_PUBLIC_VEIL_DEV` must not be set in Vercel production) | 7.1 Switch-over | Checked with the production variables, beside P3-S13 |
+| P5-S8 second half (the content check refuses some documents that used to open) | 7.1 Switch-over (the script), then `redesign/before-merge.md` | A read-only pass over production `notes` (`nodeFromJSON(normaliseDoc(c)).check()`) before the merge |
+| P5-S22 second half (`NEXT_PUBLIC_VEIL_DEV` must not be set in Vercel production) | `redesign/before-merge.md` | Checked with the production variables, beside P3-S13 |
 
 ### Dropped
 

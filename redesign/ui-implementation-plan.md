@@ -680,7 +680,7 @@ Total: 274 screen states, 548 checkboxes.
 
 ### 5.2 Job stories → screen, component, code
 
-Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `src/lib/model/` and `src/lib/data/`. Tick a story when its behaviour test passes (Task 8.1).
+Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `src/lib/model/` and `src/lib/data/`. Tick a story when its behaviour test passes (Tasks 8.1a and 8.1b).
 
 | Story | Screen | Components | Code | Tasks | Done |
 |---|---|---|---|---|---|
@@ -909,7 +909,9 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 - **De-escalation.** When a row passes three similar tasks in a row (for example three Haiku 5.5 Max screen ports with no review findings), try the next cheaper row on the next similar task, and log it.
 - **End-of-phase review.** A fresh session reviews the phase's diff against this plan and the prototype before the phase counts as done: Opus 5.5 Medium, or Opus 5.5 High for Phase 1 (data separation and live migrations) and Phase 7 (switch-over).
   - **Every open item gets a home.** Before the review commits, it routes each open "should fix" item (its own and any still open from earlier reviews) to exactly one place in a new section of `redesign/reviews/triage.md`: a fix task `N.F1`, `N.F2`… (rows added to this table and to `redesign/terminal-split.md` before the next phase, Opus 5.5 Medium unless an item needs more), a named later task whose section then points to it, or dropped with a reason. Anything that loses, corrupts or duplicates data, or shows a failed write as saved, gets a fix task. (Phases 1–4 left 59 items only in their review files; by 2026-10-19 six had been fixed along the way, five partly, and one had got worse.)
+  - **Checks only the owner can do don't hold a review.** A real phone, an installed app over HTTPS, production keys or data, accepting screenshot pairs, the device checklist: the review lists them in its file under "Waiting for the owner", adds any not yet there to `redesign/before-merge.md`, and passes once everything else does. An unattended run (`autorun all`) then ends the review with `RUNNER: DONE`, not blocked.
   - **Running the full e2e suite in a review:** fix what the reviewers find first, then run the suite once, with the machine as free as it can be: the other lane idle, no fixer editing or running e2e in the same folder, heavy browser tabs closed. Right after it ends, copy `test-results/.last-run.json` to the scratchpad and rerun the failures with `--last-failed --last-failed-file <copy>`, because any other e2e run overwrites that file. (The Phase 4 review's suite took 1 h 40 min with a fixer editing and testing alongside it; most of its 36 failures were 100-second page-load timeouts while the Mac was swapping, and the fixer's run wiped the failure list.)
+- **Pick cells stay plain text** (`Opus 5.5 High`, never bold): `autorun` reads the pick from them and skips a row whose pick it can't read. Put the emphasis in the Why cell.
 - **If the global table changes** mid-rebuild, update this table to match before the next task.
 - **Parallel terminals.** `redesign/terminal-split.md` sets out which tasks run at the same time. From 2026-10-18 it's two terminals: more made this 8 GB Mac swap so hard that every task slowed down.
 - **Where progress is ticked.** The Done column of this table (with date, lane and commit) and the task's box in `redesign/terminal-split.md` (each lane's checklist), in the same commit. The task headings' Done boxes below are kept for the tasks done before 2026-10-18 and are no longer ticked; §5, §6 and §10 rows are ticked by the phase review, in one go, after it checks them.
@@ -992,7 +994,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 5 | 5.7 Overview, sign-in and settings states | Haiku 5.5 Max | $0.21 | Same | 2026-10-19 · lane t2, 37573d2; new specs for nothing yet, load, partner payment, didn't-save and reminder states; loading and offline-before-data fixme, raised (cache read) | [x] |
 | 5 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 5 | 5.F1 Review fixes: money, items and guests writes | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 5) | | [ ] |
-| 5 | 5.F2 Review fixes: documents, files and rules | Opus 5.5 Medium | $1.34 | Same; the rules change is deployed with the owner | | [ ] |
+| 5 | 5.F2 Review fixes: documents, files and rules | Opus 5.5 Medium | $1.34 | Same; deploying the rules is the owner's step afterwards (`redesign/before-merge.md`) | | [ ] |
 | 5 | 5.F3 Review fixes: states, wording and the harness | Opus 5.5 Medium | $1.34 | Same; the harness must reach every §5.1 row before Task 8.2 | | [ ] |
 | 6 | 6.1 Service worker | **Opus 5.5 High** | $1.82 | **Risk: breaks production.** A bad worker keeps serving a broken app to installed phones | 054f9c7; checked in Chromium against `next start`. The installed-phone check waits for the first HTTPS deploy | [x] |
 | 6 | 6.2 Push reminders | **Opus 5.5 High** | $1.82 | **Risk: production secrets and server routes.** Missed or repeated reminders, a leaked key. Smaller since the daily-only decision (§9.2 Q8) | 2026-10-19 · lane t2, fe4d8e8; N6 built; G33 is new; real-key delivery check still open (Task 6.2) | [x] |
@@ -1002,20 +1004,22 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | built inside Task 4.11 (a8f26ea) on Sonnet 5.5, since the export needed them; `VENDOR_COLUMNS` and 9 model tests | [x] |
 | 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
 | 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| 7 | 7.1 Switch-over commit | **Opus 5.5 High** | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
-| 7 | 7.2 Rollback rehearsal on a preview | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
+| 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
+| 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
 | 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
-| 7 | Review | **Opus 5.5 High** | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
-| 8 | 8.1 Behaviour tests on the new UI (L) | Sonnet 5.5 High | $1.76 | One test per story group, against the emulator | | [ ] |
+| 7 | Review | Opus 5.5 High | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
+| 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | | [ ] |
+| 8 | 8.1b Behaviour tests: tasks, schedule, files and documents, partner (T, S, R, A) | Sonnet 5.5 High | $0.88 | Same, with the two-context A2 tests | | [ ] |
 | 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | | [ ] |
-| 8 | 8.3 Fix passes from the screenshots (1–2 sessions) | Haiku 5.5 Max | $0.42 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | | [ ] |
+| 8 | 8.3a Screenshot fixes: budget, vendors, documents and files | Haiku 5.5 Max | $0.21 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | | [ ] |
+| 8 | 8.3b Screenshot fixes: schedule, items, guests, shell, overview, sign-in and settings | Haiku 5.5 Max | $0.21 | Same; ticked as covered when 8.3a did every group | | [ ] |
 | 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | | [ ] |
 | 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | | [ ] |
 | 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | | [ ] |
 | 8 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
-| 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | [ ] |
-| 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | [ ] |
-| 9 | Review (only if needed) | Opus 5.5 Medium | $1.34 | Skipped when 9.1 raises no new needs and 9.2's build, tests and no-exclusions old-names check pass (owner, 2026-10-19) | | [ ] |
+| 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | waits for launch |
+| 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | waits for launch |
+| 9 | Review (only if needed) | Opus 5.5 Medium | $1.34 | Skipped when 9.1 raises no new needs and 9.2's build, tests and no-exclusions old-names check pass (owner, 2026-10-19) | | waits for launch |
 | any | Calibration trial, second build of 4.9 | Haiku 5.5 Max | $0.21 | See the rules above | 2026-10-17 · `f4d8de8` on `trial/4.9-haiku` (not merged, by design). **Result (2026-10-18): Haiku wasn't as good, so Sonnet 5.5 High stays for the ★ tasks (4.5, 4.8, 4.13, 4.16, 4.21).** At 1440px and 390px against `funders.html`: Sonnet's build matches the normal, adding, demonstration and remove states and the phone line wraps; Haiku's rows run about 4px off the prototype's heights with different phone wraps, and its add row isn't the prototype's (input, then Add funder and Cancel beneath): it bent the shared `InlineRename` into an add row, so the links and the demonstration line sit beside the input in the serif font. Its add also makes a new funder id on each try, so Try again after a timeout can add two (the guide asks for one id per row), and it has no line for a failed add (G19). Its rename and remove states and its 12 model tests are fine. Real costs weren't both known, so the decision is on quality. 4.3 was already built on Haiku before this result: the Phase 4 review checks it for the same kind of drift | [x] |
 | any | Design-gap loop, one round (studio session; scan; import) | Sonnet 5.5 High · Haiku 5.5 High | $1.04 | Redesign plan picks; Opus 5.5 High only if a need adds a new screen or a new pattern | | [ ] |
 
@@ -1030,7 +1034,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
    - **Once, before delivering:** `npm test`, `node scripts/check-veil-styles.mjs`, `node scripts/check-old-names.mjs`, `npm run build`, and `npm run test:emulator` only if the task changed `src/lib/data/`, `src/lib/collections/`, `firestore.rules` or `src/lib/server/`.
    - **After merging `redesign` into the lane:** if only bookkeeping files conflicted (or nothing did), `npx tsc --noEmit` and `npm test` are enough. If code conflicted, rerun this task's own e2e specs as well.
    - Don't rerun a check that passed when nothing it covers has changed since. The whole e2e suite (`npm run test:e2e` with no arguments) runs at the phase review, not per task.
-6. Tick the task's **Done** box in the §7.0 table (date, lane and commit). Tick its box in `redesign/terminal-split.md` in the same commit. Nowhere else: not the heading below, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign`. When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
+6. Tick the task's **Done** box in the §7.0 table (date, lane and commit). Tick its box in `redesign/terminal-split.md` in the same commit. Nowhere else: not the heading below, not §5, §6 or §10. Add the `CHANGELOG.md` entry (one to three lines; details go in the commit body), commit, and deliver to `redesign` (in a lane, as `CLAUDE.md` says; in one folder on `redesign`, as `autorun` runs, push; write "main folder" for the lane). When a phase's review passes, the review ticks the phase's rows in §5, §6 and §10 after checking them, its Done row in §7.0, and the phase in `redesign/redesign-plan.md`'s checklist.
 
 ### Phase 1: Separate data from rendering, with no visual change
 
@@ -1357,6 +1361,7 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 - **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F). Read each item in its review file; that's the whole brief, plus the files it names.
 - **Do:** fix each item, with a test that fails before the fix (an emulator test for any write, a model test for any rule). Where the item offers two fixes, take the one that changes less. A fix that needs a design decision becomes a gap (§9.1, `needs.md`) instead.
 - **Done when:** every listed item is fixed or turned into a gap, named by ID in the commit body. Both lanes finish their 4.F tasks before Phase 5 starts; the Phase 5 review re-checks them.
+- **Production is not part of these tasks.** A fix to `firestore.rules` is done when the rules and their rules tests are committed; deploying them (`npx firebase deploy --only firestore:rules`) is the owner's step, added to `redesign/before-merge.md`. The task then ends done, not blocked.
 
 ### Phase 5: Every state on every screen
 
@@ -1436,16 +1441,16 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 ### Phase 7: Switch-over with a way back
 
-**Done when:** on the `redesign` preview, the new UI is the default; the old UI answers at `/old/…`, frozen; the one-commit rollback (§9.3) was tested once on a preview; old rendering code the fallback doesn't need is deleted; the old-names check passes with only the fallback excluded; the review (Opus 5.5 High) passes. The switch reaches production only when the owner merges `redesign` into `main` after Phase 8, and the two-week launch window starts then.
+**Done when:** on a local production build of `redesign` (`npm run build && npm start`; Vercel doesn't build `redesign`), the new UI is the default; the old UI answers at `/old/…`, frozen; the one-commit rollback (§9.3) was tested once locally; old rendering code the fallback doesn't need is deleted; the old-names check passes with only the fallback excluded; the review (Opus 5.5 High) passes. The switch reaches production only when the owner merges `redesign` into `main` after Phase 8, and the two-week launch window starts then.
 
 #### Task 7.1: Switch-over commit · Opus 5.5 High
 - **Risk:** breaks production for both of you at once.
 - **Do, in one commit titled "Switch to the new UI":** move `src/app/(veil)/new/*` to `src/app/(veil)/*`; move `src/app/(legacy)/*` (except the root layout) into `src/app/(legacy)/old/*`; set `LEGACY_BASE = '/old'`; replace every `/new` prefix in the new UI's links (they all go through one `veilHref()` helper from Task 2.4, so this is one constant); add permanent redirects in `next.config.ts` for old addresses with no new page (`/login` → `/sign-in`, `/confirmed` → `/budget/bookings`, `/master-list` → `/items`, `/todo` → `/schedule/tasks`, `/notes` → `/documents`, `/checklist` → `/schedule/tasks`); `/new/:path*` redirects to `/:path*`; bump the service-worker cache version.
-- **Before switching:** review items P1-S11, P1-S12, P1-S13, P1-S15 and P3-S13 (`redesign/reviews/triage.md`): re-check production for the old UI's drift and re-run the affected migrations (with 4.F3's `--force` guard), check `weddingFiles` for doubled package files (read only), add the gallery-off test and check Vercel's production variables.
-- **Done when:** the preview passes every e2e test at the new paths, and the old UI works at `/old`.
+- **Also, the safe half of review items** P1-S11, P1-S12, P1-S13, P1-S15, P3-S13, P5-S8 and P5-S22 (`redesign/reviews/triage.md`): add the gallery-off model test; write the read-only production checks (doubled package files in `weddingFiles`, `notes` that fail `nodeFromJSON(normaliseDoc(c)).check()`) and any sync step P1-S13 needs as scripts that default to a dry run, and run them against the emulator. Running them on production, re-running the affected migrations (with 4.F3's `--force` guard) and checking Vercel's production variables (`NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` unset) are the owner's steps in `redesign/before-merge.md`: the switch reaches production only with the merge, so that is when they count. This task touches nothing in production.
+- **Done when:** a local production build passes every e2e test at the new paths, and the old UI works at `/old`.
 
 #### Task 7.2: Rollback rehearsal · Sonnet 5.5 High
-- **Do:** on a throwaway branch from the switched commit, `git revert` the switch commit, push, open the preview: the old UI is at `/`, the new at `/new`, installed apps load the old UI on next open. Record the steps, time taken and the switch commit's hash in §9.3. Delete the throwaway branch.
+- **Do:** on a throwaway local branch from the switched commit (never pushed: a pushed branch makes a Vercel preview and uses the day's deployments), `git revert` the switch commit and check a local production build: the old UI is at `/`, the new at `/new`. For installed apps, in Chromium against `next start`: open the switched build so its service worker installs, then serve the reverted build on the same port and reopen: the old UI loads. Record the steps, time taken and the switch commit's hash in §9.3. Delete the throwaway branch and end on `redesign` with a clean tree.
 
 #### Task 7.3: Delete old rendering code the fallback doesn't need · Sonnet 5.5 High
 - **Do:** delete `(legacy)/old/budget`, `(legacy)/old/checklist`, the Wedding Organizer import, `components/ui/calendar.tsx`, `lib/collections/{budget-items,checklist-items}.ts` (data stays in Firestore), the template SVGs in `public/`. Run the old-names check with `--exclude 'src/app/(legacy)/**' --exclude 'src/components/**'`.
@@ -1454,14 +1459,16 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 **Done when:** behaviour tests cover every story and pass, screenshots match the prototype for every §5.1 row (including stress data), the accessibility check passes, the owner has run the real-device checklist, and the review passes. Then the owner decides when to merge (Task 7.1's commit lands on `main` with the merge).
 
-#### Task 8.1: Behaviour tests on the new UI (L) · Sonnet 5.5 High
-- Rewrite the Task 1.2 smoke tests and add one Playwright spec per story group (O, F, B, G, T, S, R, A) using roles and labels from the guide §8, never old selectors. Two-context tests for A2.
+#### Tasks 8.1a and 8.1b: Behaviour tests on the new UI · Sonnet 5.5 High
+- Rewrite the Task 1.2 smoke tests and add one Playwright spec per story group, using roles and labels from the guide §8, never old selectors: 8.1a does O, F, B and G (and rewrites the smoke tests), 8.1b does T, S, R and A, with two-context tests for A2. Each session runs only its own specs.
 
 #### Task 8.2: Screenshot comparison · Sonnet 5.5 High
 - Playwright serves `redesign/design/prototype/` statically and the build with the matching emulator fixture, captures each §5.1 row at 390px and 1440px (light), with fonts loaded and motion reduced, and writes side-by-side images plus a pixel-difference score to `tests/screenshots/report/`. The prototype's fixed "today" (14 October 2026, 11:30) is set in the browser clock for both.
+- The script takes `--only <group or row>` and keeps the prototype's shots between runs, so a fix session reruns only the build's shots for its own rows. Run it once over everything and list the differences by group in the report; don't fix anything in this task.
 
-#### Task 8.3: Fix passes from the screenshots · Haiku 5.5 Max (two sessions at most: budget, vendors, documents and files; schedule, items, guests, shell, overview, sign-in and settings)
-- When 8.2's report shows few differences, one session covers every group. Each session fixes the differences in its group, using only tokens and the prototype's CSS. Differences that come from real data rather than the design are noted, not "fixed".
+#### Tasks 8.3a and 8.3b: Fix passes from the screenshots · Haiku 5.5 Max
+- 8.3a: budget, vendors, documents and files. 8.3b: schedule, items, guests, shell, overview, sign-in and settings. When 8.2's report shows few differences, 8.3a covers every group and 8.3b is ticked as covered.
+- Each session fixes the differences in its groups, using only tokens and the prototype's CSS, and reruns only its own rows (`--only`), then all its rows once at the end; no more than about 30 minutes waiting on the script. Differences that come from real data rather than the design are noted, not "fixed".
 - **Also:** review items P4-S1, P4-S24, P3-S10 (`redesign/reviews/triage.md`, "Folded into later tasks").
 
 #### Task 8.4: Accessibility check · Sonnet 5.5 High
@@ -1473,10 +1480,13 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 8.6: Merge preparation and `CLAUDE.md` · Haiku 5.5 Max
 - Update `CLAUDE.md` to describe the new UI's structure (folders, naming, tokens, the data layers) and the launch window, ready to land with the merge.
+- Bring `redesign/before-merge.md` up to date (every owner step left by earlier tasks and reviews, in the order to do them) so the owner can work through it with a Claude session before merging.
 
 ### Phase 9: After launch (on `main`)
 
 **Review:** run only when 9.1 raised a new need or a 9.2 check (build, tests, old-names check with no exclusions) failed; otherwise tick it as skipped with the date (owner's decision, 2026-10-19).
+
+**Starts only after the launch.** Its rows in §7.0 say "waits for launch" in the Done column, so `autorun` skips them and an overnight run ends after the Phase 8 review instead of deleting the fallback before the merge. After the merge, the owner changes them to `[ ]`.
 
 #### Task 9.1: After-launch check · Sonnet 5.5 High
 - About a week after launch: Vercel runtime logs and errors, failed cron runs, Firestore usage, Cloudinary usage; ask the owner what anyone stumbled on. Anything new goes through the design-gap loop as a need.
@@ -1488,7 +1498,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 ## 8. Testing and QA
 
-- **Behaviour, not markup.** Tests are a checklist of behaviours. The Task 1.2 smoke tests guard Phase 1; Task 8.1 rewrites them for the new UI with roles and labels from the guide §8, and adds one spec per story group. No test ever keeps an old selector, and no design is bent to fit an old test.
+- **Behaviour, not markup.** Tests are a checklist of behaviours. The Task 1.2 smoke tests guard Phase 1; Task 8.1a rewrites them for the new UI with roles and labels from the guide §8, and 8.1a and 8.1b add one spec per story group. No test ever keeps an old selector, and no design is bent to fit an old test.
 - **Unit tests** (`npm test`, Vitest) for every model function (Tasks 1.4–1.7), the write layer against the emulator (1.8, 1.10), and the Firestore rules (1.9).
 - **End-to-end** (`npm run test:e2e`, Playwright) against the Firebase emulator with the `normal`, `empty` and `stress` fixtures, plus one demo-mode project with no Firebase env. Two browser contexts for partner changes.
 - **Screenshots:** every screen × state × device in §5.1, light only, prototype vs build at 390px and 1440px, with the clock fixed to the prototype's "today" (Task 8.2). Stress fixtures included. A row is ticked when the owner accepts the pair.
