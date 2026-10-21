@@ -89,6 +89,8 @@ Shared parts, harness, overview, sign-in, settings:
 - **S24.** 4.F5's P3-S6, P3-S5 and P2-S1 are tested only in the model; removing the wiring keeps every test green. The `google-failed` sign-in state has no spec.
 - **S25.** Settings "A change didn't save" says "Couldn't save this change…", the settings row of the guide and `settings.html` say "Couldn't save. What you typed is kept.", and the guide contradicts itself elsewhere. A design question.
 - **S26.** After a long offline spell the partner news can raise up to 50 toasts at once; merge them.
+- **S27.** Specs that count every vendor (`veil-bookings`, `veil-budget`) give a confusing total mismatch when an earlier spec leaves a vendor behind, as `confirmed.spec.ts` did (fixed in `fe278df`). Check at their start that no other spec's vendors are left, and stop with a message naming them.
+- **S28.** Recheck whether Phase 4's 18 full-run failures that passed alone (put down to timeouts in `phase-4-review.md`) were the same leftover booking, and correct that review if so.
 
 Small, dropped: `readAmount("-0")` is 0 while `amountProblem("-0")` says minus (the field refuses it; nothing is lost).
 
