@@ -9,6 +9,8 @@ import { writeEmulatorConfig } from "../tests/e2e/emulator-config.ts";
 const BREW_JAVA_BIN = "/opt/homebrew/opt/openjdk/bin";
 const env = { ...process.env };
 if (existsSync(BREW_JAVA_BIN)) env.PATH = `${BREW_JAVA_BIN}:${env.PATH}`;
+// Caps the emulator's Java heap, as playwright.config.ts does for e2e.
+env.JAVA_TOOL_OPTIONS = "-Xmx1g";
 
 const extra = process.argv.slice(2).join(" ");
 const result = spawnSync(

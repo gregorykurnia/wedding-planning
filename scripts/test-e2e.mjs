@@ -3,13 +3,16 @@
 // starts two Next dev servers, the Firebase emulators and a browser, and four
 // at once overload the machine, so tests time out at random. The lock is a
 // folder in the shared .git folder; a run waits while another copy holds it.
-// A lock left by a run that died is taken over. E2E_LOCK=0 skips the lock.
+// A lock left by a run that died is taken over, and a run gives up after
+// E2E_LOCK_WAIT_MINUTES (60) rather than wait forever on a run that hangs or
+// was left behind by a session that ended. E2E_LOCK=0 skips the lock.
 // It also stops a run whose emulator log floods (see LOG below).
 import { spawn, execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, statSync, truncateSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const WAIT_MS = 5000;
+const WAIT_LIMIT_MS = Number(process.env.E2E_LOCK_WAIT_MINUTES ?? 60) * 60_000;
 const args = process.argv.slice(2);
 
 function lockDir() {
@@ -48,6 +51,7 @@ function alive(pid) {
 
 async function acquire(dir) {
   let told = false;
+  const started = Date.now();
   for (;;) {
     try {
       mkdirSync(dir);
@@ -71,6 +75,14 @@ async function acquire(dir) {
     if (!told && owner) {
       console.log(`e2e lock: waiting for ${owner.copy}'s e2e run (pid ${owner.pid}, since ${owner.since}).`);
       told = true;
+    }
+    if (owner && Date.now() - started > WAIT_LIMIT_MS) {
+      console.error(
+        `e2e lock: gave up after ${WAIT_LIMIT_MS / 60_000} minutes waiting for ${owner.copy}'s e2e run ` +
+          `(pid ${owner.pid}, since ${owner.since}). If nothing is meant to be running it (a session that ` +
+          `ended, a hung run), end it and what it started (/tidy, or kill ${owner.pid}), then run again.`,
+      );
+      process.exit(1);
     }
     await new Promise((resolve) => setTimeout(resolve, WAIT_MS));
   }

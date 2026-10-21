@@ -28,6 +28,19 @@ const emulatorPath = existsSync(BREW_JAVA_BIN)
   ? `${BREW_JAVA_BIN}:${process.env.PATH}`
   : process.env.PATH;
 
+// Never reuse a server already on a test port: on a shared machine it can be
+// another program (code-server answers on 8080, another project's app on 3100),
+// and Playwright takes any answer below 404 as this run's server, so every test
+// then fails against the wrong one. A taken port now stops the run at once;
+// give the copy its own ports with `.test-port-offset`. A leftover from an
+// earlier run of this copy is ended first (see /tidy).
+const REUSE = false;
+
+// The Firestore emulator's Java process can otherwise grow to a quarter of the
+// machine's memory; the test data needs far less, so a runaway fails fast
+// instead of making the machine swap. Also set in scripts/test-emulator.mjs.
+const EMULATOR_JAVA_OPTIONS = "-Xmx1g";
+
 // Placeholder web config for the emulator build. The real values in
 // .env.local are overridden here so the tests can never reach production.
 const emulatorAppEnv = {
@@ -88,24 +101,24 @@ export default defineConfig({
     ...(needsEmulator ? [{
       command: `npx firebase emulators:start --config ${emulatorConfigFile} --only auth,firestore --project ${EMULATOR_PROJECT_ID}`,
       url: `http://${FIRESTORE_EMULATOR}`,
-      env: { PATH: emulatorPath ?? "" },
+      env: { PATH: emulatorPath ?? "", JAVA_TOOL_OPTIONS: EMULATOR_JAVA_OPTIONS },
       // Without a graceful stop, the emulator's Java process outlives the run.
       gracefulShutdown: { signal: "SIGINT" as const, timeout: 15_000 },
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: REUSE,
       timeout: 120_000,
     },
     {
       command: `npx next dev --port ${EMULATOR_APP_PORT}`,
       url: `http://localhost:${EMULATOR_APP_PORT}/login`,
       env: emulatorAppEnv,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: REUSE,
       timeout: 120_000,
     }] : []),
     ...(needsDemo ? [{
       command: `npx next dev --port ${DEMO_APP_PORT}`,
       url: `http://localhost:${DEMO_APP_PORT}/login`,
       env: demoAppEnv,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: REUSE,
       timeout: 120_000,
     }] : []),
   ],

@@ -22,7 +22,7 @@ How the Step 7 rebuild (`redesign/ui-implementation-plan.md` §7) runs in more t
    | 2 | `../wedding-planning-lanes/t2` | `lane/t2` | 20 | `t2` |
 
    `t3` and `t4` are retired once their last tasks are delivered (see "Switching to two lanes"). To remove one afterwards: `git worktree remove ../wedding-planning-lanes/t3` and `git branch -d lane/t3`.
-2. **Different test ports per copy.** Each lane's git-ignored `.test-port-offset` moves every test port by that much (e2e servers 3100/3101, Auth 9099, Firestore 8080 and its websocket 9150, emulator hub 4400 and logging 4500). A dev server for looking at a screen: `npm run dev -- -p 3010` in t1, `3020` in t2.
+2. **Different test ports per copy.** Each lane's git-ignored `.test-port-offset` moves every test port by that much (e2e servers 3100/3101, Auth 9099, Firestore 8080 and its websocket 9150, emulator hub 4400 and logging 4500). A dev server for looking at a screen: `npm run dev -- -p 3010` in t1, `3020` in t2. On the Oracle server the folder uses 30: code-server holds 8080 and `deus-team-tasks` tests on 3100. A taken port stops a run at once (`reuseExistingServer` is off), so a clash shows up instead of tests running against another program.
 3. **e2e starts only what it needs.** `npm run test:e2e` (`scripts/test-e2e.mjs`) holds a lock in the shared `.git` folder so only one copy runs e2e at a time. Given spec paths all under `tests/e2e/demo/`, it starts only the demo dev server; all under `tests/e2e/emulator/`, only the emulators and their dev server. With no arguments it runs everything (phase reviews).
 
 ## Every lane, every task: the same commands

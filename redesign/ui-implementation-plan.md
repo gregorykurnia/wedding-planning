@@ -1464,6 +1464,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 8.2: Screenshot comparison · Sonnet 5.5 High
 - Playwright serves `redesign/design/prototype/` statically and the build with the matching emulator fixture, captures each §5.1 row at 390px and 1440px (light), with fonts loaded and motion reduced, and writes side-by-side images plus a pixel-difference score to `tests/screenshots/report/`. The prototype's fixed "today" (14 October 2026, 11:30) is set in the browser clock for both.
+- Everything it writes goes under `tests/screenshots/report/`, which is git-ignored: never commit or stash screenshots (hundreds of images per run would stay in git history for good).
 - The script takes `--only <group or row>` and keeps the prototype's shots between runs, so a fix session reruns only the build's shots for its own rows. Run it once over everything and list the differences by group in the report; don't fix anything in this task.
 
 #### Tasks 8.3a and 8.3b: Fix passes from the screenshots · Haiku 5.5 Max
