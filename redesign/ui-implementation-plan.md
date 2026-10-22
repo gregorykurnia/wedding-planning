@@ -4,6 +4,8 @@ Step 6 of `redesign/redesign-plan.md`, written by Agent C on 2026-10-14. This pl
 
 **Status:** draft, waiting for the owner's approval. No app code has changed. Step 7 (the rebuild) starts only after "Plan approved" is ticked in `redesign/redesign-plan.md`.
 
+**AI Build Log project:** Wedding Plan Redesign
+
 **How to use it during the rebuild:** one task per session. Read only that task's section in §7, the design-guide sections it names, and the prototype file it names. Don't open old UI files unless the task says so, and then only for the data calls they make.
 
 ---
