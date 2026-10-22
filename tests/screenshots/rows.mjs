@@ -612,7 +612,8 @@ const EXTRA2 = {
       protoRun: press("button", "Edit"),
       build: {
         run: async (page, h) => {
-          await page.getByText("Fireworks at the reception").first().click({ timeout: 10_000 });
+          // The item's Edit button, the control the prototype's press above clicks. Clicking the name opens nothing.
+          await page.getByRole("button", { name: "Edit", exact: true }).first().click({ timeout: 10_000 });
           await h.wait(500);
         },
       },

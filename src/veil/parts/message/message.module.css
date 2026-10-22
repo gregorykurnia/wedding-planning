@@ -9,8 +9,8 @@
   margin-top: var(--space-9);
 }
 
+/* Inline, as in the prototype: the line box under the mark adds the gap the design has above the title. */
 .mark {
-  display: block;
   width: 72px;
   height: 72px;
   margin: 0 auto 22px;

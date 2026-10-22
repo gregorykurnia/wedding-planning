@@ -501,15 +501,11 @@
     font-size: var(--text-amount);
   }
 
-  /* The size and date and the meta line move under the name, in its column. */
+  /* On a phone the size, date or count moves under the name; the meta line keeps its place at the right (files.html). */
   .frow .fside {
     grid-row: auto;
     grid-column: 2;
     text-align: left;
-  }
-
-  .frow .fmeta {
-    grid-column: 2;
   }
 
   .frow .ico {
