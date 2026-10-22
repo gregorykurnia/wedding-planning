@@ -4,7 +4,22 @@
 
 After making any change in this repo, commit and push it without waiting for explicit confirmation — this is standing authorization to do so. Each commit message has a short summary line followed by a body describing what changed and why. During the redesign, work goes to `redesign` (lane branches commit locally and are delivered to it; see below). `main` is production and moves only when the owner asks for a release.
 
-## UI redesign (blank-slate, in progress)
+## The new UI
+
+The new UI is the app's default from the merge. The old UI stays frozen at `/old/…` for a two-week launch window, then Phase 9 deletes it. The architecture is in `redesign/ui-implementation-plan.md` §2. The launch window and the one-commit way back are in §9.3.
+
+- **Routes.** `src/app/(veil)/` is the new UI. Its root layout loads fonts, tokens and providers. Each folder is a screen at its address (`budget/`, `vendors/`, `items/`, `guests/`, `schedule/`, `documents/`, `settings/`, `sign-in/`), and `[...address]/` catches the rest. `src/app/(legacy)/old/` is the frozen old UI; its links go through `LEGACY_BASE` in `src/lib/legacy-href.ts`. New-UI links go through `veilHref()` in `src/veil/href.ts`.
+- **Layers.** `src/lib/model/` is pure functions with unit tests: no React, no Firebase. `src/lib/data/` holds the hooks (`useBudget()`, `useBooking(id)`, …) and the writes (`write.ts`), and it's the only place screens get data from. `src/veil/` only renders: `screens/` (one folder per screen), `parts/` (one folder per design-guide §4 component), `shell/`, `editor/` (Tiptap), `icons/` and `styles/`. Code under `src/veil/` doesn't import Firebase or `src/lib/collections/`; the kept plumbing there (`src/lib/collections/`, `src/lib/firebase.ts`, `src/lib/auth-context.tsx`) is for `src/lib/data/`. `src/veil/gallery/` is the dev-only gallery, shown only with `NEXT_PUBLIC_VEIL_GALLERY=1`.
+- **Naming.** Components use the design guide's words (`TopBar`, `SubNav`, `Sheet`, `ConfirmSheet`, `Banner`, `MenuIndex`). Where a guide term would repeat an old primitive's name, the guide's name wins: `Btn`, not `Button`; `Shimmer`, not `Skeleton`; `Pop`, not `Popover`. Files are kebab-case, and each part has a CSS Module whose class names follow the prototype's selectors. Nothing in the new UI reuses an old name: `node scripts/check-old-names.mjs` checks the terms in `scripts/old-names.txt`.
+- **Tokens.** `src/veil/styles/tokens.css` is a byte-for-byte copy of the guide's `redesign/design/tokens.css` and changes only when the guide's version does. Every colour, size, radius, shadow, duration and z-index in `src/veil/**` comes from a token; `node scripts/check-veil-styles.mjs` fails on raw colours. The new UI is light only. Media queries can't read tokens, so each one writes the number with a comment naming its token, e.g. `/* --bp-phone */`.
+- **Data.** Stored values stay; the labels come from the model (plan §2.7 has the table). Schema changes are additive, so the old UI reads the same records. Writes go through `src/lib/data/write.ts`, which stamps `createdBy` and `updatedBy` and gives up after 10 seconds, so an offline write becomes a failure the screen can show.
+- **Server.** Route handlers in `src/app/api/`: `files/[fileId]` (Delete for good), `push/test`, and `cron/reminders`, which Vercel Cron runs daily (`vercel.json`). Helpers are in `src/lib/server/`. Server keys live in Vercel, never in the repo (`.env*` is git-ignored). `firestore.rules` is deployed by hand: `npx firebase deploy --only firestore:rules`.
+- **Launch window.** Two weeks from the merge (plan §9.2 Q15). During it the old UI at `/old/…` takes no changes except security fixes. The way back is one commit (§9.3): `node scripts/rollback.mjs` checks it, and `--apply` on `main` makes it.
+
+## The redesign process (until the merge)
+
+These rules run the redesign up to the merge. Before the merge, a redesign session removes this section in one commit on `redesign` (`redesign/before-merge.md`, section 4), so the merge brings only the rules above.
+
 - The plan is `redesign/redesign-plan.md` (from `~/.claude/playbooks/blank-slate-redesign.md`). Design happens in `../wedding-planning-studio`, a separate repo that never sees this codebase. Studio sessions start only with `./start` there.
 - Never read from the studio folder, and never send anything from this codebase into it, except `redesign/handoff/` through `redesign/studio.sh enter`.
 - Before every `enter`, run the banned-word scan on every file in `redesign/handoff/`.

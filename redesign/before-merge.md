@@ -1,24 +1,45 @@
 # Before the merge: the owner's steps
 
-Everything left for the owner, because it touches production or needs them in person, collected from the tasks and reviews of `redesign/ui-implementation-plan.md`. Work through it with a Claude session before merging `redesign` into `main` (the release). A task or review that leaves an owner step adds it here; Task 8.6 puts the list in order. Tick a step here when it's done and record production changes in §7.0, as for 4.F3's rules.
+Everything left for the owner, because it touches production, needs an account or needs you in person. Collected from the tasks and reviews of `redesign/ui-implementation-plan.md`, in the order to do them. Work through it with a Claude session before merging `redesign` into `main` (the release). A task or review that leaves an owner step adds it here. Tick a step when it's done, and record production changes in §7.0, as for 4.F3's rules.
 
-## Production data and settings (before the merge)
-- [ ] **Firestore rules from 5.F2** (P5-S13, P5-S14): `npx firebase deploy --only firestore:rules`.
-- [ ] **Old-UI drift** (P1-S11, P1-S12 second half, P1-S13): with production credentials (`scripts/migrate/admin.ts`), dry-run `npm run migrate -- 2-guest-numbers 6-started-on 8-old-ui-sync` and save what it prints (it holds each old value, the only way to undo by hand). If anything: `npm run migrate:backup`, then `npm run migrate -- 2-guest-numbers 6-started-on --apply --force` (both already recorded) and `npm run migrate -- 8-old-ui-sync --apply`. The `--` matters: without it npm keeps the flags and the "apply" is another dry run (Phase 7 review). Never `all --force`: it re-runs 1 and 5. Do this last, just before the merge, with no old-UI edits after it. Migration 8 gives booked venues the price the old UI edited and removes bookings whose vendor or venue the old UI moved off its booked stage (puts them back if the old UI books them again); a record the new UI has written, from a local preview against production, is only reported, to check by hand. After the deploy, dry-run 2 and 6 once more (the old UI's last saves can erase `startedOn` and leave a guest unnumbered); apply them with `--force` if they plan anything. Not 8 after the merge.
-- [ ] **Doubled package files** (P1-S15): `npm run migrate:check files` (read-only). A cleanup migration only if it lists any.
-- [ ] **Documents the content check refuses** (P5-S8 second half): `npm run migrate:check documents` (read-only). Any it lists open empty and read-only in the new UI; fix them in the old UI before the merge, or raise a task.
-- [ ] **Vercel production variables** (P3-S13, P5-S22 second half): `NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` are not set.
-- [ ] **No emulator variables in Vercel production** (Phase 6 review): `FIRESTORE_EMULATOR_HOST` and `FIREBASE_AUTH_EMULATOR_HOST` are not set. With either set, the server starts without credentials, and with the second `verifyIdToken` accepts unsigned tokens.
-- [ ] **Push reminder keys** in Vercel production: Task 6.2's "Owner setup" (VAPID keys, `CRON_SECRET`, `FIREBASE_SERVICE_ACCOUNT` if missing).
+Sections 1 and 2 change nothing in production, or only add to it. Section 3 is the old-UI drift, the last production step before the merge. Section 5 runs after the merge.
 
-## The way back (just before the merge)
-- [ ] **Rollback check** (Phase 7 review): on `redesign`, `node scripts/rollback.mjs` says "Check passed" (it changes nothing). If it lists a problem, a later task added or moved a route: fix that before merging, so the one-commit revert in plan §9.3 still works.
+## 1. Checks that change nothing
 
-## In person (before the merge)
-- [ ] **Screenshot pairs** from Task 8.2's report accepted.
-- [ ] **Device checklist** (`redesign/device-checklist.md`, Task 8.5) run on an installed iPhone, Android Chrome and a Mac.
+- [ ] **Vercel production variables** (P3-S13, P5-S22, Phase 6 review): in Vercel › Project › Settings › Environment Variables, for Production, `NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` are not set, and neither are `FIRESTORE_EMULATOR_HOST` or `FIREBASE_AUTH_EMULATOR_HOST`. With an emulator variable set, the server starts without credentials, and the second `verifyIdToken` accepts unsigned tokens.
+- [ ] **Doubled package files** (P1-S15): `npm run migrate:check files` (read-only). If it lists any, a cleanup migration comes first: raise it in a redesign session before the merge.
+- [ ] **Documents the editor refuses** (P5-S8, second half): `npm run migrate:check documents` (read-only). Each one it lists opens empty and read-only in the new UI. Fix it in the old UI before the merge, or raise a task.
+- [ ] **Bella's sign-in** (Phase 1, owner check 1; still open at the Phase 4 review): Bella loads and saves once on production. If she uses a password, she signs in with Google once. The rules require a verified address, a password account isn't verified, and nothing sends a verification email.
+- [ ] **Five production documents** (4.17, still open at the Phase 4 review): on the local production build (`npm run build && npm start`), open five existing documents and check they look complete. Only look; don't save. This build reads production only with the live `.env.local`, so run the device checklist's clean-up first.
+- [ ] **Screenshot pairs** (8.2): `tests/screenshots/report/report.md` lists the differences by group. It's git-ignored, so it's on the machine where `npm run screenshots` ran. Accept the pairs that look right; the Phase 8 review ticks §5.1 after checking them.
+- [ ] **Device checklist** (`redesign/device-checklist.md`, 8.5): run it on an installed iPhone, Android Chrome and a Mac. It uses test Firebase and Cloudinary values, so run it before the five-document check, which needs the live `.env.local`. Tick **Device checklist** here when every check passes. A failure becomes a fix task before the merge.
 
-## After the merge
-- [ ] **Reminders with real keys** (Task 6.2's Done when): trigger the cron route by hand; a "1 day before" reminder arrives once on a Mac and an installed iPhone, and a second run sends nothing.
-- [ ] **Installed-phone checks** for the service worker and install card (Tasks 6.1, 6.4) on the first HTTPS deploy.
-- [ ] **Phase 9:** change its "waits for launch" Done cells in §7.0 to `[ ]`, so `autorun` picks it up after the launch window.
+## 2. Production changes that only add (before the merge)
+
+- [ ] **Firestore rules** (5.F2, P5-S13 and P5-S14: push subscriptions and presence): `npx firebase deploy --only firestore:rules`. The rules are additive, so the old UI isn't affected. The 4.F3 rules went live on 2026-10-19. Note the date in 5.F2's row of §7.0.
+- [ ] **Server keys in Vercel production** (6.2's owner setup, 6.3): add any that are missing, for Production: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (from `npx web-push generate-vapid-keys`), `CRON_SECRET` (`openssl rand -hex 32`), `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON), and `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. Delete for good fails without the Cloudinary pair, and the Cloudinary key needs the Master Admin role. The daily reminder run starts with the merge's deploy (section 5).
+
+## 3. Old-UI drift (the last production step before the merge)
+
+- [ ] **Old-UI drift** (P1-S11, P1-S12 second half, P1-S13). Do it last, just before the merge, with no old-UI edits after it. It needs production credentials: `FIREBASE_SERVICE_ACCOUNT` or `GOOGLE_APPLICATION_CREDENTIALS` in the shell, and `FIRESTORE_EMULATOR_HOST` unset.
+  1. Dry run: `npm run migrate -- 2-guest-numbers 6-started-on 8-old-ui-sync`. The first line must name `wedding-planning-75c0c` and must not say "(emulator)". Save the printout: it holds each old value, the only way to undo by hand.
+  2. If it plans anything: `npm run migrate:backup`, then `npm run migrate -- 2-guest-numbers 6-started-on --apply --force`, then `npm run migrate -- 8-old-ui-sync --apply`. The `--` matters: without it npm keeps the flags and the "apply" is another dry run (Phase 7 review). Never `all --force`: it re-runs 1 and 5.
+  3. Migration 8 gives booked venues the price the old UI edited, and removes bookings whose vendor or venue the old UI moved off its booked stage. It puts them back if the old UI books them again. A record the new UI has written is only reported; check it by hand.
+
+## 4. The way back, open decisions, and the merge
+
+- [ ] **Rollback check** (Phase 7 review; §9.3): on `redesign`, `node scripts/rollback.mjs` ends with "Check passed" and changes nothing. It passed on 2026-10-22. Run it again after any task that adds or moves a route. Also note the current production deployment in Vercel: promoting it is the fastest way back.
+- [ ] **Design gaps** (§9.1 G19–G45; needs N19–N45 in `redesign/handoff/needs.md`, all `open`): the merge's Definition of Done (§10) needs every need designed and built, and every §9.1 row closed. For each one, decide in a redesign session: design it in the studio (the design-gap loop), or accept what's built and close the row with that decision in §9.2. Each §9.1 row says what the gap is, and some say what the build does for now.
+- [ ] **Layering breaks** (found in 8.6; not from an earlier review): `src/veil/screens/settings/settings-screen.tsx` imports `src/lib/collections/` (`members`, `schedule-events`), and `src/veil/gallery/upload-demos.tsx` imports `firebase/firestore`. The plan (§2.7) says a lint rule blocks this, but `eslint.config.mjs` has no such rule. A redesign session moves the two hooks into `src/lib/data/`, adds the rule, and either moves the gallery's import or gives the dev-only gallery a written exception.
+- [ ] **Phase 8 review** passes. Its items under "Waiting for the owner" are added here.
+- [ ] **CLAUDE.md** (8.6): in a redesign session, remove the "The redesign process (until the merge)" section and the "During the redesign" sentence under Git workflow, in one commit on `redesign`. The merge then brings only the new UI's rules.
+- [ ] **Old Register button, not blocking** (Phase 1 review; not routed to a task): the frozen old UI still has a Register button, and the accounts it makes are ones the rules deny (Q2 dropped registration). Accept it for the launch window, or ask a redesign session to hide it in the old UI before the merge.
+- [ ] **Formula range, not blocking** (Phase 1 review, "owner call"): a total row whose range includes another total follows the guide's wording. Nothing waits on this; tell a redesign session if you want it changed.
+- [ ] **Say "release"** when the steps above are ticked. Claude runs the full checks first (lint, build, unit tests, the full e2e suite on production builds, and the old-names check with the fallback excluded), then fast-forwards `main` to `redesign` and pushes. Vercel deploys `main`.
+
+## 5. After the merge (in this order)
+
+- [ ] **Drift check after the deploy** (Phase 7 review, S5): dry-run `npm run migrate -- 2-guest-numbers 6-started-on`. If it plans anything, `npm run migrate:backup` (if the last backup is over a day old), then `npm run migrate -- 2-guest-numbers 6-started-on --apply --force`. Not 8: it ran just before the merge and must not run after it. The old UI at `/old` stays reachable during the launch window, and its last saves can erase `startedOn` and leave a guest unnumbered.
+- [ ] **Reminders with real keys** (6.2's Done when): the daily cron starts with this deploy, so its first run sends that day's real reminders. Check by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<site>/api/cron/reminders`, with a "1 day before" reminder due. It arrives once on a Mac and on an installed iPhone, and a second run sends nothing.
+- [ ] **Installed-phone checks** (6.1, 6.4) on the first HTTPS deploy: an installed phone picks up a new deploy on its next open, and the install card hides once the app is installed.
+- [ ] **Phase 9, in two steps** (§7.0; §9.3): change 9.1's "waits for launch" Done cell to `[ ]` about a week after the merge, for its check. Change 9.2's and the Phase 9 review's cells to `[ ]` only when the two-week launch window is over, because 9.2 deletes the old UI.
