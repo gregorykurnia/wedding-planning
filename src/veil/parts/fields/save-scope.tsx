@@ -5,6 +5,7 @@ import { SaveScopeContext, useSaveScopeState } from "@/lib/data/use-autosave-fie
 import { offlineOr, SHEET_FAILED } from "@/lib/model/save-state";
 import styles from "./fields.module.css";
 import { useOnline } from "@/lib/data/session";
+import { useSheetFailure } from "@/veil/shell/sheet-failure";
 
 /**
  * One save scope: a detail screen, or (`sheet`) a sheet that edits an existing
@@ -35,6 +36,7 @@ export function SaveScopeProvider({
 export function SaveLine({ held }: { held?: string | null }) {
   const offline = !useOnline();
   const scope = useContext(SaveScopeContext);
+  useSheetFailure(Boolean(scope?.sheet && scope.line.kind === "failed"));
   if (!scope) return null;
   const { line, retryAll, sheet } = scope;
   // A change that can't be saved until something is fixed (guide §6.1, N9): the screen says what.

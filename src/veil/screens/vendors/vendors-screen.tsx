@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { useEffect, useRef, useState } from "react";
 import { setVendorKeen, useVendorsAndCategories } from "@/lib/data/vendors";
 import { useSettings } from "@/lib/data/settings";
@@ -76,6 +78,7 @@ function VendorsList({ vendors, categories }: { vendors: VendorListItem[]; categ
   const [shown, setShown] = useState(PAGE);
   // A heart that was pressed and hasn't landed (or didn't): the choice shows meanwhile.
   const [changes, setChanges] = useState<Record<string, KeenChange>>({});
+  const offline = !useOnline();
 
   const filter: VendorFilter = { query, category, keen };
   const filtering = isFilteringVendors(filter);
@@ -191,7 +194,7 @@ function VendorsList({ vendors, categories }: { vendors: VendorListItem[]; categ
         whatsApp={<WhatsAppLink phone={vendor.contactPhone} />}
         failed={
           change?.failed
-            ? { message: keenFailed(vendor.name), onRetry: () => void toggleKeen(vendor, change.keen) }
+            ? { message: offlineOr(keenFailed(vendor.name), offline), onRetry: () => void toggleKeen(vendor, change.keen) }
             : undefined
         }
       />

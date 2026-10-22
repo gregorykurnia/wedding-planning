@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { bookFinalist, moveFinalistToVendors } from "@/lib/data/shortlist";
 import { useToday } from "@/lib/data/use-today";
 import { newId } from "@/lib/data/write";
@@ -48,6 +50,7 @@ export function BookSheet({
   const sheet = useSheet();
   const toast = useToast();
   const today = useToday();
+  const offline = !useOnline();
   const vendorId = useRef<string | null>(null);
   const [chosen, setChosen] = useState<string>(leaningId ?? packages[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
@@ -85,7 +88,7 @@ export function BookSheet({
       <p className={styles.sheetNote}>{BOOK_CARRIES}</p>
       {failed && (
         <Banner tone="rose" inline>
-          {BOOK_FAILED}
+          {offlineOr(BOOK_FAILED, offline)}
         </Banner>
       )}
       <CreateSheetActions
@@ -105,6 +108,7 @@ export function BookSheet({
  * and it stays on the shortlist, now copied from that vendor. Undo removes the vendor.
  */
 export function MoveSheet({ finalistId, name }: { finalistId: string; name: string }) {
+  const offline = !useOnline();
   const sheet = useSheet();
   const toast = useToast();
   const vendorId = useRef<string | null>(null);
@@ -131,7 +135,7 @@ export function MoveSheet({ finalistId, name }: { finalistId: string; name: stri
     <Sheet title={moveTitle(name)} sub={MOVE_SUB}>
       {failed && (
         <Banner tone="rose" inline>
-          {MOVE_FAILED}
+          {offlineOr(MOVE_FAILED, offline)}
         </Banner>
       )}
       <CreateSheetActions

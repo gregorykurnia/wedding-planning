@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { addPart, removeBooking, removePart, splitBooking, type RecordTarget } from "@/lib/data/bookings";
 import { setBookingField, setPartField } from "@/lib/data/booking-fields";
 import { useRemovedByPartner } from "@/lib/data/partner";
@@ -146,6 +148,7 @@ function Detail({
   onRemoved: (name: string, undo: () => Promise<void>) => void;
 }) {
   const toast = useToast();
+  const offline = !useOnline();
   const confirm = useConfirm();
   const record = useRecordPayment();
   const { today, funders } = page;
@@ -417,7 +420,7 @@ function Detail({
       )}
       {actionFailed && (
         <p className={styles.failure} role="alert">
-          {ACTION_FAILED}
+          {offlineOr(ACTION_FAILED, offline)}
         </p>
       )}
 

@@ -6,6 +6,7 @@ import { confirmFailure, TRY_AGAIN, type ConfirmFailure } from "@/lib/model/conf
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
+import { useSheetFailure } from "./sheet-failure";
 import styles from "./confirm.module.css";
 
 /**
@@ -44,6 +45,7 @@ function busyLabel(action: string) {
  * it is read out when it appears.
  */
 function Failure({ failure }: { failure: ConfirmFailure }) {
+  useSheetFailure(true);
   return (
     <p className={styles.error} role="alert">
       <b>{failure.lead}</b> {failure.reason}

@@ -61,3 +61,13 @@ test("a finalist with no packages says so on its card, where the packages would 
   const card = page.locator("li", { has: page.getByRole("link", { name: "Card with no packages" }) });
   await expect(card.getByText("No packages yet", { exact: true })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
+
+test("offline, a keen mark and Copy to the shortlist say they aren't saved and to keep the page open (guide §6.5, P6-S17)", async ({ page }) => {
+  await open(page, "/new/vendors/ara?fault=offline");
+  const offline = page.getByRole("alert").filter({ hasText: "Not saved: you’re offline. Keep this page open." });
+  await page.getByRole("button", { name: "Keen on Moments by Ara" }).click({ timeout: COMPILE_TIMEOUT });
+  await expect(offline).toHaveCount(1, { timeout: 15_000 });
+  await page.getByRole("button", { name: "Copy to the shortlist" }).click();
+  await expect(offline).toHaveCount(2, { timeout: 15_000 });
+  await expect(page.getByText(/^Couldn’t/)).toHaveCount(0);
+});

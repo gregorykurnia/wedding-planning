@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { newFunderId } from "@/lib/data/funders";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { ADD_FAILED, ADD_PLACEHOLDER, DEMO_ADDING } from "./funder-text";
@@ -27,6 +29,7 @@ export function AddFunderRow({ demo, onAdd, onClose }: AddFunderRowProps) {
   const alive = useRef(true);
   const funderId = useRef<string | null>(null);
   const [text, setText] = useState("");
+  const offline = !useOnline();
   const [state, setState] = useState<"typing" | "saving" | "failed">("typing");
 
   useEffect(() => {
@@ -109,7 +112,7 @@ export function AddFunderRow({ demo, onAdd, onClose }: AddFunderRowProps) {
       {demo && <p className={styles.line}>{DEMO_ADDING}</p>}
       {state === "failed" && (
         <p className={`${styles.line} ${styles.failed}`} role="alert">
-          {ADD_FAILED}
+          {offlineOr(ADD_FAILED, offline)}
         </p>
       )}
     </li>

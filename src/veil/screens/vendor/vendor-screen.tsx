@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { useRef, useState, type ReactNode } from "react";
 import { bookingIdOf } from "@/lib/data/bookings";
 import { useRemovedByPartner } from "@/lib/data/partner";
@@ -153,9 +155,10 @@ function SectionHeading({ small, children }: { small?: string; children: ReactNo
 
 /** A change that didn't save, under what was changed: the choice stays and Try again is one press. */
 function Failure({ name, retry }: { name: string; retry: () => void }) {
+  const offline = !useOnline();
   return (
     <p className={styles.failure} role="alert">
-      {keenFailed(name)}{" "}
+      {offlineOr(keenFailed(name), offline)}{" "}
       <TextLink tone="rose" onClick={retry}>
         Try again
       </TextLink>
@@ -227,6 +230,7 @@ function Detail({
   // The shortlist card: one copy, made once however many times Try again is pressed.
   const [copying, setCopying] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
+  const offline = !useOnline();
   const finalistId = useRef<string | null>(null);
 
   async function copy() {
@@ -432,7 +436,7 @@ function Detail({
             <p className={styles.cardNote}>{COPY_NOTE}</p>
             {copyFailed && (
               <p className={styles.failure} role="alert">
-                {COPY_FAILED}
+                {offlineOr(COPY_FAILED, offline)}
               </p>
             )}
             <p className={styles.cardActs}>

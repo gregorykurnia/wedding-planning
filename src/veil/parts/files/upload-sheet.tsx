@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
+import { useOnline } from "@/lib/data/session";
+import { FIELD_FAILED, offlineOr } from "@/lib/model/save-state";
 import { targetPath, type UploadQueue } from "@/lib/data/upload-queue";
 import { useUploads } from "@/lib/data/uploads";
 import {
@@ -34,6 +36,7 @@ function QueueEntry({
   queue: UploadQueue;
 }) {
   const view = statusView(item);
+  const offline = !useOnline();
   const leave = () => void queue.commitField(item.id);
   return (
     <li>
@@ -99,7 +102,7 @@ function QueueEntry({
           />
           {failed ? (
             <div className={styles.fieldError}>
-              <span>Couldn’t save this change. What you typed is kept.</span>
+              <span>{offlineOr(FIELD_FAILED, offline)}</span>
               <TextLink tone="rose" onClick={leave}>
                 Try again
               </TextLink>

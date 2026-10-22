@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { useState, type ReactNode } from "react";
 import { useRemovedByPartner } from "@/lib/data/partner";
 import {
@@ -138,9 +140,10 @@ function SectionHeading({ small, children }: { small?: string; children: ReactNo
 
 /** A change that didn't save, under what was changed: the choice stays and Try again is one press. */
 function Failure({ name, retry }: { name: string; retry: () => void }) {
+  const offline = !useOnline();
   return (
     <p className={styles.failure} role="alert">
-      {keenFailed(name)}{" "}
+      {offlineOr(keenFailed(name), offline)}{" "}
       <TextLink tone="rose" onClick={retry}>
         Try again
       </TextLink>

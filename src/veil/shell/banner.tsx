@@ -1,5 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
 import styles from "./banner.module.css";
+import { useSheetFailure } from "./sheet-failure";
 
 type BannerProps = {
   /** Gold for the planner's own notes; rose when a change didn't go through (guide §4.17). */
@@ -17,6 +20,8 @@ type BannerProps = {
  * be added).
  */
 export function Banner({ tone = "gold", inline = false, role, children }: BannerProps) {
+  // In a sheet, a rose box is a failure: it keeps the sheet open (P6-S14).
+  useSheetFailure(tone === "rose");
   const classes = [styles.banner, tone === "rose" ? styles.rose : "", inline ? styles.inline : ""]
     .filter(Boolean)
     .join(" ");

@@ -190,6 +190,21 @@ test("a funder with nothing assigned says so in the confirm", async ({ page }) =
   await page.getByRole("button", { name: "Keep it" }).click();
 });
 
+test("remove: the confirm counts the what-if items the funder pays, from the what-if read (P5-S2, who-pays.tsx)", async ({ page }) => {
+  await put("hypotheticalItems", "wp-whatif", { name: "Photo booth", type: "Other", totalPrice: 4_000_000, funder: "wp-family" });
+  try {
+    await openWhoPays(page);
+    await rowOf(page, "Bella’s family").getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByRole("dialog", { name: "Remove Bella’s family?" })).toContainText(
+      "1 cost (Rp 12.000.000) will move to Not assigned, and so will 1 what-if item.",
+      { timeout: 15_000 },
+    );
+    await page.getByRole("button", { name: "Keep it" }).click();
+  } finally {
+    await fetch(`${DOCS}/hypotheticalItems/wp-whatif`, { method: "DELETE", headers: ADMIN });
+  }
+});
+
 test("the partner's payment arrives in place, with no reload", async ({ page }) => {
   await openWhoPays(page);
   await expect(rowOf(page, "Greg")).toContainText("Rp 20.000.000");

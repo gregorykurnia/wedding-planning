@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 import { createFolder, renameFolder, useFolders } from "@/lib/data/files";
 import { newId } from "@/lib/data/write";
 import { toWriteError } from "@/lib/data/write-error";
@@ -40,6 +42,7 @@ export function FolderSheet({ parentId, folder }: { parentId: string | null; fol
   const folders = useFolders();
   const tree = folderTree(folders.data ?? []);
   const renaming = Boolean(folder);
+  const offline = !useOnline();
 
   const [name, setName] = useState(folder?.name ?? "");
   const [problem, setProblem] = useState<string | null>(null);
@@ -110,7 +113,7 @@ export function FolderSheet({ parentId, folder }: { parentId: string | null; fol
       </form>
       {failed && (
         <Banner tone="rose" inline>
-          {failed === "gone" ? FOLDER_PARENT_GONE : FOLDER_FAILED}
+          {failed === "gone" ? FOLDER_PARENT_GONE : offlineOr(FOLDER_FAILED, offline)}
         </Banner>
       )}
       <CreateSheetActions

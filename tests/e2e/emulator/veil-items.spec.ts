@@ -283,6 +283,37 @@ test("a name that didn't save is still there after a search hides its row and br
   await expect.poll(async () => (await read("it-cake"))?.item, { timeout: 30_000 }).toBe("Wedding cake, three tiers");
 });
 
+test("an earlier name save landing late keeps the later one's failure and text (P5-S19, Tries in items-screen.tsx)", async ({ browser }) => {
+  const page = await openItems(browser);
+  const cake = row(page, "it-cake");
+  const name = cake.getByLabel("Item", { exact: true });
+  // The first save's request to the emulator is held for 4 s, so it lands after the second has failed.
+  let held = false;
+  await page.route(/google\.firestore\.v1\.Firestore\/Write\/channel/, async (route) => {
+    if (!held && route.request().postData()?.includes("FirstTry")) {
+      held = true;
+      await new Promise((done) => setTimeout(done, 4_000));
+    }
+    await route.continue();
+  });
+
+  await name.fill("FirstTry cake");
+  await name.press("Enter");
+  // The second fails before it's sent: the dev fault, switched on in place (it reads the address).
+  await page.evaluate(() => history.replaceState(history.state, "", "?fault=save"));
+  await name.fill("SecondTry cake");
+  await name.press("Enter");
+  const line = cake.getByText("Couldn’t save “SecondTry cake”. What you typed is kept.");
+  await expect(line).toBeVisible({ timeout: 15_000 });
+
+  // The first lands; it isn't the newest try, so the second's line and text stay.
+  await expect.poll(async () => (await read("it-cake"))?.item, { timeout: 15_000 }).toBe("FirstTry cake");
+  expect(held).toBe(true);
+  await page.waitForTimeout(500);
+  await expect(line).toBeVisible();
+  await expect(name).toHaveValue("SecondTry cake");
+});
+
 test("an emptied name comes back, and a vendor can be cleared", async ({ browser }) => {
   const page = await openItems(browser);
   const gown = row(page, "it-gown");

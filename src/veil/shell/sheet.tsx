@@ -31,6 +31,7 @@ import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { SaveLine } from "@/veil/parts/fields/save-scope";
 import fieldStyles from "@/veil/parts/fields/fields.module.css";
+import { SheetFailureContext } from "./sheet-failure";
 import styles from "./sheet.module.css";
 import { useOptionalToast } from "./toasts";
 
@@ -126,6 +127,8 @@ export function SheetHost({ children }: { children: ReactNode }) {
   const entriesRef = useRef<Entry[]>([]);
   const [holds] = useState(() => new SheetHolds());
   const guards = useRef(new Map<number, DismissGuard>());
+  // How many failures each sheet is showing (`useSheetFailure`).
+  const failures = useRef(new Map<number, number>());
   const nextId = useRef(0);
   // Where focus goes once the sheet that just closed is gone.
   const returnFocusTo = useRef<HTMLElement | null>(null);
@@ -151,6 +154,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
       const wasTop = all[all.length - 1] === target;
       holds.clear(target.id);
       guards.current.delete(target.id);
+      failures.current.delete(target.id);
       if (wasTop) returnFocusTo.current = target.opener;
       commit(all.filter((e) => e !== target));
       target.onClose?.();
@@ -244,13 +248,25 @@ export function SheetHost({ children }: { children: ReactNode }) {
       const release = holds.hold(id);
       return () => {
         if (!release()) return;
-        // Freed on a screen it no longer belongs to: it closes now.
+        // Freed on a screen it no longer belongs to: it closes now, unless its
+        // write failed. Then it stays to say so, with what was typed and Try
+        // again (guide §6.5, P6-S14); the next move closes it.
         const entry = entriesRef.current.find((e) => e.id === id);
-        if (entry && entry.path !== pathRef.current) close(id);
+        if (entry && entry.path !== pathRef.current && !failures.current.get(id)) close(id);
       };
     },
     [holds, close],
   );
+
+  const fail = useCallback((id: number) => {
+    const count = failures.current;
+    count.set(id, (count.get(id) ?? 0) + 1);
+    return () => {
+      const left = (count.get(id) ?? 0) - 1;
+      if (left > 0) count.set(id, left);
+      else count.delete(id);
+    };
+  }, []);
 
   const setGuard = useCallback((id: number, guard: DismissGuard | null) => {
     if (guard) guards.current.set(id, guard);
@@ -270,6 +286,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
           close={close}
           requestClose={requestClose}
           hold={hold}
+          fail={fail}
           setGuard={setGuard}
         />
       ))}
@@ -283,6 +300,7 @@ function SheetFrame({
   close,
   requestClose,
   hold,
+  fail,
   setGuard,
 }: {
   entry: Entry;
@@ -290,6 +308,7 @@ function SheetFrame({
   close: (id: number) => void;
   requestClose: (id: number) => void;
   hold: (id: number) => () => void;
+  fail: (id: number) => () => void;
   setGuard: (id: number, guard: DismissGuard | null) => void;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
@@ -328,6 +347,8 @@ function SheetFrame({
     }),
     [close, requestClose, hold, setGuard, entry.id, titleId],
   );
+
+  const failure = useCallback(() => fail(entry.id), [fail, entry.id]);
 
   // Tab stays inside the sheet (guide §8).
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -375,7 +396,9 @@ function SheetFrame({
         tabIndex={-1}
         onKeyDown={onKeyDown}
       >
-        <SheetContext.Provider value={control}>{entry.node}</SheetContext.Provider>
+        <SheetContext.Provider value={control}>
+          <SheetFailureContext.Provider value={failure}>{entry.node}</SheetFailureContext.Provider>
+        </SheetContext.Provider>
       </div>
     </div>
   );

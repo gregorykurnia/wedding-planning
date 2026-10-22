@@ -1,8 +1,9 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadFixture } from "../../fixtures/load";
-import { TEST_ACCOUNTS, TEST_PORTS } from "../emulator-config";
+import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS, TEST_PORTS } from "../emulator-config";
 import { COMPILE_TIMEOUT, closeOtherContexts, uniqueName } from "../helpers";
 import { createAccount, seed } from "../seed";
+import { REPROBE_MS } from "@/lib/data/reprobe";
 
 test.afterEach(closeOtherContexts);
 
@@ -14,6 +15,29 @@ async function signInAt(page: Page, email: string, password: string) {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
+}
+
+const DOCS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
+const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
+
+/** Bella's "finished a task" entries, written in one commit as the emulator's owner. */
+async function addActivity(titles: string[]) {
+  const at = new Date().toISOString();
+  const writes = titles.map((title) => ({
+    update: {
+      name: `projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents/activity/${uniqueName("news")}`,
+      fields: {
+        by: { stringValue: "bella-elsewhere" },
+        at: { timestampValue: at },
+        kind: { stringValue: "task.finished" },
+        params: { mapValue: { fields: { name: { stringValue: title } } } },
+        target: { nullValue: null },
+        device: { stringValue: "bella-phone" },
+      },
+    },
+  }));
+  const res = await fetch(`${DOCS}:commit`, { method: "POST", headers: ADMIN, body: JSON.stringify({ writes }) });
+  expect(res.ok).toBe(true);
 }
 
 async function openAs(browser: Browser, path: string): Promise<Page> {
@@ -45,7 +69,33 @@ test.describe("the normal set", () => {
     await expect(confirm.getByRole("button", { name: "Keep it" })).toBeFocused();
   });
 
-  test("P3-S6: a sheet kept open by its save across a move to another screen closes once the save ends (sheet.tsx)", async ({ browser }) => {
+  test("P5-S12: Bookings, Payments due and Add a booking name what they show as the prototype does (ScreenState's what)", async ({ browser }) => {
+    const page = await openAs(browser, "/new/budget/bookings?fault=load");
+    await expect(page.getByRole("heading", { name: "Your bookings didn’t load" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+    await page.goto("/new/budget/payments?fault=load");
+    await expect(page.getByRole("heading", { name: "Payments due didn’t load" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+    // Add a booking keeps its form when a read fails; its noun is in the loading line.
+    await page.goto("/new/budget/bookings/new?fault=loading");
+    await expect(page.getByText("Loading the budget", { exact: true })).toBeAttached({ timeout: COMPILE_TIMEOUT });
+  });
+
+  test("P5-S26: more than three of Bella's changes arriving together make one toast (usePartnerNews, partner.ts)", async ({ browser }) => {
+    const page = await openAs(browser, "/new/schedule/tasks");
+    await expect(page.getByRole("button", { name: "Add a task" }).first()).toBeVisible({ timeout: COMPILE_TIMEOUT });
+    // Entries count as news once the activity read has had its first answer: one alone first, until it shows.
+    await expect(async () => {
+      const name = uniqueName("Warm-up");
+      await addActivity([name]);
+      await expect(page.getByRole("status").getByText(`Bella finished “${name}”`)).toBeVisible({ timeout: 3_000 });
+    }).toPass({ timeout: 30_000 });
+
+    // Four in one commit reach the screen in one answer: one toast for all four, none of their own.
+    await addActivity(["Burst one", "Burst two", "Burst three", "Burst four"]);
+    await expect(page.getByRole("status").getByText("Bella made 4 changes. Everything here is up to date.")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("status").getByText(/Burst/)).toHaveCount(0);
+  });
+
+  test("P3-S6, P6-S14: a sheet kept open by its save across a move to another screen stays to say the save failed, and Try again adds it (sheet.tsx)", async ({ browser }) => {
     const page = await openAs(browser, "/new/schedule");
     // Moved within the app, so Back below stays in it too.
     await page.getByRole("link", { name: "Tasks" }).click({ timeout: COMPILE_TIMEOUT });
@@ -61,12 +111,23 @@ test.describe("the normal set", () => {
     await page.goBack();
     await expect(page).toHaveURL("/new/schedule");
     await expect(sheet).toBeVisible();
-    await expect(sheet).toBeHidden({ timeout: 20_000 });
+    // The add times out: the sheet stays, says so, and keeps what was typed (it used to close with no word).
+    await expect(sheet.getByText("The task wasn’t added. What you typed is still here.")).toBeVisible({ timeout: 20_000 });
+    await expect(sheet.getByLabel("What needs doing")).toHaveValue("Hold the sheet open");
     await page.context().setOffline(false);
+    await sheet.getByRole("button", { name: "Try again" }).click();
+    await expect(sheet).toBeHidden({ timeout: 15_000 });
   });
 });
 
 test("P2-S1: an account let in because the database couldn't be asked is asked again, and turned away (reprobe.ts)", async ({ page }) => {
+  // The 30-second re-probe timer never fires here, so only the page showing again can ask: without
+  // the `visibilitychange` wiring this stays signed in (the timer used to answer within the wait).
+  await page.addInitScript((every) => {
+    const real = window.setInterval.bind(window);
+    window.setInterval = ((handler: TimerHandler, ms?: number, ...args: unknown[]) =>
+      ms === every ? real(() => {}, ms) : real(handler, ms, ...args)) as typeof window.setInterval;
+  }, REPROBE_MS);
   const email = `${uniqueName("someone")}@example.com`;
   await createAccount(email, "test-password-3");
   // The database can't be reached at sign-in, so the account is let in on trust.
@@ -76,11 +137,14 @@ test("P2-S1: an account let in because the database couldn't be asked is asked a
   await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
 
   // Reachable again, with nothing telling the browser it was ever offline: the page showing again asks.
+  // The database takes a moment to be reached again, so it shows again every few seconds until asked.
   await page.unroute(toFirestore);
-  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
-  await expect(page.locator("main").getByRole("alert")).toContainText(
-    `You’re signed in as ${email}, which isn’t one of the two accounts that can open this planner.`,
-    { timeout: 45_000 },
-  );
+  await expect(async () => {
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await expect(page.locator("main").getByRole("alert")).toContainText(
+      `You’re signed in as ${email}, which isn’t one of the two accounts that can open this planner.`,
+      { timeout: 5_000 },
+    );
+  }).toPass({ timeout: 60_000 });
   await expect(page).toHaveURL("/new/sign-in");
 });

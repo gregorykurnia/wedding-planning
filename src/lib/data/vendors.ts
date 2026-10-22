@@ -196,7 +196,10 @@ export function useVendor(id: string): Loaded<VendorPage> {
     };
   }, [vendors.data, finalists.data, files.data, custom.data, id]);
 
-  return readOf(connection, [vendors, finalists, files, custom], page, 1);
+  // The finalist and the files are on the page itself: offline, until they have
+  // arrived the vendor would show no files and offer to copy it to the shortlist
+  // again, so the screen waits for them as for the vendor (guide §6.5, P6-S15).
+  return readOf(connection, [vendors, finalists, files, custom], page, 3);
 }
 
 /** The fields the contact and reputation rows save (guide §5.12). */

@@ -42,8 +42,12 @@ export function useFinalists(): Loaded<FinalistListItem[]> {
   const vendors = useCollection<VendorDoc>(VENDORS, vendorFromDoc, []);
   const items = useMemo(() => {
     const byId = new Map(vendors.data.map((v) => [v.id, v]));
-    return finalists.data.map((f) => finalistListItem({ ...f, bookingId: finalistBookingId(f, byId) }));
-  }, [finalists.data, vendors.data]);
+    // Offline before the vendors arrive, a finalist that was booked still reads as
+    // booked rather than as one to book (P6-S15).
+    const bookingId = (f: FinalistDoc) =>
+      vendors.loading ? (f.movedTo?.kind === "booking" ? f.movedTo.id : null) : finalistBookingId(f, byId);
+    return finalists.data.map((f) => finalistListItem({ ...f, bookingId: bookingId(f) }));
+  }, [finalists.data, vendors.data, vendors.loading]);
   return readOf(connection, [finalists, vendors], items, 1);
 }
 

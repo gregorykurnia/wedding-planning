@@ -73,7 +73,8 @@ export function useVenue(id: string): Loaded<{ venue: VenueDetail | null }> {
     };
   }, [venues.data, files.data, id]);
 
-  return readOf(connection, [venues, files], page, 1);
+  // Its files are on the sheet itself, so offline it waits for them too (P6-S15).
+  return readOf(connection, [venues, files], page);
 }
 
 export interface NewVenue {

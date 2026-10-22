@@ -114,6 +114,9 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
     };
   }, [bookingId, vendors.data, venues.data, files.data, finalists.data, funders.data, categories.data, today]);
 
-  const status = mergeStatus(readOf(connection, [vendors, venues, files, finalists], page, 2), funders, categories);
-  return { status, data: status === "demo" ? null : page };
+  // Offline with the vendors or venues still waiting, `readOf` has no data, so the
+  // screen says it's offline instead of "This booking isn't here" (P6-S16).
+  const read = readOf(connection, [vendors, venues, files, finalists], page, 2);
+  const status = mergeStatus(read, funders, categories);
+  return { status, data: status === "demo" ? null : read.data };
 }
