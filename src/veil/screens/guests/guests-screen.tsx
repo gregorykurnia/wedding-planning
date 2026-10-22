@@ -22,6 +22,7 @@ import { CountLine, ShowMore } from "@/veil/parts/tools/results";
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { FilterSelect, OrderBy, type OrderState } from "@/veil/parts/tools/selects";
 import { Toggles, Toolbar } from "@/veil/parts/tools/toolbar";
+import { focusSearchAfter } from "@/veil/parts/focus-return";
 import { AddButton } from "@/veil/shell/add-button";
 import { useFlasher } from "@/veil/shell/flash";
 import { PageColumn } from "@/veil/shell/page-column";
@@ -264,7 +265,13 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
           inline
           title={noMatchTitle(filter.query)}
           actions={
-            <Btn variant="quiet" onClick={clearAll}>
+            <Btn
+              variant="quiet"
+              onClick={(event) => {
+                clearAll();
+                focusSearchAfter(event);
+              }}
+            >
               {SHOW_EVERYONE}
             </Btn>
           }

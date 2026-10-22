@@ -25,6 +25,7 @@ export function SearchField({ label, placeholder, value, onChange, inputRef }: S
       <input
         ref={inputRef}
         type="search"
+        dir="auto"
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}

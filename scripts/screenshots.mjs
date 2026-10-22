@@ -6,7 +6,7 @@
 // pixel-difference score per row to tests/screenshots/report/ (git-ignored: never commit it).
 //
 //   node scripts/screenshots.mjs [--only <text>]... [--device phone|desktop] [--side both|proto|build]
-//                                [--fresh] [--no-build] [--list]
+//                                [--fresh] [--no-build] [--axe] [--list]
 //
 // --only      group or row filter, repeatable; matches the group's slug or title, or part of a row's id
 //             or label (`--only budget`, `--only budget--offline`, `--only "Bella"`).
@@ -14,6 +14,8 @@
 // --no-build  reuse the production builds from an earlier run (.next-shots, .next-shots-demo).
 // --side      `build` skips the prototype (a fix session reruns only the build's shots for its rows).
 // --resume    skips build shots already taken without an error (after a run that stopped part-way).
+// --axe       Task 8.4: no screenshots and no prototype; opens each row's state on the build and runs axe
+//             (WCAG 2.2 A and AA) on it, then writes axe/ (one JSON per row and size) and axe.md to the report.
 // --list      prints the rows the filters pick and stops.
 //
 // Needs the emulators' ports free (this copy's test ports, tests/e2e/emulator-config.ts), so don't
@@ -25,6 +27,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync, createRea
 import { extname, join, resolve } from "node:path";
 import net from "node:net";
 import { chromium } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import sharp from "sharp";
 import { DEMO_APP_ENV, EMULATOR_APP_ENV, EMULATOR_PROJECT_ID, PORT_OFFSET, TEST_ACCOUNTS, TEST_PORTS, writeEmulatorConfig } from "../tests/e2e/emulator-config.ts";
 import { GROUPS, rowsOf } from "../tests/screenshots/rows.mjs";
@@ -49,6 +52,7 @@ let fresh = false;
 let noBuild = false;
 let list = false;
 let resume = false;
+let axe = false;
 for (let i = 0; i < args.length; i += 1) {
   const a = args[i];
   if (a === "--only") only.push(args[++i].toLowerCase());
@@ -58,6 +62,10 @@ for (let i = 0; i < args.length; i += 1) {
   else if (a === "--no-build") noBuild = true;
   else if (a === "--list") list = true;
   else if (a === "--resume") resume = true;
+  else if (a === "--axe") {
+    axe = true;
+    side = "build";
+  }
   else {
     console.error(`Unknown argument ${a}`);
     process.exit(1);
@@ -158,7 +166,7 @@ const dir = (name) => {
   mkdirSync(d, { recursive: true });
   return d;
 };
-const shot = (kind, row, device) => join(dir(kind), `${row.id}--${device}.png`);
+const shot = (kind, row, device) => join(dir(axe && kind === "build" ? "axe" : kind), `${row.id}--${device}.png`);
 
 async function settle(page, ms = 500) {
   await page.evaluate(() => document.fonts.ready).catch(() => {});
@@ -167,7 +175,33 @@ async function settle(page, ms = 500) {
 
 const pageHeight = (page) => page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0));
 
+const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+
+/** --axe: the same wait for the page to hold still, then axe instead of a picture. */
+async function audit(page, patient) {
+  let height = await pageHeight(page);
+  let steady = 0;
+  for (let i = 0; i < (patient ? 60 : 12) && steady < (patient ? 8 : 1); i += 1) {
+    await page.waitForTimeout(250);
+    const next = await pageHeight(page);
+    steady = next === height ? steady + 1 : 0;
+    height = next;
+  }
+  const { violations, incomplete } = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+  // The guide's 34px bar for pills, toolbar buttons, stars, ticks and steppers (§8): axe only checks 24px, so list
+  // every shown control under 34px in a side for a person to compare with the guide's smaller named targets.
+  const small = await page.evaluate(() =>
+    [...document.querySelectorAll('button, [role="checkbox"], [role="radio"], summary, select, a[class*="btn"]')]
+      .map((el) => ({ el, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.width > 0 && box.height > 0 && (box.height < 34 || box.width < 34))
+      .map(({ el, box }) => ({ tag: el.tagName.toLowerCase(), cls: String(el.className).replace(/[\w-]*module__\w{6}__/g, ""), label: (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 30), w: Math.round(box.width), h: Math.round(box.height) })),
+  );
+  const slim = (v) => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.map((n) => ({ target: n.target.join(" "), html: n.html.slice(0, 220), why: (n.any[0] ?? n.all[0] ?? n.none[0])?.message })) });
+  return { small, violations: violations.map(slim), incomplete: incomplete.map((v) => ({ id: v.id, count: v.nodes.length })) };
+}
+
 async function take(page, device, path, patient = false) {
+  if (axe) return audit(page, patient);
   // A page can still be laying out (lists arrive after the first paint): wait for the height to hold.
   let height = await pageHeight(page);
   // Stress data takes seconds to arrive and draw: it must hold for 2 seconds, not one look.
@@ -602,6 +636,61 @@ async function report() {
   console.log(`Report: ${join(REPORT, "report.md")}`);
 }
 
+// ---- the accessibility report (--axe) ----
+function axeReport() {
+  const byRule = new Map();
+  let checked = 0;
+  const failed = [];
+  for (const row of picked) {
+    if (row.skip) continue;
+    for (const device of devices) {
+      const r = readJson(`${shot("build", row, device)}.json`);
+      if (!r) continue;
+      if (r.error || !r.violations) {
+        failed.push(`${row.id} ${device}: ${r?.error ?? "no result"}`);
+        continue;
+      }
+      checked += 1;
+      for (const v of r.violations) {
+        const entry = byRule.get(v.id) ?? { help: v.help, impact: v.impact, rows: new Set(), nodes: new Map() };
+        entry.rows.add(`${row.id} (${device})`);
+        for (const n of v.nodes) {
+          const node = entry.nodes.get(n.target) ?? { ...n, rows: [] };
+          entry.nodes.set(n.target, node);
+          if (node.rows.length < 3) node.rows.push(row.id);
+        }
+        byRule.set(v.id, entry);
+      }
+    }
+  }
+  const lines = ["# Accessibility scan (axe, WCAG 2.2 A and AA)", "", `${checked} row × size states scanned; ${byRule.size} rules with violations. Generated ${new Date().toISOString()}.`, ""];
+  if (failed.length) lines.push("## Not scanned", "", ...failed.map((f) => `- ${f}`), "");
+  for (const [id, e] of [...byRule].sort((a, b) => b[1].rows.size - a[1].rows.size)) {
+    lines.push(`## ${id} (${e.impact}): ${e.help}`, "", `${e.rows.size} states, ${e.nodes.size} distinct elements.`, "");
+    for (const n of [...e.nodes.values()].slice(0, 8)) lines.push(`- \`${n.target}\` in ${n.rows.join(", ")}: ${n.why ?? ""}  \n  \`${n.html.replace(/\n/g, " ")}\``);
+    lines.push("");
+  }
+  const smalls = new Map();
+  for (const row of picked) {
+    for (const device of devices) {
+      for (const c of readJson(`${shot("build", row, device)}.json`)?.small ?? []) {
+        const key = `${c.tag}.${c.cls}`;
+        const e = smalls.get(key) ?? { n: 0, w: 999, h: 999, label: c.label, rows: new Set() };
+        e.n += 1;
+        e.w = Math.min(e.w, c.w);
+        e.h = Math.min(e.h, c.h);
+        e.rows.add(row.id);
+        smalls.set(key, e);
+      }
+    }
+  }
+  lines.push("## Controls under 34px (guide §8 asks 34px for pills, toolbar buttons, stars, ticks and steppers; 24px for the task tick, step boxes and the ×)", "");
+  for (const [key, e] of [...smalls].sort((a, b) => a[1].h - b[1].h)) lines.push(`- \`${key}\` min ${e.w}×${e.h}, ${e.n} seen, e.g. "${e.label}" in ${[...e.rows].slice(0, 2).join(", ")}`);
+  lines.push("");
+  writeFileSync(join(REPORT, "axe.md"), `${lines.join("\n")}\n`);
+  console.log(`Axe report: ${join(REPORT, "axe.md")} (${checked} scanned, ${failed.length} not scanned, ${byRule.size} rules with violations)`);
+}
+
 // ---- main ----
 const runnable = picked.filter((r) => !r.skip);
 const needBuild = side !== "proto" && runnable.length > 0;
@@ -637,7 +726,7 @@ try {
       process.exitCode = 1;
     }
   }
-  await report();
+  await (axe ? axeReport() : report());
 } finally {
   await browser?.close().catch(() => {});
   proto?.close();

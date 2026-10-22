@@ -97,6 +97,10 @@
   flex-wrap: wrap;
 }
 
+.dots em::before {
+  content: attr(data-more);
+}
+
 .dots em {
   font-size: var(--text-nano);
   font-style: normal;

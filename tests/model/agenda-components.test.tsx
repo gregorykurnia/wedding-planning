@@ -290,7 +290,7 @@ describe("MonthCalendar", () => {
         onToday={noop}
       />,
     );
-    expect(html).toContain("<em>+2</em>");
+    expect(html).toContain('<em data-more="+2">');
     expect(html).toContain("5 events");
   });
 });

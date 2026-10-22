@@ -11,6 +11,14 @@
   max-width: 100%;
   overflow-wrap: anywhere;
   text-align: left;
+  position: relative;
+}
+
+/* The pill is 31px high as drawn; this invisible rim makes the target the 34px the guide asks (§8). */
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: -1.5px 0;
 }
 
 .chip[aria-pressed="true"],

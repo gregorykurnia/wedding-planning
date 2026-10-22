@@ -51,6 +51,7 @@ import { CountLine, ShowMore, SortedNote } from "@/veil/parts/tools/results";
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { FilterSelect, OrderBy, type OrderState } from "@/veil/parts/tools/selects";
 import { FilterBar, Toggles, Toolbar } from "@/veil/parts/tools/toolbar";
+import { focusSearchAfter } from "@/veil/parts/focus-return";
 import { AddButton } from "@/veil/shell/add-button";
 import { Banner } from "@/veil/shell/banner";
 import { useConfirm } from "@/veil/shell/confirm";
@@ -531,7 +532,13 @@ function Items({ items }: { items: ItemRecord[] }) {
           inline
           title={noMatchTitle(query)}
           actions={
-            <Btn variant="quiet" onClick={clearAll}>
+            <Btn
+              variant="quiet"
+              onClick={(event) => {
+                clearAll();
+                focusSearchAfter(event);
+              }}
+            >
               {SHOW_EVERYTHING}
             </Btn>
           }

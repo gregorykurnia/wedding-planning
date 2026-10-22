@@ -105,7 +105,9 @@
 .link {
   background: none;
   border: 0;
-  padding: 0;
+  /* 2px above and below make the target 24px high (guide §8); the negative margin keeps the row as it was. */
+  padding: 2px 0;
+  margin: -2px 0;
   cursor: pointer;
   color: var(--color-text);
   text-decoration: underline;

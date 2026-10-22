@@ -35,6 +35,7 @@ import { FilterCheck, RangeField, ShowEverything } from "@/veil/parts/tools/filt
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { FilterSelect, OrderBy, type OrderState } from "@/veil/parts/tools/selects";
 import { Toggles, Toolbar } from "@/veil/parts/tools/toolbar";
+import { focusSearchAfter } from "@/veil/parts/focus-return";
 import { replaceAddress, veilHref } from "@/veil/href";
 import { AddButton } from "@/veil/shell/add-button";
 import { PageColumn } from "@/veil/shell/page-column";
@@ -185,7 +186,13 @@ function VenuesList({ venues, ready }: { venues: VenueListItem[]; ready: boolean
           inline
           title={NO_RESULTS_TITLE}
           actions={
-            <Btn variant="quiet" onClick={clearAll}>
+            <Btn
+              variant="quiet"
+              onClick={(event) => {
+                clearAll();
+                focusSearchAfter(event);
+              }}
+            >
               Show every venue
             </Btn>
           }

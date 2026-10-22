@@ -31,6 +31,7 @@ import { FilterCheck } from "@/veil/parts/tools/filters";
 import { ShowMore } from "@/veil/parts/tools/results";
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { Toolbar, Toggles } from "@/veil/parts/tools/toolbar";
+import { focusSearchAfter } from "@/veil/parts/focus-return";
 import { replaceAddress, veilHref } from "@/veil/href";
 import { AddButton } from "@/veil/shell/add-button";
 import { Banner } from "@/veil/shell/banner";
@@ -246,7 +247,13 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
           title={none.title}
           actions={
             isFilteringAgenda(filter) ? (
-              <Btn variant="quiet" onClick={showEverything}>
+              <Btn
+                variant="quiet"
+                onClick={(event) => {
+                  showEverything();
+                  focusSearchAfter(event);
+                }}
+              >
                 Show everything
               </Btn>
             ) : undefined

@@ -298,8 +298,11 @@ export function ItemRow({
               role="menuitem"
               className={entry.danger ? styles.rose : undefined}
               onClick={() => {
-                closeMenu(entry.action === "up" || entry.action === "down");
-                actions.onMenu?.(item, entry.action);
+                const step = entry.action === "up" ? -1 : entry.action === "down" ? 1 : 0;
+                closeMenu(step !== 0);
+                // Move up and Move down go the way Alt+↑/↓ does: focus returns to the handle and the move is announced.
+                if (step !== 0 && onMoveKey) onMoveKey(item, step);
+                else actions.onMenu?.(item, entry.action);
               }}
             >
               {entry.label}

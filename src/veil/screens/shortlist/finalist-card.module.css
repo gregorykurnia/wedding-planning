@@ -13,8 +13,9 @@
   border-radius: var(--radius-card);
 }
 
-/* A finalist that became a booking fades back. */
-.booked {
+/* A finalist that became a booking fades back: its name only, because the whole card at 70% took the gold flag
+   and the meta lines under 4.5:1 (guide §8, task 8.4). */
+.booked .name {
   opacity: 0.7;
 }
 

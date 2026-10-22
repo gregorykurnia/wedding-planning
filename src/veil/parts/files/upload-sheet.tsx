@@ -81,6 +81,7 @@ function QueueEntry({
           />
           <input
             aria-label={`Category for ${item.name}`}
+            dir="auto"
             list={categoriesId}
             placeholder="Category, optional"
             value={fields.category}

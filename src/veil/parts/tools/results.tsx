@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
+import { focusFirstNewAfter, focusSearchAfter } from "@/veil/parts/focus-return";
 import { moreText, sortedNoteText } from "./tools-text";
 import styles from "./tools.module.css";
 
@@ -26,7 +27,14 @@ type SortedNoteProps = {
 export function SortedNote({ label, onBack }: SortedNoteProps) {
   return (
     <p className={styles.sorted}>
-      {sortedNoteText(label)} <TextLink onClick={onBack}>Back to our order</TextLink>
+      {sortedNoteText(label)} <TextLink
+        onClick={(event) => {
+          onBack();
+          focusSearchAfter(event);
+        }}
+      >
+        Back to our order
+      </TextLink>
     </p>
   );
 }
@@ -40,7 +48,13 @@ export function ShowMore({ more, onMore }: { more: number; onMore: () => void })
   if (more <= 0) return null;
   return (
     <p className={styles.more}>
-      <Btn variant="quiet" onClick={onMore}>
+      <Btn
+        variant="quiet"
+        onClick={(event) => {
+          onMore();
+          focusFirstNewAfter(event);
+        }}
+      >
         {moreText(more)}
       </Btn>
     </p>

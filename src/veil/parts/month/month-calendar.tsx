@@ -99,7 +99,8 @@ function DayButton({ cell, date, onPick }: { cell: MonthCell; date: IsoDate; onP
         {cell.dots.map((dot, index) => (
           <i key={index} className={`${styles.dot} ${styles[dot]}`} />
         ))}
-        {cell.more ? <em>+{cell.more}</em> : null}
+        {/* The count is drawn from the attribute, not as text: the cell's name already says everything on the day, and a visible "+14" it lacks fails WCAG 2.5.3 (label in name). */}
+        {cell.more ? <em data-more={`+${cell.more}`} /> : null}
       </span>
     </button>
   );

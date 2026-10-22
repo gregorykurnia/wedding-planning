@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TextLink } from "@/veil/parts/actions/text-link";
+import { focusSearchAfter } from "@/veil/parts/focus-return";
 import styles from "./tools.module.css";
 
 type RangeFieldProps = {
@@ -79,5 +80,14 @@ type ShowEverythingProps = {
 /** Guide §4.12 and §6.8. A way back to everything, shown only while a filter is on. */
 export function ShowEverything({ filtering, label = "Show everything", onClear }: ShowEverythingProps) {
   if (!filtering) return null;
-  return <TextLink onClick={onClear}>{label}</TextLink>;
+  return (
+    <TextLink
+      onClick={(event) => {
+        onClear();
+        focusSearchAfter(event);
+      }}
+    >
+      {label}
+    </TextLink>
+  );
 }

@@ -7,6 +7,7 @@ import type { SubtaskRecord, TaskRecord } from "@/lib/model/tasks";
 import { Chevron } from "@/veil/icons/chevron";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { DateInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
+import { focusNextAvailable } from "@/veil/parts/focus-return";
 import { useDraft } from "@/veil/parts/use-draft";
 import { useFlash } from "@/veil/shell/flash";
 import {
@@ -124,7 +125,21 @@ function StepRow({ task, step, actions, failed, focus, onFocused, disabled }: St
         aria-label="Remove step"
         title="Remove step"
         disabled={disabled}
-        onClick={() => actions.onRemoveStep?.(task, step)}
+        onClick={(event) => {
+          // The row goes, so focus moves to the next step's title, the one before it, or Add a step (P4-S19).
+          const row = event.currentTarget.closest("li");
+          const next = row?.nextElementSibling;
+          const before = row?.previousElementSibling;
+          const list = row?.parentElement;
+          const titleOf = (li: Element | null | undefined) => li?.querySelector<HTMLElement>('input[type="text"]');
+          focusNextAvailable(
+            event.currentTarget,
+            () => titleOf(next),
+            () => titleOf(before),
+            () => list?.nextElementSibling?.querySelector<HTMLElement>("button, a"),
+          );
+          actions.onRemoveStep?.(task, step);
+        }}
       >
         ×
       </button>
@@ -189,7 +204,23 @@ export function TaskRow({
   const tick = (event: MouseEvent) => {
     // The tick lives inside the summary: it finishes the task and leaves the disclosure as it was.
     event.preventDefault();
-    if (!demo) actions.onFinish?.(task, !task.done);
+    if (demo) return;
+    // The row moves to the other list, so focus goes to its tick if it's still shown (a reopened task),
+    // else to the next row's tick, the one before it, or the finished-tasks disclosure (guide §8, P4-S19).
+    // The neighbours are taken before the write: a row that has left the page has no siblings.
+    const row = event.currentTarget.closest("li");
+    const next = row?.nextElementSibling;
+    const before = row?.previousElementSibling;
+    const main = row?.closest("main");
+    const tickOf = (li: Element | null | undefined) => li?.querySelector<HTMLElement>('[role="checkbox"]');
+    focusNextAvailable(
+      event.currentTarget,
+      () => document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(task.id)}"] [role="checkbox"]`),
+      () => tickOf(next),
+      () => tickOf(before),
+      () => main?.querySelector<HTMLElement>("details:not([data-task-id]) > summary"),
+    );
+    actions.onFinish?.(task, !task.done);
   };
   const commitDue = (text: string) => {
     const next = text === "" ? null : dateValue(text);
