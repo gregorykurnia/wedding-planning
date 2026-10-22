@@ -124,6 +124,12 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
     const metaRef = doc(database, META_COLLECTION, META_ID);
     const marker = await tx.get(metaRef);
     const anchor = afterId === null ? null : await tx.get(doc(database, COLLECTION, afterId));
+    // A retry after a timeout whose add did land: those rows stay as they are,
+    // with whatever was typed into them since (Phase 7 review).
+    const landed = await Promise.all(rows.map((row) => tx.get(doc(database, COLLECTION, row.id))));
+    if (landed.every((snap) => snap.exists())) {
+      return landed.map((snap) => ({ id: snap.id, sortOrder: snap.data()!.sortOrder as number }));
+    }
     if (anchor) {
       if (!anchor.exists()) throw new WriteError("missing", `${COLLECTION}/${afterId} is gone`);
       if (anchor.data().sortOrder !== before) throw new WriteError("changed", "The list changed before these could be added.");
@@ -133,6 +139,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
     const start = afterId === null ? Math.max(markerNext, positions[0]) : null;
     const at = (index: number) => (start === null ? positions[index] : start + index);
     rows.forEach((row, index) => {
+      if (landed[index].exists()) return;
       tx.set(doc(database, COLLECTION, row.id), {
         id: row.id,
         item: row.item,
@@ -146,7 +153,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
       });
     });
     tx.set(metaRef, { ...LIST_CHANGED, ...(start === null ? {} : { nextSortOrder: start + rows.length }), ...stamp(database) }, { merge: true });
-    return rows.map((row, index) => ({ id: row.id, sortOrder: at(index) }));
+    return rows.map((row, index) => ({ id: row.id, sortOrder: landed[index].exists() ? (landed[index].data()!.sortOrder as number) : at(index) }));
   }, opts);
   return [...ordered.filter((r) => !added.some((a) => a.id === r.id)), ...added].sort((a, z) => a.sortOrder - z.sortOrder);
 }

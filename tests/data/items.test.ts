@@ -186,6 +186,18 @@ describe("adding items", () => {
     expect(await order()).toEqual(["a", id]);
   });
 
+  // Phase 7 review: the add timed out but landed, the row was named, then Try again.
+  it("keeps what was typed into a row whose add landed before its Try again", async () => {
+    await seed("a", 0);
+    const [id] = newItemIds(1, g());
+    const row = { id, item: "", types: [], persons: [] };
+    await addItems([row], "a", await placed(), g());
+    await setDoc(doc(gregory.db, "masterListItems", id), { item: "Veil", confirmed: true }, { merge: true });
+    await addItems([row], "a", [{ id: "a", sortOrder: 0 }], g());
+    expect((await getDoc(doc(gregory.db, "masterListItems", id))).data()).toMatchObject({ item: "Veil", confirmed: true });
+    expect(await order()).toEqual(["a", id]);
+  });
+
   it("renumbers the list first when the gap below the row has run out", async () => {
     await seed("a", 1);
     await seed("b", 1 + 1e-9);

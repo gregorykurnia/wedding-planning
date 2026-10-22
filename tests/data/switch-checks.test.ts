@@ -48,12 +48,36 @@ describe("8-old-ui-sync (review P1-S13)", () => {
     expect(await get("venues/edited")).toMatchObject({ agreedPrice: 350, budgetEstimate: 350, updatedBy: "migration" });
     expect((await get("venues/same"))?.updatedBy).toBeUndefined();
     expect((await get("venues/blank"))?.agreedPrice).toBe(80);
-    expect((await get("venues/moved"))?.booking).toEqual({ on: null, from: "venue", removed: true });
-    expect((await get("vendors/moved"))?.booking).toEqual({ on: "2026-05-01", from: "vendor", removed: true });
+    const by = { removedBy: "8-old-ui-sync" };
+    expect((await get("venues/moved"))?.booking).toEqual({ on: null, from: "venue", removed: true, ...by });
+    expect((await get("vendors/moved"))?.booking).toEqual({ on: "2026-05-01", from: "vendor", removed: true, ...by });
     expect((await get("vendors/done"))?.booking.removed).toBe(false);
     expect((await get("vendors/direct"))?.booking.removed).toBe(false);
     const [again] = await run(["8-old-ui-sync"], false, quiet);
     expect(again.planned).toBe(0);
+  });
+
+  // Phase 7 review: a local preview against production writes through the new UI.
+  it("only reports records the new UI has written", async () => {
+    await db.doc("venues/edited").update({ updatedBy: "uid-greg" });
+    await db.doc("vendors/moved").update({ updatedBy: "uid-bella" });
+    const [result] = await run(["8-old-ui-sync"], true, quiet, true);
+    expect(result.planned).toBe(1);
+    expect(result.report.join("\n")).toMatch(/venue "Villa" agreed price 300 → 350.*left alone/);
+    expect(result.report.join("\n")).toMatch(/vendor "Florist".*left alone/);
+    expect((await get("venues/edited"))?.agreedPrice).toBe(300);
+    expect((await get("vendors/moved"))?.booking.removed).toBe(false);
+  });
+
+  it("puts back a booking it removed once the old UI books it again", async () => {
+    await run(["8-old-ui-sync"], true, quiet);
+    await db.doc("vendors/moved").update({ contractStatus: "Chosen" });
+    await db.doc("vendors/removed").update({ contractStatus: "Chosen" });
+    const [result] = await run(["8-old-ui-sync"], true, quiet, true);
+    expect(result.planned).toBe(1);
+    expect((await get("vendors/moved"))?.booking).toEqual({ on: "2026-05-01", from: "vendor", removed: false });
+    // One the new UI removed stays removed.
+    expect((await get("vendors/removed"))?.booking.removed).toBe(true);
   });
 });
 

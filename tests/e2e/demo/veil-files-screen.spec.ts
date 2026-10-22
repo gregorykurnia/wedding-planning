@@ -20,3 +20,17 @@ test("shows no files yet, with the starts and the sub-navigation", async ({ page
   await expect(page.getByRole("dialog").getByText("Demonstration mode: adding is turned off.")).toBeVisible();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Make folder" })).toBeDisabled();
 });
+
+// Phase 7 review: on a production build (E2E_BUILD=1) a prerendered page kept
+// the query of its first load, so the Files link went back to that folder.
+test("a link to Files after opening a folder's address goes to the top level", async ({ page }) => {
+  await page.goto("/sign-in");
+  await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/documents/files?folder=elsewhere");
+  await expect(page.getByRole("heading", { name: "Files", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await page.getByRole("link", { name: "Documents", exact: true }).first().click();
+  await expect(page).toHaveURL("/documents");
+  await page.getByRole("link", { name: "Files", exact: true }).first().click();
+  await expect(page).toHaveURL("/documents/files");
+});

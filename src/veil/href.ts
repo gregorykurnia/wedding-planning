@@ -55,22 +55,27 @@ const under = (path: string, base: string) =>
 /**
  * Where to go after sign-in: `next` only when it is an address inside the new
  * UI, otherwise the overview. At the root that is any path except the old UI's
- * frozen fallback (`/old`). `base` is for tests of a prefixed setup.
+ * frozen fallback (`/old`), and never sign-in itself. `base` is for tests of a
+ * prefixed setup.
  * Backslashes are refused because browsers read `/\evil.com` as `//evil.com`.
  */
 export function safeNext(next: string | null, base: string = VEIL_BASE): string {
   const home = base || "/";
   if (!next || next.startsWith("//") || /[\\\s]/.test(next) || /%5c/i.test(next)) return home;
   const inside = base ? under(next, base) : next.startsWith("/") && !(LEGACY_BASE && under(next, LEGACY_BASE));
-  return inside ? next : home;
+  return inside && !under(next, `${base}/sign-in`) ? next : home;
 }
 
 /**
  * Replaces the address without a navigation: a query a screen has handled
  * (`?event=`, `?new=1`, …) or the folder Files moved to. Next keeps
- * `useSearchParams` in step with it. `router.replace` can't do this on a
- * prerendered page: on a production build it takes `/schedule` for the address
- * it is already on when the browser shows `/schedule?new=1`, and does nothing.
+ * `useSearchParams` in step with it.
+ *
+ * The pages whose screens read a query render per request (`connection()` in
+ * their `page.tsx`). A prerendered page is cached by the client router without
+ * its query, but with the address of the first load: after opening
+ * `/documents/files?folder=A`, a link to `/documents/files` went back to folder
+ * A, and `router.replace` to the bare path did nothing (Phase 7 review).
  */
 export function replaceAddress(href: string): void {
   window.history.replaceState(null, "", href);

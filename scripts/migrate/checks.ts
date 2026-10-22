@@ -14,7 +14,7 @@
  *   editor checks), so they open empty and read-only.
  *
  * The old-UI drift (P1-S11, P1-S12, P1-S13) is checked by the migrations' own
- * dry runs: `npm run migrate 2-guest-numbers 6-started-on 8-old-ui-sync`.
+ * dry runs: `npm run migrate -- 2-guest-numbers 6-started-on 8-old-ui-sync`.
  */
 import { getSchema } from "@tiptap/core";
 import type { Firestore } from "firebase-admin/firestore";

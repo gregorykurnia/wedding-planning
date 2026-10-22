@@ -40,6 +40,8 @@ export async function run(
   force = false,
 ) {
   const { db, projectId, emulator } = connect();
+  const unknown = names.filter((n) => n !== "all" && !MIGRATIONS.some((m) => m.name === n));
+  if (unknown.length) throw new Error(`No migration called ${unknown.join(", ")}`);
   const chosen = names.includes("all") ? MIGRATIONS : MIGRATIONS.filter((m) => names.includes(m.name));
   if (chosen.length === 0) throw new Error(`Name a migration or "all": ${MIGRATIONS.map((m) => m.name).join(", ")}`);
   if (apply && !force) {
@@ -68,12 +70,19 @@ export async function run(
     if (apply) await recordRun(db, m.name, written, plan.report);
     results.push({ name: m.name, planned: plan.writes.length, written, report: plan.report });
   }
-  if (!apply) log("\nDry run: nothing was written. Add --apply to write.");
+  if (!apply) log("\nDry run: nothing was written. Add --apply to write (through npm: npm run migrate -- <names> --apply).");
   return results;
 }
 
 if (process.argv[1]?.endsWith("run.ts")) {
   const args = process.argv.slice(2);
+  // `npm run migrate x --apply` keeps the flags for npm itself, so the run would
+  // quietly be another dry run: they need `npm run migrate -- x --apply`. npm
+  // passes on only the --force it took; the dry run's last line says the rest.
+  if (process.env.npm_config_apply || process.env.npm_config_force) {
+    console.error("Put -- before the names and flags: npm run migrate -- <names> --apply");
+    process.exit(1);
+  }
   run(args.filter((a) => !a.startsWith("--")), args.includes("--apply"), console.log, args.includes("--force")).catch((err) => {
     console.error(err instanceof Error ? err.message : err);
     process.exit(1);
