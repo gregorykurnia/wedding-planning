@@ -752,7 +752,7 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | S7 jump to the source | Schedule | row links | routes to booking (`vendor-…`) and `/schedule/tasks?open=` | 4.20 | [x] |
 | S8 tasks with steps | Tasks | `TaskRow`, `StepRow`, `Thread small` | `collections/todos.ts` (steps by transaction) | 1.8, 4.22 | [ ] |
 | S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [ ] |
-| S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [ ] |
+| S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [x] |
 | R1 rich documents | A document | `EditorToolbar`, pops | Tiptap StarterKit, TextStyleKit; `editor/marks.ts` | 4.17 | [x] |
 | R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [ ] |
 | R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [ ] |
@@ -765,11 +765,11 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [x] |
 | R11 open, download, move, edit, delete | Files | `FileDetailsSheet`, `MoveSheet` | `updateWeddingFile`, move | 4.19 | [ ] |
 | R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
-| R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [ ] |
+| R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [x] |
 | R14 find a file anywhere | Files | `SearchField`, `ShowMore` | data `useFileSearch` | 4.19 | [ ] |
 | A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [x] |
 | A2 live partner changes | every screen | `.flash`, partner toast, `Banner` (document) | `activity` listener, `presence` | 1.8, 2.7 | [ ] |
-| A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [ ] |
+| A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [x] |
 | A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
 | A5 account, settings, sign out | Menu, Settings | `MenuIndex` account line, `AccountsList` | `members` | 2.4, 4.25 | [ ] |
 | A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [x] |
@@ -794,7 +794,7 @@ Every place in the current code that produces something visible, from a full swe
 | `app/files/page.tsx` | Files §5.18 | [x] |
 | `app/settings/page.tsx` | Wedding settings §5.3 (partnerEmail and venue dropped, §4 #3) | [x] |
 | `app/budget/page.tsx`, `app/checklist/page.tsx` (orphaned) | dropped (§4 #1, #2); data stays in Firestore | [ ] |
-| no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [ ] |
+| no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [x] |
 | **Auth** | | |
 | `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [x] |
 | `login/page.tsx` Register button (`auth-context.tsx` `createUserWithEmailAndPassword`) | dropped (§9.2 Q2: both sign in with Google) | n/a |
@@ -850,13 +850,13 @@ Every place in the current code that produces something visible, from a full swe
 | stored marks: fonts `""`, Inter, Georgia, Arial, Courier New; sizes 14/16/20/28px; any hex colour and highlight | read unchanged; normalised per §9.2 Q10 | [x] |
 | legacy plain-text notes (`notes.ts:21-45`) | same conversion, kept in the data layer | [x] |
 | **Exports and output** | | |
-| CSV `vendors-table.tsx:84-120` (`vendors-YYYY-MM-DD.csv`, 9 columns incl. email) | filename `vendors-<names>.csv` (§5.11); columns: **gap N5** (§9.1 G5); email dropped (§4 #6) | [ ] |
+| CSV `vendors-table.tsx:84-120` (`vendors-YYYY-MM-DD.csv`, 9 columns incl. email) | filename `vendors-<names>.csv` (§5.11); columns: **gap N5** (§9.1 G5); email dropped (§4 #6) | [x] |
 | PDF shrinking `compress-pdf.ts` | kept; status lines in the upload queue (§4.20) | [ ] |
 | print styles, emails | none today, none designed | n/a |
 | WhatsApp links `contact-cell.tsx:24`, `vendors-table.tsx:220` | `WhatsAppLink` with the 0 → 62 rule (§4.23) | [ ] |
 | **Guest or shared-link views** | none today, none designed | n/a |
 | **PWA** | | |
-| `manifest.ts` name, short name, description, colours `#2b2f4a`, icons (maskable reuses 512) | **gap N1** (§9.1 G1) | [ ] |
+| `manifest.ts` name, short name, description, colours `#2b2f4a`, icons (maskable reuses 512) | **gap N1** (§9.1 G1) | [x] |
 | `layout.tsx:15-30` title, description, apple web app title, icons; `viewport.themeColor` | **gap N1** | [ ] |
 | `src/app/favicon.ico`, `public/icon-192.png`, `icon-512.png`, `apple-icon.png` | **gap N1**; old files deleted in Phase 9 | [ ] |
 | leftover template SVGs in `public/` (`file`, `globe`, `next`, `vercel`, `window`) | delete in Phase 9 | [ ] |
@@ -888,7 +888,7 @@ Every place in the current code that produces something visible, from a full swe
 | mixed date formats (§5 #37) | model `dates.ts` per guide §6.11 | [ ] |
 | a booking with no booking date, a finished task with no finish date (data from before this rebuild) | **gap N8** (§9.1 G8) | [ ] |
 | **Reminders** | | |
-| `reminderMinutes` stored, never sent | real reminders, sent once a day (Tasks 6.1, 6.2); device that can't receive them: **gap N6** (§9.1 G6); reminder choices: **gap N11** (§9.1 G11) | [ ] |
+| `reminderMinutes` stored, never sent | real reminders, sent once a day (Tasks 6.1, 6.2); device that can't receive them: **gap N6** (§9.1 G6); reminder choices: **gap N11** (§9.1 G11) | [x] |
 | **After the wedding** | | |
 | countdown floors at 0 (`page.tsx`) | the day itself and after: **gap N7** (§9.1 G7) | [ ] |
 
@@ -1003,7 +1003,9 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 6 | 6.5 Not found and error screens | Haiku 5.5 Max | $0.21 | Port of need N2's design | 2026-10-19 · lane t1, 10d0d7d; signed-out view not built, the gate signs visitors in first | [x] |
 | 6 | 6.6 Vendor CSV columns | Haiku 5.5 xHigh | $0.12 | A list of columns from need N5 | built inside Task 4.11 (a8f26ea) on Sonnet 5.5, since the export needed them; `VENDOR_COLUMNS` and 9 model tests | [x] |
 | 6 | 6.7 Old-names check | Haiku 5.5 Max | $0.21 | A scan script with a word list | bc5d423; 53 terms, 7 tests; the current code has no hits | [x] |
-| 6 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 6 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-22 · main folder, 1d0d871: no blockers; P6-S1–S7 fixed in the review, S12 folded into 7.1, the rest routed to 6.F1 and 6.F2; full e2e 584 of 588, the 4 specs 5.F3's offline wording left behind fixed and passing; see `redesign/reviews/phase-6-review.md` | [x] |
+| 6 | 6.F1 Review fixes: write races | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 6) | | [ ] |
+| 6 | 6.F2 Review fixes: offline states and wiring tests | Opus 5.5 Medium | $1.34 | Same | | [ ] |
 | 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
 | 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
 | 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
@@ -1357,8 +1359,8 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 #### Task 4.25: Wedding settings · Sonnet 5.5 High
 - **Guide:** §5.3. **Prototype:** `settings.html`. Names and date saving as you go (no whole-document overwrite, §5 #26), who can open the planner from `members`, sign out, the notification block (wired in 6.2), install steps and installed state, doors to Who pays and Vendor categories. The accounts list also carries the N3 note and **Swap them** (`SWAP_NOTE`, `SWAP_LINK` and `swapToast` in `src/lib/model/who.ts`; the write and its undo are `swapNames` in `src/lib/data/who.ts`, which takes `useWho().settings`, the account's email and `useMembers()`); the toast is `toast.undoable(swapToast(name), undo)`.
 
-#### Tasks 4.F1–4.F5 and 5.F1–5.F3: Review fixes · Opus 5.5 Medium
-- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F). Read each item in its review file; that's the whole brief, plus the files it names.
+#### Tasks 4.F1–4.F5, 5.F1–5.F3 and 6.F1–6.F2: Review fixes · Opus 5.5 Medium
+- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F, "Before Phase 7" for 6.F). Read each item in its review file; that's the whole brief, plus the files it names.
 - **Do:** fix each item, with a test that fails before the fix (an emulator test for any write, a model test for any rule). Where the item offers two fixes, take the one that changes less. A fix that needs a design decision becomes a gap (§9.1, `needs.md`) instead.
 - **Done when:** every listed item is fixed or turned into a gap, named by ID in the commit body. Both lanes finish their 4.F tasks before Phase 5 starts; the Phase 5 review re-checks them.
 - **Production is not part of these tasks.** A fix to `firestore.rules` is done when the rules and their rules tests are committed; deploying them (`npx firebase deploy --only firestore:rules`) is the owner's step, added to `redesign/before-merge.md`. The task then ends done, not blocked.
@@ -1445,7 +1447,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 7.1: Switch-over commit · Opus 5.5 High
 - **Risk:** breaks production for both of you at once.
-- **Do, in one commit titled "Switch to the new UI":** move `src/app/(veil)/new/*` to `src/app/(veil)/*`; move `src/app/(legacy)/*` (except the root layout) into `src/app/(legacy)/old/*`; set `LEGACY_BASE = '/old'`; replace every `/new` prefix in the new UI's links (they all go through one `veilHref()` helper from Task 2.4, so this is one constant); add permanent redirects in `next.config.ts` for old addresses with no new page (`/login` → `/sign-in`, `/confirmed` → `/budget/bookings`, `/master-list` → `/items`, `/todo` → `/schedule/tasks`, `/notes` → `/documents`, `/checklist` → `/schedule/tasks`); `/new/:path*` redirects to `/:path*`; bump the service-worker cache version.
+- **Do, in one commit titled "Switch to the new UI":** move `src/app/(veil)/new/*` to `src/app/(veil)/*`; move `src/app/(legacy)/*` (except the root layout) into `src/app/(legacy)/old/*`; set `LEGACY_BASE = '/old'`; replace every `/new` prefix in the new UI's links (they all go through one `veilHref()` helper from Task 2.4, so this is one constant); add permanent redirects in `next.config.ts` for old addresses with no new page (`/login` → `/sign-in`, `/confirmed` → `/budget/bookings`, `/master-list` → `/items`, `/todo` → `/schedule/tasks`, `/notes` → `/documents`, `/checklist` → `/schedule/tasks`); `/new/:path*` redirects to `/:path*`; bump the service-worker cache version. The gallery-off rewrite (`next.config.ts`, `/new/gallery/:path*` → `/gallery-off`) must point at a path the moved catch-all `[...address]` can't answer with a 200, or the gallery-off test checks for the 404 (Phase 6 review, P6-S12).
 - **Also, the safe half of review items** P1-S11, P1-S12, P1-S13, P1-S15, P3-S13, P5-S8 and P5-S22 (`redesign/reviews/triage.md`): add the gallery-off model test; write the read-only production checks (doubled package files in `weddingFiles`, `notes` that fail `nodeFromJSON(normaliseDoc(c)).check()`) and any sync step P1-S13 needs as scripts that default to a dry run, and run them against the emulator. Running them on production, re-running the affected migrations (with 4.F3's `--force` guard) and checking Vercel's production variables (`NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` unset) are the owner's steps in `redesign/before-merge.md`: the switch reaches production only with the merge, so that is when they count. This task touches nothing in production.
 - **Done when:** a local production build passes every e2e test at the new paths, and the old UI works at `/old`.
 

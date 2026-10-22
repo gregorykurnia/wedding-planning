@@ -314,11 +314,13 @@ test("a step that can't be saved keeps what was typed, and Try again saves it", 
   await page.context().setOffline(true);
   await second.fill("Pick the metal and the size");
   await second.press("Enter");
-  await expect(rings.getByText("Couldn’t save this step. What you typed is kept.")).toBeVisible({ timeout: 30_000 });
+  // Offline, the line says so (P5-S16); back online it names the step.
+  await expect(rings.getByText("Not saved: you’re offline. Keep this page open.")).toBeVisible({ timeout: 30_000 });
   await expect(second).toHaveValue("Pick the metal and the size");
   await expect(second).toHaveAttribute("aria-invalid", "true");
 
   await page.context().setOffline(false);
+  await expect(rings.getByText("Couldn’t save this step. What you typed is kept.")).toBeVisible();
   await rings.getByRole("button", { name: "Try again" }).click();
   await expect(rings.getByText("Couldn’t save this step. What you typed is kept.")).toHaveCount(0, { timeout: 30_000 });
   await expect.poll(async () => ((await read("todos", "tk-rings"))?.subtasks as { title: string }[])[1].title).toBe("Pick the metal and the size");
@@ -337,10 +339,10 @@ test("a failed step title stays failed when a tick on the same step saves, and t
   await first.press("Enter");
   await notes.fill("Bring the ring sizer");
   await notes.blur();
-  // Two failures at once: the step's and the notes'.
-  await expect(stepLine).toBeVisible({ timeout: 30_000 });
-  await expect(fieldLine).toBeVisible({ timeout: 30_000 });
-  await expect(notes).toHaveAttribute("aria-invalid", "true");
+  // Two failures at once: the step's and the notes', each saying it's offline (P5-S16).
+  await expect(first).toHaveAttribute("aria-invalid", "true", { timeout: 30_000 });
+  await expect(notes).toHaveAttribute("aria-invalid", "true", { timeout: 30_000 });
+  await expect(rings.getByText("Not saved: you’re offline. Keep this page open.").first()).toBeVisible();
 
   // A tick on the same step lands; the title's failure, and the notes', stay until their own retry.
   await page.context().setOffline(false);

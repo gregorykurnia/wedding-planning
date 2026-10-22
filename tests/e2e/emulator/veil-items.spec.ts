@@ -238,7 +238,8 @@ test("two changes that didn't save show together, a later save on the row clears
   await vendor.fill("Manis Cake Studio");
   await vendor.press("Enter");
   await tick.click();
-  await expect(line).toBeVisible({ timeout: 30_000 });
+  // Offline, the line says so (P5-S16); back online it names what didn't save.
+  await expect(cake.getByText("Not saved: you’re offline. Keep this page open.").first()).toBeVisible({ timeout: 30_000 });
   await expect(vendor).toHaveAttribute("aria-invalid", "true");
   await expect(tick).toHaveClass(/ringed/, { timeout: 30_000 });
   await expect(tick).toHaveAttribute("aria-pressed", "true");

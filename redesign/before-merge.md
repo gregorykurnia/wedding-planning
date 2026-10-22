@@ -8,6 +8,7 @@ Everything left for the owner, because it touches production or needs them in pe
 - [ ] **Doubled package files** (P1-S15): Task 7.1's read-only `weddingFiles` check on production; a cleanup migration only if it finds duplicates.
 - [ ] **Documents the content check refuses** (P5-S8 second half): Task 7.1's read-only `notes` pass on production.
 - [ ] **Vercel production variables** (P3-S13, P5-S22 second half): `NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` are not set.
+- [ ] **No emulator variables in Vercel production** (Phase 6 review): `FIRESTORE_EMULATOR_HOST` and `FIREBASE_AUTH_EMULATOR_HOST` are not set. With either set, the server starts without credentials, and with the second `verifyIdToken` accepts unsigned tokens.
 - [ ] **Push reminder keys** in Vercel production: Task 6.2's "Owner setup" (VAPID keys, `CRON_SECRET`, `FIREBASE_SERVICE_ACCOUNT` if missing).
 
 ## In person (before the merge)

@@ -245,8 +245,10 @@ test("two replies that didn't save stay chosen together, another row's save clea
   await page.context().setOffline(true);
   await reply(page, "g-lily", "Attending").click();
   await reply(page, "g-dewi", "Not attending").click();
-  await expect(lilyLine).toBeVisible({ timeout: 30_000 });
-  await expect(dewiLine).toBeVisible({ timeout: 30_000 });
+  // Offline, each line says so (P5-S16); back online they name the reply.
+  const offline = "Not saved: you’re offline. Keep this page open.";
+  await expect(row(page, "g-lily").getByText(offline)).toBeVisible({ timeout: 30_000 });
+  await expect(row(page, "g-dewi").getByText(offline)).toBeVisible({ timeout: 30_000 });
 
   await page.context().setOffline(false);
   await reply(page, "g-wayan", "Attending").click();

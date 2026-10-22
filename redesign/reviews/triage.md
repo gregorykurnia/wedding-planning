@@ -64,3 +64,28 @@ All of Phase 4's routed items were re-checked: 4.F1–4.F5 fixed them, except P1
 | Item | Reason |
 |---|---|
 | `readAmount("-0")` against `amountProblem("-0")` (no ID) | The field refuses it, so nothing is read or lost |
+
+## Phase 6 (sorted 2026-10-22, in the review)
+
+Phase 5's routed items were re-checked: 5.F1–5.F3 fixed them, except the parts listed below as P6-S8, P6-S9 (P5-S18, P5-S19 follow-ups), P6-S15–S16 (P5-S7), P6-S17 (P5-S16) and P6-S18 (wiring tests for P2-S1, P5-S2, P5-S19, P5-S26). P6-S1–S7 were fixed in the review.
+
+### Before Phase 7: fix tasks 6.F1–6.F2
+
+| Task | Lane | Items |
+|---|---|---|
+| 6.F1 Write races | main folder | P6-S8 (an add and a pending move take the same gap), P6-S9 (an older try's Try again overwrites newer text), P6-S10 (a late first guest add undoes Try again's changes), P6-S11 (a delete during a renumber above 490 items scrambles the order), P6-S13 (a Deposit reads negative after an overpaid split and a lower Try again) |
+| 6.F2 Offline states and wiring tests | main folder | P6-S14 (a sheet freed by a failed add closes with no word), P6-S15 (offline, secondary lists never loaded read as empty), P6-S16 (offline booking says "isn't here"), P6-S17 (the rest of the offline save wording), P6-S18 (wiring tests that fail when the wiring is removed) |
+
+### Folded into later tasks
+
+| Item | Task | Why there |
+|---|---|---|
+| P6-S12 (the gallery-off rewrite lands on the catch-all after the move) | 7.1 Switch-over | It only breaks once `(veil)/new/*` moves to the root; 7.1's text now says so |
+
+### Dropped
+
+| Item | Reason |
+|---|---|
+| P6-S19 (the old UI keeps `remindersSent` when an event's date changes) | Old UI only: it's the fallback for the launch window, deleted in 9.2; the new UI clears it |
+| Chrome's own install offer beside the card (no `preventDefault`) | Keeps the browser's offer, which is what an installed-from-menu user sees anyway; P6-S1 hides the card after either |
+| A `maxDuration` on the cron route | Only a few reminders are ever due; the default 300 s is far above a run |
