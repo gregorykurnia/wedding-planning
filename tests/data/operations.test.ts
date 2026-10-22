@@ -154,6 +154,14 @@ describe("addDirectBooking", () => {
     expect(await read("fileFolders", "own")).toMatchObject({ name: "Rings", parentId: "root", recordRef: { kind: "booking", id: bookingId } });
     expect((await read("weddingFiles", "contract2"))?.folderId).toBe("own");
   });
+
+  it("puts the booking's folder at the top when its parent was deleted before the add (Phase 6 review)", async () => {
+    await setDoc(doc(gregory.db, "weddingFiles", "contract3"), { name: "Contract", folderId: null, url: "https://example.test/c.pdf" });
+    const input = { name: "Florist", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["contract3"], folder: { id: "own2", parentId: "gone" } };
+    await addDirectBooking(input, null, { ...g(), id: "direct5" });
+    expect(await read("fileFolders", "own2")).toMatchObject({ name: "Florist", parentId: null });
+    expect((await read("weddingFiles", "contract3"))?.folderId).toBe("own2");
+  });
 });
 
 describe("split, parts, payments and removing a booking", () => {

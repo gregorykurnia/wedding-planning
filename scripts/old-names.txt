@@ -56,7 +56,7 @@ Sub-entry
 Start writing
 Skip for now
 Clear filters
-Firebase isn't connected
+Firebase isn
 Copy to shortlist
 Confirmed/Not
 Dashboard

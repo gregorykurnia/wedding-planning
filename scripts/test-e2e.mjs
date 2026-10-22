@@ -279,6 +279,42 @@ function outOfMemory() {
   }
 }
 
+// Playwright starts each web server (the dev servers, the emulators) in a
+// process group of its own, which the group kill above can't reach. After a
+// pass, whatever still listens on this copy's own test ports (the offsets in
+// tests/e2e/emulator-config.ts) is one of them, so it is stopped. Other
+// copies and other projects use other ports and are never touched.
+function ownPorts() {
+  const raw =
+    process.env.TEST_PORT_OFFSET ?? (() => {
+      try {
+        return readFileSync(".test-port-offset", "utf8").trim();
+      } catch {
+        return "0";
+      }
+    })();
+  const offset = Number(raw);
+  if (!Number.isInteger(offset) || offset < 0 || offset > 90) return [];
+  return [3100, 3101, 9099, 8080, 9150, 4400, 4500].map((port) => port + offset);
+}
+
+function freeOwnPorts() {
+  for (const port of ownPorts()) {
+    let listening = "";
+    try {
+      listening = execFileSync("ss", ["-ltnpH", `sport = :${port}`], { encoding: "utf8" });
+    } catch {
+      continue;
+    }
+    for (const [, pid] of listening.matchAll(/pid=(\d+)/g)) {
+      console.error(`e2e: stopping process ${pid}, left listening on this copy's test port ${port}.`);
+      try {
+        process.kill(Number(pid), "SIGKILL");
+      } catch {}
+    }
+  }
+}
+
 function runPass(pass) {
   const watchLog = pass.servers !== "demo";
   if (watchLog) {
@@ -317,10 +353,11 @@ function runPass(pass) {
   return new Promise((resolve) => {
     child.on("exit", (code, signal) => {
       if (watcher) clearInterval(watcher);
-      // Anything the pass left in its group (a server Playwright didn't stop).
+      // Anything the pass left in its group, then on this copy's own ports.
       try {
         process.kill(-child.pid, "SIGKILL");
       } catch {}
+      freeOwnPorts();
       resolve(code ?? (signal ? 1 : 0));
     });
   });

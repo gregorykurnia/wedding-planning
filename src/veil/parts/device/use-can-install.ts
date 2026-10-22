@@ -13,6 +13,12 @@ if (typeof window !== "undefined") {
     installable = true;
     listeners.forEach((listen) => listen());
   });
+  // Installed from the browser's own menu: this tab stays a browser tab, so
+  // stop suggesting it.
+  window.addEventListener("appinstalled", () => {
+    installable = false;
+    listeners.forEach((listen) => listen());
+  });
 }
 
 function subscribe(onChange: () => void) {

@@ -176,6 +176,9 @@ export async function addDirectBooking(
       const ref = doc(database, "weddingFiles", fileId);
       if ((await tx.get(ref)).exists()) files.push(ref);
     }
+    // A parent folder deleted since it was looked up: the folder goes at the top.
+    let parentId = input.folder?.parentId ?? null;
+    if (parentId && !(await tx.get(doc(database, "fileFolders", parentId))).exists()) parentId = null;
     tx.set(doc(database, "vendors", id), {
       name,
       category: input.category,
@@ -205,7 +208,7 @@ export async function addDirectBooking(
     if (input.folder) {
       tx.set(doc(database, "fileFolders", input.folder.id), {
         name,
-        parentId: input.folder.parentId,
+        parentId,
         recordRef: own,
         ...stamp(database, true),
       });

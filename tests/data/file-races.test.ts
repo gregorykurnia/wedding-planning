@@ -7,9 +7,10 @@ import { clearFirestore, closeClient, twoPartners, type Partner } from "./emulat
 // `getDocs` is wrapped so a test can make the partner's write land at an exact
 // moment: just after the delete has checked that the folder is empty.
 
-const hook: { afterQuery: (() => Promise<unknown>) | null; failQueries: number } = {
+const hook: { afterQuery: (() => Promise<unknown>) | null; failQueries: number; failSetDoc: number } = {
   afterQuery: null,
   failQueries: 0,
+  failSetDoc: 0,
 };
 
 vi.mock("firebase/firestore", async (importOriginal) => {
@@ -26,6 +27,13 @@ vi.mock("firebase/firestore", async (importOriginal) => {
       hook.afterQuery = null;
       if (run) await run();
       return result;
+    },
+    setDoc: async (...args: Parameters<typeof real.setDoc>) => {
+      if (hook.failSetDoc > 0) {
+        hook.failSetDoc--;
+        throw Object.assign(new Error("Could not reach Cloud Firestore backend"), { code: "unavailable" });
+      }
+      return real.setDoc(...args);
     },
   };
 });
@@ -44,6 +52,7 @@ afterAll(async () => {
 beforeEach(async () => {
   hook.afterQuery = null;
   hook.failQueries = 0;
+  hook.failSetDoc = 0;
   await clearFirestore();
   await setDoc(doc(gregory.db, "fileFolders", "a"), { name: "Vendors", parentId: null });
   await setDoc(doc(gregory.db, "fileFolders", "e"), { name: "Empty", parentId: "a" });
@@ -67,6 +76,20 @@ describe("a folder deleted while a file moves into it", () => {
     // The first check's two queries have both started; the second check's fail.
     hook.afterQuery = async () => {
       hook.failQueries = 2;
+    };
+    const removed = await deleteFolder("e", g());
+    expect(await read("fileFolders", "e")).toBeUndefined();
+    await removed.undo();
+    expect(await read("fileFolders", "e")).toMatchObject({ name: "Empty", parentId: "a" });
+  });
+
+  it("reports the delete, with its Undo, when putting the folder back after a landing fails (Phase 6 review)", async () => {
+    hook.afterQuery = async () => {
+      // The second check runs after the delete: Bella's file lands, and the put-back can't reach the database.
+      hook.afterQuery = async () => {
+        await moveFile("f1", "e", b());
+        hook.failSetDoc = 1;
+      };
     };
     const removed = await deleteFolder("e", g());
     expect(await read("fileFolders", "e")).toBeUndefined();

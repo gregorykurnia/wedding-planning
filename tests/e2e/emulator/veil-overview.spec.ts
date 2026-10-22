@@ -234,6 +234,19 @@ test("the install card shows on a phone once Chrome offers to install, goes with
   await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
 });
 
+test("the install card goes once the planner is installed from the browser's own menu", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
+  await openOverview(page);
+  await expect(page.locator("main").getByText("157", { exact: true })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(async () => {
+    await page.evaluate(() => window.dispatchEvent(new Event("beforeinstallprompt")));
+    await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: COMPILE_TIMEOUT });
+  await page.evaluate(() => window.dispatchEvent(new Event("appinstalled")));
+  await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
+});
+
 test.describe("on an iPhone", () => {
   // iOS never offers to install, so its card comes with the steps and no offer.
   test.use({ userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" });

@@ -39,17 +39,18 @@ self.addEventListener("fetch", (event) => {
   // would break the realtime listeners. Pages, API routes, the manifest and
   // icons go to the network as if there were no worker.
   if (url.origin !== self.location.origin || !url.pathname.startsWith("/_next/static/")) return;
-  event.respondWith(fromCacheOrNetwork(request));
+  event.respondWith(fromCacheOrNetwork(event, request));
 });
 
-async function fromCacheOrNetwork(request) {
+// The response goes back as soon as it arrives; storing it (which reads the
+// whole body) and trimming the cache finish in the background.
+async function fromCacheOrNetwork(event, request) {
   const cache = await caches.open(CACHE);
   const hit = await cache.match(request);
   if (hit) return hit;
   const response = await fetch(request);
   if (isKeepable(response)) {
-    await cache.put(request, response.clone());
-    await trim(cache);
+    event.waitUntil(cache.put(request, response.clone()).then(() => trim(cache)));
   }
   return response;
 }

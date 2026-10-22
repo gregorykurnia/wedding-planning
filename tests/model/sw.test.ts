@@ -69,6 +69,8 @@ function worker(options: { caches?: Record<string, Record<string, Response>>; cl
         responded = p;
       },
     });
+    // A fetch hands its caching to waitUntil only once the response is back.
+    await responded;
     await Promise.all(pending);
     return responded;
   }

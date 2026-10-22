@@ -159,6 +159,19 @@ describe("the daily run", () => {
     expect(await sentOf("tasting")).toEqual([1440]);
   });
 
+  it("gives a reminder back when every device turned out forgotten, so a device saved again gets it the next morning (Phase 6 review)", async () => {
+    await device("old-phone", bella.uid);
+    await eventDoc("tasting", { startAt: "2026-10-16T15:00" });
+    await eventDoc("fitting", { title: "Fitting", startAt: "2026-10-22", allDay: true, reminderMinutes: [10080] });
+    expect(await runReminders(db, fakeSender({ "old-phone": "gone" }).send, RUN)).toMatchObject({ sent: 0, removedDevices: 1 });
+    expect(await sentOf("tasting")).toEqual([]);
+    expect(await sentOf("fitting")).toEqual([]);
+    await device("new-phone", bella.uid);
+    const next = fakeSender();
+    await runReminders(db, next.send, new Date("2026-10-16T00:10:00Z"));
+    expect(next.calls.map((c) => c.payload.tag).sort()).toEqual(["reminder-fitting-10080", "reminder-tasting-1440"]);
+  });
+
   it("sends nothing for reminders set for a time of day, finished or cancelled events, and claims nothing with no devices", async () => {
     await device("greg-mac", gregory.uid);
     await eventDoc("hour", { startAt: "2026-10-15T11:00", reminderMinutes: [60] });

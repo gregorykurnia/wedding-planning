@@ -99,13 +99,17 @@ export async function runReminders(db: Firestore, send: SendPush, at: Date = new
 
   const gone = new Set<string>();
   for (const r of due) {
+    const live = devices.filter((d) => !gone.has(d.ref.path));
+    // Every device turned out forgotten: leave the rest unclaimed, so a device
+    // saved again before the next morning's run still gets them.
+    if (!live.length) break;
     if (!(await claim(db, r, today, now))) continue;
     const payload = JSON.stringify(reminderPush(r, today, eventHref));
-    const live = devices.filter((d) => !gone.has(d.ref.path));
     const results = await Promise.all(live.map((d) => send(d.sub, payload)));
     results.forEach((result, i) => result === "gone" && gone.add(live[i].ref.path));
     if (results.includes("sent")) summary.sent++;
-    else if (results.includes("failed")) {
+    else {
+      // No device took it (failed, or every one forgotten): give it back.
       await db
         .collection(EVENTS)
         .doc(r.event.id)

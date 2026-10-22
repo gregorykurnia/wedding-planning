@@ -291,7 +291,13 @@ export async function deleteFolder(folderId: string, opts: WriteOptions = {}): P
   // with its Undo, rather than say nothing was deleted (P5-S6).
   const arrived = await holdsAnything().catch(() => false);
   if (arrived) {
-    await undo();
+    // If putting it back fails, the folder stays deleted: report the delete,
+    // with its Undo, rather than a "nothing was deleted" that isn't true.
+    try {
+      await undo();
+    } catch {
+      return { undo };
+    }
     // Put back because something just landed in it: `changed`, so the confirm
     // says so instead of blaming the database (P5-S6).
     throw new WriteError("changed", "Something was put in that folder just now, so it was kept");
