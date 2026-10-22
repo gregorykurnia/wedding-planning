@@ -103,8 +103,18 @@ describe("guest numbers", () => {
     const first = { name: "Maria", country: "", allergies: "" };
     await createNumberedGuest(first, { db: gregory.db, id: "g1" });
     await setDoc(doc(bella.db, "guests", "g1"), { allergies: "Peanuts" }, { merge: true });
-    await createNumberedGuest({ name: "Maria", country: "Indonesia", allergies: "" }, { db: gregory.db, id: "g1", first });
+    await createNumberedGuest({ name: "Maria", country: "Indonesia", allergies: "" }, { db: gregory.db, id: "g1", earlier: [first] });
     expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria", country: "Indonesia", allergies: "Peanuts", number: 1 });
+  });
+
+  it("a field changed and then changed back is written on Try again (Phase 7 review S9)", async () => {
+    const first = { name: "Maria", country: "" };
+    const second = { name: "Maria", country: "Indonesia" };
+    await createNumberedGuest(first, { db: gregory.db, id: "g1" });
+    // The second try timed out but landed; Try again sends the country cleared again.
+    await createNumberedGuest(second, { db: gregory.db, id: "g1", earlier: [first] });
+    await createNumberedGuest(first, { db: gregory.db, id: "g1", earlier: [first, second] });
+    expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria", country: "", number: 1 });
   });
 
   it("a first try landing after Try again's writes nothing over it (Phase 6 review S10)", async () => {
@@ -112,7 +122,7 @@ describe("guest numbers", () => {
     let newest = 1;
     const tryOne = () => newest !== 1;
     newest = 2;
-    await createNumberedGuest({ name: "Maria Lestari", country: "Indonesia" }, { db: gregory.db, id: "g1", first, superseded: () => newest !== 2 });
+    await createNumberedGuest({ name: "Maria Lestari", country: "Indonesia" }, { db: gregory.db, id: "g1", earlier: [first], superseded: () => newest !== 2 });
     const late = await createNumberedGuest(first, { db: gregory.db, id: "g1", superseded: tryOne });
     expect(late).toEqual({ id: "g1", number: 1 });
     expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria Lestari", country: "Indonesia", number: 1 });

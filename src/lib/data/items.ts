@@ -160,13 +160,19 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
 
 /**
  * Moves one item to where `ids` (the whole list in its new order) puts it,
- * changing only that item's position. Refuses when a neighbour has been moved
+ * changing only that item's position (and the list's version). Refuses when a neighbour has been moved
  * meanwhile, so the order the partner made is never undone by a stale drop.
  * Resolves with every item's position after the move, so the next move can
  * start from it before the list is read again (Phase 4 review S21).
  */
 export async function moveItem(ordered: readonly Placed[], ids: readonly string[], movedId: string, opts: WriteOptions = {}, again = false): Promise<Placed[]> {
-  const { above, below } = neighboursOf(ids, movedId);
+  const { above, below: shownBelow } = neighboursOf(ids, movedId);
+  // The row below is the one after `above` in stored order, not the one the screen shows there: a row
+  // just added below `above` that the screen doesn't show yet would otherwise share the gap (Phase 7
+  // review S6).
+  const rest = [...ordered].filter((r) => r.id !== movedId).sort((a, z) => a.sortOrder - z.sortOrder);
+  const aboveAt = above === null ? -1 : rankOf(rest, above);
+  const below = above !== null && aboveAt < 0 ? shownBelow : (rest[aboveAt + 1]?.id ?? null);
   const sortOrderOf = (list: readonly Placed[], id: string | null) => (id === null ? null : (list.find((r) => r.id === id)?.sortOrder ?? null));
   const [high, low] = [sortOrderOf(ordered, above), sortOrderOf(ordered, below)];
   const positions = positionsBetween(high, low, 1);
@@ -190,6 +196,8 @@ export async function moveItem(ordered: readonly Placed[], ids: readonly string[
     await read(above, high);
     await read(below, low);
     tx.update(movedRef, { sortOrder: positions[0], ...stamp(database) });
+    // A renumber running meanwhile lists again rather than write this row back (Phase 7 review S8).
+    tx.set(doc(database, META_COLLECTION, META_ID), { ...LIST_CHANGED, ...stamp(database) }, { merge: true });
   }, opts);
   return ordered.map((r) => (r.id === movedId ? { id: r.id, sortOrder: positions[0] } : r)).sort((a, z) => a.sortOrder - z.sortOrder);
 }

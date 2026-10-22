@@ -7,6 +7,7 @@ process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_EMULATOR;
 const { connect } = await import("../../scripts/migrate/admin");
 const { run } = await import("../../scripts/migrate/run");
 const { check } = await import("../../scripts/migrate/checks");
+const { contentFields } = await import("../../src/lib/data/adapters/documents");
 
 const { db } = connect("switch-checks-test");
 const quiet = () => {};
@@ -69,6 +70,30 @@ describe("8-old-ui-sync (review P1-S13)", () => {
     expect((await get("vendors/moved"))?.booking.removed).toBe(false);
   });
 
+  // Phase 7 review S11: bookings made from a finalist, and a booked venue whose price comes from its parts.
+  it("treats a finalist's booking as a vendor's, and only reports a venue with parts", async () => {
+    const w = db.batch();
+    w.set(db.doc("vendors/fromFinalist"), { name: "Atelier", contractStatus: "Chosen", booking: booking("finalist") });
+    w.set(db.doc("vendors/finalistMoved"), { name: "Studio", contractStatus: "Inquiring", booking: booking("finalist") });
+    w.set(db.doc("venues/parts"), {
+      name: "Garden",
+      status: "Booked",
+      budgetEstimate: 500,
+      agreedPrice: 0,
+      booking: booking("venue"),
+      subEntries: [
+        { id: "p1", name: "Deposit", totalPrice: 100 },
+        { id: "p2", name: "Balance", totalPrice: 300 },
+      ],
+    });
+    await w.commit();
+    const [result] = await run(["8-old-ui-sync"], true, quiet);
+    expect((await get("vendors/fromFinalist"))?.booking.removed).toBe(false);
+    expect((await get("vendors/finalistMoved"))?.booking).toMatchObject({ from: "finalist", removed: true });
+    expect((await get("venues/parts"))?.agreedPrice).toBe(0);
+    expect(result.report.join("\n")).toMatch(/venue "Garden": .*parts.*left as it is/);
+  });
+
   it("puts back a booking it removed once the old UI books it again", async () => {
     await run(["8-old-ui-sync"], true, quiet);
     await db.doc("vendors/moved").update({ contractStatus: "Chosen" });
@@ -103,6 +128,32 @@ describe("read-only checks", () => {
     const [documents] = await check(["documents"], quiet);
     expect(documents.found).toBe(1);
     expect(documents.report).toEqual([expect.stringMatching(/^broken {2}"Vows": Invalid content for node paragraph/)]);
+  });
+
+  // Phase 7 review S11: the shapes most likely to be refused.
+  it("checks documents stored whole in contentJson, and ones with nodes or marks the editor lacks", async () => {
+    const nested = (inner: object[], depth: number): object =>
+      depth === 0 ? { type: "doc", content: inner } : nested([{ type: "blockquote", content: inner }], depth - 1);
+    const text = [{ type: "paragraph", content: [{ type: "text", text: "Hi" }] }];
+    const deepFine = nested(text, 30);
+    const deepBroken = nested([{ type: "paragraph", content: [{ type: "paragraph" }] }], 30);
+    expect(contentFields(deepFine, null)).toHaveProperty("contentJson", expect.any(String));
+    const w = db.batch();
+    w.set(db.doc("notes/deepFine"), { title: "Deep", ...contentFields(deepFine, null) });
+    w.set(db.doc("notes/deepBroken"), { title: "Deeper", ...contentFields(deepBroken, null) });
+    w.set(db.doc("notes/image"), { title: "Moodboard", content: { type: "doc", content: [{ type: "image", attrs: { src: "https://x/a.png" } }] } });
+    w.set(db.doc("notes/highlight"), {
+      title: "Menu",
+      content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hi", marks: [{ type: "highlight" }] }] }] },
+    });
+    await w.commit();
+    const [documents] = await check(["documents"], quiet);
+    expect(documents.found).toBe(3);
+    const report = documents.report.join("\n");
+    expect(report).toMatch(/^deepBroken {2}"Deeper": Invalid content for node paragraph/m);
+    expect(report).toMatch(/^image {2}"Moodboard": .*image/m);
+    expect(report).toMatch(/^highlight {2}"Menu": .*highlight/m);
+    expect(report).not.toMatch(/deepFine/);
   });
 
   it("passes on clean data, writes nothing, and refuses an unknown check", async () => {

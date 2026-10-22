@@ -386,6 +386,19 @@ describe("write races (Phase 6 review S8, S11)", () => {
     expect(await order()).toEqual(["a", "x", id, "b"]);
   });
 
+  // Phase 7 review S6: rows X, A, B; "add below A", then Alt+↓ on X before the list shows the new row.
+  it("a move queued after an add takes the gap below the added row, not the same one", async () => {
+    await seed("x", 0);
+    await seed("a", 1);
+    await seed("b", 2);
+    const [id] = newItemIds(1, g());
+    const afterAdd = await addItems([{ id, item: "", types: [], persons: [] }], "a", await placed(), g());
+    // The screen's order still lacks the new row.
+    await moveItem(afterAdd, ["a", "x", "b"], "x", g());
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(4);
+    expect(await order()).toEqual(["a", "x", id, "b"]);
+  });
+
   // S11: a row removed while the batches run made the second batch fail after the first had moved its rows.
   it("above 490 items, a row removed while a renumber runs leaves the order as it was, and it lists again", async () => {
     const total = 495;
@@ -460,5 +473,67 @@ describe("starting with common items", () => {
     const added = await startWithCommonItems(false, g());
     expect(added).toEqual([]);
     expect(await read("master-13-wedding-cake")).toMatchObject({ vendor: "Manis Cake Studio" });
+  });
+});
+
+describe("renumber races above 490 items (Phase 7 review S8)", () => {
+  const total = 495;
+  const ids = Array.from({ length: total }, (_, i) => `i${String(i).padStart(3, "0")}`);
+  const seedMany = async () => {
+    for (let from = 0; from < total; from += 400) {
+      const batch = writeBatch(gregory.db);
+      for (let i = from; i < Math.min(total, from + 400); i++) {
+        batch.set(doc(gregory.db, "masterListItems", ids[i]), { id: ids[i], item: "", vendor: "", confirmed: false, types: [], persons: [], next: false, sortOrder: i });
+      }
+      await batch.commit();
+    }
+  };
+
+  it("a move on a row not yet renumbered stays moved", async () => {
+    await seedMany();
+    let moved = false;
+    await renumberMasterList(gregory.db, undefined, async () => {
+      if (moved) return;
+      moved = true;
+      const next = [ids[0], ids[10], ...ids.slice(1, 10), ...ids.slice(11)];
+      await moveItem(await placed(), next, ids[10], b());
+    });
+    const after = await order();
+    expect(after.slice(0, 3)).toEqual([ids[0], ids[10], ids[1]]);
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(total);
+  });
+
+  it("a row added below one not yet renumbered stays below it", async () => {
+    await seedMany();
+    let added = false;
+    await renumberMasterList(gregory.db, undefined, async () => {
+      if (added) return;
+      added = true;
+      await addItems([{ id: "late", item: "Late", types: [], persons: [] }], ids[10], await placed(), b());
+    });
+    const after = await order();
+    expect(after.slice(10, 13)).toEqual([ids[10], "late", ids[11]]);
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(total + 1);
+  });
+
+  it("a row added at the end from the list as it was before lands after every row", async () => {
+    await seedMany();
+    const before = await placed();
+    let added = false;
+    await renumberMasterList(gregory.db, undefined, async () => {
+      if (added) return;
+      added = true;
+      await addItems([{ id: "late", item: "Late", types: [], persons: [] }], null, before, b());
+    });
+    expect(await order()).toEqual([...ids, "late"]);
+  });
+
+  it("a move bumps the list's version", async () => {
+    await seed("a", 0);
+    await seed("b", 1);
+    const version = async () => (await getDoc(doc(gregory.db, "masterListMeta", "initialization"))).data()?.version ?? 0;
+    const v0 = await version();
+    await moveItem(await placed(), ["b", "a"], "a", g());
+    expect(await version()).toBe(v0 + 1);
   });
 });

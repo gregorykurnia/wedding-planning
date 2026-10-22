@@ -391,18 +391,29 @@ export async function recordPayment(
       if (index < 0) throw new WriteError("missing", `part ${target.partId} is gone`);
       const changed = recorded(parts[index]);
       if (!changed) return;
+      const before = num(parts[index].budgetSpent);
       parts[index] = { ...parts[index], ...changed };
       // Split when overpaid, the Deposit holds every payment but only its price as paid, and the
-      // Balance the rest; a lower Try again then takes what the Deposit can't from the parts after
-      // it, so no part's paid goes below 0 and the total stays right (Phase 6 review S13).
-      let short = -changed.budgetSpent;
-      if (short > 0) parts[index] = { ...parts[index], budgetSpent: 0 };
-      for (let other = parts.length - 1; short > 0 && other >= 0; other--) {
-        const paid = num(parts[other].budgetSpent);
-        if (other === index || paid <= 0) continue;
-        const taken = Math.min(paid, short);
-        parts[other] = { ...parts[other], budgetSpent: paid - taken };
-        short -= taken;
+      // Balance the rest, with no payment behind it. A lower Try again takes the cut from that
+      // unbacked paid first, in the parts after the holder and then before it, and only then from
+      // the holder, so each part's paid stays with its payments and their Undo still works (Phase 6
+      // review S13, Phase 7 review S7). What's still short comes from the other parts' paid.
+      let short = before - changed.budgetSpent;
+      if (short > 0) {
+        const others = [...parts.keys()].filter((i) => i > index).concat([...parts.keys()].filter((i) => i < index));
+        const take = (i: number, most: number) => {
+          const taken = Math.min(Math.max(0, most), short);
+          if (taken <= 0) return;
+          parts[i] = { ...parts[i], budgetSpent: num(parts[i].budgetSpent) - taken };
+          short -= taken;
+        };
+        parts[index] = { ...parts[index], budgetSpent: before };
+        for (const i of others) {
+          const backed = withElementIds<Element>(parts[i].payments).reduce((sum, p) => sum + num(p.amount), 0);
+          take(i, num(parts[i].budgetSpent) - backed);
+        }
+        take(index, before);
+        for (const i of others) take(i, num(parts[i].budgetSpent));
       }
       tx.update(ref, { subEntries: parts, ...stamp(database) });
     } else {

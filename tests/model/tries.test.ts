@@ -76,4 +76,22 @@ describe("Tries", () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(landed).toBe(true);
   });
+
+  // Phase 7 review S10: name A fails; typing B starts a new try, and A's Try again goes away at once.
+  it("tells the screen a new try started, so it drops the older failure", async () => {
+    const tries = new Tries();
+    const shown = new Set<string>();
+    const on = {
+      started: () => shown.delete("a:item"),
+      landed: () => shown.delete("a:item"),
+      failed: () => shown.add("a:item"),
+    };
+    tries.run("a:item", async () => {
+      throw new Error("offline");
+    }, on);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(shown.has("a:item")).toBe(true);
+    tries.run("a:item", () => new Promise(() => undefined), on);
+    expect(shown.has("a:item")).toBe(false);
+  });
 });

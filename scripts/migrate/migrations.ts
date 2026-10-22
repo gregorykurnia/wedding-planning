@@ -388,6 +388,12 @@ const oldUiSync: Migration = {
         report.push(`${label}: the old UI's price is blank and the agreed price is ${data.agreedPrice}; left as it is, check it by hand`);
         continue;
       }
+      // Split into parts, its price is theirs: the agreed price isn't shown, so writing it changes
+      // nothing a person sees (Phase 7 review S11).
+      if (Array.isArray(data.subEntries) && data.subEntries.length > 0) {
+        report.push(`${label}: the old UI's price is ${edited}, but its price comes from its parts; left as it is, check it by hand`);
+        continue;
+      }
       change(v, data, { agreedPrice: edited }, `${label} agreed price ${data.agreedPrice ?? "none"} → ${edited} (edited in the old UI)`);
     }
     return { writes, report };

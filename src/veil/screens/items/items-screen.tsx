@@ -17,6 +17,7 @@ import {
   type Placed,
 } from "@/lib/data/items";
 import { useSession } from "@/lib/data/session";
+import { WriteError } from "@/lib/data/write-error";
 import { n0 } from "@/lib/model/format";
 import {
   filterItems,
@@ -179,9 +180,12 @@ function Items({ items }: { items: ItemRecord[] }) {
   useEffect(() => {
     latest.current = own;
   });
-  // Once the moves have landed, the next read has them: the stored order takes over again.
+  // Once the moves have landed, the next read has them: the stored order takes over again, and the
+  // next move starts from it rather than from the positions the last one left (Phase 7 review S6).
   useEffect(() => {
-    if (moves.current.running === 0) setPending(null);
+    if (moves.current.running > 0) return;
+    moves.current.placed = null;
+    setPending(null);
   }, [stored]);
 
   const filter: ItemFilter = { query, confirmed, events, people, nextOnly };
@@ -255,6 +259,8 @@ function Items({ items }: { items: ItemRecord[] }) {
     const key = keyOf(item.id, field);
     if (keep) setHeld((h) => new Map(h).set(key, { ...h.get(key), ...keep }));
     tries.current.run(key, write, {
+      // An older try's failure would offer a Try again that does nothing (Phase 7 review S10).
+      started: () => setFailures((map) => without(map, key)),
       landed: () => {
         setFailures((map) => without(map, key));
         setHeld((h) => without(h, key));
@@ -301,14 +307,15 @@ function Items({ items }: { items: ItemRecord[] }) {
     const step = m.chain.then(async () => {
       m.placed = await write(m.placed ?? latest.current);
     });
-    m.chain = step.catch(() => {
+    m.chain = step.catch((error: unknown) => {
       if (move) m.failed = true;
-      m.placed = null;
+      // Only a write that may still land leaves the positions unknown; one refused wrote nothing.
+      if (!(error instanceof WriteError) || error.code === "timeout") m.placed = null;
     });
     return step.finally(() => {
       m.running -= 1;
       if (m.running > 0) return;
-      m.placed = null;
+      // The positions stay until the list is read again (the effect on `stored` above).
       // A move that didn't land shows the stored order again, beside its note.
       if (m.failed) setPending(null);
       m.failed = false;

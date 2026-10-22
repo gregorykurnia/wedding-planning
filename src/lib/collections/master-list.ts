@@ -1,6 +1,6 @@
 "use client";
 
-import type { DocumentData, Firestore } from "firebase/firestore";
+import type { DocumentData, Firestore, Transaction } from "firebase/firestore";
 import {
   collection,
   doc,
@@ -197,15 +197,21 @@ export const MIN_SORT_GAP = 1e-6;
 const RENUMBER_IN_ONE_TRANSACTION = 490;
 
 /**
- * Gives every row a whole-number position (0, 1, 2 …) in its current order and
+ * Gives every row a whole-number position in its current order (0, 1, 2 …, or
+ * `start + index` above 490 rows, where `start` is above every current one) and
  * moves the next-row marker after them. Order is unchanged. Rows are re-read
  * inside the transaction, so a row moved meanwhile makes Firestore retry, and
- * the marker's version is read there too, so a row added or removed since the
- * listing makes it list again. Resolves with every row's new position, so a
- * caller can go on from them without waiting for a fresh read.
- * `afterListing` is for tests: it runs between the listing and the transaction.
+ * the marker's version is read there too, so a row added, moved or removed
+ * since the listing makes it list again. Resolves with every row's new
+ * position, so a caller can go on from them without waiting for a fresh read.
+ * `afterListing` and `betweenBatches` are for tests: they run between the
+ * listing and the first write, and after each batch above 490 rows.
  */
-export async function renumberMasterList(target?: Firestore, afterListing?: () => Promise<void>): Promise<Map<string, number>> {
+export async function renumberMasterList(
+  target?: Firestore,
+  afterListing?: () => Promise<void>,
+  betweenBatches?: () => Promise<void>,
+): Promise<Map<string, number>> {
   const database = target ?? db;
   if (!database || (!target && !isFirebaseConfigured)) {
     throw new Error("Firebase is not configured.");
@@ -219,11 +225,15 @@ export async function renumberMasterList(target?: Firestore, afterListing?: () =
     await afterListing?.();
 
     if (refs.length > RENUMBER_IN_ONE_TRANSACTION) {
-      // Too many for one transaction: write in batches of positions that start
+      // Too many for one transaction: write in parts of positions that start
       // above every current one, from the end of the list backwards, so the rows
       // already renumbered are always the last ones and the order holds between
-      // batches. A batch that fails because a row was removed meanwhile leaves
-      // the order as it was, and the list is read again (Phase 6 review S11).
+      // parts. The marker's next position goes above them first, so a row added
+      // at the end meanwhile lands after them. Each part is a transaction that
+      // checks the marker's version and its rows' positions: a row added, moved
+      // or removed since the listing stops it there, leaving the order as it
+      // was, and the list is read again (Phase 6 review S11, Phase 7 review S8).
+      const listedAt = new Map(listed.docs.map((snapshot) => [snapshot.id, snapshot.data().sortOrder]));
       const start =
         Math.ceil(
           listed.docs.reduce((maximum, snapshot) => {
@@ -231,31 +241,31 @@ export async function renumberMasterList(target?: Firestore, afterListing?: () =
             return typeof value === "number" && Number.isFinite(value) ? Math.max(maximum, value) : maximum;
           }, 0),
         ) + 1;
-      const last = Math.floor((refs.length - 1) / RENUMBER_IN_ONE_TRANSACTION) * RENUMBER_IN_ONE_TRANSACTION;
-      let removed = false;
-      for (let from = last; from >= 0 && !removed; from -= RENUMBER_IN_ONE_TRANSACTION) {
-        const batch = writeBatch(database);
-        refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION).forEach((ref, offset) => {
-          batch.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
-        });
-        try {
-          await batch.commit();
-        } catch (error) {
-          if ((error as { code?: string }).code !== "not-found") throw error;
-          removed = true;
-        }
-      }
-      if (removed) continue;
-      // The batches can't check the version, so the last write does: a row added or removed while
-      // they ran makes it list and renumber again (Phase 5 review S21).
-      const settled = await runTransaction(database, async (transaction) => {
-        const meta = await transaction.get(metaRef);
-        if (versionOf(meta.data()) !== version) return false;
+      const unchanged = async (transaction: Transaction) => versionOf((await transaction.get(metaRef)).data()) === version;
+      const raised = await runTransaction(database, async (transaction) => {
+        if (!(await unchanged(transaction))) return false;
         transaction.set(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
         return true;
       });
-      if (settled) return new Map(refs.map((ref, index) => [ref.id, start + index]));
-      continue;
+      if (!raised) continue;
+      const last = Math.floor((refs.length - 1) / RENUMBER_IN_ONE_TRANSACTION) * RENUMBER_IN_ONE_TRANSACTION;
+      let stopped = false;
+      for (let from = last; from >= 0 && !stopped; from -= RENUMBER_IN_ONE_TRANSACTION) {
+        const part = refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION);
+        const written = await runTransaction(database, async (transaction) => {
+          if (!(await unchanged(transaction))) return false;
+          const rows = await Promise.all(part.map((ref) => transaction.get(ref)));
+          if (rows.some((row) => !row.exists() || row.data().sortOrder !== listedAt.get(row.id))) return false;
+          part.forEach((ref, offset) => {
+            transaction.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
+          });
+          return true;
+        });
+        if (!written) stopped = true;
+        else if (from > 0) await betweenBatches?.();
+      }
+      if (stopped) continue;
+      return new Map(refs.map((ref, index) => [ref.id, start + index]));
     }
 
     const placed = await runTransaction(database, async (transaction) => {

@@ -75,8 +75,8 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
   // The number just issued: the counter's own update can arrive a moment after the write.
   const [issued, setIssued] = useState(0);
   const id = useRef<string | null>(null);
-  // What the first try for this guest sent: Try again writes only what changed since.
-  const firstTry = useRef<NewGuest | null>(null);
+  // What each earlier try for this guest sent: Try again writes only what differs from one of them.
+  const earlierTries = useRef<NewGuest[]>([]);
   // Which press is the newest: an older one still landing writes nothing over it (Phase 6 review S10).
   const tries = useRef(0);
   const nameInput = useRef<HTMLInputElement>(null);
@@ -106,13 +106,13 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
       plusOnes: form.plusOnes,
       allergies: form.allergies.trim(),
     };
-    const first = firstTry.current;
-    firstTry.current ??= guest;
+    const earlier = earlierTries.current;
+    earlierTries.current = [...earlier, guest];
     const tap = ++tries.current;
     const superseded = () => tries.current !== tap;
     let added: { id: string; number: number };
     try {
-      added = await addGuest(guest, first ? { first, superseded } : { superseded });
+      added = await addGuest(guest, { earlier, superseded });
     } catch {
       setBusy(null);
       setFailed(true);
@@ -128,7 +128,7 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
       return;
     }
     id.current = null;
-    firstTry.current = null;
+    earlierTries.current = [];
     setForm(FRESH);
     setProblem(null);
     sheet.focusFirstField();

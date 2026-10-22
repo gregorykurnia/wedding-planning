@@ -150,6 +150,7 @@ describe("Try again with a changed amount (P4-S2)", () => {
   });
 
   // Phase 6 review S13: the Deposit holds the whole overpaid payment but only its price as paid.
+  // Phase 7 review S7: the cut comes off the Balance's unbacked paid, so the Deposit keeps its payment's.
   it("a lower Try again after an overpaid split leaves no part below 0, and the total right", async () => {
     await setDoc(doc(gregory.db, "vendors", "v1"), vendor({ totalPrice: 10_000_000 }));
     const target = { kind: "vendor" as const, id: "v1" };
@@ -159,7 +160,27 @@ describe("Try again with a changed amount (P4-S2)", () => {
 
     await recordPayment(target, { amount: 1_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 2000 });
     const parts = (await read("vendors", "v1")).subEntries as { budgetSpent: number }[];
-    expect(parts.map((p) => p.budgetSpent)).toEqual([0, 1_000_000]);
+    expect(parts.map((p) => p.budgetSpent)).toEqual([1_000_000, 0]);
+  });
+
+  it("a lower Try again leaves an Add-on's paid alone, and its Undo still works (Phase 7 review S7)", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendor({ totalPrice: 10_000_000 }));
+    const target = { kind: "vendor" as const, id: "v1" };
+    await recordPayment(target, { amount: 12_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 1000 });
+    await splitBooking(target, b());
+    const split = (await read("vendors", "v1")).subEntries;
+    await setDoc(
+      doc(gregory.db, "vendors", "v1"),
+      { subEntries: [...split, { id: "addon", name: "Add-on", totalPrice: 3_000_000, budgetSpent: 0, payments: [] }] },
+      { merge: true },
+    );
+    const addOn = await recordPayment({ ...target, partId: "addon" }, { amount: 3_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay2" });
+
+    await recordPayment(target, { amount: 1_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 2000 });
+    const parts = () => read("vendors", "v1").then((d) => (d.subEntries as { budgetSpent: number }[]).map((p) => p.budgetSpent));
+    expect(await parts()).toEqual([1_000_000, 0, 3_000_000]);
+    await addOn.undo();
+    expect(await parts()).toEqual([1_000_000, 0, 0]);
   });
 });
 

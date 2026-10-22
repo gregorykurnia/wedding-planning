@@ -30,10 +30,16 @@ export class Tries {
   /**
    * Starts a try on `key`: runs `write`, then `landed` when it lands as the newest, or `failed` with
    * its Try again when it fails as the newest. That Try again does nothing once a newer try has
-   * started, so an older text can't be stored over a newer one (Phase 6 review S9).
+   * started, so an older text can't be stored over a newer one (Phase 6 review S9); `started` runs
+   * first, so the screen drops that older failure and its Try again at once (Phase 7 review S10).
    */
-  run(key: string, write: () => Promise<unknown>, on: { landed: () => void; failed: (retry: () => void) => void }): void {
+  run(
+    key: string,
+    write: () => Promise<unknown>,
+    on: { started?: () => void; landed: () => void; failed: (retry: () => void) => void },
+  ): void {
     const n = this.start(key);
+    on.started?.();
     const go = async () => {
       try {
         await write();

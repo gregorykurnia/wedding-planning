@@ -69,16 +69,17 @@ function storedGuest(guest: NewGuest) {
 /**
  * Adds a guest and issues their number in one transaction (G6): two people adding at once never
  * share a number, a removed guest's number isn't reused, and Try again after a timed-out attempt
- * that did land keeps what was written. Try again passes the first try (`first`), so only what was
- * changed in the form since is written over a guest that landed (Phase 5 review S20). `superseded`
+ * that did land keeps what was written. Try again passes the earlier tries (`earlier`), so only what
+ * was changed in the form since one of them is written over a guest that landed (Phase 5 review S20,
+ * Phase 7 review S9). `superseded`
  * says when a newer try has started, so a late older one writes nothing over it (Phase 6 review S10).
  */
 export function addGuest(
   guest: NewGuest,
-  opts: WriteOptions & { first?: NewGuest; superseded?: () => boolean } = {},
+  opts: WriteOptions & { earlier?: readonly NewGuest[]; superseded?: () => boolean } = {},
 ): Promise<{ id: string; number: number }> {
-  const { first, ...rest } = opts;
-  return createNumberedGuest(storedGuest(guest), { ...rest, id: guest.id, ...(first ? { first: storedGuest(first) } : {}) });
+  const { earlier, ...rest } = opts;
+  return createNumberedGuest(storedGuest(guest), { ...rest, id: guest.id, ...(earlier?.length ? { earlier: earlier.map(storedGuest) } : {}) });
 }
 
 /** The fields the guest sheet saves as you go (guide §5.23). */
