@@ -23,6 +23,8 @@ type BtnProps = {
   disabled?: boolean;
   autoFocus?: boolean;
   className?: string;
+  /** The accessible name, when it isn't just the label: "Earlier: March 2027" on a month's step button. */
+  ariaLabel?: string;
   onClick?: MouseEventHandler<HTMLElement>;
   children: ReactNode;
 };
@@ -45,6 +47,7 @@ export function Btn({
   disabled = false,
   autoFocus = false,
   className,
+  ariaLabel,
   onClick,
   children,
 }: BtnProps) {
@@ -93,6 +96,7 @@ export function Btn({
     <button
       type={type}
       className={classes}
+      aria-label={ariaLabel}
       disabled={disabled}
       autoFocus={autoFocus}
       // preventDefault too, so a busy submit button can't send its form a second time.

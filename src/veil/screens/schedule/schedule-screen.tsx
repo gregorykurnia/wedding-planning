@@ -202,7 +202,7 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
     <>
       {hero}
       {box && (
-        <Banner tone="rose" inline role="status">
+        <Banner tone="rose" inline role="status" className={styles.reminders}>
           {box.lead}{" "}
           {box.shown.map((name, index) => {
             const event = cantArrive[index];

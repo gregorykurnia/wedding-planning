@@ -4,3 +4,10 @@
 p b.late {
   color: var(--accent-attention-text);
 }
+
+/* The reminder list: its text and links start at the left, 26px under the sentence above, as veil.css's .rem-list. Doubled so it beats the banner's centring. */
+.reminders.reminders {
+  margin-top: 26px;
+  text-align: left;
+  justify-content: flex-start;
+}

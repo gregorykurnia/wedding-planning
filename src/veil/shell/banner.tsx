@@ -11,6 +11,8 @@ type BannerProps = {
   inline?: boolean;
   /** `status` for a note that appears on its own, so a screen reader reads it out. */
   role?: "status" | "alert";
+  /** A screen's own layout for this banner, such as the schedule's reminder list. */
+  className?: string;
   children: ReactNode;
 };
 
@@ -19,10 +21,10 @@ type BannerProps = {
  * a partner in the document), or a box inside a form (a booking that couldn't
  * be added).
  */
-export function Banner({ tone = "gold", inline = false, role, children }: BannerProps) {
+export function Banner({ tone = "gold", inline = false, role, className, children }: BannerProps) {
   // In a sheet, a rose box is a failure: it keeps the sheet open (P6-S14).
   useSheetFailure(tone === "rose");
-  const classes = [styles.banner, tone === "rose" ? styles.rose : "", inline ? styles.inline : ""]
+  const classes = [styles.banner, tone === "rose" ? styles.rose : "", inline ? styles.inline : "", className]
     .filter(Boolean)
     .join(" ");
   const banner = (

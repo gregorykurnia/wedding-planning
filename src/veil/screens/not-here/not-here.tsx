@@ -5,6 +5,7 @@ import { Btn } from "@/veil/parts/actions/btn";
 import { type DoorItem, Doors } from "@/veil/parts/doors/doors";
 import { Message } from "@/veil/parts/message/message";
 import { veilHref } from "@/veil/href";
+import { PageColumn } from "@/veil/shell/page-column";
 import { openMenu } from "@/veil/shell/top-bar";
 import styles from "./not-here.module.css";
 
@@ -38,7 +39,7 @@ const DOORS: DoorItem[] = [
 export function NotHere() {
   const address = usePathname();
   return (
-    <>
+    <PageColumn>
       <Message
         kind="gone"
         title="This page isn’t here"
@@ -60,6 +61,6 @@ export function NotHere() {
       <nav className={styles.places} aria-label="Places you know">
         <Doors doors={DOORS} />
       </nav>
-    </>
+    </PageColumn>
   );
 }

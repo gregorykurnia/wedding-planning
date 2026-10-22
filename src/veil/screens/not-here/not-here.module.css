@@ -4,17 +4,19 @@
   display: block;
   width: fit-content;
   max-width: 100%;
-  margin: var(--space-4) auto 0;
-  padding: var(--space-1) var(--space-4);
+  /* The prototype's .message .addr: 14px above, 4px by 14px inside, 13.5px. */
+  margin: 14px auto 0;
+  padding: var(--space-1) 14px;
   border-radius: var(--radius-pill);
   background: var(--surface-petal);
   box-shadow: inset 0 0 0 1px var(--color-rule);
   color: var(--color-text-muted);
-  font-size: var(--text-meta);
+  font-size: var(--text-caption);
   overflow-wrap: anywhere;
 }
 
+/* 40px above the doors, as the prototype's .places. */
 .places {
   max-width: var(--measure-message);
-  margin: 0 auto;
+  margin: 40px auto 0;
 }

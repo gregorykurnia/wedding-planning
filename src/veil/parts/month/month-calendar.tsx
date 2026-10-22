@@ -3,6 +3,8 @@
 import { type DotKind, type MonthCell } from "@/lib/model/agenda";
 import type { IsoDate } from "@/lib/model/bookings";
 import { addMonths, monthHeading } from "@/lib/model/dates";
+import { Btn } from "@/veil/parts/actions/btn";
+import { TextLink } from "@/veil/parts/actions/text-link";
 import styles from "./month.module.css";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -42,18 +44,16 @@ export function MonthCalendar({ year, month, cells, today, onPick, onEarlier, on
   return (
     <div>
       <div className={styles.head}>
-        <button type="button" className={styles.step} aria-label={`Earlier: ${monthHeading(before.year, before.month, today)}`} onClick={onEarlier}>
+        <Btn variant="quiet" small ariaLabel={`Earlier: ${monthHeading(before.year, before.month, today)}`} onClick={onEarlier}>
           Earlier
-        </button>
+        </Btn>
         <h2 className={styles.title}>{heading}</h2>
-        <button type="button" className={styles.step} aria-label={`Later: ${monthHeading(after.year, after.month, today)}`} onClick={onLater}>
+        <Btn variant="quiet" small ariaLabel={`Later: ${monthHeading(after.year, after.month, today)}`} onClick={onLater}>
           Later
-        </button>
+        </Btn>
       </div>
       <p className={styles.back}>
-        <button type="button" className={styles.link} onClick={onToday}>
-          Back to today
-        </button>
+        <TextLink onClick={onToday}>Back to today</TextLink>
       </p>
 
       <div className={styles.cal} role="group" aria-label={heading}>

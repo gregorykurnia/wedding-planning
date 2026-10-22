@@ -1,19 +1,19 @@
 /*
  * Headcounts and Both sides (guide §4.29; the prototype guests.html's .counts,
- * .sides and .unclear). The cards use the shared card look. The prototype's
- * 18px gap between the cards, 19px side titles and 6px figure gap have no token
- * and take the nearest one, as other ports do.
+ * .sides and .unclear). The card look is the shared one, but the prototype's
+ * own values are used where no token matches: 40px above the cards, 18px between
+ * them, 22px by 26px inside, 19px side titles and 6px under the side titles.
  */
 
 .counts {
-  margin-top: var(--space-8);
+  margin-top: 40px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  gap: 18px;
 }
 
 .card {
-  padding: var(--space-card-y) var(--space-card-x);
+  padding: 22px 26px;
   background: var(--surface-card);
   backdrop-filter: blur(var(--blur-card));
   -webkit-backdrop-filter: blur(var(--blur-card));
@@ -49,22 +49,23 @@
 
 .side {
   font-family: var(--font-display);
-  font-size: var(--text-row-sm);
+  font-size: 19px;
   font-weight: var(--weight-display);
   font-style: italic;
   color: var(--accent-gold-text);
 }
 
 .figure {
-  margin-top: var(--space-2);
+  margin-top: 6px;
   font-size: var(--text-label);
   color: var(--color-text-muted);
 }
 
+/* 28px at every width, as guests.html's .sides p b (the overview's next card uses the phone's 24px token). */
 .figure b {
   display: block;
   font-family: var(--font-display);
-  font-size: var(--text-card-title);
+  font-size: 28px;
   font-weight: var(--weight-display);
   color: var(--color-text);
   line-height: 1.1;

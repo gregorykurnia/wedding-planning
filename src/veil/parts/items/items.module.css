@@ -9,7 +9,8 @@
 .ihead {
   display: grid;
   grid-template-columns: 26px minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 44px 72px 34px;
-  gap: var(--space-2);
+  /* 10px, as items.html's .ihead and .irow. At 8px the events column is 4px wider, so a third chip fits on its first line. */
+  gap: 10px;
   align-items: center;
 }
 
@@ -17,7 +18,8 @@
   font-size: var(--text-caption);
   color: var(--color-text-muted);
   padding: 0 6px var(--space-2);
-  margin-top: var(--space-6);
+  /* 22px, as items.html's .ihead. */
+  margin-top: 22px;
   border-bottom: 1px solid var(--color-rule);
 }
 
@@ -276,9 +278,10 @@ button.handle:focus-visible {
   padding: var(--space-card-y) var(--space-card-x);
 }
 
+/* 24px at every width: items.html's .nextcard h2. The overview's next card uses --text-card-title (28px), which is a different card. */
 .nextcard h2 {
   font-family: var(--font-display);
-  font-size: var(--text-card-title);
+  font-size: 24px;
   font-weight: var(--weight-display);
 }
 
@@ -294,7 +297,8 @@ button.handle:focus-visible {
 
 .nextcard button {
   display: inline-block;
-  padding: 6px var(--space-4);
+  /* 14px across, as items.html's .nextcard a (the nearest token, 16px, is 2px wider a side). */
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   border: 0;
   background: var(--glow-champagne);
