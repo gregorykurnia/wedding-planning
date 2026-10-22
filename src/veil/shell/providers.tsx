@@ -81,6 +81,8 @@ function Gate({ children }: { children: ReactNode }) {
   if (!resolving) {
     if (onSignIn && admitted) {
       target = safeNext(searchParams.get("next"));
+      // Never back to sign-in itself: a crafted ?next=/sign-in waited forever.
+      if (target === SIGN_IN || target.startsWith(`${SIGN_IN}?`)) target = HOME;
     } else if (!onSignIn && !admitted) {
       const query = searchParams.toString();
       const here = query ? `${pathname}?${query}` : pathname;

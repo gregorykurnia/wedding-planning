@@ -36,8 +36,6 @@ describe("safeNext", () => {
     expect(safeNext("/old/budget")).toBe("/");
     expect(safeNext("/old?x=1")).toBe("/");
     expect(safeNext("https://evil.com")).toBe("/");
-    expect(safeNext("/sign-in")).toBe("/");
-    expect(safeNext("/sign-in?next=/budget")).toBe("/");
   });
 
   it("refuses the backslash trick", () => {

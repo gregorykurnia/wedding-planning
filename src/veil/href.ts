@@ -55,15 +55,14 @@ const under = (path: string, base: string) =>
 /**
  * Where to go after sign-in: `next` only when it is an address inside the new
  * UI, otherwise the overview. At the root that is any path except the old UI's
- * frozen fallback (`/old`), and never sign-in itself. `base` is for tests of a
- * prefixed setup.
+ * frozen fallback (`/old`). `base` is for tests of a prefixed setup.
  * Backslashes are refused because browsers read `/\evil.com` as `//evil.com`.
  */
 export function safeNext(next: string | null, base: string = VEIL_BASE): string {
   const home = base || "/";
   if (!next || next.startsWith("//") || /[\\\s]/.test(next) || /%5c/i.test(next)) return home;
   const inside = base ? under(next, base) : next.startsWith("/") && !(LEGACY_BASE && under(next, LEGACY_BASE));
-  return inside && !under(next, `${base}/sign-in`) ? next : home;
+  return inside ? next : home;
 }
 
 /**

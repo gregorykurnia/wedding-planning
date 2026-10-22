@@ -32,3 +32,10 @@ test("the gate stays inside the phone's width", async ({ page }) => {
   expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+// Phase 7 review: a next that points back at sign-in went nowhere.
+test("after Look around, a next of sign-in itself goes to the overview", async ({ page }) => {
+  await page.goto("/sign-in?next=%2Fsign-in");
+  await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/");
+});
