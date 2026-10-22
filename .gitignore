@@ -58,3 +58,6 @@ ui-debug.log
 
 # Task 8.2's screenshot report: hundreds of images per run, never committed
 /tests/screenshots/report/
+# Task 8.2's production builds for the screenshot script
+/.next-shots/
+/.next-shots-demo/
