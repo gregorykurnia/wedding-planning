@@ -240,6 +240,7 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
       <div className={styles.paging}>
         <CountLine>{showingOfText(shown[which], list.length)}</CountLine>
         <ShowMore
+          afterCount
           more={Math.min(PAGE, list.length - shown[which])}
           onMore={() => setShown((s) => ({ ...s, [which]: s[which] + PAGE }))}
         />

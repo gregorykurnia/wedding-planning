@@ -7,7 +7,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: var(--space-4);
-  margin: var(--space-9) 0 var(--space-1);
+  margin: var(--space-group) 0 var(--space-1);
   font-family: var(--font-display);
   font-size: var(--text-section);
   font-weight: var(--weight-display);
@@ -15,6 +15,17 @@
 
 .late {
   color: var(--accent-attention-text);
+}
+
+/* The prototype's .dues: the list starts right under its heading. */
+.heading + ul {
+  margin-top: 0;
+}
+
+@media (max-width: 760px) { /* --bp-phone */
+  .heading {
+    font-size: var(--text-row-md);
+  }
 }
 
 .total {

@@ -51,10 +51,11 @@ export function ItemList({ items, actions, reorderable, onReorder, failed, demo 
 
   const moveByKey = (item: ItemRecord, by: -1 | 1) => {
     const next = moveId(ids, item.id, by);
-    if (!next) return;
+    if (!next) return false;
     refocus.current = item.id;
     setSaid(movedAnnouncement(item.item, next.indexOf(item.id) + 1, next.length));
     onReorder(next, item.id);
+    return true;
   };
 
   const handlersFor = (item: ItemRecord) => ({

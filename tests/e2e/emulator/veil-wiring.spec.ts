@@ -173,6 +173,35 @@ test.describe("the normal set", () => {
     await expect(sheet.getByText(OFFLINE_LINE)).toHaveCount(0, { timeout: 15_000 });
   });
 
+  test("Phase 8 review B2: Done while a change saves, then a move: the failure still keeps the sheet open (sheet.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Guests");
+    await page.locator("[data-guest-id]", { hasText: "Sarah Lim" }).getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
+    const sheet = page.getByRole("dialog", { name: "Sarah Lim" });
+    await page.context().setOffline(true);
+    const country = sheet.getByLabel("Country");
+    await country.fill("Held after Done");
+    await country.press("Tab");
+    await sheet.getByRole("button", { name: "Done" }).click();
+    await expect(sheet.getByText("Saving, then this closes")).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL("/");
+    // The save times out: the held line and Try again stay (the sheet used to close with no word).
+    await expect(sheet.getByRole("button", { name: "Try again" })).toBeVisible({ timeout: 20_000 });
+    await expect(country).toHaveValue("Held after Done");
+  });
+
+  test("Phase 8 review S2: Escape while a change saves says it closes once saved (sheet.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Guests");
+    await page.locator("[data-guest-id]", { hasText: "Sarah Lim" }).getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
+    const sheet = page.getByRole("dialog", { name: "Sarah Lim" });
+    await page.context().setOffline(true);
+    const country = sheet.getByLabel("Country");
+    await country.fill("Escape while saving");
+    await country.press("Tab");
+    await page.keyboard.press("Escape");
+    await expect(sheet.getByText("Saving, then this closes")).toBeVisible();
+  });
+
   test("P7-S13: the categories sheet's failed add keeps it open across a move to say so (categories-sheet.tsx)", async ({ browser }) => {
     const page = await openFromMenu(browser, "Vendors");
     await page.getByRole("button", { name: "Edit categories" }).click({ timeout: COMPILE_TIMEOUT });

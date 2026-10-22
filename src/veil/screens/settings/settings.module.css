@@ -34,10 +34,10 @@
   border-bottom: 1px solid var(--color-rule);
 }
 
-/* 21px, as settings.html's .who b (the token for account names is 23px). */
+/* 21px, as settings.html's .who b. */
 .who b {
   font-family: var(--font-display);
-  font-size: 21px;
+  font-size: var(--text-row);
   font-weight: var(--weight-display);
   overflow-wrap: anywhere;
 }

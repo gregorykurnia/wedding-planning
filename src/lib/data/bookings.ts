@@ -392,6 +392,13 @@ export async function recordPayment(
       const changed = recorded(parts[index]);
       if (!changed) return;
       const before = num(parts[index].budgetSpent);
+      // What a split moved off the holder: its payments over its own paid. Only that much of a
+      // lower Try again comes from the other parts' unbacked paid (Phase 8 review B1: paid typed
+      // in the old UI has no payments behind it either, and isn't this payment's).
+      const movedOff = Math.max(
+        0,
+        withElementIds<Element>(parts[index].payments).reduce((sum, p) => sum + num(p.amount), 0) - before,
+      );
       parts[index] = { ...parts[index], ...changed };
       // Split when overpaid, the Deposit holds every payment but only its price as paid, and the
       // Balance the rest, with no payment behind it. A lower Try again takes the cut from that
@@ -408,9 +415,12 @@ export async function recordPayment(
           short -= taken;
         };
         parts[index] = { ...parts[index], budgetSpent: before };
+        let unbacked = movedOff;
         for (const i of others) {
           const backed = withElementIds<Element>(parts[i].payments).reduce((sum, p) => sum + num(p.amount), 0);
-          take(i, num(parts[i].budgetSpent) - backed);
+          const was = short;
+          take(i, Math.min(unbacked, num(parts[i].budgetSpent) - backed));
+          unbacked -= was - short;
         }
         take(index, before);
         for (const i of others) take(i, num(parts[i].budgetSpent));

@@ -91,7 +91,9 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | [x] 8.3a Fixes: budget, vendors, documents and files (after 8.2; all groups if the report is small) · Haiku 5.5 Max | [x] 8.4 Accessibility · Sonnet 5.5 High |
 | [x] 8.5 Device checklist · Haiku 5.5 xHigh | [x] 8.3b Fixes: schedule, items, guests, shell, overview, sign-in, settings (ticked as covered if 8.3a did them) · Haiku 5.5 Max |
 | — | [x] 8.6 Merge preparation · Haiku 5.5 Max |
-| 🛑 [ ] Phase 8 review · Opus 5.5 Medium | wait |
+| 🛑 [x] Phase 8 review · Opus 5.5 Medium | wait |
+| **Review fixes (finish these before the merge; items in `redesign/reviews/triage.md`, Phase 8)** | |
+| [ ] 8.F1 Moves, offline reads, layering and tabs · Opus 5.5 Medium | [ ] 8.F2 Tests and raw sizes · Opus 5.5 Medium |
 | **Phase 9: after launch (one terminal only; starts when the owner changes its §7.0 rows from "waits for launch")** | |
 | [ ] 9.1 After-launch check · Sonnet 5.5 High | off |
 | [ ] 9.2 Remove the old UI · Sonnet 5.5 High | off |

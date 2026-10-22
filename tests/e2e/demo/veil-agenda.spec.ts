@@ -136,7 +136,7 @@ test("the month has a button per day, labelled with everything its marks show", 
   await expect(month.getByRole("button", { name: "Friday 30 October, nothing" })).toBeVisible();
   // Five things on the 16th: three dots and +2.
   await expect(month.getByRole("button", { name: /^Friday 16 October, 1 payment, 4 events$/ })).toBeVisible();
-  await expect(month.getByRole("button", { name: /^Friday 16 October/ }).locator("em")).toHaveText("+2");
+  await expect(month.getByRole("button", { name: /^Friday 16 October/ }).locator("em")).toHaveAttribute("data-more", "+2");
 });
 
 test("choosing a day presses it and lists its rows, and the keyboard works", async ({ page }) => {

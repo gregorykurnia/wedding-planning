@@ -27,8 +27,10 @@ function whenFocusLost(from: Element, then: () => void) {
  * Guide §8, "Focus". A press that removes the control (Show everything, Back to our order, the last Show
  * more) would drop keyboard focus to the page; this moves it to the screen's search field, or to its first
  * button or link when there is none. A press that leaves the control in place keeps focus where it is.
+ * Only for a keyboard press (`detail` 0): after a tap, focusing the search would open a phone's keyboard.
  */
 export function focusSearchAfter(event: MouseEvent<HTMLElement>) {
+  if (event.detail !== 0) return;
   const from = event.currentTarget;
   const scope = from.closest("main") ?? document.body;
   whenFocusLost(from, () => {

@@ -60,7 +60,8 @@ export interface ItemRowProps {
   /** A rose line above or below, while another row is dragged over this one. */
   dropEdge?: DropEdge | null;
   /** Alt with ↑ or ↓ on the handle. */
-  onMoveKey?: (item: ItemRecord, by: -1 | 1) => void;
+  /** Moves among the rows shown; false when the row is at the edge of them. */
+  onMoveKey?: (item: ItemRecord, by: -1 | 1) => boolean;
   dragHandlers?: {
     onDragStart: DragEventHandler<HTMLLIElement>;
     onDragEnd: DragEventHandler<HTMLLIElement>;
@@ -301,8 +302,9 @@ export function ItemRow({
                 const step = entry.action === "up" ? -1 : entry.action === "down" ? 1 : 0;
                 closeMenu(step !== 0);
                 // Move up and Move down go the way Alt+↑/↓ does: focus returns to the handle and the move is announced.
-                if (step !== 0 && onMoveKey) onMoveKey(item, step);
-                else actions.onMenu?.(item, entry.action);
+                // At the edge of the rows shown, the screen moves it in the whole list (Phase 8 review).
+                if (step !== 0 && onMoveKey?.(item, step)) return;
+                actions.onMenu?.(item, entry.action);
               }}
             >
               {entry.label}

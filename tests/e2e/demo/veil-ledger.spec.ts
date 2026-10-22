@@ -116,7 +116,7 @@ test("the row states show: ruled out, completed and cancelled, done, next and fa
   await expect(items.locator("li").nth(1)).toContainText("What you typed is kept");
 });
 
-test("on a phone a file's name keeps its width, and its meta line moves under it", async ({ page }) => {
+test("on a phone a file's name keeps its width, and its meta line moves under it (G46)", async ({ page }) => {
   const section = await openSection(page);
   await page.setViewportSize({ width: 390, height: 844 });
   const file = section.locator('li:has(button[data-file-id="f5"])');

@@ -35,6 +35,7 @@ import { ChipGroup } from "@/veil/parts/chips/chip";
 import { DateInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { BigInput } from "@/veil/parts/fields/money";
 import { UploadSheet } from "@/veil/parts/files/upload-sheet";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 import { Banner } from "@/veil/shell/banner";
 import { CreateSheetActions, Sheet, useSheet, useSheets } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
@@ -267,7 +268,7 @@ export function RecordPaymentSheet({ booking, partId = null, funders, record, up
       {state === "failed" && (
         <div className={styles.failure} role="alert">
           <Banner tone="rose" inline>
-            {RECORD_FAILED}
+            <OfflineOr>{RECORD_FAILED}</OfflineOr>
           </Banner>
         </div>
       )}

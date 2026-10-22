@@ -182,6 +182,26 @@ describe("Try again with a changed amount (P4-S2)", () => {
     await addOn.undo();
     expect(await parts()).toEqual([1_000_000, 0, 0]);
   });
+
+  // Phase 8 review B1: paid typed in the old UI has no payments either, and isn't this payment's.
+  it("a lower Try again leaves another part's old-UI paid alone, and its Undo still works", async () => {
+    await setDoc(
+      doc(gregory.db, "vendors", "v1"),
+      vendor({
+        subEntries: [
+          { id: "dep", name: "Deposit", totalPrice: 5_000_000, budgetSpent: 5_000_000 },
+          { id: "bal", name: "Balance", totalPrice: 95_000_000, budgetSpent: 0, payments: [] },
+        ],
+      }),
+    );
+    const target = { kind: "vendor" as const, id: "v1", partId: "bal" };
+    await recordPayment(target, { amount: 4_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 1000 });
+    const again = await recordPayment(target, { amount: 3_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 2000 });
+    const parts = () => read("vendors", "v1").then((d) => (d.subEntries as { budgetSpent: number }[]).map((p) => p.budgetSpent));
+    expect(await parts()).toEqual([5_000_000, 3_000_000]);
+    await again.undo();
+    expect(await parts()).toEqual([5_000_000, 0]);
+  });
 });
 
 describe("Split right after typing (P4-S5)", () => {

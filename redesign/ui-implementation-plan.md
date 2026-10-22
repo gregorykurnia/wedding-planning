@@ -795,7 +795,7 @@ Every place in the current code that produces something visible, from a full swe
 | `app/notes/page.tsx` + `components/notes/rich-text-editor.tsx` | Documents §5.16, A document §5.17 | [x] |
 | `app/files/page.tsx` | Files §5.18 | [x] |
 | `app/settings/page.tsx` | Wedding settings §5.3 (partnerEmail and venue dropped, §4 #3) | [x] |
-| `app/budget/page.tsx`, `app/checklist/page.tsx` (orphaned) | dropped (§4 #1, #2); data stays in Firestore | [ ] |
+| `app/budget/page.tsx`, `app/checklist/page.tsx` (orphaned) | dropped (§4 #1, #2); data stays in Firestore | n/a: both pages are gone since 7.3; `/budget` is the new Budget and `/checklist` redirects (Phase 8 review) |
 | no `not-found.tsx`, `error.tsx`, `global-error.tsx`, `loading.tsx` | not found and unexpected error: **gap N2** (§9.1 G2); loading: `Shimmer` (guide §4.19) | [x] |
 | **Auth** | | |
 | `login/page.tsx:76-157` Google, email and password, Sign in | Sign in §5.1 | [x] |
@@ -806,16 +806,16 @@ Every place in the current code that produces something visible, from a full swe
 | `app-shell.tsx:62-84` auth gate, full-screen "Loading…" | new root layout gate (Task 2.3) with `Shimmer` | [x] |
 | account not allowed: not handled (non-allowed users see empty data) | Account not allowed state; permission probe in Task 2.3 | [x] |
 | permission-denied ignored on most pages (`use-collection.ts:45-49`) | hook `status: 'error'` → Couldn't load on every screen | [x] |
-| `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [ ] |
+| `app-shell.tsx:184-231` account dropdown, Sign out | menu account line, Settings "Who can open the planner" (§4.2, §4.30) | [x] |
 | **Native dialogs** | | |
 | `schedule/page.tsx:763` `window.confirm` delete event | `ConfirmSheet` + undo (§6.2) | [x] |
-| `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [ ] |
+| `files/page.tsx:283` `confirm` delete folder | `ConfirmSheet`, or `BlockedNotice` when not empty (§4.15) | [x] |
 | `files/page.tsx:369` `confirm` delete file | `ConfirmSheet` "Delete for good", no undo (§6.2) | [x] |
 | `notes/page.tsx:97` `confirm` delete note | `ConfirmSheet` "Delete for good" + "Document deleted" message (§5.17) | [x] |
-| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [ ] |
+| `rich-text-editor.tsx:386` `window.prompt` rows to add | table bar "Add [5] rows" field (§4.24) | [x] |
 | **Deletes with no confirmation today** | | |
-| vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [ ] |
-| shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [ ] |
+| vendors `vendors-table.tsx:449`, venues `venues-table.tsx:242`, shortlist entries `shortlist-table.tsx:148` | removal with confirm and undo: **gap N10** (§9.1 G10, owner decision §9.2 Q1) | [x] |
+| shortlist packages `:259`, price options `vendor-price-options-cell.tsx:69` | Remove with confirm and undo (§4.8) | [x] |
 | confirmed sub-entries `confirmed/page.tsx:883-884`, `:1136`, `:1224` | Remove this part / Remove booking / Remove what-if item, confirm and undo (§5.6, §5.10) | [x] |
 | tasks and subtasks `todo/page.tsx:71`, `:121` | Delete task, remove step, confirm and undo (§4.27) | [x] |
 | attached file X `files-cell.tsx:36` | file details sheet, Delete for good (§4.20) | [ ] |
@@ -826,73 +826,73 @@ Every place in the current code that produces something visible, from a full swe
 | inline load and save errors: notes `:140`, files `:425`, schedule `:872-882`, master list `:682-695`, guests `:790`, settings `:141`, master-list cell `:111-124` | Couldn't load message; failed field or row line with Try again; sheet save line (§6.1) | [x] |
 | schedule form validation `schedule/page.tsx:250-270` (title, date, invalid date, end before start) | validation uses the failed-field look (§4.9), but the design words only two messages (a booking's missing name, a taken category name). A missing title or date and an end before the start: **gap N9** (§9.1 G9) | [x] |
 | category validation `vendor-categories.ts:49-60` | "There's already a category called …", characters left (§5.11) | [x] |
-| upload errors `cloudinary-upload-button.tsx:77`, `:86`, `:112-117` | Too large, Upload failed, Try again (§4.20) | [ ] |
+| upload errors `cloudinary-upload-button.tsx:77`, `:86`, `:112-117` | Too large, Upload failed, Try again (§4.20) | [x] |
 | **Dialogs, popovers, tooltips, dropdowns** | | |
 | schedule form dialog `:293` | event sheet (§4.14, §5.19) | [x] |
-| files: folder dialog `:592`, file details `:617` (with "Skip for now"), move `:664` | folder sheet, `FileDetailsSheet`, `UploadSheet` per-file fields, `MoveSheet` (§4.20) | [ ] |
+| files: folder dialog `:592`, file details `:617` (with "Skip for now"), move `:664` | folder sheet, `FileDetailsSheet`, `UploadSheet` per-file fields, `MoveSheet` (§4.20) | [x] |
 | guests delete dialog `:783` | `ConfirmSheet` naming plus-ones (§5.23) | [x] |
-| master list "Add multiple rows" `:915`, delete `:971` | add-items sheet (one per line), `ConfirmSheet` | [ ] |
+| master list "Add multiple rows" `:915`, delete `:971` | add-items sheet (one per line), `ConfirmSheet` | [x] |
 | `add-vendor-category-dialog.tsx` | categories sheet (§5.11) | [x] |
-| `venue-notes-cell.tsx:59-117` long-notes dialog | `NotesView` with Edit / Done on detail screens and the venue sheet (§4.9) | [ ] |
-| `venues-toolbar.tsx:87` filters popover | venue filters inline (§5.15) | [ ] |
-| tooltips (`cloudinary-upload-button.tsx:178`, add to budget, copy to shortlist) | none; add to budget dropped; Copy to the shortlist is a labelled action (§5.12); missing upload config is a deployment error, logged, shown as Upload failed | [ ] |
-| dropdown menus: nav `app-shell.tsx:111`, `:164`; file and folder menus `files/page.tsx:136`, `:168`; guest row `:157`; multi-select `master-list-multi-select.tsx` | menu index; folder actions (Rename · Move · Delete folder) and file details sheet; guest sheet Remove; event and people filters (`.dd`) | [ ] |
-| base-ui selects (guests, master list, schedule, funder, category, status, type pills) | `FieldSelect`, chips, `StageChips` | [ ] |
+| `venue-notes-cell.tsx:59-117` long-notes dialog | `NotesView` with Edit / Done on detail screens and the venue sheet (§4.9) | [x] |
+| `venues-toolbar.tsx:87` filters popover | venue filters inline (§5.15) | [x] |
+| tooltips (`cloudinary-upload-button.tsx:178`, add to budget, copy to shortlist) | none; add to budget dropped; Copy to the shortlist is a labelled action (§5.12); missing upload config is a deployment error, logged, shown as Upload failed | [x] |
+| dropdown menus: nav `app-shell.tsx:111`, `:164`; file and folder menus `files/page.tsx:136`, `:168`; guest row `:157`; multi-select `master-list-multi-select.tsx` | menu index; folder actions (Rename · Move · Delete folder) and file details sheet; guest sheet Remove; event and people filters (`.dd`) | [x] |
+| base-ui selects (guests, master list, schedule, funder, category, status, type pills) | `FieldSelect`, chips, `StageChips` | [x] |
 | **Lightboxes, galleries, previews** | | |
 | `venue-gallery-dialog.tsx` photo gallery, cover thumbnail | dropped (F2, §4 #7); photo data stays | n/a |
-| files open in a new tab (`files/page.tsx:557`, `:573`, `files-cell.tsx:23`) | Open and Download in the file details sheet; preview in the sheet (§4.20) | [ ] |
-| file-type icons `files/page.tsx:111-123` | file type in gold italic, envelope folders (§4.7, §4.20) | [ ] |
+| files open in a new tab (`files/page.tsx:557`, `:573`, `files-cell.tsx:23`) | Open and Download in the file details sheet; preview in the sheet (§4.20) | [x] |
+| file-type icons `files/page.tsx:111-123` | file type in gold italic, envelope folders (§4.7, §4.20) | [x] |
 | **Editor** | | |
 | toolbar `rich-text-editor.tsx:288-447`; style, font, size, colour inputs | `EditorToolbar`, pops (§4.24) | [x] |
-| table presets 2×2–6×5 | 8 × 8 size picker | [ ] |
-| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [ ] |
-| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [ ] |
+| table presets 2×2–6×5 | 8 × 8 size picker | [x] |
+| header-click sort `:212-246` | table bar Sort (§4.24); totals stay put (§6.10) | [x] |
+| formula overlay via `data-formula*` attributes, errors `#REF!`, `#CIRCULAR!`, `#NAME?` | total cells in gold, errors "Bad reference", "Includes itself", "Not a total", formula bar (§6.10) | [x] |
 | save status "Saving…/Unsaved changes/Saved/Retry save" `:276-285` | `DocSaveState` (§4.24) | [x] |
-| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [ ] |
+| content CSS `globals.css:147-339` (placeholder "Start writing…", headings, lists, tables, resize handle, mobile tables) | `editor/content.module.css` from `editor.css` and guide §4.24; placeholder from the prototype | [x] |
 | stored marks: fonts `""`, Inter, Georgia, Arial, Courier New; sizes 14/16/20/28px; any hex colour and highlight | read unchanged; normalised per §9.2 Q10 | [x] |
 | legacy plain-text notes (`notes.ts:21-45`) | same conversion, kept in the data layer | [x] |
 | **Exports and output** | | |
 | CSV `vendors-table.tsx:84-120` (`vendors-YYYY-MM-DD.csv`, 9 columns incl. email) | filename `vendors-<names>.csv` (§5.11); columns: **gap N5** (§9.1 G5); email dropped (§4 #6) | [x] |
-| PDF shrinking `compress-pdf.ts` | kept; status lines in the upload queue (§4.20) | [ ] |
+| PDF shrinking `compress-pdf.ts` | kept; status lines in the upload queue (§4.20) | [x] |
 | print styles, emails | none today, none designed | n/a |
-| WhatsApp links `contact-cell.tsx:24`, `vendors-table.tsx:220` | `WhatsAppLink` with the 0 → 62 rule (§4.23) | [ ] |
+| WhatsApp links `contact-cell.tsx:24`, `vendors-table.tsx:220` | `WhatsAppLink` with the 0 → 62 rule (§4.23) | [x] |
 | **Guest or shared-link views** | none today, none designed | n/a |
 | **PWA** | | |
 | `manifest.ts` name, short name, description, colours `#2b2f4a`, icons (maskable reuses 512) | **gap N1** (§9.1 G1) | [x] |
 | `layout.tsx:15-30` title, description, apple web app title, icons; `viewport.themeColor` | **gap N1** | [ ] |
-| `src/app/favicon.ico`, `public/icon-192.png`, `icon-512.png`, `apple-icon.png` | **gap N1**; old files deleted in Phase 9 | [ ] |
-| leftover template SVGs in `public/` (`file`, `globe`, `next`, `vercel`, `window`) | delete in Phase 9 | [ ] |
+| `src/app/favicon.ico`, `public/icon-192.png`, `icon-512.png`, `apple-icon.png` | **gap N1**; old files deleted in Phase 9 | [x] |
+| leftover template SVGs in `public/` (`file`, `globe`, `next`, `vercel`, `window`) | delete in Phase 9 | [x] |
 | `public/sw.js` network-first cache of every response | Task 6.1 (navigations network-only, push handlers) | [x] |
 | `sw-register.tsx` | kept as plumbing, moved to the new root layout | [x] |
-| no install prompt | `InstallCard`, settings steps, installed state (§4.30) | [ ] |
+| no install prompt | `InstallCard`, settings steps, installed state (§4.30) | [x] |
 | **Sync, offline, loading, empty, demo** | | |
-| no sync or offline indicator | Offline message, flash and partner toasts, document offline note (§6.3, §6.5) | [ ] |
+| no sync or offline indicator | Offline message, flash and partner toasts, document offline note (§6.3, §6.5) | [x] |
 | skeletons on 19 screens (list in the sweep) | `Shimmer` (§4.19) | [x] |
-| spinners: login `:104`, settings `:135`, upload `:157` | `Btn busy` and save line "Saving" | [ ] |
+| spinners: login `:104`, settings `:135`, upload `:157` | `Btn busy` and save line "Saving" | [x] |
 | empty states on 19 screens | nothing yet / no results / nothing in this slice (§6.7) | [x] |
 | demo banner `app-shell.tsx:240-248` | gold demonstration banner and the one action rule (§6.4) | [x] |
 | **Uploads** | | |
-| `cloudinary-upload-button.tsx` progress label, sequential uploads, first failure stops the batch | `UploadSheet` and `UploadQueue`, per-file status, no batch stop (§4.20) | [ ] |
-| files page progress card `files/page.tsx:429-443` | upload queue bars | [ ] |
-| record uploaders `files-cell.tsx:43`, `vendor-files-cell.tsx`, venue photo button `venues-table.tsx:229` | `FileTiles` + shared `UploadSheet`, filing into a folder named after the record; venue photos dropped | [ ] |
+| `cloudinary-upload-button.tsx` progress label, sequential uploads, first failure stops the batch | `UploadSheet` and `UploadQueue`, per-file status, no batch stop (§4.20) | [x] |
+| files page progress card `files/page.tsx:429-443` | upload queue bars | [x] |
+| record uploaders `files-cell.tsx:43`, `vendor-files-cell.tsx`, venue photo button `venues-table.tsx:229` | `FileTiles` + shared `UploadSheet`, filing into a folder named after the record; venue photos dropped | [x] |
 | **Hard-coded names** | | |
-| "Gregory & Partner's Wedding Planner", "Our Wedding", "Wedding Planner", "A cozy place to plan our big day." | names from settings (§4.1), "Our wedding planner" before sign-in; installed name: **gap N1** | [ ] |
+| "Gregory & Partner's Wedding Planner", "Our Wedding", "Wedding Planner", "A cozy place to plan our big day." | names from settings (§4.1), "Our wedding planner" before sign-in; installed name: **gap N1** | [x] |
 | settings placeholder "Gregory Kurnia" | settings fields per §5.3 | [x] |
-| funders `CK`, `Gregory`, `Bella`, `Bella Fam` (`types.ts:37`) | `funders` collection seeded with those values (§2.7) | [ ] |
+| funders `CK`, `Gregory`, `Bella`, `Bella Fam` (`types.ts:37`) | `funders` collection seeded with those values (§2.7) | [x] |
 | default wedding date 2027-06-12, 365-day window (`page.tsx:30-33`) | no wedding date state; time gone from `startedOn` (§5.2, §6.11) | [x] |
 | Wedding Organizer import button (`vendors-table.tsx:57-82`) | dropped (§4 #5) | n/a |
-| file category suggestions (`files/page.tsx:61-78`) | the prototype's suggestion list (`app.js` `FILE_CATS`) | [ ] |
-| "Groom Big Family / Bride Big Family / Groom Business Connections" (`guests/page.tsx:644`) | Both sides card wording (§5.23) | [ ] |
+| file category suggestions (`files/page.tsx:61-78`) | the prototype's suggestion list (`app.js` `FILE_CATS`) | [x] |
+| "Groom Big Family / Bride Big Family / Groom Business Connections" (`guests/page.tsx:644`) | Both sides card wording (§5.23) | [x] |
 | **Role-gated UI** | none today; two identical accounts | n/a |
 | **Who did what** | | |
-| nothing records who changed what (only `uploadedBy`, `createdBy` on files) | `updatedBy`, `activity`; which account is whose name: **gap N3** (§9.1 G3) | [ ] |
+| nothing records who changed what (only `uploadedBy`, `createdBy` on files) | `updatedBy`, `activity`; which account is whose name: **gap N3** (§9.1 G3) | [x] |
 | **Dates** | | |
-| mixed date formats (§5 #37) | model `dates.ts` per guide §6.11 | [ ] |
-| a booking with no booking date, a finished task with no finish date (data from before this rebuild) | **gap N8** (§9.1 G8) | [ ] |
+| mixed date formats (§5 #37) | model `dates.ts` per guide §6.11 | [x] |
+| a booking with no booking date, a finished task with no finish date (data from before this rebuild) | **gap N8** (§9.1 G8) | [x] |
 | **Reminders** | | |
 | `reminderMinutes` stored, never sent | real reminders, sent once a day (Tasks 6.1, 6.2); device that can't receive them: **gap N6** (§9.1 G6); reminder choices: **gap N11** (§9.1 G11) | [x] |
 | **After the wedding** | | |
-| countdown floors at 0 (`page.tsx`) | the day itself and after: **gap N7** (§9.1 G7) | [ ] |
+| countdown floors at 0 (`page.tsx`) | the day itself and after: **gap N7** (§9.1 G7) | [x] |
 
 ---
 
@@ -1022,7 +1022,9 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | 2026-10-22 · one folder on `redesign` · this commit: axe on 464 states, focus items P3-S8, P3-S12, P4-S19 fixed, 4 small fixes; task tick in the summary is gap G43; notes in `redesign/reviews/8.4-accessibility.md` | [x] |
 | 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | 2026-10-22 · one folder on `redesign` · this commit: `redesign/device-checklist.md` (test data and HTTPS set-up, nine checks, results table); the owner's run stays in `before-merge.md` | [x] |
 | 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | 2026-10-22 · one folder on `redesign` · this commit: `CLAUDE.md` gets a section on the new UI (routes, layers, naming, tokens, data, server, launch window) and the redesign rules are marked until the merge; `before-merge.md` rewritten in the order to do the steps; §9.1's second G43 row (N43) is now G45 | [x] |
-| 8 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
+| 8 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-22 · main folder: 2 blockers fixed in the review (a lower Try again moved old-UI paid between parts; Done then Back closed a failing sheet silently) with S8–S14, P4-S1, P4-S24; full e2e on production builds 671 of 675, the 4 fixed and passing; §6 ticked (two rows to 8.F1), §5.1 waits for the owner's acceptance; gap G46; the rest routed to 8.F1, 8.F2; see `redesign/reviews/phase-8-review.md` | [x] |
+| 8 | 8.F1 Review fixes: moves, offline reads, layering and tabs | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 8) | | [ ] |
+| 8 | 8.F2 Review fixes: tests and raw sizes | Opus 5.5 Medium | $1.34 | Same | | [ ] |
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | waits for launch |
 | 9 | 9.2 Remove the fallback, final old-names check | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the check | | waits for launch |
 | 9 | Review (only if needed) | Opus 5.5 Medium | $1.34 | Skipped when 9.1 raises no new needs and 9.2's build, tests and no-exclusions old-names check pass (owner, 2026-10-19) | | waits for launch |
@@ -1363,8 +1365,8 @@ Every Phase 4 task reads: §4 (its row), its guide §5 section, the guide sectio
 #### Task 4.25: Wedding settings · Sonnet 5.5 High
 - **Guide:** §5.3. **Prototype:** `settings.html`. Names and date saving as you go (no whole-document overwrite, §5 #26), who can open the planner from `members`, sign out, the notification block (wired in 6.2), install steps and installed state, doors to Who pays and Vendor categories. The accounts list also carries the N3 note and **Swap them** (`SWAP_NOTE`, `SWAP_LINK` and `swapToast` in `src/lib/model/who.ts`; the write and its undo are `swapNames` in `src/lib/data/who.ts`, which takes `useWho().settings`, the account's email and `useMembers()`); the toast is `toast.undoable(swapToast(name), undo)`.
 
-#### Tasks 4.F1–4.F5, 5.F1–5.F3, 6.F1–6.F2 and 7.F1–7.F2: Review fixes · Opus 5.5 Medium
-- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F, "Before Phase 7" for 6.F, "Before Phase 8" for 7.F). Read each item in its review file; that's the whole brief, plus the files it names.
+#### Tasks 4.F1–4.F5, 5.F1–5.F3, 6.F1–6.F2, 7.F1–7.F2 and 8.F1–8.F2: Review fixes · Opus 5.5 Medium
+- **Items:** each task's row in `redesign/reviews/triage.md` ("Before Phase 5" for 4.F, "Before the Phase 6 review" for 5.F, "Before Phase 7" for 6.F, "Before Phase 8" for 7.F, "Before the merge" for 8.F). Read each item in its review file; that's the whole brief, plus the files it names.
 - **Do:** fix each item, with a test that fails before the fix (an emulator test for any write, a model test for any rule). Where the item offers two fixes, take the one that changes less. A fix that needs a design decision becomes a gap (§9.1, `needs.md`) instead.
 - **Done when:** every listed item is fixed or turned into a gap, named by ID in the commit body. Both lanes finish their 4.F tasks before Phase 5 starts; the Phase 5 review re-checks them.
 - **Production is not part of these tasks.** A fix to `firestore.rules` is done when the rules and their rules tests are committed; deploying them (`npx firebase deploy --only firestore:rules`) is the owner's step, added to `redesign/before-merge.md`. The task then ends done, not blocked.
@@ -1529,16 +1531,16 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 
 | # | Need | Gap and code context (owner-only) | Waits | Status |
 |---|---|---|---|---|
-| G1 | **N1** | The installed app and browser tab need a name, a mark, a theme colour and a background colour. Today: `src/app/manifest.ts` and `layout.tsx` metadata, `favicon.ico`, `public/icon-192.png`, `icon-512.png` (also reused as the maskable icon, §5 #36), `apple-icon.png`, theme colour `#2b2f4a`. The brief left branding open and the guide has no mark. The owner decided an app name in Step 2 (`inventory-notes.md` §9, §4 #16), which never reached the brief; the designer may want it (§9.2 Q14). | 6.4 | designed (v1.1); build open |
+| G1 | **N1** | The installed app and browser tab need a name, a mark, a theme colour and a background colour. Today: `src/app/manifest.ts` and `layout.tsx` metadata, `favicon.ico`, `public/icon-192.png`, `icon-512.png` (also reused as the maskable icon, §5 #36), `apple-icon.png`, theme colour `#2b2f4a`. The brief left branding open and the guide has no mark. The owner decided an app name in Step 2 (`inventory-notes.md` §9, §4 #16), which never reached the brief; the designer may want it (§9.2 Q14). | 6.4 | designed (v1.1); built in 6.4 (`2c1b7a9`), except tab titles that follow the names (guide §4.31): fix task 8.F1 (Phase 8 review) |
 | G2 | **N2** | No design for an address that matches no screen, or for an unexpected crash. Today there is no `not-found.tsx` or `error.tsx` at all. A record that's gone is designed (§5.6, §5.17), but only as "removed by Bella". | 6.5 | designed (v1.1); build open |
 | G3 | **N3** | The design names the partner in toasts, banners and "removed by Bella", and settings lists "Greg, you" and "Bella". The code knows only the signed-in account's email; nothing links an account to one of the two names in settings (`yourName`, `partnerName`). Also undesigned: a change made by *me* on my other device arrives like a partner's change (same `activity` feed). | 2.7 (follow-up) | designed (v1.1); built 2026-10-17 (lane t2): `settings/accounts` holds each account's place, `AskWho` in the gate asks once, and an own-device change arrives as yours |
 | G4 | **N4** | Google sign-in uses a popup (`signInWithPopup`). The popup can be closed, blocked by the browser, or fail (`auth/popup-closed-by-user`, `auth/popup-blocked`, `auth/cancelled-popup-request`, network). The design covers wrong password, not allowed and offline only. | 4.1 (that state only) | designed (v1.1); built in 4.1 (2026-10-16) |
 | G5 | **N5** | Export writes a CSV. The design gives its file name but not its columns or their headings. Today's columns are old wording and include the dropped email. | 6.6 | designed (v1.1); built (4.11) |
 | G6 | **N6** | The design has allowed, not yet allowed and turned off. Web push also has "not supported here": an iPhone only receives web push once the app is installed to the home screen (iOS 16.4+), and some browsers have no push at all (`'PushManager' in window` is false). | 6.2 (that state only) | designed (v1.1); built in 6.2 (2026-10-19): `install` and `unsupported` in `NotificationState`, read by `pushState()` |
 | G7 | **N7** | The overview's one figure is days to go, and the thread runs to the wedding. Nothing covers the wedding day itself or the weeks after, when payments may still be due (`daysUntil` becomes 0, then negative). | 4.2 (that state only) | designed (v1.1); built in 4.2 (2026-10-17), closes with the Phase 8 screenshots |
-| G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | designed (v1.1); build open |
+| G8 | **N8** | The origin line says "Booked from Vendors on Sunday 1 March", and finished tasks say "Done 14 Oct". Existing bookings and finished tasks have no stored booking or finish date (`booking.on: null` after migration 1.11; `todos` has no `doneOn`). The prototype falls back to the due date, which would show a wrong date. | 4.6, 4.22 (that line only) | designed (v1.1); built (checked in the Phase 8 review) |
 | G9 | **N9** | The event sheet saves as you go, but an event needs a title and a date, and an end can't come before its start (today's checks in `schedule/page.tsx:250-270`; `scheduleEvents` without `startAt` vanish from the query). The design words only two validation messages (a booking's name, a taken category). | 4.20 (validation only) | designed (v1.1); build open |
-| G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | designed (v1.1); build open |
+| G10 | **N10** | Owner decision §9.2 Q1. Vendors, finalists and venues can be removed today with no confirm (`vendors-table.tsx:449`, `venues-table.tsx:242`, `shortlist-table.tsx:148`); the design has no removal for them (decisions.md, session 2). Removing a vendor or venue that has become a booking needs an answer too (today a booking *is* the vendor or venue record, §2.7). | 4.12, 4.14, 4.15 (removal only) | designed (v1.1); built (checked in the Phase 8 review) |
 | G11 | **N11** | Owner decision §9.2 Q8. On Vercel Hobby the reminder job runs once a day, in the morning, within the hour. The event sheet offers "When it starts", "15 minutes", "1 hour", "1 day" and "1 week before" (guide §6.12); only the day-before and week-before ones can be delivered. Existing events may already store 60 minutes (the old default). | 4.20 (Remind us only), 6.2 | designed (v1.1); built: the choices in 4.20, the morning-only sending in 6.2 (2026-10-19) |
 | G12 | **N12** | Owner decision §9.2 Q4. The report from migration 1.11 (run on production 2026-10-14) found 4 wedding items with more than one person in `persons[]`: "Make Up Artist Groom and Bride Moms" (Groom Mom, Bride Mom), "Groom Dad & Brothers Suit" (Groom Dad, Groom Brother), "Groom Mom & Sister Dress" (Groom Mom, Groom Sister) and "Bride Dad & Brothers Suit" (Bride Dad, Bride Brothers). The design gives each item one person, so these can't be shown or filtered as they are. | 4.23 | designed (v1.1); built in 4.23 |
 | G13 | **N13** | Raised by the Phase 1 review (B1, S1). Undo refuses with `WriteError` code `changed`, writing nothing, when the fields it would put back were changed since, by you or the partner (`patchWithUndo` and `removeAddedElement` in `src/lib/data/undo.ts`). Example: Split a booking, Bella records a payment on the Balance, then Undo. Guide §6.2 says what undo does when it works but not what the toast says when it can't. | 2.6 (toast host), 3.8 | designed (v1.1); toast host built 2026-10-17 (lane t2): a rejected Undo with `changed` shows a 9-second partner toast, `toast.undoable(message, undo, conflict)` takes the screen's own sentence and the generic line ("Can’t undo: Bella has changed this since. It’s kept as it is now.") covers the rest. Open: each screen's sentence (the split in 4.4; 4.6's is built without the amount, see G25; the file move in 4.19 (built 2026-10-19), the payment (built 2026-10-19 in 4.F1, `paymentConflict`; Undo used to do nothing silently)), closing with its task |
@@ -1574,6 +1576,7 @@ Each gap below has no answer in design-guide v1.0. Each is written as a need in 
 | G43 | **N44** | Raised by Task 8.4 (axe, `nested-interactive`). In a task row the tick that finishes the task sits inside the row's summary, the control that opens and closes it. A screen reader can then read the row as one control with another inside it, and some don't announce the tick at all. The guide (§4.27, §8) places the tick there and gives it `role="checkbox"`; moving it out changes the row's layout, which is the design's call. Kept as built; the tick has its own label ("Finish …"/"Reopen …") and the real-device checklist (8.5) has the owner try it with VoiceOver and TalkBack. | 8.4 | open |
 | G44 | **N45** | Raised by Task 8.4 (axe, `color-contrast`). The guide fades a finalist that became a booking to 70% (§5.13), and at 70% its gold "Now a booking" flag is 2.8:1 and its grey lines about 3:1 against a 4.5:1 bar; §8 says every pair passes AA. Built provisionally: only the finalist's name fades to 70%; the flag and the lines under it stay at full strength (`.booked .name`, `finalist-card.module.css`). | 8.4 | open |
 | G45 | **N43** | Raised by Task 8.3b (screenshot pass, 2026-10-22). The guide's line for reminders on a device that's allowed (§4.30) reads "Arrives on this phone and your other devices, even when the planner is closed.", while the prototype's settings screen reads "Allowed on this computer. Reminders come once a day, in the morning, a day or a week before…". Built with the guide's words, which the build already shows (the desktop says "computer"); the screenshot pair for that row stays different until the studio decides. | 8.3b | open; built provisionally |
+| G46 | **N46** | Raised by the Phase 8 review (P4-S24). On a phone, `files.html` keeps a file's description to the right of its name, which leaves the name a few letters a line (64px at 390px). Built provisionally: a file's description goes under its name, with the size and date, so the name keeps the row's width; a folder's count stays at the right, as designed (`.frow:not(.folder) .fmeta`, `rows.module.css`). | Phase 8 review | open; built provisionally |
 
 ### 9.2 Questions for the owner: decided
 

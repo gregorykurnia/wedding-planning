@@ -349,7 +349,8 @@ test("a payment that can't reach the database keeps the sheet, and Try again rec
   await context.setOffline(true);
   await record(page).click();
   await expect(dialog.getByRole("button", { name: "Recording" })).toBeVisible();
-  await expect(dialog.getByText("The payment wasn’t recorded. What you typed is still here.")).toBeVisible({ timeout: 30_000 });
+  // Offline, the rose line says so (P7-S17; the payment sheet was missed until the Phase 8 review).
+  await expect(dialog.getByText("Not saved: you’re offline. Keep this page open.")).toBeVisible({ timeout: 30_000 });
   await expect(dialog.getByLabel("Amount paid")).toHaveValue("Rp 5.000.000");
   expect((await read("vendors", SINGLE)).budgetSpent).toBe(10_000_000);
 

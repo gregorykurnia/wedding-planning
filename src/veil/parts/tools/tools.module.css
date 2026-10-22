@@ -23,6 +23,11 @@
   margin-top: var(--space-5);
 }
 
+/* Under the schedule's focus chips (the prototype's inline 12px). */
+.close {
+  margin-top: var(--space-3);
+}
+
 .search {
   position: relative;
   flex: 1 1 260px;
@@ -172,6 +177,11 @@
 .more {
   margin-top: var(--space-7);
   text-align: center;
+}
+
+/* Right under a "Showing 60 of 1.507" count line (payments, tasks). */
+.moreAfterCount {
+  margin-top: var(--space-3);
 }
 
 /* The gold pill over a list that's sorted for now. */

@@ -193,6 +193,11 @@
   font-size: var(--text-caption);
 }
 
+/* Room for the italic's overhang, so the last letter isn't clipped (Phase 4 review, S24). */
+.ed [data-cell="error"]::after {
+  padding-right: var(--space-1);
+}
+
 /* The total holding the cursor shows its formula. */
 .ed [data-cell="editing"] {
   font-family: var(--font-code);

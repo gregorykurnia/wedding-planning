@@ -120,7 +120,7 @@ export function PaymentsView({ list, onRecord }: PaymentsViewProps) {
           <CountLine>{count}</CountLine>
         </div>
       )}
-      <ShowMore more={more} onMore={() => setShown((size) => size + PAGE)} />
+      <ShowMore afterCount={Boolean(count)} more={more} onMore={() => setShown((size) => size + PAGE)} />
     </>
   );
 }

@@ -31,7 +31,7 @@ import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { SaveLine } from "@/veil/parts/fields/save-scope";
 import fieldStyles from "@/veil/parts/fields/fields.module.css";
-import { SheetFailureContext, SheetHoldContext, useSheetHold } from "./sheet-failure";
+import { SheetFailureContext, SheetHoldContext, useSheetFailure, useSheetHold } from "./sheet-failure";
 import styles from "./sheet.module.css";
 import { useOptionalToast } from "./toasts";
 
@@ -185,9 +185,11 @@ export function SheetHost({ children }: { children: ReactNode }) {
   // sheet with a guard may keep itself open to say a change hasn't saved (N18).
   const requestClose = useCallback(
     (id: number) => {
-      if (holds.busy(id)) return;
+      // The guard first: a field saving holds the sheet too (P7-S16), and the guard
+      // answers that with "Saving, then this closes" rather than ignoring the key.
       const guard = guards.current.get(id);
       if (guard && !guard()) return;
+      if (holds.busy(id)) return;
       close(id);
     },
     [close, holds],
@@ -572,6 +574,9 @@ export function EditSheetActions({
   const kind = scope?.line.kind ?? "idle";
   const failed = kind === "failed";
   const stuck = failed || blocked > 0;
+  // Registered here as well as in `SaveLine`, which the waiting and held lines replace: after
+  // Done and a move, a failing save still keeps the sheet open to say so (Phase 8 review B2).
+  useSheetFailure(Boolean(scope?.sheet && failed));
 
   // What the guard reads when a dismissal asks, without re-registering it each render.
   const now = useRef({ kind, stuck });

@@ -44,10 +44,19 @@ export function SortedNote({ label, onBack }: SortedNoteProps) {
  * shows, and nothing is shown when there are none. The screen's `onMore` adds
  * the next page to what is shown.
  */
-export function ShowMore({ more, onMore }: { more: number; onMore: () => void }) {
+export function ShowMore({
+  more,
+  onMore,
+  afterCount = false,
+}: {
+  more: number;
+  onMore: () => void;
+  /** Sits right under a count line, so closer to it. */
+  afterCount?: boolean;
+}) {
   if (more <= 0) return null;
   return (
-    <p className={styles.more}>
+    <p className={afterCount ? `${styles.more} ${styles.moreAfterCount}` : styles.more}>
       <Btn
         variant="quiet"
         onClick={(event) => {

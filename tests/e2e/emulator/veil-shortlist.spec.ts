@@ -201,7 +201,9 @@ test("a finalist that became a booking fades and carries the flag; a long step i
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   const booked = cardOf(page, "Dapur Lestari Catering");
   await expect(booked.getByText("Now a booking")).toBeVisible();
-  expect(await booked.evaluate((el) => getComputedStyle(el).opacity)).toBe("0.7");
+  // Only the name fades, so the flag and the lines keep their contrast (8.4, G44).
+  expect(await booked.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+  expect(await booked.getByRole("link", { name: "Dapur Lestari Catering" }).evaluate((el) => getComputedStyle(el).opacity)).toBe("0.7");
   await expect(booked).toContainText("x".repeat(118) + "…");
   await expect(booked).not.toContainText("x".repeat(119));
   expect(await cardOf(page, "Arka Visual").evaluate((el) => getComputedStyle(el).opacity)).toBe("1");

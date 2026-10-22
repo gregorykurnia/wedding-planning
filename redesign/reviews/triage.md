@@ -109,3 +109,22 @@ Phase 6's routed items were re-checked: 6.F1 and 6.F2 fixed them, except the par
 | The Shortlist's "booked" label offline comes from `movedTo` only (6.F2 review, no ID) | Only the label can be wrong, while offline; Book it can't run offline, and the label corrects itself when the vendors arrive |
 | Unknown addresses (and `/old/budget`, `/old/checklist`) answer the not-found screen with a 200 | The screen is right for a person; the only wrong one is the status code, which nothing reads. Redirects for the two old pages would change `next.config.ts` lines the switch commit owns, which would make the revert conflict. Task 7.3's "answer 404" wording is corrected |
 | The files check groups by exact address, not also `publicId` | P1-S15 is about one address copied twice, which it finds; an asset under two addresses is safe, since Delete for good keeps an asset another file shares |
+
+## Phase 8 (sorted 2026-10-22, in the review)
+
+Phase 7's routed items were re-checked: 7.F1 and 7.F2 fixed them, except the parts listed below as P8-S1 (P7-S6) and P8-S2 (P7-S14). The review fixed B1, B2 and P8-S8–S14, plus P4-S1 and P4-S24 (routed here).
+
+### Before the merge: fix tasks 8.F1–8.F2
+
+| Task | Lane | Items |
+|---|---|---|
+| 8.F1 Review fixes: moves, offline reads, layering and tabs | main folder | P8-S1 (an items move can stay refused on stale positions), P8-S2 (offline cold start: a couple with no files sees "You're offline" in the venue sheet), P8-S3 (`src/veil` imports collections and Firebase; no lint rule), P8-S4 (tab titles don't follow the names, G1; record file tiles skip the file details sheet) |
+| 8.F2 Review fixes: tests and raw sizes | main folder | P8-S5 (R11 never deletes a file in e2e; P7-S15's `filesHeld` has no wiring test; `betweenBatches` is never used), P8-S6 (weak count and markup assertions in the story specs; A4's scroll check runs before content), P8-S7 (raw pixel sizes added by 8.3b) |
+
+### Dropped
+
+| Item | Reason |
+|---|---|
+| `demo/demo-mode.spec.ts` still drives `/old`, and the old-UI helpers in `tests/e2e/helpers.ts` | The old UI is the launch window's fallback; its spec keeps it honest until 9.2 deletes both |
+| Offline, a venue the partner removed reads "You're offline" until reconnect | The sheet says what it can; it closes as gone once the read arrives |
+| No e2e guards the finalist fade, the month cell label, target sizes or the new `dir="auto"` | The axe mode (`npm run screenshots -- --axe`) covers them over every state, and runs at releases |

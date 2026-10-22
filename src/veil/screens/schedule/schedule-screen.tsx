@@ -226,7 +226,7 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
         chips={AGENDA_FILTERS.map((f) => ({ id: f.key, label: f.label }))}
         onChoose={(id) => narrow(setKind)(id as AgendaFilterKey)}
       />
-      <Toolbar tight>
+      <Toolbar close>
         <SearchField
           label="Search the schedule"
           placeholder="Search everything with a date"

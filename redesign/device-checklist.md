@@ -1,12 +1,12 @@
 # Real-device checklist (Task 8.5)
 
-For you, before the merge (`redesign/before-merge.md`, "In person"). Run it on an installed iPhone, Android Chrome and a Mac. Each check says what to tap and what should happen. Write down what fails in section 3 and tell Claude in a redesign session: each failure becomes a fix task before the merge.
+For you, before the merge (`redesign/before-merge.md`, section 1, "Device checklist"). Run it on an installed iPhone, Android Chrome and a Mac. Each check says what to tap and what should happen. Write down what fails in section 3 and tell Claude in a redesign session: each failure becomes a fix task before the merge.
 
 **Test data only.** Section 1 points the build at a test copy of everything it touches. Don't skip it: the new screens write to the same Firestore, Cloudinary and push services as the app in production.
 
 ## 1. Set-up (once)
 
-1. **Test Firebase project.** In the Firebase console, create a new project with Firestore and Google sign-in on. Note its web config values and the project ID. Under Authentication › Settings › Authorized domains, add the Tailscale address from step 6.
+1. **Test Firebase project.** In the Firebase console, create a new project with Firestore and Google sign-in on. Note its web config values and the project ID. Under Authentication › Settings › Authorized domains, add the Tailscale address from step 6. Deploy this repo's rules to it, or every read and write is refused: `npx firebase deploy --only firestore:rules --project <test-project-id>` (the `--project` matters: without it the rules go to production). The rules let in only the two allowed Google accounts (`firestore.rules`), so both of you sign in with those.
 2. **Test Cloudinary.** A second cloud, or a test account, with an unsigned upload preset (Settings › Upload › Add upload preset › Signing mode: Unsigned). Note the cloud name, the preset, and the API key and secret.
 3. **Test keys.** Generate a service-account key for the test project (Project settings › Service accounts › Generate new private key). In the project folder, run `npx web-push generate-vapid-keys` for a push key pair.
 4. **Swap the environment file.** Keep the live file: `mv .env.local .env.local.saved`. Create a new `.env.local` with only the test values: the six `NEXT_PUBLIC_FIREBASE_*` values and `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT` (the test key), the Cloudinary cloud name, preset, key and secret, and the VAPID public and private keys. Nothing from the live file. Open it and check no value matches the live project.

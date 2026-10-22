@@ -100,7 +100,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--space-hair) var(--space-6);
-  padding: var(--space-4) var(--space-row-x);
+  padding: calc(var(--space-4) + var(--space-hair)) var(--space-row-x);
   align-items: baseline;
 }
 
@@ -510,5 +510,11 @@
 
   .frow .ico {
     grid-row: span 3;
+  }
+
+  /* A file's description goes under it too, so its name keeps its width; files.html squeezes the
+     name to a few letters a line (Phase 8 review, P4-S24; gap G46). A folder's short count stays. */
+  .frow:not(.folder) .fmeta {
+    grid-column: 2;
   }
 }

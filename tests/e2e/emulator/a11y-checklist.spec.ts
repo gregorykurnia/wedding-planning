@@ -46,21 +46,21 @@ test.describe("items", () => {
     await expect(page.getByRole("status").getByText("Reception venue moved to 2 of 4")).toBeAttached();
   });
 
-  test("P3-S8 Show everything and Back to our order give focus to the search field", async ({ page }) => {
+  test("P3-S8 Show everything and Back to our order, pressed from the keyboard, give focus to the search field", async ({ page }) => {
     await seedItems(4);
     await openItems(page);
     const search = page.getByRole("searchbox");
     await page.getByLabel("Work on next only").check();
-    await page.getByRole("button", { name: "Show everything" }).first().click();
+    await page.getByRole("button", { name: "Show everything" }).first().press("Enter");
     await expect(search).toBeFocused();
 
     await page.getByLabel("Order by").selectOption("name");
-    await page.getByRole("button", { name: "Back to our order" }).click();
+    await page.getByRole("button", { name: "Back to our order" }).press("Enter");
     await expect(search).toBeFocused();
 
     // With nothing found, the message's own Show everything does the same.
     await search.fill("zzzz");
-    await page.getByRole("button", { name: "Show everything" }).nth(1).click();
+    await page.getByRole("button", { name: "Show everything" }).nth(1).press("Enter");
     await expect(search).toBeFocused();
   });
 
@@ -125,8 +125,13 @@ test("reduced motion: transitions and animations run in 0.001ms", async ({ page 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await resetData();
   await openAt(page, "/");
+  // An element of its own with a 1s transition and animation: the rule must bring both down.
   const times = await page.evaluate(() => {
-    const style = getComputedStyle(document.querySelector("main") ?? document.body);
+    const probe = document.createElement("div");
+    probe.style.transition = "opacity 1s";
+    probe.style.animation = "none 1s";
+    document.querySelector("main")?.append(probe);
+    const style = getComputedStyle(probe);
     return [style.transitionDuration, style.animationDuration];
   });
   for (const t of times) expect(parseFloat(t.split(",")[0])).toBeLessThan(0.001);
