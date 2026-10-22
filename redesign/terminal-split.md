@@ -73,7 +73,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | — | [x] 5.7 Overview, sign-in, settings states · Haiku 5.5 Max |
 | 🛑 [x] Phase 5 review · Opus 5.5 Medium | wait |
 | **Review fixes (both lanes finish these before the Phase 6 review; items in `redesign/reviews/triage.md`, Phase 5)** | |
-| [x] 5.F1 Money, items and guests writes · Opus 5.5 Medium | [ ] 5.F2 Documents, files and rules · Opus 5.5 Medium |
+| [x] 5.F1 Money, items and guests writes · Opus 5.5 Medium | [x] 5.F2 Documents, files and rules · Opus 5.5 Medium |
 | [ ] 5.F3 States, wording and the harness · Opus 5.5 Medium | — |
 | 🛑 [ ] Phase 6 review · Opus 5.5 Medium | wait |
 | **Phase 7: switch-over (one terminal only)** | |

@@ -253,6 +253,23 @@ test("Undo after Bella moved the same file again changes nothing and says where 
   ).toBeVisible();
 });
 
+test("Undo after Bella deleted the old folder says so and goes, and the file stays (P5-S9)", async ({ page }) => {
+  await open(page, "/new/documents/files?folder=venue");
+  await page.locator('[data-file-id="f2"]').click();
+  await sheet(page).getByRole("button", { name: "Move" }).click();
+  await sheet(page).getByRole("radio", { name: /^Legal and church$/ }).check();
+  await sheet(page).getByRole("button", { name: "Move here" }).click();
+  await expect(page.getByText("Moved to Files › Legal and church")).toBeVisible();
+
+  // Bella deletes Venue, now empty of this file, before Greg taps Undo.
+  await fetch(`${DOCUMENTS}/fileFolders/venue`, { method: "DELETE", headers: ADMIN });
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(
+    page.getByText("Can’t move Deposit receipt.jpg back: that folder isn’t there any more. It stays where it is now."),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Undo" })).toHaveCount(0);
+});
+
 test("moving a folder takes everything inside it, and can't go inside itself", async ({ page }) => {
   await open(page, "/new/documents/files?folder=catering");
   await page.getByRole("button", { name: "Move" }).click();

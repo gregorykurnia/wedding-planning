@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { getAuth } from "firebase/auth";
-import { collection, getDocs, query, where, type Firestore } from "firebase/firestore";
+import { collection, doc, getDocs, query, where, type Firestore } from "firebase/firestore";
 import { compressPdf } from "@/lib/compress-pdf";
 import { savedName, type FileFields } from "@/lib/model/uploads";
 import { legacyPlace, recordRef, sameRecord, type RecordRef } from "./adapters/files";
@@ -21,7 +21,7 @@ import {
   type UploadedAsset,
   type UploadTarget,
 } from "./upload-queue";
-import { create, newId, update, type WriteOptions } from "./write";
+import { create, newId, stamp, transact, update, type WriteOptions } from "./write";
 
 /**
  * The real side of the upload queue (Task 3.10): the Cloudinary request (the
@@ -142,11 +142,21 @@ export function recordFolder(
     const found = await ownedBy(own);
     if (found) return found;
     // The root is only looked for (and made) when the record's folder is new.
-    const rootId = await once(`root:${path[0]}`, async () => {
-      const roots = await foldersWhere(requireDb(opts.db), "parentId", null);
-      return roots.find((f) => !f.ref && f.name === path[0])?.id ?? (await make(path[0], null, null));
-    });
-    return make(path[1], rootId, own);
+    return make(path[1], await rootFolder(path[0], opts), own);
+  });
+}
+
+/**
+ * A top-level folder records' folders go in ("Vendors", "Bookings"): found by
+ * name among the top folders that belong to no record, made the first time.
+ */
+export function rootFolder(name: string, opts: WriteOptions = {}): Promise<string> {
+  return once(`root:${name}`, async () => {
+    const roots = await foldersWhere(requireDb(opts.db), "parentId", null);
+    return (
+      roots.find((f) => !f.ref && f.name === name)?.id ??
+      (await create(FOLDERS, { name, parentId: null }, opts))
+    );
   });
 }
 
@@ -184,6 +194,28 @@ async function appendToLegacyList(ref: RecordRef, file: LegacyFile, opts: WriteO
   }
 }
 
+/**
+ * Writes the `weddingFiles` document in `folderId`, read in the same
+ * transaction: a folder deleted meanwhile files it at the top instead of under
+ * a folder that isn't there (P5-S10). The upload has already reached
+ * Cloudinary, so refusing would lose it. At the top it is a plain create.
+ */
+async function createFiled(
+  folderId: string | null,
+  data: Record<string, unknown>,
+  docId: string,
+  opts: WriteOptions,
+): Promise<void> {
+  if (folderId === null) {
+    await create(FILES, { ...data, folderId }, { ...opts, id: docId });
+    return;
+  }
+  await transact(async (tx, database) => {
+    const there = (await tx.get(doc(database, FOLDERS, folderId))).exists();
+    tx.set(doc(database, FILES, docId), { ...data, folderId: there ? folderId : null, ...stamp(database, true) });
+  }, opts);
+}
+
 /** Files an uploaded asset: its folder, the `weddingFiles` document and the record's old list. */
 export async function saveUploadedFile(request: SaveRequest, opts: WriteOptions = {}): Promise<string> {
   const { docId, target, asset, originalName, mime, fields } = request;
@@ -193,8 +225,8 @@ export async function saveUploadedFile(request: SaveRequest, opts: WriteOptions 
       ? await recordFolder(target.ref, targetPath(target), opts)
       : target.folderId;
   const name = savedName(originalName, fields.name);
-  await create(
-    FILES,
+  await createFiled(
+    folderId,
     {
       name,
       category: fields.category.trim(),
@@ -209,7 +241,8 @@ export async function saveUploadedFile(request: SaveRequest, opts: WriteOptions 
       uploadedBy: getAuth(database.app).currentUser?.email ?? uidOf(database),
       ...(target.kind === "record" ? { recordRef: target.ref } : {}),
     },
-    { ...opts, id: docId },
+    docId,
+    opts,
   );
   if (target.kind === "record") await appendToLegacyList(target.ref, { id: docId, name, url: asset.url }, opts);
   // The partner's "Bella uploaded …" (guide §6.3). Never fails the upload.

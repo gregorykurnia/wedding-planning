@@ -92,10 +92,14 @@ service cloud.firestore {
     // Who is in which document; each account writes only its own entries.
     match /presence/{docId} {
       allow read: if isAllowed();
-      allow create: if isAllowed() && request.resource.data.uid == request.auth.uid;
+      // Its id is the document's and the account's (`<documentId>_<uid>`), so
+      // neither can make the other's entry and lock them out of it (P5-S14).
+      allow create: if isAllowed() && request.resource.data.uid == request.auth.uid &&
+        docId == request.resource.data.documentId + '_' + request.auth.uid;
       // Only the account it belongs to, so neither can take over the other's entry.
       allow update: if isAllowed() && resource.data.uid == request.auth.uid &&
-        request.resource.data.uid == request.auth.uid;
+        request.resource.data.uid == request.auth.uid &&
+        docId == request.resource.data.documentId + '_' + request.auth.uid;
       allow delete: if isAllowed() &&
         (resource == null || resource.data.uid == request.auth.uid);
     }
@@ -105,8 +109,12 @@ service cloud.firestore {
       allow read, delete: if isAllowed() &&
         (resource == null || resource.data.uid == request.auth.uid);
       allow create: if isAllowed() && request.resource.data.uid == request.auth.uid;
-      allow update: if isAllowed() && resource.data.uid == request.auth.uid &&
-        request.resource.data.uid == request.auth.uid;
+      // Its own, or the same device's (the id is made from the endpoint, so only
+      // the browser that holds it can name it): a shared browser whose old
+      // subscription is the other account's passes to whoever saves it (P5-S13).
+      allow update: if isAllowed() && request.resource.data.uid == request.auth.uid &&
+        (resource.data.uid == request.auth.uid ||
+          request.resource.data.endpoint == resource.data.endpoint);
     }
     // Migration records, written only by the Admin SDK scripts (Task 1.11).
     match /appMeta/{docId} {

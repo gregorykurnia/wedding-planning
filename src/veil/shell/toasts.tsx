@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { WriteError } from "@/lib/data/write-error";
-import { UNDO_CONFLICT_OWN, undoConflict } from "@/lib/model/confirm-text";
+import { UNDO_CONFLICT_OWN, UNDO_GONE, undoConflict } from "@/lib/model/confirm-text";
 import styles from "./toasts.module.css";
 
 /** Guide §4.16: 6 seconds, and the undo window lasts exactly as long. */
@@ -37,6 +37,8 @@ interface ToastItem {
   conflict?: Conflict;
   /** The same, when the change since was your own (G35); the generic line if not given. */
   ownConflict?: ReactNode;
+  /** What an Undo that finds the thing, or where it goes back to, gone says (G39); the generic line if not given. */
+  gone?: ReactNode;
   /** Undo was tapped and the restore hasn't finished. */
   restoring: boolean;
 }
@@ -50,13 +52,16 @@ export interface Toasts {
    * same thing since), nothing is taken back and a 9-second partner toast says
    * so: `conflict` is its sentence, "Can’t undo the split: Bella recorded …".
    * When the change since was your own, the toast says `ownConflict` instead,
-   * with no circle, rather than naming the partner for it.
+   * with no circle, rather than naming the partner for it. If it rejects
+   * with `missing` (the thing, or the folder it goes back to, is gone),
+   * nothing can be put back either: the toast says `gone` and Undo goes.
    */
   undoable(
     message: ReactNode,
     undo: () => void | Promise<void>,
     conflict?: Conflict,
     ownConflict?: ReactNode,
+    gone?: ReactNode,
   ): number;
   /** "Kebun Bunga Atelier is now a booking · Open". */
   next(message: ReactNode, label: string, open: () => void): number;
@@ -173,8 +178,8 @@ export function ToastHost({ children }: { children: ReactNode }) {
   const toasts = useMemo<Toasts>(() => {
     return {
       confirmation: (message) => add({ kind: "confirmation", message }, TOAST_MS),
-      undoable: (message, undo, conflict, ownConflict) =>
-        add({ kind: "undo", message, conflict, ownConflict, action: { label: "Undo", run: undo } }, TOAST_MS),
+      undoable: (message, undo, conflict, ownConflict, gone) =>
+        add({ kind: "undo", message, conflict, ownConflict, gone, action: { label: "Undo", run: undo } }, TOAST_MS),
       next: (message, label, open) =>
         add({ kind: "next", message, action: { label, run: open } }, TOAST_MS),
       partner: (name, message) =>
@@ -217,6 +222,12 @@ export function ToastHost({ children }: { children: ReactNode }) {
           const said = typeof item.conflict === "function" ? item.conflict(partner) : item.conflict;
           toasts.partner(partner, said ?? undoConflict(partner));
         }
+        return;
+      }
+      if (err instanceof WriteError && err.code === "missing") {
+        // Gone since (P5-S9): trying again can't work, so Undo goes and the toast says why.
+        dismiss(item.id);
+        add({ kind: "confirmation", message: item.gone ?? UNDO_GONE }, PARTNER_TOAST_MS);
         return;
       }
       // Nothing was put back. The button goes back to Undo for another window

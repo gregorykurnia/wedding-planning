@@ -32,6 +32,12 @@ describe("confirmFailure", () => {
     expect(demo.reason).toContain("demonstration mode");
     expect(confirmFailure("Remove booking", "denied")).toMatchObject({ retry: false });
     expect(confirmFailure("Remove booking", "missing").reason).toContain("removed already");
+    // A folder something landed in while it was being deleted was put back (P5-S6).
+    expect(confirmFailure("Delete folder", "changed")).toMatchObject({
+      lead: "Nothing was deleted.",
+      reason: "Something changed in it just now, perhaps on another device, so it was kept as it is.",
+      retry: false,
+    });
   });
 
   it("gives the button the guide's label", () => {

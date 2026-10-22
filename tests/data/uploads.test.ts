@@ -125,6 +125,15 @@ describe("saveUploadedFile", () => {
     expect(file.uploadedBy).toBe(gregory.auth.currentUser?.email);
   });
 
+  it("files it in its folder, or at the top when that folder was deleted meanwhile (P5-S10)", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "rings"), { name: "Rings", parentId: null });
+    await saveUploadedFile(request({ docId: "in-folder", target: { kind: "folder", folderId: "rings", path: ["Rings"] } }), opts());
+    await saveUploadedFile(request({ docId: "no-folder", target: { kind: "folder", folderId: "gone", path: ["Gone"] } }), opts());
+    const files = await all("weddingFiles");
+    expect(files.find((f) => f.id === "in-folder")?.folderId).toBe("rings");
+    expect(files.find((f) => f.id === "no-folder")?.folderId).toBeNull();
+  });
+
   it("tells the partner: an activity entry names the file", async () => {
     await setDoc(doc(gregory.db, "vendors", "v1"), { name: "Kebun Bunga Atelier", files: [] });
     await saveUploadedFile(request(), opts());
@@ -169,6 +178,7 @@ describe("saveUploadedFile", () => {
   });
 
   it("files into a chosen folder without a recordRef, for the Files screen", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "f9"), { name: "Venues", parentId: null });
     await saveUploadedFile(request({ target: { kind: "folder", folderId: "f9", path: ["Venues"] } }), opts());
     const [file] = await all("weddingFiles");
     expect(file.folderId).toBe("f9");

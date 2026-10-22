@@ -7,7 +7,7 @@ import { mergeStatus } from "@/lib/data/read";
 import { useSession } from "@/lib/data/session";
 import { recordFolderPath, type RecordRef } from "@/lib/data/adapters/files";
 import type { UploadTarget } from "@/lib/data/upload-queue";
-import { recordFolder, useUploadQueue, useUploads } from "@/lib/data/uploads";
+import { rootFolder, useUploadQueue, useUploads } from "@/lib/data/uploads";
 import { useFunders } from "@/lib/data/use-funders";
 import { useToday } from "@/lib/data/use-today";
 import { useCategories } from "@/lib/data/vendors";
@@ -103,6 +103,7 @@ function AddForm({ funders, categories, inDemo }: { funders: Funder[]; categorie
   const [failed, setFailed] = useState(false);
   const [adding, setAdding] = useState(false);
   const id = useRef<string | null>(null);
+  const folderId = useRef<string | null>(null);
   const nameInput = useRef<HTMLInputElement>(null);
 
   const uploading = items.some((i) => i.status === "shrinking" || i.status === "uploading");
@@ -130,10 +131,16 @@ function AddForm({ funders, categories, inDemo }: { funders: Funder[]; categorie
       files: items.flatMap((i) => (i.status === "done" && i.fileId ? [i.fileId] : [])),
     });
     try {
-      // Found by what it belongs to, so Try again reuses the folder a failed add made.
+      // The booking's folder is made with it, under its name as added, so a
+      // failed or given-up add leaves none (P5-S11); its id is kept for Try again.
       const ref: RecordRef = { kind: "booking", id: bookingIdOf({ kind: "vendor", id: recordId }) };
-      const folderId = draft.files?.length ? await recordFolder(ref, recordFolderPath(ref, draft.name)) : undefined;
-      await addDirectBooking({ ...draft, folderId }, today, { id: recordId });
+      const folder = draft.files?.length
+        ? {
+            id: (folderId.current ??= newId("fileFolders")),
+            parentId: await rootFolder(recordFolderPath(ref, draft.name)[0]),
+          }
+        : undefined;
+      await addDirectBooking({ ...draft, folder }, today, { id: recordId });
     } catch {
       setAdding(false);
       setFailed(true);

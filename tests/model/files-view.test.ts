@@ -15,6 +15,7 @@ import {
   moveFolderSub,
   moveOptions,
   movedAgainText,
+  folderGoneText,
   nameTaken,
   paging,
   pathName,
@@ -218,6 +219,9 @@ describe("the move sheet's choices", () => {
       "Can’t move it back: Bella has since moved Quote.pdf to Files › Contracts. It stays there.",
     );
     expect(movedAgainText("Bella", "Quote.pdf", null)).toContain("It stays where it is now");
+    expect(folderGoneText("Quote.pdf")).toBe(
+      "Can’t move Quote.pdf back: that folder isn’t there any more. It stays where it is now.",
+    );
   });
 });
 

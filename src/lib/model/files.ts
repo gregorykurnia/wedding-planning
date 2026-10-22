@@ -323,6 +323,8 @@ export const folderTaken = (name: string) => `There’s already a folder called 
 export const FOLDER_RENAME_ACTION = "Rename";
 export const FOLDER_MAKE_ACTION = "Make folder";
 export const FOLDER_FAILED = "Couldn’t save the folder. What you typed is kept.";
+/** The folder a new one was going in was deleted meanwhile (P5-S10). Provisional (G39/N39). */
+export const FOLDER_PARENT_GONE = "The folder this goes in isn’t there any more, so nothing was made. What you typed is kept.";
 export const madeToast = (name: string) => `Made ${name}`;
 export const renamedToast = (name: string) => `Renamed to ${name}`;
 export const deletedFolderToast = (name: string) => `Deleted ${name}`;
@@ -360,6 +362,10 @@ export const movedAgainText = (partner: string, name: string, where: string | nu
   where
     ? `Can’t move it back: ${partner} has since moved ${name} to ${where}. It stays there.`
     : `Can’t move it back: ${partner} has since moved ${name}. It stays where it is now.`;
+
+/** Undo of a move whose old folder was deleted since (P5-S9). Provisional (G39/N39). */
+export const folderGoneText = (name: string) =>
+  `Can’t move ${name} back: that folder isn’t there any more. It stays where it is now.`;
 
 // a file's sheet
 

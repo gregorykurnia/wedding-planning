@@ -142,11 +142,16 @@ describe("addDirectBooking", () => {
     expect((await read("weddingFiles", "kept1"))?.recordRef).toEqual({ kind: "booking", id: bookingId });
   });
 
-  it("puts the attached files in the booking's own folder, in the same write (P4-S6)", async () => {
-    await setDoc(doc(gregory.db, "fileFolders", "own"), { name: "Wedding rings", parentId: "root" });
+  it("makes the booking's own folder and puts the attached files in it, in the same write (P4-S6, P5-S11)", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "root"), { name: "Bookings", parentId: null });
     await setDoc(doc(gregory.db, "weddingFiles", "contract2"), { name: "Contract", folderId: null, url: "https://example.test/c.pdf" });
-    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["contract2"], folderId: "own" };
-    await addDirectBooking(input, null, { ...g(), id: "direct4" });
+    const input = { name: "Wedding rings", category: "Other", price: 0, paid: 0, funder: null, due: null, step: "", files: ["contract2"], folder: { id: "own", parentId: "root" } };
+    // A try that fails leaves no folder behind.
+    await expect(addDirectBooking({ ...input, price: undefined as unknown as number }, null, { ...g(), id: "direct4" })).rejects.toBeTruthy();
+    expect(await exists("fileFolders", "own")).toBe(false);
+    // Try again, with the name edited meanwhile: the folder has the name as added.
+    const { bookingId } = await addDirectBooking({ ...input, name: "Rings" }, null, { ...g(), id: "direct4" });
+    expect(await read("fileFolders", "own")).toMatchObject({ name: "Rings", parentId: "root", recordRef: { kind: "booking", id: bookingId } });
     expect((await read("weddingFiles", "contract2"))?.folderId).toBe("own");
   });
 });
@@ -708,6 +713,13 @@ describe("folders and a file's details in Files", () => {
     expect(await read("fileFolders", "r1")).toMatchObject({ name: "Rings", parentId: "a" });
     const all = await getDocs(collection(gregory.db, "fileFolders"));
     expect(all.docs.filter((d) => d.get("name") === "Rings")).toHaveLength(1);
+  });
+
+  it("won't make a folder inside one the partner just deleted (P5-S10)", async () => {
+    await setDoc(doc(gregory.db, "fileFolders", "e"), { name: "Empty", parentId: "a" });
+    await deleteFolder("e", b());
+    await expect(createFolder("Rings", "e", { ...g(), id: "r2" })).rejects.toMatchObject({ code: "missing" });
+    expect(await exists("fileFolders", "r2")).toBe(false);
   });
 
   it("renames a folder with undo, but not over the partner's later rename", async () => {

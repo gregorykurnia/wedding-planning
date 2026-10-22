@@ -9,6 +9,7 @@ import {
   MOVE_FAILED,
   MOVE_HERE,
   MOVE_TO_LABEL,
+  folderGoneText,
   folderTree,
   holdings,
   moveFileSub,
@@ -22,6 +23,7 @@ import {
   type Mover,
 } from "@/lib/model/files";
 import { WriteError } from "@/lib/data/write-error";
+import { UNDO_GONE } from "@/lib/model/confirm-text";
 import { Btn } from "@/veil/parts/actions/btn";
 import { useFlasher } from "@/veil/shell/flash";
 import { Sheet, SheetActions, useSheet } from "@/veil/shell/sheet";
@@ -38,6 +40,11 @@ export type MoveTarget = { kind: "file"; id: string } | { kind: "folder"; id: st
  */
 function MovedAgain({ partner, name, box }: { partner: string; name: string; box: { where: string | null } }) {
   return <>{movedAgainText(partner, name, box.where)}</>;
+}
+
+/** The same for an undo that finds the old folder deleted since (P5-S9); the generic line when the thing itself is gone. */
+function FolderGone({ name, box }: { name: string; box: { selfGone: boolean } }) {
+  return <>{box.selfGone ? UNDO_GONE : folderGoneText(name)}</>;
 }
 
 /**
@@ -88,7 +95,7 @@ export function MoveSheet({ target }: { target: MoveTarget }) {
     const where = placeName(tree, choice);
     try {
       const { undo } = target.kind === "file" ? await moveFile(target.id, choice) : await moveFolder(target.id, choice);
-      const box: { where: string | null } = { where: null };
+      const box: { where: string | null; selfGone: boolean } = { where: null, selfGone: false };
       toast.undoable(
         movedToast(where),
         async () => {
@@ -100,10 +107,15 @@ export function MoveSheet({ target }: { target: MoveTarget }) {
               const names = await currentPlace(target.kind, target.id).catch(() => null);
               box.where = names ? pathName(names) : null;
             }
+            if (error instanceof WriteError && error.code === "missing") {
+              box.selfGone = (await currentPlace(target.kind, target.id).catch(() => [])) === null;
+            }
             throw error;
           }
         },
         <MovedAgain partner={partner} name={name} box={box} />,
+        undefined,
+        <FolderGone name={name} box={box} />,
       );
       flash({ kind: target.kind, id: target.id });
     } catch {

@@ -162,6 +162,15 @@ describe("presence", () => {
     await assertSucceeds(g.doc("presence/doc1_uid-gregory").delete());
   });
 
+  it("an entry's id is its document's and its own account's, so neither can make the other's (P5-S14)", async () => {
+    const b = bella().firestore();
+    await assertFails(b.doc("presence/doc2_uid-gregory").set({ documentId: "doc2", uid: "uid-bella" }));
+    await assertFails(b.doc("presence/doc2_uid-bella").set({ documentId: "doc3", uid: "uid-bella" }));
+    await assertSucceeds(b.doc("presence/doc2_uid-bella").set({ documentId: "doc2", uid: "uid-bella" }));
+    await assertFails(b.doc("presence/doc2_uid-bella").set({ documentId: "doc3", uid: "uid-bella" }));
+    await assertSucceeds(gregory().firestore().doc("presence/doc2_uid-gregory").set({ documentId: "doc2", uid: "uid-gregory" }));
+  });
+
   it.each(outsiders)("%s can't read or write", async (_, who) => {
     await seed("presence/p", { uid: "uid-gregory" });
     await assertFails(who().firestore().doc("presence/p").get());
@@ -179,12 +188,22 @@ describe("pushSubscriptions", () => {
     await assertFails(bella().firestore().doc("pushSubscriptions/s1").delete());
     await assertFails(bella().firestore().doc("pushSubscriptions/s2").set({ uid: "uid-gregory" }));
     await assertSucceeds(bella().firestore().doc("pushSubscriptions/s2").set({ uid: "uid-bella" }));
-    // Neither can take over the other's subscription (review P1-S22).
-    await assertFails(bella().firestore().doc("pushSubscriptions/s1").set({ uid: "uid-bella", endpoint: "e" }));
+    // Neither can take over the other's subscription for another endpoint (review P1-S22).
+    await assertFails(bella().firestore().doc("pushSubscriptions/s1").set({ uid: "uid-bella", endpoint: "e-other" }));
     await assertFails(g.doc("pushSubscriptions/s2").set({ uid: "uid-gregory" }));
     await assertSucceeds(g.doc("pushSubscriptions/s1").set({ uid: "uid-gregory", endpoint: "e2" }));
     await assertSucceeds(g.doc("pushSubscriptions/s1").delete());
     await assertSucceeds(g.doc("pushSubscriptions/s1").get());
+  });
+
+  it("a shared browser's subscription passes to whoever saves it, endpoint unchanged (P5-S13)", async () => {
+    await assertSucceeds(gregory().firestore().doc("pushSubscriptions/s3").set({ uid: "uid-gregory", endpoint: "e3" }));
+    // The same device, saved by the account now signed in on it, becomes theirs.
+    await assertSucceeds(bella().firestore().doc("pushSubscriptions/s3").set({ uid: "uid-bella", endpoint: "e3" }));
+    await assertSucceeds(bella().firestore().doc("pushSubscriptions/s3").get());
+    await assertFails(gregory().firestore().doc("pushSubscriptions/s3").get());
+    // Saved under someone else's uid: never.
+    await assertFails(gregory().firestore().doc("pushSubscriptions/s3").set({ uid: "uid-bella", endpoint: "e3" }));
   });
 
   it.each(outsiders)("%s can't read or write", async (_, who) => {

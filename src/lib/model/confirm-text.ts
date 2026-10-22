@@ -20,7 +20,8 @@ const DELETES = /^(delete|empty)\b/i;
 /**
  * `code` is the write's `WriteError` code (src/lib/data/write-error.ts). The
  * guide words only the database being out of reach; demonstration mode, a
- * refused account and a thing already gone are provisional (G38/N38).
+ * refused account, a thing already gone and one that changed while it was
+ * being removed (a folder something just landed in) are provisional (G38/N38).
  */
 export function confirmFailure(action: string, code?: string): ConfirmFailure {
   const deletes = DELETES.test(action);
@@ -43,6 +44,12 @@ export function confirmFailure(action: string, code?: string): ConfirmFailure {
       return {
         lead,
         reason: `It isn’t there any more: it was ${deletes ? "deleted" : "removed"} already, perhaps on another device.`,
+        retry: false,
+      };
+    case "changed":
+      return {
+        lead,
+        reason: "Something changed in it just now, perhaps on another device, so it was kept as it is.",
         retry: false,
       };
     default:
@@ -74,3 +81,10 @@ export function undoConflict(partner: string): string {
  * only the partner's case.
  */
 export const UNDO_CONFLICT_OWN = "Can’t undo: you’ve changed this since. It’s kept as it is now.";
+
+/**
+ * The toast when Undo finds the thing gone since, or the place it would go
+ * back to (P5-S9), so nothing is taken back and Undo isn't offered again.
+ * Provisional (G39/N39): the guide words no such case.
+ */
+export const UNDO_GONE = "Can’t undo: it isn’t there any more. Nothing was changed.";

@@ -3,8 +3,10 @@
 import { useRef, useState } from "react";
 import { createFolder, renameFolder, useFolders } from "@/lib/data/files";
 import { newId } from "@/lib/data/write";
+import { toWriteError } from "@/lib/data/write-error";
 import {
   FOLDER_FAILED,
+  FOLDER_PARENT_GONE,
   FOLDER_MAKE_ACTION,
   FOLDER_NAME_LABEL,
   FOLDER_NAME_MISSING,
@@ -41,7 +43,8 @@ export function FolderSheet({ parentId, folder }: { parentId: string | null; fol
 
   const [name, setName] = useState(folder?.name ?? "");
   const [problem, setProblem] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
+  // `gone`: the folder it goes in was deleted meanwhile (P5-S10).
+  const [failed, setFailed] = useState<false | "failed" | "gone">(false);
   const [busy, setBusy] = useState(false);
   const id = useRef<string | null>(folder?.id ?? null);
   const input = useRef<HTMLInputElement>(null);
@@ -71,9 +74,9 @@ export function FolderSheet({ parentId, folder }: { parentId: string | null; fol
         toast.confirmation(madeToast(next));
         flash({ kind: "folder", id: id.current });
       }
-    } catch {
+    } catch (error) {
       setBusy(false);
-      setFailed(true);
+      setFailed(!folder && toWriteError(error).code === "missing" ? "gone" : "failed");
       return;
     }
     sheet.close();
@@ -107,7 +110,7 @@ export function FolderSheet({ parentId, folder }: { parentId: string | null; fol
       </form>
       {failed && (
         <Banner tone="rose" inline>
-          {FOLDER_FAILED}
+          {failed === "gone" ? FOLDER_PARENT_GONE : FOLDER_FAILED}
         </Banner>
       )}
       <CreateSheetActions

@@ -199,6 +199,24 @@ test("a document the editor can't read opens read-only with a line, and typing s
   expect(textOf(after?.content)).toBe(textOf(stored));
 });
 
+test("a partner's saved change the editor can't read turns the page read-only instead of crashing (P5-S8)", async ({
+  page,
+}) => {
+  const id = docId("unreadable-later");
+  await put(id, { title: "Hymns", content: body(para("Amazing Grace")) });
+  await open(page, `/new/documents/${id}`);
+  // Each node type exists, but a heading can't hold a paragraph: only the content check refuses it.
+  const broken = body({ type: "heading", attrs: { level: 2 }, content: [para("Inside a heading")] });
+  await put(id, { title: "Hymns", content: broken, updatedBy: "partner" });
+  await expect(page.getByText(/can’t show/)).toBeVisible({ timeout: 15_000 });
+  await expect(bodyOf(page)).toHaveAttribute("contenteditable", "false");
+  await expect(bodyOf(page)).toContainText("Amazing Grace");
+  await bodyOf(page).click();
+  await page.keyboard.type("Overwritten");
+  await page.waitForTimeout(2500);
+  expect(textOf((await read(id))?.content)).toBe(textOf(broken));
+});
+
 test("a change that can't save keeps the text and says so; Try again and coming back online save it", async ({
   page,
   context,

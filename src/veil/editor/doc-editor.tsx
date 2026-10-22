@@ -41,10 +41,17 @@ type DocEditorProps = {
   onUnreadable: () => void;
 };
 
-/** The JSON the editor itself would make of `doc`, so a comparison isn't fooled by default attributes. */
+/**
+ * The JSON the editor itself would make of `doc`, so a comparison isn't fooled
+ * by default attributes. `null` when the editor can't read it, including
+ * content that breaks a content rule (`check()`, as the editor's content check
+ * does), so it never reaches `setContent` (P5-S8).
+ */
 function canonical(editor: Editor, doc: JSONContent): JSONContent | null {
   try {
-    return editor.schema.nodeFromJSON(normaliseDoc(doc)).toJSON() as JSONContent;
+    const node = editor.schema.nodeFromJSON(normaliseDoc(doc));
+    node.check();
+    return node.toJSON() as JSONContent;
   } catch {
     return null;
   }
@@ -133,7 +140,17 @@ export function DocEditor({
     }
     if (key === lastIncoming.current) return;
     lastIncoming.current = key;
-    if (!doc || hasUnsaved() || unreadableRef.current) return;
+    if (hasUnsaved() || unreadableRef.current) return;
+    if (!doc) {
+      // A saved change this editor can't read: as when it opens that way
+      // (P4-S14), read-only, so nothing typed saves the old page over it.
+      unreadableRef.current = true;
+      // Set from the server's snapshot, an outside system, as `setTitle` below.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnreadable(true);
+      onUnreadableRef.current();
+      return;
+    }
     if (key === keyOf(titleRef.current, editor.getJSON())) return;
     const { from, to } = editor.state.selection;
     editor.chain().setMeta("addToHistory", false).setContent(doc, { emitUpdate: false }).run();

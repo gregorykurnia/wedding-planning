@@ -143,8 +143,14 @@ export interface DirectBookingInput {
   step: string;
   /** The `weddingFiles` ids attached while adding: each is linked to the booking in the same write (§5.7). */
   files?: readonly string[];
-  /** The booking's own folder in Files (`Files › Bookings › <name>`), which the attached files move into (P4-S6). */
-  folderId?: string;
+  /**
+   * The booking's own folder in Files (`Files › Bookings › <name>`), which the
+   * attached files move into (P4-S6): its id, made once on the screen so Try
+   * again reuses it, and the folder it goes in. It is made in the same write,
+   * named after the booking as added, so an add that fails or is given up
+   * leaves no folder behind (P5-S11).
+   */
+  folder?: { id: string; parentId: string | null };
 }
 
 /**
@@ -195,9 +201,18 @@ export async function addDirectBooking(
       estimate: null,
       ...stamp(database, true),
     });
-    const place = input.folderId ? { folderId: input.folderId } : {};
+    const own = { kind: "booking", id: bookingId };
+    if (input.folder) {
+      tx.set(doc(database, "fileFolders", input.folder.id), {
+        name,
+        parentId: input.folder.parentId,
+        recordRef: own,
+        ...stamp(database, true),
+      });
+    }
+    const place = input.folder ? { folderId: input.folder.id } : {};
     for (const ref of files) {
-      tx.update(ref, { recordRef: { kind: "booking", id: bookingId }, ...place, ...stamp(database) });
+      tx.update(ref, { recordRef: own, ...place, ...stamp(database) });
     }
   }, opts);
   void logActivity("booking.added", { name }, { kind: "booking", id: bookingId }, opts);

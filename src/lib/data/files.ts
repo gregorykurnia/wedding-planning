@@ -12,7 +12,7 @@ import { readOf } from "./read";
 import { useSession } from "./session";
 import type { Loaded } from "./settings";
 import { patchWithUndo, removeWithUndo, type Undoable } from "./undo";
-import { create, guarded, stamp, transact, type WriteOptions } from "./write";
+import { create, guarded, newId, stamp, transact, type WriteOptions } from "./write";
 import { WriteError } from "./write-error";
 
 /**
@@ -229,13 +229,26 @@ export function deleteFileForGood(
 
 // ---------- folders: make, rename, delete (R8) ----------
 
-/** Makes a folder inside `parentId` (or at the top). A retried make with the same `id` writes the same folder. */
+/**
+ * Makes a folder inside `parentId` (or at the top). A retried make with the same
+ * `id` writes the same folder. The parent is read in the same transaction, so a
+ * folder is never made inside one deleted meanwhile: that refuses with
+ * `missing` (P5-S10).
+ */
 export async function createFolder(
   name: string,
   parentId: string | null,
   opts: WriteOptions & { id?: string } = {},
 ): Promise<string> {
-  return create(FOLDERS, { name: name.trim(), parentId }, opts);
+  if (parentId === null) return create(FOLDERS, { name: name.trim(), parentId }, opts);
+  const id = opts.id ?? newId(FOLDERS, opts);
+  await transact(async (tx, database) => {
+    if (!(await tx.get(doc(database, FOLDERS, parentId))).exists()) {
+      throw new WriteError("missing", "That folder is gone");
+    }
+    tx.set(doc(database, FOLDERS, id), { name: name.trim(), parentId, ...stamp(database, true) });
+  }, opts);
+  return id;
 }
 
 /**
@@ -258,7 +271,8 @@ export function renameFolder(
  *
  * A query can't run inside a transaction, so something can still land in the
  * folder between the check and the delete (P4-S15). It's checked again after:
- * if anything arrived, the folder is put back and the delete refuses.
+ * if anything arrived, the folder is put back and the delete refuses with
+ * `changed`.
  */
 export async function deleteFolder(folderId: string, opts: WriteOptions = {}): Promise<Undoable> {
   const database = requireDb(opts.db);
@@ -273,9 +287,14 @@ export async function deleteFolder(folderId: string, opts: WriteOptions = {}): P
   };
   if (await holdsAnything()) throw new WriteError("failed", "That folder still holds things");
   const { undo } = await removeWithUndo(FOLDERS, folderId, opts);
-  if (await holdsAnything()) {
+  // The delete has landed. A second check that can't run leaves it deleted,
+  // with its Undo, rather than say nothing was deleted (P5-S6).
+  const arrived = await holdsAnything().catch(() => false);
+  if (arrived) {
     await undo();
-    throw new WriteError("failed", "That folder still holds things");
+    // Put back because something just landed in it: `changed`, so the confirm
+    // says so instead of blaming the database (P5-S6).
+    throw new WriteError("changed", "Something was put in that folder just now, so it was kept");
   }
   return { undo };
 }
