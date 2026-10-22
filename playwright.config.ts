@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { defineConfig } from "@playwright/test";
 import {
   AUTH_EMULATOR,
@@ -20,6 +21,8 @@ const emulatorConfigFile = writeEmulatorConfig();
 const SERVERS = process.env.E2E_SERVERS ?? "all";
 const needsEmulator = SERVERS !== "demo";
 const needsDemo = SERVERS !== "emulator";
+const STRESS = process.env.E2E_STRESS;
+const STRESS_SPECS = "emulator/**/*-stress.spec.ts";
 
 // The Firebase emulators need Java. Homebrew's openjdk is keg-only, so it is
 // not on PATH unless the owner linked it.
@@ -39,7 +42,10 @@ const REUSE = false;
 // The Firestore emulator's Java process can otherwise grow to a quarter of the
 // machine's memory; the test data needs far less, so a runaway fails fast
 // instead of making the machine swap. Also set in scripts/test-emulator.mjs.
-const EMULATOR_JAVA_OPTIONS = "-Xmx1g";
+// The logging file keeps the emulator's live-update warnings out of
+// firestore-debug.log (see the file; P5-S29).
+const EMULATOR_JAVA_OPTIONS =
+  `-Xmx1g -Djava.util.logging.config.file=${join(process.cwd(), "tests/e2e/emulator-logging.properties")}`;
 
 // Placeholder web config for the emulator build. The real values in
 // .env.local are overridden here so the tests can never reach production.
@@ -85,17 +91,23 @@ export default defineConfig({
   timeout: 150_000,
   expect: { timeout: 10_000 },
   reporter: "list",
+  // E2E_STRESS (set by scripts/test-e2e.mjs): "skip" leaves out the *-stress
+  // specs, "only" runs nothing else. They write thousands of records, which
+  // flood the live-update connections earlier tests leave behind on the
+  // emulator, so a run that includes other specs gives them a second pass on
+  // fresh servers.
   projects: [
     {
       name: "emulator",
-      testMatch: "emulator/**/*.spec.ts",
+      testMatch: STRESS === "only" ? STRESS_SPECS : "emulator/**/*.spec.ts",
+      testIgnore: STRESS === "skip" ? STRESS_SPECS : undefined,
       use: { baseURL: `http://localhost:${EMULATOR_APP_PORT}` },
     },
-    {
+    ...(STRESS === "only" ? [] : [{
       name: "demo",
       testMatch: "demo/**/*.spec.ts",
       use: { baseURL: `http://localhost:${DEMO_APP_PORT}` },
-    },
+    }]),
   ],
   webServer: [
     ...(needsEmulator ? [{
