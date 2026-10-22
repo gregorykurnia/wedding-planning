@@ -1020,7 +1020,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 8 | 8.3a Screenshot fixes: budget, vendors, documents and files | Haiku 5.5 Max | $0.21 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | 2026-10-22 · one folder on `redesign` · this commit: message mark and Files rows fixed; the rest is data or behaviour | [x] |
 | 8 | 8.3b Screenshot fixes: schedule, items, guests, shell, overview, sign-in and settings | Haiku 5.5 Max | $0.21 | Same; ticked as covered when 8.3a did every group | 2026-10-22 · one folder on `redesign` · this commit: items, sign-in, settings, not-found and reminders fixed; P4-S1, P4-S24 and the overview stress shot go to the Phase 8 review | [x] |
 | 8 | 8.4 Accessibility check | Sonnet 5.5 High | $0.88 | axe plus the guide §8 checklist | 2026-10-22 · one folder on `redesign` · this commit: axe on 464 states, focus items P3-S8, P3-S12, P4-S19 fixed, 4 small fixes; task tick in the summary is gap G43; notes in `redesign/reviews/8.4-accessibility.md` | [x] |
-| 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | | [ ] |
+| 8 | 8.5 Real-device checklist | Haiku 5.5 xHigh | $0.12 | A checklist for the owner to run | 2026-10-22 · one folder on `redesign` · this commit: `redesign/device-checklist.md` (test data and HTTPS set-up, nine checks, results table); the owner's run stays in `before-merge.md` | [x] |
 | 8 | 8.6 Merge preparation and `CLAUDE.md` | Haiku 5.5 Max | $0.21 | Text update from this plan | | [ ] |
 | 8 | Review | Opus 5.5 Medium | $1.34 | | | [ ] |
 | 9 | 9.1 After-launch check | Sonnet 5.5 High | $0.88 | Read logs and turn findings into needs | | waits for launch |
