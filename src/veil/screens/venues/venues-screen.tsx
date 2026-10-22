@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { bookingIdOf } from "@/lib/data/bookings";
 import { useVenues } from "@/lib/data/venues";
@@ -35,7 +35,7 @@ import { FilterCheck, RangeField, ShowEverything } from "@/veil/parts/tools/filt
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { FilterSelect, OrderBy, type OrderState } from "@/veil/parts/tools/selects";
 import { Toggles, Toolbar } from "@/veil/parts/tools/toolbar";
-import { veilHref } from "@/veil/href";
+import { replaceAddress, veilHref } from "@/veil/href";
 import { AddButton } from "@/veil/shell/add-button";
 import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
@@ -81,7 +81,6 @@ function VenuesList({ venues, ready }: { venues: VenueListItem[]; ready: boolean
   const openVenue = (id: string) => sheets.open(<EditVenueSheet venueId={id} />);
 
   // `?venue=<id>` opens that venue's sheet (the agenda and the overview link here); the address is cleared once handled.
-  const router = useRouter();
   const pathname = usePathname();
   const venueParam = useSearchParams().get("venue");
   const handled = useRef<string | null>(null);
@@ -89,8 +88,8 @@ function VenuesList({ venues, ready }: { venues: VenueListItem[]; ready: boolean
     if (!venueParam || !ready || handled.current === venueParam) return;
     handled.current = venueParam;
     if (venues.some((v) => v.id === venueParam)) sheets.open(<EditVenueSheet venueId={venueParam} />);
-    router.replace(pathname);
-  }, [venueParam, ready, venues, sheets, router, pathname]);
+    replaceAddress(pathname);
+  }, [venueParam, ready, venues, sheets, pathname]);
 
   // Any change to what's in view starts again at the first page.
   const narrow = (next: Partial<VenueFilter>) => {

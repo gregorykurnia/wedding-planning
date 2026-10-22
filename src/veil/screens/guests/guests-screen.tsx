@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { replaceAddress } from "@/veil/href";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { setGuestRsvp, useGuests, type GuestBook } from "@/lib/data/guests";
 import { usePartnerName } from "@/lib/data/partner";
@@ -135,7 +136,6 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
     );
 
   // `?guest=<id>` opens that guest's sheet; the address is cleared once handled.
-  const router = useRouter();
   const pathname = usePathname();
   const guestParam = useSearchParams().get("guest");
   const handled = useRef<string | null>(null);
@@ -143,8 +143,8 @@ function Guests({ book, ready }: { book: GuestBook; ready: boolean }) {
     if (!guestParam || !ready || handled.current === guestParam) return;
     handled.current = guestParam;
     if (guests.some((g) => g.id === guestParam)) sheets.open(<EditGuestSheet guestId={guestParam} />);
-    router.replace(pathname);
-  }, [guestParam, ready, guests, sheets, router, pathname]);
+    replaceAddress(pathname);
+  }, [guestParam, ready, guests, sheets, pathname]);
 
   // A guest just added scrolls into view as soon as their row is drawn.
   const scrolledTo = useRef<string | null>(null);

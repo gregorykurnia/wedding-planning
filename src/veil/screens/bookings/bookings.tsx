@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { replaceAddress } from "@/veil/href";
 import { useBookingList } from "@/lib/data/use-booking-list";
 import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
@@ -29,12 +30,11 @@ export function Bookings() {
  * cleared, as the schedule clears `?event=`, so going back doesn't bring it back.
  */
 function useInitialQuery(): string {
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [initial] = useState(() => params.get("q") ?? "");
   useEffect(() => {
-    if (params.has("q")) router.replace(pathname);
-  }, [params, pathname, router]);
+    if (params.has("q")) replaceAddress(pathname);
+  }, [params, pathname]);
   return initial;
 }

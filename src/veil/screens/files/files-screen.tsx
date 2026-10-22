@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { replaceAddress } from "@/veil/href";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { deleteFolder, useFiles, type FilesData } from "@/lib/data/files";
 import { useToday } from "@/lib/data/use-today";
@@ -98,7 +99,6 @@ function rowOf(file: FileItem, tree: FolderTree, today: IsoDate): FileRowData {
 }
 
 function Files({ data }: { data: FilesData }) {
-  const router = useRouter();
   const params = useSearchParams();
   const sheets = useSheets();
   const toast = useToast();
@@ -167,10 +167,10 @@ function Files({ data }: { data: FilesData }) {
     if (!gone || !undone.undo) return;
     const { undo } = undone;
     const { id, parentId } = current;
-    router.replace(folderHref(parentId));
+    replaceAddress(folderHref(parentId));
     toast.undoable(deletedFolderToast(current.name), async () => {
       await undo();
-      router.replace(folderHref(id));
+      replaceAddress(folderHref(id));
     });
   }
 

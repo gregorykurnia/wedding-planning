@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useOnline } from "@/lib/data/session";
 import { offlineOr } from "@/lib/model/save-state";
 import { useEffect, useRef, useState } from "react";
@@ -37,7 +37,7 @@ import { OrderBy, type OrderState } from "@/veil/parts/tools/selects";
 import { FilterBar, Toggles, Toolbar } from "@/veil/parts/tools/toolbar";
 import { WhatsAppLink } from "@/veil/parts/whatsapp/whatsapp-link";
 import { downloadText } from "@/veil/download";
-import { veilHref } from "@/veil/href";
+import { replaceAddress, veilHref } from "@/veil/href";
 import { AddButton } from "@/veil/shell/add-button";
 import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
@@ -96,7 +96,6 @@ function VendorsList({ vendors, categories }: { vendors: VendorListItem[]; categ
     );
 
   // `?categories=1` opens the categories sheet (settings links here); the address is cleared once handled.
-  const router = useRouter();
   const pathname = usePathname();
   const categoriesParam = useSearchParams().get("categories");
   const handled = useRef(false);
@@ -108,7 +107,7 @@ function VendorsList({ vendors, categories }: { vendors: VendorListItem[]; categ
     if (handled.current) return;
     handled.current = true;
     openCategories();
-    router.replace(pathname);
+    replaceAddress(pathname);
     // The sheet opens once per visit to the address; `openCategories` only reads state setters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoriesParam]);

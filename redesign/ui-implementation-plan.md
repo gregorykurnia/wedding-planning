@@ -1006,7 +1006,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 6 | Review | Opus 5.5 Medium | $1.34 | | 2026-10-22 · main folder, 1d0d871: no blockers; P6-S1–S7 fixed in the review, S12 folded into 7.1, the rest routed to 6.F1 and 6.F2; full e2e 584 of 588, the 4 specs 5.F3's offline wording left behind fixed and passing; see `redesign/reviews/phase-6-review.md` | [x] |
 | 6 | 6.F1 Review fixes: write races | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 6) | 2026-10-22 · main folder, commit "6.F1 Review fixes…"; no gaps | [x] |
 | 6 | 6.F2 Review fixes: offline states and wiring tests | Opus 5.5 Medium | $1.34 | Same | 2026-10-22 · main folder, commit "6.F2 Review fixes…"; no gaps | [x] |
-| 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | | [ ] |
+| 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | 2026-10-22 · main folder, eb94a87 "Switch to the new UI" (prep ad54d25); full e2e on local production builds passes; who-pays and who fail only after other specs' leftover funders and bookings (pass alone, for the review); owner steps in `before-merge.md` | [x] |
 | 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
 | 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
 | 7 | Review | Opus 5.5 High | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |

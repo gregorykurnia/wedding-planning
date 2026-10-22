@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSchedule, type ScheduleData } from "@/lib/data/schedule";
 import { useToday } from "@/lib/data/use-today";
@@ -31,7 +31,7 @@ import { FilterCheck } from "@/veil/parts/tools/filters";
 import { ShowMore } from "@/veil/parts/tools/results";
 import { SearchField } from "@/veil/parts/tools/search-field";
 import { Toolbar, Toggles } from "@/veil/parts/tools/toolbar";
-import { veilHref } from "@/veil/href";
+import { replaceAddress, veilHref } from "@/veil/href";
 import { AddButton } from "@/veil/shell/add-button";
 import { Banner } from "@/veil/shell/banner";
 import { PageColumn } from "@/veil/shell/page-column";
@@ -81,7 +81,6 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
   const openAdd = (date?: string | null) => sheets.open(<AddEventSheet date={isIsoDate(date) ? date : null} />);
 
   // `?event=<id>` opens that event, `?new=1` the add sheet (`&date=` picks its day); the address is cleared once handled.
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const eventParam = params.get("event");
@@ -98,8 +97,8 @@ function Schedule({ data, view }: { data: ScheduleData | null; view: ScheduleVie
     } else {
       sheets.open(<AddEventSheet date={isIsoDate(dateParam) ? dateParam : null} />);
     }
-    router.replace(pathname);
-  }, [eventParam, newParam, dateParam, data, sheets, router, pathname]);
+    replaceAddress(pathname);
+  }, [eventParam, newParam, dateParam, data, sheets, pathname]);
 
   // The month's chosen day is `?day=` when the address names one, else today, so it follows midnight until someone picks a day.
   const dayParam = params.get("day");

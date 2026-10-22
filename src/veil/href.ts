@@ -64,3 +64,14 @@ export function safeNext(next: string | null, base: string = VEIL_BASE): string 
   const inside = base ? under(next, base) : next.startsWith("/") && !(LEGACY_BASE && under(next, LEGACY_BASE));
   return inside ? next : home;
 }
+
+/**
+ * Replaces the address without a navigation: a query a screen has handled
+ * (`?event=`, `?new=1`, …) or the folder Files moved to. Next keeps
+ * `useSearchParams` in step with it. `router.replace` can't do this on a
+ * prerendered page: on a production build it takes `/schedule` for the address
+ * it is already on when the browser shows `/schedule?new=1`, and does nothing.
+ */
+export function replaceAddress(href: string): void {
+  window.history.replaceState(null, "", href);
+}

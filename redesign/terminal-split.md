@@ -79,7 +79,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | **Review fixes (finish these before Phase 7; items in `redesign/reviews/triage.md`, Phase 6)** | |
 | [x] 6.F1 Write races · Opus 5.5 Medium | [x] 6.F2 Offline states and wiring tests · Opus 5.5 Medium |
 | **Phase 7: switch-over (one terminal only)** | |
-| [ ] 7.1 Switch-over commit · Opus 5.5 High | off |
+| [x] 7.1 Switch-over commit · Opus 5.5 High | off |
 | [ ] 7.2 Rollback rehearsal · Sonnet 5.5 High | off |
 | [ ] 7.3 Delete old code · Sonnet 5.5 High | off |
 | 🛑 [ ] Phase 7 review · Opus 5.5 High | off |
