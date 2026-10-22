@@ -15,7 +15,6 @@ import {
   Download,
   ListPlus,
   MessageCircle,
-  PiggyBank,
   Plus,
   Search,
   Star,
@@ -49,37 +48,9 @@ import {
   updateVendor,
   useVendors,
 } from "@/lib/collections/vendors";
-import { createBudgetItemFromVendor, useBudgetItems } from "@/lib/collections/budget-items";
 import { createShortlistItemFromVendor } from "@/lib/collections/shortlist";
 import { cn } from "@/lib/utils";
 import type { Vendor, VendorCategory } from "@/lib/types";
-
-// One-time seed list for the Wedding Organizer "List" status — remove this
-// block (and the button that calls it) once imported.
-const WEDDING_ORGANIZER_LIST_IMPORT: { name: string; rating: number; reviews: number }[] = [
-  { name: "Costela", rating: 5.0, reviews: 57 },
-  { name: "Double happiness", rating: 5.0, reviews: 101 },
-  { name: "Finest", rating: 5.0, reviews: 246 },
-  { name: "Hilda by bridestory", rating: 5.0, reviews: 51 },
-  { name: "JDV wedding", rating: 5.0, reviews: 217 },
-  { name: "Jevahre", rating: 5.0, reviews: 45 },
-  { name: "Kreativ Things", rating: 4.9, reviews: 120 },
-  { name: "One Sweet Day Planner", rating: 5.0, reviews: 45 },
-  { name: "Orange", rating: 5.0, reviews: 271 },
-  { name: "Premiere", rating: 5.0, reviews: 127 },
-  { name: "She La Vie", rating: 5.0, reviews: 51 },
-  { name: "Testimo", rating: 5.0, reviews: 41 },
-];
-
-async function importWeddingOrganizerList() {
-  for (const entry of WEDDING_ORGANIZER_LIST_IMPORT) {
-    await createVendor("Wedding Organizer", "List", {
-      name: entry.name,
-      bridestoryRating: entry.rating,
-      bridestoryReviewCount: entry.reviews,
-    });
-  }
-}
 
 const CSV_COLUMNS: { header: string; get: (vendor: Vendor) => string }[] = [
   { header: "Vendor", get: (v) => v.name },
@@ -122,11 +93,6 @@ function exportVendorsToCsv(vendors: Vendor[]) {
 
 export function VendorsTable() {
   const { data: vendors, loading } = useVendors();
-  const { data: budgetItems } = useBudgetItems();
-  const linkedVendorIds = useMemo(
-    () => new Set(budgetItems.map((b) => b.linkedVendorId).filter(Boolean)),
-    [budgetItems],
-  );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [search, setSearch] = useState("");
@@ -399,32 +365,8 @@ export function VendorsTable() {
         size: 150,
         cell: ({ row }) => {
           const vendor = row.original;
-          const alreadyLinked = linkedVendorIds.has(vendor.id);
-          const isConfirmed =
-            vendor.contractStatus === "Chosen" || vendor.contractStatus === "Done";
           return (
             <div className="flex items-center gap-1.5">
-              {isConfirmed && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={alreadyLinked}
-                        className={alreadyLinked ? "text-emerald-600" : "text-muted-foreground"}
-                        onClick={() => createBudgetItemFromVendor(vendor)}
-                      />
-                    }
-                  >
-                    <PiggyBank className="size-4" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {alreadyLinked ? "Already added to budget" : "Add to budget"}
-                  </TooltipContent>
-                </Tooltip>
-              )}
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -455,7 +397,7 @@ export function VendorsTable() {
         },
       },
     ],
-    [linkedVendorIds],
+    [],
   );
 
   const table = useReactTable({
@@ -480,13 +422,6 @@ export function VendorsTable() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2 self-start sm:self-auto">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => importWeddingOrganizerList()}
-          >
-            Import Wedding Organizer list (one-time)
-          </Button>
           <Button
             type="button"
             variant="outline"

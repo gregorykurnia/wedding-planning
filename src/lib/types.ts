@@ -170,23 +170,6 @@ export type MasterListItemUpdate = Partial<
   Pick<MasterListItem, "item" | "vendor" | "confirmed" | "types" | "persons" | "next">
 >;
 
-export type PaymentStatus = "unpaid" | "deposit" | "paid";
-
-export interface BudgetItem {
-  id: string;
-  category: string;
-  estimatedAmount: number;
-  actualAmount: number;
-  paymentStatus: PaymentStatus;
-  notes: string;
-  // Optional link back to the booked venue/vendor this line was generated
-  // from, so confirmed bookings can graduate straight into the budget.
-  linkedVenueId: string | null;
-  linkedVendorId: string | null;
-  createdAt: number | null;
-  updatedAt: number | null;
-}
-
 export interface TodoSubtask {
   id: string;
   title: string;
@@ -235,22 +218,6 @@ export interface ScheduleEvent {
   reminderMinutes: number[];
   /** The `reminderMinutes` values already sent (the daily reminder job records them). */
   remindersSent?: number[];
-  createdAt: number | null;
-  updatedAt: number | null;
-}
-
-export type ChecklistPhase =
-  | "12 Months Out"
-  | "6 Months Out"
-  | "1 Month Out"
-  | "Week Of";
-
-export interface ChecklistItem {
-  id: string;
-  title: string;
-  phase: ChecklistPhase;
-  dueDate: string | null; // ISO date string
-  done: boolean;
   createdAt: number | null;
   updatedAt: number | null;
 }

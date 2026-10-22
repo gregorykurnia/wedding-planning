@@ -9,7 +9,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, PiggyBank, Plus, Trash2 } from "lucide-react";
+import { ArrowUpDown, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -35,22 +35,11 @@ import {
   updateVenue,
   useVenues,
 } from "@/lib/collections/venues";
-import { createBudgetItemFromVenue, useBudgetItems } from "@/lib/collections/budget-items";
 import { formatIDR } from "@/lib/format";
 import type { Venue, VenueStatus } from "@/lib/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function VenuesTable() {
   const { data: venues, loading } = useVenues();
-  const { data: budgetItems } = useBudgetItems();
-  const linkedVenueIds = useMemo(
-    () => new Set(budgetItems.map((b) => b.linkedVenueId).filter(Boolean)),
-    [budgetItems],
-  );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [search, setSearch] = useState("");
   const [activeStatuses, setActiveStatuses] = useState<VenueStatus[]>([]);
@@ -204,30 +193,8 @@ export function VenuesTable() {
         enableSorting: false,
         cell: ({ row }) => {
           const venue = row.original;
-          const alreadyLinked = linkedVenueIds.has(venue.id);
           return (
             <div className="flex items-center gap-1.5">
-              {venue.status === "Booked" && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={alreadyLinked}
-                        className={alreadyLinked ? "text-emerald-600" : "text-muted-foreground"}
-                        onClick={() => createBudgetItemFromVenue(venue)}
-                      />
-                    }
-                  >
-                    <PiggyBank className="size-4" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {alreadyLinked ? "Already added to budget" : "Add to budget"}
-                  </TooltipContent>
-                </Tooltip>
-              )}
               <CloudinaryUploadButton
                 size="icon"
                 variant="ghost"
@@ -248,7 +215,7 @@ export function VenuesTable() {
         },
       },
     ],
-    [linkedVenueIds],
+    [],
   );
 
   const table = useReactTable({

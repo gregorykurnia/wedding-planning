@@ -1008,7 +1008,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 6 | 6.F2 Review fixes: offline states and wiring tests | Opus 5.5 Medium | $1.34 | Same | 2026-10-22 · main folder, commit "6.F2 Review fixes…"; no gaps | [x] |
 | 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | 2026-10-22 · main folder, eb94a87 "Switch to the new UI" (prep ad54d25); full e2e on local production builds passes; who-pays and who fail only after other specs' leftover funders and bookings (pass alone, for the review); owner steps in `before-merge.md` | [x] |
 | 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | 2026-10-22 · main folder; procedure and result in §9.3; the revert applied cleanly and the old UI came back at `/` | [x] |
-| 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
+| 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | 2026-10-22 · main folder; the old budget and checklist pages, their two collections and the vendor import are gone; see Task 7.3 | [x] |
 | 7 | Review | Opus 5.5 High | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
 | 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | | [ ] |
 | 8 | 8.1b Behaviour tests: tasks, schedule, files and documents, partner (T, S, R, A) | Sonnet 5.5 High | $0.88 | Same, with the two-context A2 tests | | [ ] |
@@ -1456,6 +1456,7 @@ Uses the shared state components from Phases 2–3; most work is wiring each scr
 
 #### Task 7.3: Delete old rendering code the fallback doesn't need · Sonnet 5.5 High
 - **Do:** delete `(legacy)/old/budget`, `(legacy)/old/checklist`, the Wedding Organizer import, `components/ui/calendar.tsx`, `lib/collections/{budget-items,checklist-items}.ts` (data stays in Firestore), the template SVGs in `public/`. Run the old-names check with `--exclude 'src/app/(legacy)/**' --exclude 'src/components/**'`.
+- **As built (2026-10-22):** also removed the old tables' Add to budget buttons (they wrote budget items) and the unused `BudgetItem`, `ChecklistItem` and `PaymentStatus` types. `/old/budget` and `/old/checklist` now answer 404; nothing links to them. `react-day-picker` stays until Phase 9. The check over `src` with those two excludes still finds old words in files the new UI's data layer shares or the fallback alone uses (the `???` seed values in `master-list.ts`, `HypotheticalItem`), so the passing command adds `--exclude src/lib/collections/hypothetical-items.ts --exclude src/lib/collections/master-list.ts --exclude src/lib/types.ts`; two comments in `schedule.ts` and `use-collection.ts` were reworded instead. Phase 9 removes these.
 
 ### Phase 8: QA and polish
 

@@ -19,7 +19,7 @@ import { db, isFirebaseConfigured } from "@/lib/firebase";
 
 /**
  * Generic realtime Firestore collection hook. Gracefully returns an empty,
- * non-loading state when Firebase isn't configured instead of crashing.
+ * non-loading state when the database isn't configured instead of crashing.
  */
 export function useCollection<T extends { id: string }>(
   collectionName: string,

@@ -81,7 +81,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | **Phase 7: switch-over (one terminal only)** | |
 | [x] 7.1 Switch-over commit · Opus 5.5 High | off |
 | [x] 7.2 Rollback rehearsal · Sonnet 5.5 High | off |
-| [ ] 7.3 Delete old code · Sonnet 5.5 High | off |
+| [x] 7.3 Delete old code · Sonnet 5.5 High | off |
 | 🛑 [ ] Phase 7 review · Opus 5.5 High | off |
 | **Phase 8: QA** | |
 | [ ] 8.1a Behaviour tests: O, F, B, G · Sonnet 5.5 High | [ ] 8.2 Screenshots · Sonnet 5.5 High |

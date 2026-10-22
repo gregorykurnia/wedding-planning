@@ -17,7 +17,7 @@ function entryTotals(entries: { totalPrice: number; budgetSpent: number }[]) {
   };
 }
 
-/** Builds the same real payment reminders shown on Confirmed, for reuse on Schedule and Dashboard. */
+/** Builds the same real payment reminders shown on Confirmed, for reuse on Schedule and Overview. */
 export function buildConfirmedPaymentReminders(
   venues: Venue[],
   vendors: Vendor[],
