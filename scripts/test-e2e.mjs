@@ -7,9 +7,10 @@
 // E2E_LOCK_WAIT_MINUTES (60) rather than wait forever on a run that hangs or
 // was left behind by a session that ended. E2E_LOCK=0 skips the lock.
 // It also stops a run whose emulator log floods (see LOG below), and runs the
-// stress specs in a second pass on fresh servers (see stressSpecs).
+// stress specs in a second pass on fresh servers (see stressSpecs), and splits
+// a full run into passes on fresh servers (see CHUNK_TESTS).
 import { spawn, execFileSync } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, truncateSync, writeFileSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, rmSync, statSync, truncateSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 const WAIT_MS = 5000;
@@ -142,21 +143,77 @@ function splitStress(list, servers) {
   return stressInScope && !onlyStress;
 }
 
+// Even without the stress specs, the emulator's memory grows with every test:
+// it keeps what it queued for each closed page's connection. In the Phase 5
+// full run (2026-10-22) its 1 GB heap ran out after about 180 emulator tests,
+// and every later test hung until its timeout. So a full run (no spec paths,
+// filters or --project) runs the demo specs, then the other emulator specs in
+// chunks of about CHUNK_TESTS, each on fresh servers, then the stress specs.
+// Each pass has its own --output, so --last-failed reruns each one's failures.
+const CHUNK_TESTS = Number(process.env.E2E_CHUNK_TESTS ?? 80);
+
+function emulatorChunks() {
+  const listed = execFileSync("npx", ["playwright", "test", "--list", "--project=emulator"], {
+    encoding: "utf8",
+    env: { ...process.env, E2E_STRESS: "skip", E2E_SERVERS: "emulator" },
+  });
+  const counts = new Map();
+  for (const match of listed.matchAll(/(emulator\/[\w.-]+\.spec\.ts):\d+/g)) {
+    counts.set(match[1], (counts.get(match[1]) ?? 0) + 1);
+  }
+  const chunks = [];
+  let chunk = [];
+  let size = 0;
+  for (const [file, count] of [...counts].sort(([a], [b]) => a.localeCompare(b))) {
+    if (chunk.length > 0 && size + count > CHUNK_TESTS) {
+      chunks.push(chunk);
+      chunk = [];
+      size = 0;
+    }
+    chunk.push(`tests/e2e/${file}`);
+    size += count;
+  }
+  if (chunk.length > 0) chunks.push(chunk);
+  return chunks;
+}
+
+const fullRun = !process.env.E2E_SERVERS && !process.env.E2E_STRESS && CHUNK_TESTS > 0 &&
+  !args.some((a) => !a.startsWith("-") || a.startsWith("--project") || a === "--grep" || a.startsWith("--grep=") || a === "-g");
+
 const servers = process.env.E2E_SERVERS ?? serversFor(args);
 const split = splitStress(args, servers);
-const passes = split
-  ? [
-      { args: [...args, "--pass-with-no-tests"], env: { E2E_STRESS: "skip" }, servers },
-      {
-        args: [...args, "--pass-with-no-tests", "--output=test-results/stress"],
-        env: { E2E_STRESS: "only" },
-        servers: "emulator",
-        note: "e2e: second pass: the stress specs, on fresh servers.",
-      },
-    ]
-  : [{ args, env: {}, servers }];
-if (servers !== "all") console.log(`e2e: starting only the ${servers} servers for these specs.`);
-if (split) console.log("e2e: the stress specs run in a second pass with fresh servers, after the rest.");
+const stressPass = {
+  args: [...args, "--pass-with-no-tests", "--output=test-results/stress"],
+  env: { E2E_STRESS: "only" },
+  servers: "emulator",
+  note: "e2e: last pass: the stress specs, on fresh servers.",
+};
+let passes;
+if (fullRun) {
+  const chunks = emulatorChunks();
+  passes = [
+    {
+      args: [...args, "--project=demo", "--pass-with-no-tests", "--output=test-results/demo"],
+      env: {},
+      servers: "demo",
+      note: "e2e: pass 1: the demo specs.",
+    },
+    ...chunks.map((files, i) => ({
+      args: [...args, ...files, "--pass-with-no-tests", `--output=test-results/emulator-${i + 1}`],
+      env: { E2E_STRESS: "skip" },
+      servers: "emulator",
+      note: `e2e: pass ${i + 2}: emulator specs, part ${i + 1} of ${chunks.length}, on fresh servers.`,
+    })),
+    ...(stressSpecs.length > 0 ? [stressPass] : []),
+  ];
+  console.log(`e2e: full run in ${passes.length} passes, each emulator pass on fresh servers (E2E_CHUNK_TESTS=${CHUNK_TESTS}).`);
+} else {
+  passes = split
+    ? [{ args: [...args, "--pass-with-no-tests"], env: { E2E_STRESS: "skip" }, servers }, stressPass]
+    : [{ args, env: {}, servers }];
+  if (servers !== "all") console.log(`e2e: starting only the ${servers} servers for these specs.`);
+  if (split) console.log("e2e: the stress specs run in a second pass with fresh servers, after the rest.");
+}
 
 // The Firestore emulator writes its log here and keeps it until the next run.
 // Once a test leaves a live-update connection unread, it logs three warnings
@@ -204,6 +261,24 @@ for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
   });
 }
 
+// An emulator out of heap answers nothing, so each later test hangs until
+// its timeout (hours for a full run); a pass whose log reports it is stopped.
+function outOfMemory() {
+  let fd;
+  try {
+    fd = openSync(LOG, "r");
+    const size = statSync(LOG).size;
+    const length = Math.min(size, 256 * 1024);
+    const buffer = Buffer.alloc(length);
+    readSync(fd, buffer, 0, length, size - length);
+    return buffer.includes("OutOfMemoryError");
+  } catch {
+    return false;
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
+}
+
 function runPass(pass) {
   const watchLog = pass.servers !== "demo";
   if (watchLog) {
@@ -219,7 +294,17 @@ function runPass(pass) {
   });
   const watcher = watchLog
     ? setInterval(() => {
-        if (flooded || logBytes() < LOG_LIMIT_MB * 1024 * 1024) return;
+        if (flooded) return;
+        if (outOfMemory()) {
+          flooded = true;
+          console.error(
+            `\ne2e: the Firestore emulator ran out of memory (OutOfMemoryError in ${LOG}), so every later test ` +
+              `would hang. Stopping the run. Lower E2E_CHUNK_TESTS, or look for a test that leaves pages listening.`,
+          );
+          stop("SIGINT");
+          return;
+        }
+        if (logBytes() < LOG_LIMIT_MB * 1024 * 1024) return;
         flooded = true;
         console.error(
           `\ne2e: ${LOG} passed ${LOG_LIMIT_MB} MB: a test left a live-update connection unread and the emulator is ` +

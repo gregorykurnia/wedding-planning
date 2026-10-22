@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { restorePairing } from "../seed";
+import { editedText } from "../../../src/lib/model/dates";
 
 test.afterEach(closeOtherContexts);
 
@@ -93,9 +94,10 @@ test("shows the three newest as cards and the rest as rows under Earlier", async
   await expect(cards).toHaveCount(3);
   await expect(cards.nth(0)).toContainText("Meeting: Kebun Bunga Atelier");
   await expect(cards.nth(0)).toContainText("Booked the garden for the ceremony.");
-  await expect(cards.nth(0)).toContainText("Edited 2 hours ago by Bella");
+  // Before 05:00, 2 and 5 hours ago fall on yesterday, so the label comes from the model.
+  await expect(cards.nth(0)).toContainText(`Edited ${editedText(ago(2).getTime(), Date.now(), "Bella")}`);
   // Yours isn't named.
-  await expect(cards.nth(1)).toContainText("Edited 5 hours ago");
+  await expect(cards.nth(1)).toContainText(`Edited ${editedText(ago(5).getTime(), Date.now())}`);
   await expect(cards.nth(1).getByText(/^Edited/)).not.toContainText("by");
   await expect(cards.nth(0)).toHaveAttribute("href", "/new/documents/n1");
 

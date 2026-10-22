@@ -26,7 +26,15 @@ Each blocker was checked by reading the code path, then by a test that fails wit
 | `npm test` (model) | 85 files, 1279 pass | 1280 pass (1 new) |
 | `npm run test:emulator` | 346 pass, 1 skipped | 352 pass, 1 skipped (6 new; all 4 new blocker tests fail without the fixes) |
 | `npm run build` | passes | not rebuilt (no config or route change) |
-| `npm run test:e2e` (full, after fixes) | — | FULL_E2E_RESULT |
+| `npm run test:e2e` (full, after fixes) | — | 2026-10-22: 576 of 577 pass in 7 passes (64 min); the one failure (`veil-settings` push test) passed alone after its fix. See "Full e2e run" |
+
+## Full e2e run (2026-10-22)
+
+- **First try, stopped after 46 minutes:** the Firestore emulator ran out of its 1 GB heap after about 180 emulator tests (`OutOfMemoryError` in `firestore-debug.log`), and every later test hung until its timeout (181 passed, 9 failed, 381 didn't run). The heap fills with what the emulator keeps queued for closed pages' live-update connections, the same cause as S29 and the stress flood. **Fixed:** `scripts/test-e2e.mjs` now runs a full run as a demo pass, then the emulator specs in parts of about 80 tests (`E2E_CHUNK_TESTS`), each on fresh servers with its own `--output`, then the stress pass. A pass whose log reports `OutOfMemoryError` is stopped instead of hanging.
+- **Second run, 7 passes:** demo 249, emulator 74 + 78 of 79 + 77 + 78 + 14, stress 6. So 576 of 577 pass, with no flood (log 18 KB) and no servers left running.
+- **Two tests that depend on where and when they run** (not load, and not app bugs):
+  - `veil-documents.spec.ts` "three newest as cards" failed before 05:00, because "2 hours ago" is yesterday then and the card says "Edited yesterday". It now takes the label it expects from `editedText`. It passed in the second run at about 02:30.
+  - `veil-settings.spec.ts` push test expected the device to be saved as "Mac", but Chromium on the Linux server is named "Browser". It now runs with a Mac user agent and passed alone.
 
 ## Blockers (all fixed)
 

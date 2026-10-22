@@ -213,6 +213,10 @@ test("the doors lead to Who pays and open the vendor categories", async ({ page 
 // saved through the real rules, the test request is answered here, and signing
 // out takes the device off again.
 const ENDPOINT = "https://push.example.com/settings-spec-device";
+// The saved device is named from the user agent ("Mac" here); Chromium's own
+// says Linux on the server, so the name is pinned to read the same everywhere.
+const MAC_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
 async function stubPush(page: Page) {
   await page.addInitScript((endpoint) => {
@@ -252,27 +256,31 @@ async function stubPush(page: Page) {
   }, ENDPOINT);
 }
 
-test("allowed notifications save this computer for reminders, send a test, and signing out takes it off", async ({ page }) => {
-  await stubPush(page);
-  const tests: unknown[] = [];
-  await page.route("**/api/push/test", async (route) => {
-    tests.push(route.request().postDataJSON());
-    await route.fulfill({ json: { result: "sent" } });
+test.describe("on a Mac", () => {
+  test.use({ userAgent: MAC_UA });
+
+  test("allowed notifications save this computer for reminders, send a test, and signing out takes it off", async ({ page }) => {
+    await stubPush(page);
+    const tests: unknown[] = [];
+    await page.route("**/api/push/test", async (route) => {
+      tests.push(route.request().postDataJSON());
+      await route.fulfill({ json: { result: "sent" } });
+    });
+
+    await openSettings(page);
+    await expect(page.getByText("and your other devices, even when the planner is closed.")).toBeVisible();
+    const saved = (doc: Record<string, unknown>) => doc.endpoint === ENDPOINT && doc.device === "Mac";
+    await expect.poll(async () => (await storedDocs("pushSubscriptions")).filter(saved).length, { timeout: 15_000 }).toBe(1);
+
+    await page.getByRole("button", { name: "Send a test reminder" }).click();
+    await expect(page.getByText("Test reminder sent. It should appear in a moment.")).toBeVisible();
+    expect(tests).toEqual([{ endpoint: ENDPOINT }]);
+
+    await page.getByRole("button", { name: "Sign out of this computer" }).click();
+    await expect(page).toHaveURL(/\/new\/sign-in/, { timeout: COMPILE_TIMEOUT });
+    expect((await storedDocs("pushSubscriptions")).filter(saved)).toEqual([]);
+    expect(await page.evaluate(() => (window as unknown as { __pushUnsubscribed: number }).__pushUnsubscribed)).toBe(1);
   });
-
-  await openSettings(page);
-  await expect(page.getByText("and your other devices, even when the planner is closed.")).toBeVisible();
-  const saved = (doc: Record<string, unknown>) => doc.endpoint === ENDPOINT && doc.device === "Mac";
-  await expect.poll(async () => (await storedDocs("pushSubscriptions")).filter(saved).length, { timeout: 15_000 }).toBe(1);
-
-  await page.getByRole("button", { name: "Send a test reminder" }).click();
-  await expect(page.getByText("Test reminder sent. It should appear in a moment.")).toBeVisible();
-  expect(tests).toEqual([{ endpoint: ENDPOINT }]);
-
-  await page.getByRole("button", { name: "Sign out of this computer" }).click();
-  await expect(page).toHaveURL(/\/new\/sign-in/, { timeout: COMPILE_TIMEOUT });
-  expect((await storedDocs("pushSubscriptions")).filter(saved)).toEqual([]);
-  expect(await page.evaluate(() => (window as unknown as { __pushUnsubscribed: number }).__pushUnsubscribed)).toBe(1);
 });
 
 test("a test that can't be sent says so in rose", async ({ page }) => {
