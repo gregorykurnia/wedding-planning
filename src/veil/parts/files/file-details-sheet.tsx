@@ -38,6 +38,20 @@ import styles from "./files.module.css";
 import { MoveSheet } from "./move-sheet";
 
 /**
+ * Opens a record's file in its details sheet (guide §4.20), so a file on a booking, vendor, finalist
+ * or venue can be renamed, moved or deleted for good there too (Phase 8 review S4). For `FileTiles`'
+ * `onOpen`; a legacy file with no `weddingFiles` id stays a link to the file.
+ */
+export function useOpenFile(): (file: { id: string | null }) => boolean {
+  const sheets = useSheets();
+  return (file) => {
+    if (!file.id) return false;
+    sheets.open(<FileDetailsSheet fileId={file.id} />);
+    return true;
+  };
+}
+
+/**
  * A file's sheet (guide §4.20, §5.18; R10, R11, R13): a preview, then name,
  * category and description, each saved as you go (a new name toasts "Renamed to …"
  * with Undo), then Open, Download, Move and Done, and a rose "Delete for good"

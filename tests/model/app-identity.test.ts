@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import manifest from "@/app/manifest";
-import { APP_IDENTITY } from "@/lib/model/app-identity";
+import { APP_IDENTITY, screenOfTitle, tabTitle } from "@/lib/model/app-identity";
 
 const ROOT = join(__dirname, "../..");
 
@@ -61,5 +61,21 @@ describe("app identity (guide §4.31)", () => {
     const ico = readFileSync(join(ROOT, "src/app/favicon.ico"));
     expect(ico.readUInt16LE(2)).toBe(1); // an icon, not a cursor
     expect(ico.readUInt8(6)).toBe(32); // the first image is 32 px wide
+  });
+});
+
+// Phase 8 review S4 (G1): the tab follows the names the top bar shows.
+describe("tab titles (guide §4.31)", () => {
+  it("names the screen, then what the top bar says", () => {
+    expect(tabTitle("Budget", "Greg & Bella")).toBe("Budget · Greg & Bella");
+    expect(tabTitle("Budget", null)).toBe("Budget · Our wedding planner");
+    expect(tabTitle("", "Greg & Bella")).toBe("Greg & Bella");
+  });
+
+  it("reads the screen back only from a page's own title", () => {
+    expect(screenOfTitle("Sign in · Our wedding planner")).toBe("Sign in");
+    expect(screenOfTitle("Our wedding planner")).toBe("");
+    expect(screenOfTitle("Meeting · notes · Our wedding planner")).toBe("Meeting · notes");
+    expect(screenOfTitle("Budget · Greg & Bella")).toBeUndefined();
   });
 });

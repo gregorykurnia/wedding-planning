@@ -129,7 +129,7 @@ async function openBooking(page: Page, id: string, heading: string | RegExp) {
 
 test("shows the figure, the thread, the next step and where it came from", async ({ page }) => {
   await openBooking(page, DOCS_TO_CLEAN.single, "Dapur Lestari Catering");
-  await expect(page).toHaveTitle("Booking · Our wedding planner");
+  await expect(page).toHaveTitle(/^Booking · (Our wedding planner|.+ & .+)$/);
   await expect(page.getByText("Still to pay")).toBeVisible();
   await expect(page.getByText("of Rp 30.000.000, with Rp 10.000.000 paid")).toBeVisible();
   await expect(page.getByRole("img", { name: "33% paid, 67% to go" })).toBeVisible();

@@ -5,6 +5,8 @@ import { useScheduleEvents } from "@/lib/collections/schedule-events";
 import { useTodos } from "@/lib/collections/todos";
 import { vendorFromDoc, venueFromDoc, type VendorDoc, type VenueDoc } from "@/lib/data/adapters/bookings";
 import type { EventRecord, EventStatus } from "@/lib/model/agenda";
+import type { IsoDate } from "@/lib/model/bookings";
+import { reminderCantArrive } from "@/lib/model/schedule";
 import { bookingsFrom, type Booking } from "@/lib/model/bookings";
 import { VENDOR_RULED_OUT, VENUE_RULED_OUT } from "@/lib/model/labels";
 import { isListedVendor } from "@/lib/model/search";
@@ -80,6 +82,12 @@ export function useSchedule(): Loaded<ScheduleData> {
 }
 
 /** A new event's id, made once per form so Try again never adds two. */
+/** How many events have a reminder that can't arrive any more, for settings' notification block. */
+export function useRemindersThatCantArrive(today: IsoDate): number {
+  const events = useScheduleEvents().data;
+  return useMemo(() => events.filter((event) => reminderCantArrive(event, today)).length, [events, today]);
+}
+
 export const newEventId = (opts: WriteOptions = {}) => newId(COLLECTION, opts);
 
 /** The fields an event is stored with; the sheet builds them with `storedEvent`. */

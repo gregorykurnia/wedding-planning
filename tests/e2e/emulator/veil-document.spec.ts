@@ -138,7 +138,7 @@ test("meeting notes start with the layout, save after a pause, and the address b
   const stored = await read(id);
   expect(stored).toMatchObject({ title: "Meeting: Kebun Bunga Atelier" });
   expect(textOf(stored?.content)).toContain("=SUM(B2:B)");
-  await expect(page).toHaveTitle("Meeting: Kebun Bunga Atelier · Our wedding planner");
+  await expect(page).toHaveTitle(/^Meeting: Kebun Bunga Atelier · (Our wedding planner|.+ & .+)$/);
 });
 
 test("an old document opens complete, with its fonts and sizes mapped and colours as typed", async ({ page }) => {

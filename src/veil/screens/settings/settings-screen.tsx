@@ -1,16 +1,14 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
-import { useMembers } from "@/lib/collections/members";
-import { useScheduleEvents } from "@/lib/collections/schedule-events";
+import { useState, type ReactNode } from "react";
 import { forgetThisDevice, sendTestReminder } from "@/lib/data/push";
+import { useRemindersThatCantArrive } from "@/lib/data/schedule";
 import { useSession } from "@/lib/data/session";
 import { saveCoupleName, saveWeddingDate, useSettings } from "@/lib/data/settings";
 import { useToday } from "@/lib/data/use-today";
 import { useAutosaveField } from "@/lib/data/use-autosave-field";
-import { swapNames, useWho } from "@/lib/data/who";
+import { swapNames, useMembers, useWho } from "@/lib/data/who";
 import { isIsoDate } from "@/lib/model/dates";
-import { reminderCantArrive } from "@/lib/model/schedule";
 import {
   ACCOUNTS_DEMO,
   ACCOUNTS_HEADING,
@@ -93,11 +91,10 @@ function Settings() {
   const { status, user, signOut } = useSession();
   const demo = status === "demo";
   const who = useWho();
-  const members = useMembers().data;
+  const members = useMembers();
   const toast = useToast();
   const { permission, allow, setup, retrySetup } = useNotificationPermission();
   const installed = useInstalled();
-  const events = useScheduleEvents().data;
   const today = useToday();
 
   const first = useAutosaveField({
@@ -125,7 +122,7 @@ function Settings() {
   const [testing, setTesting] = useState(false);
   const [testFailed, setTestFailed] = useState(false);
 
-  const badReminders = useMemo(() => events.filter((event) => reminderCantArrive(event, today)).length, [events, today]);
+  const badReminders = useRemindersThatCantArrive(today);
 
   const email = user?.email ?? "";
   const mine = members.find((m) => m.id === user?.uid);

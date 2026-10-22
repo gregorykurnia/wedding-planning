@@ -53,6 +53,7 @@ import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { Notes } from "@/veil/parts/fields/notes";
 import { NumberInput } from "@/veil/parts/fields/number";
 import { SaveLine, SaveScopeProvider } from "@/veil/parts/fields/save-scope";
+import { useOpenFile } from "@/veil/parts/files/file-details-sheet";
 import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { Figure, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { MenuCardList } from "@/veil/parts/menu-card/menu-card-list";
@@ -167,6 +168,8 @@ function Detail({
   const canMove = finalist.sourceVendor === null && !finalist.sourceGone;
 
   const queue = useUploadQueue({ kind: "record", ref: { kind: "finalist", id }, recordName: name });
+
+  const openFile = useOpenFile();
 
   const lean = useAutosaveField<string | null>({
     value: finalist.leaningId,
@@ -343,7 +346,7 @@ function Detail({
 
       <SectionHeading small={filesCount(finalist.files.length)}>Files</SectionHeading>
       {finalist.sourceVendor && <p className={styles.filesNote}>{filesFromVendor(finalist.sourceVendor.name)}</p>}
-      <FileTiles files={finalist.files} queue={queue} />
+      <FileTiles files={finalist.files} queue={queue} onOpen={openFile} />
 
       {finalist.booked ? null : (
         <section className={styles.card}>

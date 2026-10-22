@@ -58,8 +58,20 @@ describe("offline, before a page's own reads arrive (P6-S15)", () => {
     expect(run(() => useVendor("kebun")).data?.vendor?.name).toBe("Kebun Bunga Atelier");
   });
 
-  it("a venue's sheet waits for its files", () => {
+  // Phase 8 review S2: an app opened offline may never hear the files (no stored cache), and the
+  // list shows the venue, so its sheet shows it too and says the files are waiting.
+  it("a venue's sheet shows the venue while its files wait, and says they're waiting", () => {
     reads = { venues: here([venueFromDoc("taman", { name: "Puri Taman Sari" })]), weddingFiles: waiting };
+    const read = run(() => useVenue("taman"));
+    expect(read.status).toBe("offline");
+    expect(read.data?.venue?.name).toBe("Puri Taman Sari");
+    expect(read.data?.filesHeld).toBe(true);
+    reads = { venues: here([venueFromDoc("taman", { name: "Puri Taman Sari" })]), weddingFiles: here([]) };
+    expect(run(() => useVenue("taman")).data?.filesHeld).toBe(false);
+  });
+
+  it("a venue's sheet still waits for the venues themselves", () => {
+    reads = { venues: waiting, weddingFiles: waiting };
     expect(run(() => useVenue("taman"))).toEqual({ status: "offline", data: null });
   });
 

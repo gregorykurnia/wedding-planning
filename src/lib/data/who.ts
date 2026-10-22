@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { doc } from "firebase/firestore";
 import { useAccountSlots } from "@/lib/collections/accounts";
+import { useMembers as useMemberDocs } from "@/lib/collections/members";
 import { useWeddingSettings } from "@/lib/collections/settings";
 import {
   nameOfSlot,
@@ -18,6 +19,11 @@ import { requireDb, uidOf } from "./db";
 import { useSession } from "./session";
 import { patchWithUndo } from "./undo";
 import { remove, set, stamp, transact, WriteError, type WriteOptions } from "./write";
+
+/** The accounts that have signed in (`members`), for settings' accounts list and Swap them. */
+export function useMembers() {
+  return useMemberDocs().data;
+}
 
 const NO_SETTINGS: WhoSettings = { yourName: "", partnerName: "", partnerEmail: "" };
 

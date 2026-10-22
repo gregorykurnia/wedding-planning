@@ -11,6 +11,7 @@ import { newId } from "@/lib/data/write";
 import { n0 } from "@/lib/model/format";
 import {
   ADD_FAILED,
+  FILES_WAITING,
   NAME_MISSING,
   REMOVE_ACTION,
   addedToast,
@@ -23,10 +24,11 @@ import {
   type VenueDetail,
 } from "@/lib/model/venues";
 import { TextLink } from "@/veil/parts/actions/text-link";
-import { FieldInput, FieldRow, Fields, FieldText } from "@/veil/parts/fields/fields";
+import { FieldInput, FieldRow, Fields, FieldText, Hint } from "@/veil/parts/fields/fields";
 import { MoneyInput } from "@/veil/parts/fields/money";
 import { NumberInput } from "@/veil/parts/fields/number";
 import { SaveScopeProvider } from "@/veil/parts/fields/save-scope";
+import { useOpenFile } from "@/veil/parts/files/file-details-sheet";
 import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { StageChips } from "@/veil/parts/stage/stage-chips";
 import { veilHref } from "@/veil/href";
@@ -172,12 +174,12 @@ export function EditVenueSheet({ venueId }: { venueId: string }) {
 
   return (
     <SaveScopeProvider sheet>
-      {venue ? <EditBody venue={venue} /> : <SheetReadState read={read} title="Venue" what="this venue" />}
+      {venue ? <EditBody venue={venue} filesHeld={read.data?.filesHeld ?? false} /> : <SheetReadState read={read} title="Venue" what="this venue" />}
     </SaveScopeProvider>
   );
 }
 
-function EditBody({ venue }: { venue: VenueDetail }) {
+function EditBody({ venue, filesHeld }: { venue: VenueDetail; filesHeld: boolean }) {
   const sheet = useSheet();
   const toast = useToast();
   const confirm = useConfirm();
@@ -187,6 +189,8 @@ function EditBody({ venue }: { venue: VenueDetail }) {
   const { id, name } = venue;
 
   const queue = useUploadQueue({ kind: "record", ref: { kind: "venue", id }, recordName: name });
+
+  const openFile = useOpenFile();
 
   const stage = useAutosaveField<string>({
     value: venue.status,
@@ -269,9 +273,12 @@ function EditBody({ venue }: { venue: VenueDetail }) {
       </Fields>
 
       <h3 className={styles.section}>Files</h3>
+      {/* Offline before the files arrive: no tiles would read as none (P6-S15, Phase 8 review S2). */}
+      {filesHeld ? <Hint>{FILES_WAITING}</Hint> : null}
       <FileTiles
         files={venue.files.map((f) => ({ id: f.id, name: f.name, url: f.url, size: f.size, mime: f.mime }))}
         queue={queue}
+        onOpen={openFile}
       />
 
       <EditSheetActions

@@ -66,6 +66,7 @@ import { FieldInput, FieldRow, Fields, FieldSelect } from "@/veil/parts/fields/f
 import { NumberInput } from "@/veil/parts/fields/number";
 import { Notes } from "@/veil/parts/fields/notes";
 import { SaveLine, SaveScopeProvider } from "@/veil/parts/fields/save-scope";
+import { useOpenFile } from "@/veil/parts/files/file-details-sheet";
 import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { Context, Figure, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { KeenHeart } from "@/veil/parts/keen/keen-heart";
@@ -184,6 +185,8 @@ function Detail({
   const bookingHref = veilHref(`/budget/bookings/${bookingIdOf({ kind: "vendor", id })}`);
 
   const queue = useUploadQueue({ kind: "record", ref: { kind: "vendor", id }, recordName: name });
+
+  const openFile = useOpenFile();
 
   const keen = useAutosaveField<boolean>({
     value: vendor.keen,
@@ -415,6 +418,7 @@ function Detail({
       <FileTiles
         files={vendor.files.map((f) => ({ id: f.id, name: f.name, url: f.url, size: f.size, mime: f.mime }))}
         queue={queue}
+        onOpen={openFile}
       />
 
       <section className={styles.card}>

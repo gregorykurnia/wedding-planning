@@ -124,6 +124,25 @@ test("R11 open, download, move, edit, delete: a file's sheet links to it, saves 
   expect(await storedDoc("weddingFiles", "f1")).toBeTruthy();
 });
 
+// Phase 8 review S4: a record's file opens the same sheet as in Files (guide §4.20), so it can be deleted
+// for good from the record too; and the tab follows the names in the top bar (guide §4.31, G1).
+test("a vendor's file tile opens the file's sheet, and the tab reads the screen and the names", async ({ page }) => {
+  // The vendor goes again at the end (`resetData`): the Budget and Bookings specs count every vendor.
+  await put("vendors", "v1", { name: "Kebun Bunga Atelier", category: "Decoration", contractStatus: "Considering", files: [], createdAt: new Date() });
+  await put("weddingFiles", "f5", file("Kebun quote.pdf", null, 2, { recordRef: { kind: "vendor", id: "v1" } }));
+  await openAt(page, "/vendors/v1");
+  await expect(page.getByRole("heading", { level: 1, name: "Kebun Bunga Atelier" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveTitle("Vendor · Greg & Bella");
+
+  const tile = page.getByRole("link", { name: /Kebun quote\.pdf/ });
+  await expect(tile).toHaveAttribute("href", /example\.com/);
+  await tile.click();
+  await expect(dialog(page).getByRole("heading", { name: "Kebun quote.pdf" })).toBeVisible();
+  await expect(dialog(page).getByRole("button", { name: "Delete for good" })).toBeVisible();
+  expect(page.context().pages()).toHaveLength(1);
+  await resetData();
+});
+
 test("R12 move a folder: it takes everything inside, and can't go inside itself", async ({ page }) => {
   await openFiles(page, "/documents/files?folder=catering");
   await page.getByRole("button", { name: "Move" }).click();

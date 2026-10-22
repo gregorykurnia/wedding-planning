@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useSettings } from "@/lib/data/settings";
+import { APP_NAME } from "@/lib/model/app-identity";
 import { veilHref } from "../href";
 import { MenuIndex, type Section } from "./menu-index";
+import { useTabTitle } from "./tab-title";
 import styles from "./top-bar.module.css";
-
-/** What the app is called when there are no names to show (guide §4.1). */
-const APP_NAME = "Our wedding planner";
 
 /** The event a screen dispatches to ask the top bar to open the menu (see openMenu). */
 const OPEN_MENU = "veil:open-menu";
@@ -31,6 +30,7 @@ export function TopBar({ section }: { section?: Section }) {
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const names = useCoupleNames();
+  useTabTitle(names.text);
 
   // Closing puts focus back on the Menu button that opened the menu.
   const closeMenu = useCallback(() => {
@@ -48,7 +48,7 @@ export function TopBar({ section }: { section?: Section }) {
     <>
       <header className={styles.top}>
         <Link className={styles.couple} href={veilHref("/")}>
-          {names}
+          {names.node}
         </Link>
         <button
           ref={menuButton}
@@ -65,7 +65,7 @@ export function TopBar({ section }: { section?: Section }) {
       {menuOpen && (
         <MenuIndex id={menuId} section={section} onClose={closeMenu}>
           <div className={styles.top}>
-            <span className={styles.couple}>{names}</span>
+            <span className={styles.couple}>{names.node}</span>
             <button type="button" className={styles.menuBtn} onClick={closeMenu}>
               <span className={`${styles.lines} ${styles.single}`} aria-hidden="true" />
               Close
@@ -81,14 +81,17 @@ export function TopBar({ section }: { section?: Section }) {
  * The names from settings, "Greg & Bella". Demonstration mode, and a couple
  * who hasn't filled in both names yet, get the app's name instead.
  */
-function useCoupleNames(): ReactNode {
+function useCoupleNames(): { node: ReactNode; text: string | null } {
   const { status, data } = useSettings();
   const yourName = data?.yourName.trim() ?? "";
   const partnerName = data?.partnerName.trim() ?? "";
-  if (status === "demo" || !yourName || !partnerName) return APP_NAME;
-  return (
-    <>
-      {yourName} <span className={styles.amp}>&amp;</span> {partnerName}
-    </>
-  );
+  if (status === "demo" || !yourName || !partnerName) return { node: APP_NAME, text: null };
+  return {
+    node: (
+      <>
+        {yourName} <span className={styles.amp}>&amp;</span> {partnerName}
+      </>
+    ),
+    text: `${yourName} & ${partnerName}`,
+  };
 }

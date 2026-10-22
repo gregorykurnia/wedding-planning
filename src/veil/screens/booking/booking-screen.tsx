@@ -52,6 +52,7 @@ import { TextLink } from "@/veil/parts/actions/text-link";
 import { DateInput, FieldInput, FieldRow, Fields, FieldSelect, StaticValue } from "@/veil/parts/fields/fields";
 import { MoneyInput } from "@/veil/parts/fields/money";
 import { SaveLine, SaveScopeProvider } from "@/veil/parts/fields/save-scope";
+import { useOpenFile } from "@/veil/parts/files/file-details-sheet";
 import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { Context, Figure, Hero, Kicker } from "@/veil/parts/hero/hero";
 import { Thread } from "@/veil/parts/hero/thread";
@@ -165,6 +166,8 @@ function Detail({
   const tail = sentence ? estimateTail(sentence) : null;
 
   const queue = useUploadQueue({ kind: "record", ref: { kind: "booking", id: bookingId }, recordName: booking.name });
+
+  const openFile = useOpenFile();
 
   const funderOptions = [
     ...funders.map((f) => ({ value: f.id, label: f.name })),
@@ -426,7 +429,7 @@ function Detail({
 
       {/* While the files haven't arrived, no count: "None yet" would be wrong (P7-S15). */}
       <SectionHeading small={page.filesHeld ? undefined : filesHeading(page.files.length)}>Files</SectionHeading>
-      <FileTiles files={toTiles(page.files)} queue={queue} />
+      <FileTiles files={toTiles(page.files)} queue={queue} onOpen={openFile} />
 
       <div className={styles.danger}>
         <TextLink tone="rose" onClick={() => void removeThisBooking()}>
@@ -480,6 +483,7 @@ function PartRow({
     recordName: booking.name,
     partName: part.name,
   });
+  const openFile = useOpenFile();
 
   useEffect(() => {
     if (!focus) return;
@@ -545,7 +549,7 @@ function PartRow({
           <FieldInput {...step.bind} placeholder={NEXT_STEP_PLACEHOLDER} />
         </FieldRow>
         <FieldRow label="Files" group>
-          <FileTiles files={toTiles(files)} queue={queue} />
+          <FileTiles files={toTiles(files)} queue={queue} onOpen={openFile} />
         </FieldRow>
         <FieldRow label="Actions" group hideLabel>
           <div className={styles.acts}>

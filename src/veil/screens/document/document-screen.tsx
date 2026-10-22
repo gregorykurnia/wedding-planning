@@ -14,6 +14,7 @@ import { useDocumentPresence } from "@/lib/data/presence";
 import { useSession } from "@/lib/data/session";
 import { useToday } from "@/lib/data/use-today";
 import { newId } from "@/lib/data/write";
+import { tabTitle } from "@/lib/model/app-identity";
 import { dateLong, editedText } from "@/lib/model/dates";
 import { EMPTY_DOC, MEETING_TITLE, deleteQuestion, meetingNotesDoc, titleOrUntitled } from "@/lib/model/documents";
 import { DocEditor } from "@/veil/editor/doc-editor";
@@ -196,7 +197,7 @@ function OpenDocument({ docId, fresh, created, onCreated, initial, read }: OpenD
   // The tab names the document.
   const title = read.data?.title ?? initial.title;
   useEffect(() => {
-    document.title = `${titleOrUntitled(titleRef.current || title)} · Our wedding planner`;
+    document.title = tabTitle(titleOrUntitled(titleRef.current || title), null);
   }, [title]);
 
   // N18: Back, the menu and the names wait for the save; if it can't save, they ask first.

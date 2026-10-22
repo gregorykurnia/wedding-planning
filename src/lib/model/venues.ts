@@ -134,6 +134,9 @@ export function countText(total: number, shown: number, filtering: boolean, hidd
 // ---------- a venue's row and sheet ----------
 
 /** The note on a row stops at 140 characters, with an ellipsis. */
+/** The sheet's Files, offline before they have arrived (Phase 8 review S2; provisional, G42). */
+export const FILES_WAITING = "Its files will show as soon as this device is back online.";
+
 export const NOTE_CUT = 140;
 export const noteOnRow = (notes: string) => (notes.length > NOTE_CUT ? `${notes.slice(0, NOTE_CUT - 2)}…` : notes);
 

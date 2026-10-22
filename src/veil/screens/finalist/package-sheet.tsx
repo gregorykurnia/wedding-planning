@@ -19,6 +19,7 @@ import { FieldInput, FieldRow, Fields, FieldText } from "@/veil/parts/fields/fie
 import { MoneyInput } from "@/veil/parts/fields/money";
 import { NumberInput } from "@/veil/parts/fields/number";
 import { SaveScopeProvider } from "@/veil/parts/fields/save-scope";
+import { useOpenFile } from "@/veil/parts/files/file-details-sheet";
 import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { Banner } from "@/veil/shell/banner";
 import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
@@ -237,5 +238,6 @@ function PackageFiles({
     recordName: finalistName,
     partName: option.name,
   });
-  return <FileTiles files={files} queue={queue} />;
+  const openFile = useOpenFile();
+  return <FileTiles files={files} queue={queue} onOpen={openFile} />;
 }

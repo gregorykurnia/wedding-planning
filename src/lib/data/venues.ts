@@ -58,23 +58,26 @@ export function useVenues(): Loaded<VenueListItem[]> {
  * One venue with its files, for its sheet. `null` when there is no such venue here
  * (an old link, or the partner removed it), which closes the sheet.
  */
-export function useVenue(id: string): Loaded<{ venue: VenueDetail | null }> {
+export function useVenue(id: string): Loaded<{ venue: VenueDetail | null; filesHeld: boolean }> {
   const { connection } = useSession();
   const { venues, files } = useVenueDocs();
 
   const page = useMemo(() => {
     const doc = venues.data.find((v) => v.id === id && isListedVenue(v));
-    if (!doc) return { venue: null };
+    if (!doc) return { venue: null, filesHeld: files.loading };
     return {
+      filesHeld: files.loading,
       venue: {
         ...venueListItem(doc, { booked: isVenueBooked(doc), fileCount: 0 }),
         files: filesOf(doc, files.data),
       },
     };
-  }, [venues.data, files.data, id]);
+  }, [venues.data, files.data, files.loading, id]);
 
-  // Its files are on the sheet itself, so offline it waits for them too (P6-S15).
-  return readOf(connection, [venues, files], page);
+  // Offline, the venue shows as soon as it is here and its files say they're waiting (`filesHeld`):
+  // without a stored cache an app opened offline may never hear the files, and the list shows the
+  // venue meanwhile (Phase 8 review S2; this replaces P6-S15's wait for the files).
+  return readOf(connection, [venues, files], page, 1);
 }
 
 export interface NewVenue {

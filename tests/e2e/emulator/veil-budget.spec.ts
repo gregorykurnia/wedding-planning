@@ -126,7 +126,7 @@ async function openBudget(page: Page, account: (typeof TEST_ACCOUNTS)[number] = 
 
 test("shows what is still to pay, the next payment, the doors and the closing line", async ({ page }) => {
   await openBudget(page);
-  await expect(page).toHaveTitle("Budget · Our wedding planner");
+  await expect(page).toHaveTitle(/^Budget · (Our wedding planner|.+ & .+)$/);
 
   await expect(page.getByText("Still to pay", { exact: true })).toBeVisible();
   await expect(page.locator(".num").filter({ hasText: "25.000.000" })).toBeVisible();

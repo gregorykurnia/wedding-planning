@@ -33,6 +33,7 @@ import {
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import { ITEM_ORDERS, orderItems, ownOrder, type ItemOrderKey } from "@/lib/model/order";
 import { inOrder, moveId, withAdded, withRest } from "@/lib/model/row-moves";
+import { MoveQueue } from "@/lib/model/move-queue";
 import { Tries } from "@/lib/model/tries";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
@@ -106,6 +107,10 @@ interface Failure {
 /** One failure, or one held choice, per item and field: a row can have several at once. */
 const keyOf = (id: string, field: ItemField) => `${id}:${field}`;
 
+/** A move that may still land, or one refused because the list changed, leaves the positions unknown. */
+const forgetsPositions = (error: unknown) =>
+  !(error instanceof WriteError) || error.code === "timeout" || error.code === "changed";
+
 const without = <T,>(map: ReadonlyMap<string, T>, key: string) => {
   if (!map.has(key)) return map;
   const next = new Map(map);
@@ -167,15 +172,9 @@ function Items({ items }: { items: ItemRecord[] }) {
   // A row to bring into view (and, for a new blank one, to type in) once it is on the page.
   const [reveal, setReveal] = useState<{ id: string; type: boolean } | null>(null);
 
-  // Moves run one after another, each from the positions the one before left, and the list shows the
-  // new order meanwhile, so three quick Alt+↓ presses move a row three places (Phase 4 review S21).
+  // Moves run one after another (`MoveQueue`), and the list shows the new order meanwhile.
   const [pending, setPending] = useState<readonly string[] | null>(null);
-  const moves = useRef<{ chain: Promise<unknown>; placed: Placed[] | null; running: number; failed: boolean }>({
-    chain: Promise.resolve(),
-    placed: null,
-    running: 0,
-    failed: false,
-  });
+  const moves = useRef(new MoveQueue<Placed[]>(forgetsPositions));
   const stored = useMemo(() => ownOrder(items), [items]);
   const own = useMemo(() => (pending ? inOrder(stored, pending) : stored), [stored, pending]);
   const latest = useRef(own);
@@ -185,9 +184,7 @@ function Items({ items }: { items: ItemRecord[] }) {
   // Once the moves have landed, the next read has them: the stored order takes over again, and the
   // next move starts from it rather than from the positions the last one left (Phase 7 review S6).
   useEffect(() => {
-    if (moves.current.running > 0) return;
-    moves.current.placed = null;
-    setPending(null);
+    if (moves.current.read()) setPending(null);
   }, [stored]);
 
   const filter: ItemFilter = { query, confirmed, events, people, nextOnly };
@@ -304,23 +301,9 @@ function Items({ items }: { items: ItemRecord[] }) {
    * row doesn't take the gap a move still landing is going into (Phase 6 review S8).
    */
   function queued(write: (from: Placed[]) => Promise<Placed[]>, move: boolean) {
-    const m = moves.current;
-    m.running += 1;
-    const step = m.chain.then(async () => {
-      m.placed = await write(m.placed ?? latest.current);
-    });
-    m.chain = step.catch((error: unknown) => {
-      if (move) m.failed = true;
-      // Only a write that may still land leaves the positions unknown; one refused wrote nothing.
-      if (!(error instanceof WriteError) || error.code === "timeout") m.placed = null;
-    });
-    return step.finally(() => {
-      m.running -= 1;
-      if (m.running > 0) return;
-      // The positions stay until the list is read again (the effect on `stored` above).
-      // A move that didn't land shows the stored order again, beside its note.
-      if (m.failed) setPending(null);
-      m.failed = false;
+    // A move that didn't land shows the stored order again, beside its note.
+    return moves.current.run(write, () => latest.current, move, (failed) => {
+      if (failed) setPending(null);
     });
   }
 

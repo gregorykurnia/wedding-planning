@@ -91,8 +91,8 @@ export function FileTiles({
 }: {
   files: readonly FileTileData[];
   queue: UploadQueue;
-  /** Opens a file's details. Without it a tile is a link to the file. */
-  onOpen?: (file: FileTileData) => void;
+  /** Opens a file's details; returns false to follow the link instead. Without it a tile is a link to the file. */
+  onOpen?: (file: FileTileData) => boolean;
 }) {
   const { items } = useUploads(queue);
   const openSheet = useUploadSheet(queue);
@@ -112,8 +112,9 @@ export function FileTiles({
             onClick={
               onOpen
                 ? (event) => {
-                    event.preventDefault();
-                    onOpen(file);
+                    // A click with a modifier still opens the file in a new tab, as a link does.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    if (onOpen(file)) event.preventDefault();
                   }
                 : undefined
             }

@@ -87,7 +87,7 @@ const rows = (page: Page) => page.locator("[data-booking-id]");
 
 test("shows what's late in the hero, and lists late, then soon, then the later month", async ({ page }) => {
   await openPayments(page);
-  await expect(page).toHaveTitle("Payments due · Our wedding planner");
+  await expect(page).toHaveTitle(/^Payments due · (Our wedding planner|.+ & .+)$/);
   await expect(page.getByText("Late, across 1 payment")).toBeVisible();
   await expect(page.getByText("and Rp 20.000.000 more due in the next 14 days. In all, Rp 27.000.000 across 3 payments.")).toBeVisible();
   await expect(page.getByRole("heading", { name: /^Late/, level: 2 })).toContainText("Rp 4.000.000");

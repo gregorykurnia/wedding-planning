@@ -149,7 +149,7 @@ const rows = (page: Page) => page.locator("[data-booking-id]");
 
 test("lists every booking with the next due first, and says what's committed", async ({ page }) => {
   await openBookings(page);
-  await expect(page).toHaveTitle("Bookings · Our wedding planner");
+  await expect(page).toHaveTitle(/^Bookings · (Our wedding planner|.+ & .+)$/);
   await expect(page.getByText("4 bookings, Rp 52.000.000 committed")).toBeVisible();
   await expect(rows(page)).toHaveCount(4);
   await expect(rows(page).first()).toContainText("Dapur Lestari Catering");
