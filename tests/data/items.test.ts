@@ -503,6 +503,37 @@ describe("renumber races above 490 items (Phase 7 review S8)", () => {
     expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(total);
   });
 
+  // Phase 8 review S5: moves between the part already renumbered (the last rows) and the part not yet.
+  it("a row moved from the renumbered part into the part not yet renumbered stays moved", async () => {
+    await seedMany();
+    let moved = false;
+    await renumberMasterList(gregory.db, undefined, async () => {
+      if (moved) return;
+      moved = true;
+      const next = [ids[0], ids[492], ...ids.slice(1, 492), ...ids.slice(493)];
+      await moveItem(await placed(), next, ids[492], b());
+    });
+    const after = await order();
+    expect(after.slice(0, 3)).toEqual([ids[0], ids[492], ids[1]]);
+    expect(after.at(-1)).toBe(ids[494]);
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(total);
+  });
+
+  it("a row moved from the part not yet renumbered into the renumbered part stays moved", async () => {
+    await seedMany();
+    let moved = false;
+    await renumberMasterList(gregory.db, undefined, async () => {
+      if (moved) return;
+      moved = true;
+      const next = [...ids.slice(0, 5), ...ids.slice(6, 493), ids[5], ...ids.slice(493)];
+      await moveItem(await placed(), next, ids[5], b());
+    });
+    const after = await order();
+    expect(after.slice(-4)).toEqual([ids[492], ids[5], ids[493], ids[494]]);
+    expect(after.slice(4, 6)).toEqual([ids[4], ids[6]]);
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(total);
+  });
+
   it("a row added below one not yet renumbered stays below it", async () => {
     await seedMany();
     let added = false;

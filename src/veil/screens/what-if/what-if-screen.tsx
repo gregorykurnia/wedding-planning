@@ -127,8 +127,10 @@ function WhatIfList({ page }: { page: WhatIfPage | null }) {
         <Thread fill={total.share} maybe dot={false} ends={THREAD_ENDS} label={total.label} />
       </Hero>
 
-      <h2 className={styles.section}>{CARRY_HEADING}</h2>
-      <CarryLines rows={carry.rows} more={carry.more} />
+      <h2 className={styles.section} id="carry">
+        {CARRY_HEADING}
+      </h2>
+      <CarryLines rows={carry.rows} more={carry.more} labelledBy="carry" />
 
       <h2 className={styles.section}>
         <span>Items</span>

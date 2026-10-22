@@ -111,14 +111,16 @@ test.describe("with five items", () => {
 
   test("T4 counts: the figure, the ring and the sentence follow each tick", async ({ page }) => {
     await openItems(page);
-    await expect(page.locator("p", { hasText: /^2of 5$/ })).toBeVisible();
+    const hero = page.locator("section").filter({ has: page.getByRole("heading", { level: 1, name: "Wedding items" }) });
+    const confirmed = (n: number) => expect(hero).toContainText(new RegExp(`Confirmed\\s*${n}\\s*of 5`));
+    await confirmed(2);
     await expect(page.getByRole("img", { name: "40% confirmed, 3 to go" })).toBeVisible();
 
     await row(page, "it-cake").getByRole("button", { name: "Confirmed: Wedding cake" }).click();
-    await expect(page.locator("p", { hasText: /^3of 5$/ })).toBeVisible();
+    await confirmed(3);
     await expect(page.getByRole("img", { name: "60% confirmed, 2 to go" })).toBeVisible();
     await row(page, "it-venue").getByRole("button", { name: "Confirmed: Reception venue" }).click();
-    await expect(page.locator("p", { hasText: /^2of 5$/ })).toBeVisible();
+    await confirmed(2);
   });
 
   test("T5 narrow items: search, events (any of them), people, confirmed and work on next, then Show everything", async ({ page }) => {

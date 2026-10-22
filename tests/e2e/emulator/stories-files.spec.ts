@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
-import { openAt, put, resetData, restorePairing, stored, storedDoc, type Value } from "../stories";
+import { drop, openAt, put, resetData, restorePairing, stored, storedDoc, type Value } from "../stories";
 
 test.afterEach(closeOtherContexts);
 test.afterAll(restorePairing);
@@ -116,12 +116,31 @@ test("R11 open, download, move, edit, delete: a file's sheet links to it, saves 
   await page.getByRole("button", { name: "Undo" }).last().click();
   await expect.poll(async () => (await storedDoc("weddingFiles", "f1"))?.folderId).toBe("venue");
 
-  // Delete for good asks first; Keep it leaves the file.
+  // Delete for good asks first; Keep it leaves the file and its sheet.
   await dialog(page).getByRole("button", { name: "Delete for good" }).click();
   await expect(dialog(page).getByRole("heading", { name: "Delete Villa contract, signed.pdf?" })).toBeVisible();
   await expect(dialog(page).getByText(/can’t be brought back\.$/)).toBeVisible();
   await dialog(page).getByRole("button", { name: "Keep it" }).click();
+  await expect(dialog(page).getByRole("heading", { name: "Villa contract, signed.pdf" })).toBeVisible();
   expect(await storedDoc("weddingFiles", "f1")).toBeTruthy();
+
+  // Delete for good (Phase 8 review S5). The server's route needs the file host's keys, so it is stood in
+  // for: it removes the record as the real one does, and the screen follows what was stored.
+  const deletes: string[] = [];
+  await page.route("**/api/files/*", async (route) => {
+    if (route.request().method() !== "DELETE") return route.fallback();
+    deletes.push(new URL(route.request().url()).pathname);
+    await drop("weddingFiles", "f1");
+    await route.fulfill({ status: 200, json: { ok: true } });
+  });
+  await dialog(page).getByRole("button", { name: "Delete for good" }).click();
+  await dialog(page).getByRole("button", { name: "Delete for good" }).click();
+  await expect(toasts(page).getByText("Deleted Villa contract, signed.pdf")).toBeVisible();
+  await expect(dialog(page)).toHaveCount(0);
+  expect(deletes).toEqual(["/api/files/f1"]);
+  await expect.poll(async () => await storedDoc("weddingFiles", "f1")).toBeNull();
+  await expect(page.locator('[data-file-id="f1"]')).toHaveCount(0);
+  await expect(page.locator('[data-file-id="f2"]')).toBeVisible();
 });
 
 // Phase 8 review S4: a record's file opens the same sheet as in Files (guide §4.20), so it can be deleted

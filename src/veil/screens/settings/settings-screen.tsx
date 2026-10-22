@@ -201,12 +201,12 @@ function Settings() {
         </FieldRow>
       </Fields>
 
-      <Section>{ACCOUNTS_HEADING}</Section>
+      <Section id="accounts">{ACCOUNTS_HEADING}</Section>
       {demo ? (
         <p className={styles.note}>{ACCOUNTS_DEMO}</p>
       ) : (
         <>
-          <ul className={styles.who}>
+          <ul className={styles.who} aria-labelledby="accounts">
             <li>
               <b>{myAccountName(who.myName)}</b>
               <span>{accountDetail(email, mine?.provider ?? "")}</span>

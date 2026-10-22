@@ -13,6 +13,8 @@ export interface CarryLinesProps {
   rows: CarryRow[];
   /** Funders left out of `rows`, past the eight the screen shows. */
   more?: number;
+  /** The id of the heading that names the list, so it reads as "Who would pay the extra". */
+  labelledBy?: string;
 }
 
 /**
@@ -20,9 +22,9 @@ export interface CarryLinesProps {
  * in italic with a plus sign. None of it is real money yet, so it's drawn as
  * what-if.
  */
-export function CarryLines({ rows, more = 0 }: CarryLinesProps) {
+export function CarryLines({ rows, more = 0, labelledBy }: CarryLinesProps) {
   return (
-    <ul className={styles.carry}>
+    <ul className={styles.carry} aria-labelledby={labelledBy}>
       {rows.map((row) => (
         <li key={row.key}>
           <span className={styles.pn} dir="auto">

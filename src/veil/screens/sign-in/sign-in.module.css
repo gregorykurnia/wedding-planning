@@ -30,15 +30,15 @@
   margin-top: var(--space-page-top);
 }
 
-/* The gate's spacing is the prototype's signin.html, which has no token for these steps (10, 30, 22, 26 and 6px). */
+/* The gate's spacing is the prototype's signin.html (10, 30, 22, 26 and 6px), composed from tokens. */
 .sub {
   color: var(--color-text-muted);
-  margin-top: 10px;
+  margin-top: calc(var(--space-2) + var(--space-hair));
   font-size: var(--text-reading);
 }
 
 .form {
-  margin-top: 30px;
+  margin-top: calc(var(--space-7) + var(--space-hair));
   text-align: left;
 }
 
@@ -46,20 +46,20 @@
 .wide.wide {
   width: 100%;
   justify-content: center;
-  padding-block: 13px;
+  padding-block: calc(var(--space-3) + var(--space-hair) / 2);
 }
 
 .go.go {
-  margin-top: 22px;
+  margin-top: calc(var(--space-5) + var(--space-hair));
 }
 
 .or {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: calc(var(--space-3) + var(--space-hair));
   color: var(--color-text-muted);
   font-size: var(--text-caption);
-  margin: 22px 0 6px;
+  margin: calc(var(--space-5) + var(--space-hair)) 0 calc(var(--space-1) + var(--space-hair));
 }
 
 .or::before,
@@ -95,7 +95,7 @@
 }
 
 .foot {
-  margin-top: 26px;
+  margin-top: calc(var(--space-6) + var(--space-hair));
   font-size: var(--text-caption);
   color: var(--color-text-muted);
   text-align: center;

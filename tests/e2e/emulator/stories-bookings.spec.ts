@@ -278,8 +278,8 @@ test("B9 order bookings and what-ifs: price from the biggest, name from A, and t
 
 test("B10 who would pay: an item takes a funder, a part takes its own, and the carry lines follow", async ({ page }) => {
   await openWhatIf(page);
-  const carry = page.locator("ul").filter({ hasText: "Not assigned yet" }).first().locator("li");
-  await expect(carry).toHaveText([/Greg.*\+ Rp 32\.000\.000/, /Bella.*\+ Rp 10\.000\.000/, /Not assigned yet.*\+ Rp 8\.000\.000/]);
+  const carry = page.getByRole("list", { name: "Who would pay the extra" }).getByRole("listitem");
+  await expect(carry).toHaveText([/^Greg\s*\+ Rp 32\.000\.000$/, /^Bella\s*\+ Rp 10\.000\.000$/, /^Not assigned yet\s*\+ Rp 8\.000\.000$/]);
 
   await entry(page, "w3").getByRole("button", { name: "Edit" }).click();
   const sheet = page.getByRole("dialog", { name: "Edit Second photographer" });
@@ -287,9 +287,9 @@ test("B10 who would pay: an item takes a funder, a part takes its own, and the c
   await expect(sheet.getByText("Saved")).toBeVisible();
   await sheet.getByRole("button", { name: "Done" }).click();
   await expect(entry(page, "w3")).toContainText("would be paid by Bella");
-  await expect(page.locator("li", { hasText: /Bella.*\+ Rp 18\.000\.000/ })).toBeVisible();
-  await expect(page.locator("li", { hasText: /Greg.*\+ Rp 32\.000\.000/ })).toBeVisible();
-  await expect(page.locator("li", { hasText: /Not assigned yet.*\+/ })).toHaveCount(0);
+  await expect(carry.filter({ hasText: /^Bella\s*\+ Rp 18\.000\.000$/ })).toHaveCount(1);
+  await expect(carry.filter({ hasText: /^Greg\s*\+ Rp 32\.000\.000$/ })).toHaveCount(1);
+  await expect(carry.filter({ hasText: /^Not assigned yet/ })).toHaveCount(0);
   await expect.poll(async () => (await storedDoc("hypotheticalItems", "w3"))?.funder).toBe("f-bella");
 
   // A part can be set to Not assigned, and it stays.

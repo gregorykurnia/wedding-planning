@@ -101,7 +101,10 @@ test("A4 phone and computer: the main screens fit a phone with nothing scrolling
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(path);
       await expect(page.getByRole("link", { name: "Greg & Bella" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-      if (path !== "/") await expect(page.getByRole("heading", { level: 1 }).first()).toBeAttached({ timeout: COMPILE_TIMEOUT });
+      // The scroll is measured on the screen's content, not its loading shimmer (Phase 8 review S6).
+      await expect(page.getByRole("main").getByRole("heading").first()).toBeAttached({ timeout: COMPILE_TIMEOUT });
+      await expect(page.getByText(/^Loading /)).toHaveCount(0, { timeout: COMPILE_TIMEOUT });
+      await expect(page.getByRole("main")).not.toHaveAttribute("aria-busy", "true");
       expect(await sideways(), `${path} at 390px`).toBeLessThanOrEqual(0);
       const narrow = await page.locator("main").boundingBox();
       expect(narrow!.width, `${path} fills the phone`).toBeGreaterThan(300);
@@ -133,7 +136,7 @@ test("A5 account, settings, sign out: the menu says who is signed in, settings l
   await expect(page).toHaveURL(/\/settings$/);
   await expect(page.getByRole("heading", { name: "Wedding settings", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 
-  const accounts = page.locator("main ul").first().locator("li");
+  const accounts = page.getByRole("list", { name: "Who can open the planner" }).getByRole("listitem");
   await expect(accounts.nth(0)).toContainText("Greg, you");
   await expect(accounts.nth(0)).toContainText(TEST_ACCOUNTS[0].email);
   await expect(accounts.nth(1)).toContainText("Bella");

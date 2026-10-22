@@ -32,6 +32,12 @@ export async function put(collection: string, id: string, fields: Record<string,
   expect(res.ok, `writing ${collection}/${id}`).toBe(true);
 }
 
+/** Deletes one document, as the server's delete route does (specs that stub that route). */
+export async function drop(collection: string, id: string) {
+  const res = await fetch(`${DOCS}/${collection}/${id}`, { method: "DELETE", headers: ADMIN });
+  expect(res.ok, `deleting ${collection}/${id}`).toBe(true);
+}
+
 /** Every stored document of a collection, with its id. */
 export const stored = storedDocs;
 

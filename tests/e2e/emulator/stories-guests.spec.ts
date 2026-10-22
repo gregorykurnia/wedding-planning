@@ -98,17 +98,20 @@ test("G2 event options: invited to is one choice of five, and the row says it", 
 test("G3 headcounts: people per event, plus-ones in, not attending out, if space allows apart", async ({ page }) => {
   await expect(page.getByText("7 guests invited, 12 people with plus-ones")).toBeVisible();
   await expect(page.getByText("people, plus-ones included.")).toContainText("4 still to reply.");
-  const line = (label: string) => card(page, "Headcounts").locator("li", { hasText: label });
-  await expect(line("Both events")).toContainText("7");
-  await expect(line("Reception").filter({ hasNotText: "if space" })).toContainText("8");
-  await expect(line("of which, if space allows")).toContainText("1");
-  await expect(line("Ceremony")).toContainText("8");
+  // Each line is its label then its count, read whole, so a 17 can't pass for a 7.
+  const lines = card(page, "Headcounts").getByRole("listitem");
+  const line = (label: string, count: number) => lines.filter({ hasText: new RegExp(`^${label}\\s*${count}$`) });
+  await expect(line("Both events", 7)).toHaveCount(1);
+  await expect(line("Reception", 8)).toHaveCount(1);
+  await expect(line("of which, if space allows", 1)).toHaveCount(1);
+  await expect(line("Ceremony", 8)).toHaveCount(1);
 
   // Pak Joko is not attending, so changing him changes nothing; Maria's three leave the count when she declines.
   await row(page, "g-maria").getByRole("radio", { name: "Not attending", exact: true }).click();
   await expect.poll(async () => (await read("g-maria"))?.rsvpStatus).toBe("no");
-  await expect(line("Both events")).toContainText("4");
-  await expect(page.locator("p", { hasText: /^2$/ })).toBeVisible();
+  await expect(line("Both events", 4)).toHaveCount(1);
+  const hero = page.locator("section").filter({ has: page.getByRole("heading", { level: 1, name: "Guests" }) });
+  await expect(hero).toContainText(/Attending so far\s*2\s*people, plus-ones included/);
 });
 
 test("G4 both sides: the first side named wins, friends are family, and an unnamed side is counted apart", async ({ page }) => {

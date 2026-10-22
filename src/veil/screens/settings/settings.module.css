@@ -30,7 +30,7 @@
   justify-content: space-between;
   gap: var(--space-4);
   /* 14px above and below, as settings.html's .who li. */
-  padding: 14px var(--space-1);
+  padding: calc(var(--space-3) + var(--space-hair)) var(--space-1);
   border-bottom: 1px solid var(--color-rule);
 }
 
