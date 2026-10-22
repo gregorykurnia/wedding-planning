@@ -106,6 +106,17 @@ describe("guest numbers", () => {
     await createNumberedGuest({ name: "Maria", country: "Indonesia", allergies: "" }, { db: gregory.db, id: "g1", first });
     expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria", country: "Indonesia", allergies: "Peanuts", number: 1 });
   });
+
+  it("a first try landing after Try again's writes nothing over it (Phase 6 review S10)", async () => {
+    const first = { name: "Maria", country: "" };
+    let newest = 1;
+    const tryOne = () => newest !== 1;
+    newest = 2;
+    await createNumberedGuest({ name: "Maria Lestari", country: "Indonesia" }, { db: gregory.db, id: "g1", first, superseded: () => newest !== 2 });
+    const late = await createNumberedGuest(first, { db: gregory.db, id: "g1", superseded: tryOne });
+    expect(late).toEqual({ id: "g1", number: 1 });
+    expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria Lestari", country: "Indonesia", number: 1 });
+  });
 });
 
 describe("presence", () => {

@@ -220,8 +220,10 @@ export async function renumberMasterList(target?: Firestore, afterListing?: () =
 
     if (refs.length > RENUMBER_IN_ONE_TRANSACTION) {
       // Too many for one transaction: write in batches of positions that start
-      // above every current one, so rows already renumbered stay after the rest
-      // only until the last batch lands, and the final order is the same.
+      // above every current one, from the end of the list backwards, so the rows
+      // already renumbered are always the last ones and the order holds between
+      // batches. A batch that fails because a row was removed meanwhile leaves
+      // the order as it was, and the list is read again (Phase 6 review S11).
       const start =
         Math.ceil(
           listed.docs.reduce((maximum, snapshot) => {
@@ -229,13 +231,21 @@ export async function renumberMasterList(target?: Firestore, afterListing?: () =
             return typeof value === "number" && Number.isFinite(value) ? Math.max(maximum, value) : maximum;
           }, 0),
         ) + 1;
-      for (let from = 0; from < refs.length; from += RENUMBER_IN_ONE_TRANSACTION) {
+      const last = Math.floor((refs.length - 1) / RENUMBER_IN_ONE_TRANSACTION) * RENUMBER_IN_ONE_TRANSACTION;
+      let removed = false;
+      for (let from = last; from >= 0 && !removed; from -= RENUMBER_IN_ONE_TRANSACTION) {
         const batch = writeBatch(database);
         refs.slice(from, from + RENUMBER_IN_ONE_TRANSACTION).forEach((ref, offset) => {
           batch.update(ref, { sortOrder: start + from + offset, updatedAt: serverTimestamp() });
         });
-        await batch.commit();
+        try {
+          await batch.commit();
+        } catch (error) {
+          if ((error as { code?: string }).code !== "not-found") throw error;
+          removed = true;
+        }
       }
+      if (removed) continue;
       // The batches can't check the version, so the last write does: a row added or removed while
       // they ran makes it list and renumber again (Phase 5 review S21).
       const settled = await runTransaction(database, async (transaction) => {

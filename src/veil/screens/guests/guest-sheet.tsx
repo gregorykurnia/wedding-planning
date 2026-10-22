@@ -77,6 +77,8 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
   const id = useRef<string | null>(null);
   // What the first try for this guest sent: Try again writes only what changed since.
   const firstTry = useRef<NewGuest | null>(null);
+  // Which press is the newest: an older one still landing writes nothing over it (Phase 6 review S10).
+  const tries = useRef(0);
   const nameInput = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof typeof FRESH>(key: K, value: (typeof FRESH)[K]) => setForm((now) => ({ ...now, [key]: value }));
@@ -106,9 +108,11 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
     };
     const first = firstTry.current;
     firstTry.current ??= guest;
+    const tap = ++tries.current;
+    const superseded = () => tries.current !== tap;
     let added: { id: string; number: number };
     try {
-      added = await addGuest(guest, first ? { first } : {});
+      added = await addGuest(guest, first ? { first, superseded } : { superseded });
     } catch {
       setBusy(null);
       setFailed(true);

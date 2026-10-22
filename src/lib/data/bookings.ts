@@ -392,6 +392,18 @@ export async function recordPayment(
       const changed = recorded(parts[index]);
       if (!changed) return;
       parts[index] = { ...parts[index], ...changed };
+      // Split when overpaid, the Deposit holds every payment but only its price as paid, and the
+      // Balance the rest; a lower Try again then takes what the Deposit can't from the parts after
+      // it, so no part's paid goes below 0 and the total stays right (Phase 6 review S13).
+      let short = -changed.budgetSpent;
+      if (short > 0) parts[index] = { ...parts[index], budgetSpent: 0 };
+      for (let other = parts.length - 1; short > 0 && other >= 0; other--) {
+        const paid = num(parts[other].budgetSpent);
+        if (other === index || paid <= 0) continue;
+        const taken = Math.min(paid, short);
+        parts[other] = { ...parts[other], budgetSpent: paid - taken };
+        short -= taken;
+      }
       tx.update(ref, { subEntries: parts, ...stamp(database) });
     } else {
       if (parts.length > 0) throw new WriteError("failed", "Record the payment on one of its parts");

@@ -101,9 +101,11 @@ const renumbered = (ordered: readonly Placed[], positions: ReadonlyMap<string, n
  * landed and its neighbours there aren't the stored ones (Phase 5 review S18).
  * When the gap below the row has run out the list is renumbered first
  * (inventory-notes §5 #27). The ids are the caller's, so a retry writes the
- * same items.
+ * same items. Resolves with every item's position after the add, the new ones
+ * included, so a move or add queued after it can start from them (Phase 6
+ * review S8).
  */
-export async function addItems(rows: readonly NewItem[], afterId: string | null, shown: readonly Placed[], opts: WriteOptions = {}, again = false): Promise<void> {
+export async function addItems(rows: readonly NewItem[], afterId: string | null, shown: readonly Placed[], opts: WriteOptions = {}, again = false): Promise<Placed[]> {
   if (rows.length < 1 || rows.length > 400) throw new Error("Add between 1 and 400 items.");
   const ordered = [...shown].sort((a, z) => a.sortOrder - z.sortOrder);
   const anchorAt = afterId === null ? ordered.length - 1 : rankOf(ordered, afterId);
@@ -118,7 +120,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
     return addItems(rows, afterId, renumbered(ordered, positions), opts, true);
   }
 
-  await transact(async (tx, database) => {
+  const added = await transact(async (tx, database) => {
     const metaRef = doc(database, META_COLLECTION, META_ID);
     const marker = await tx.get(metaRef);
     const anchor = afterId === null ? null : await tx.get(doc(database, COLLECTION, afterId));
@@ -129,6 +131,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
     // At the end, the old screen's marker says where the next one goes; keep it in step.
     const markerNext = marker.exists() && typeof marker.data().nextSortOrder === "number" ? (marker.data().nextSortOrder as number) : 0;
     const start = afterId === null ? Math.max(markerNext, positions[0]) : null;
+    const at = (index: number) => (start === null ? positions[index] : start + index);
     rows.forEach((row, index) => {
       tx.set(doc(database, COLLECTION, row.id), {
         id: row.id,
@@ -138,12 +141,14 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
         types: [...row.types],
         persons: [...row.persons],
         next: false,
-        sortOrder: start === null ? positions[index] : start + index,
+        sortOrder: at(index),
         ...stamp(database, true),
       });
     });
     tx.set(metaRef, { ...LIST_CHANGED, ...(start === null ? {} : { nextSortOrder: start + rows.length }), ...stamp(database) }, { merge: true });
+    return rows.map((row, index) => ({ id: row.id, sortOrder: at(index) }));
   }, opts);
+  return [...ordered.filter((r) => !added.some((a) => a.id === r.id)), ...added].sort((a, z) => a.sortOrder - z.sortOrder);
 }
 
 /**

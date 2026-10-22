@@ -13,6 +13,7 @@ import {
   addItems,
   moveItem,
   useItems,
+  type NewItem,
   type Placed,
 } from "@/lib/data/items";
 import { useSession } from "@/lib/data/session";
@@ -30,7 +31,7 @@ import {
 } from "@/lib/model/items";
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import { ITEM_ORDERS, orderItems, ownOrder, type ItemOrderKey } from "@/lib/model/order";
-import { inOrder, moveId, withRest } from "@/lib/model/row-moves";
+import { inOrder, moveId, withAdded, withRest } from "@/lib/model/row-moves";
 import { Tries } from "@/lib/model/tries";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
@@ -252,20 +253,14 @@ function Items({ items }: { items: ItemRecord[] }) {
   function attempt(item: Pick<ItemRecord, "id">, field: ItemField, write: () => Promise<unknown>, keep?: Partial<ItemRecord>) {
     // Only this field's failure and held choice are let go when it lands; another field's stay.
     const key = keyOf(item.id, field);
-    const tap = tries.current.start(key);
     if (keep) setHeld((h) => new Map(h).set(key, { ...h.get(key), ...keep }));
-    const run = async () => {
-      try {
-        await write();
-        if (!tries.current.settle(key, tap)) return;
+    tries.current.run(key, write, {
+      landed: () => {
         setFailures((map) => without(map, key));
         setHeld((h) => without(h, key));
-      } catch {
-        if (!tries.current.newest(key, tap)) return;
-        setFailures((map) => new Map(map).set(key, { id: item.id, field, retry: () => void run() }));
-      }
-    };
-    void run();
+      },
+      failed: (retry) => setFailures((map) => new Map(map).set(key, { id: item.id, field, retry })),
+    });
   }
 
   /** Runs a write for the list as a whole; a failure is a note above it, replaced by a retry that lands. */
@@ -296,19 +291,46 @@ function Items({ items }: { items: ItemRecord[] }) {
     setReveal({ id, type });
   };
 
+  /**
+   * Runs a move or an add after the ones before it, from the positions they left, so an add below a
+   * row doesn't take the gap a move still landing is going into (Phase 6 review S8).
+   */
+  function queued(write: (from: Placed[]) => Promise<Placed[]>, move: boolean) {
+    const m = moves.current;
+    m.running += 1;
+    const step = m.chain.then(async () => {
+      m.placed = await write(m.placed ?? latest.current);
+    });
+    m.chain = step.catch(() => {
+      if (move) m.failed = true;
+      m.placed = null;
+    });
+    return step.finally(() => {
+      m.running -= 1;
+      if (m.running > 0) return;
+      m.placed = null;
+      // A move that didn't land shows the stored order again, beside its note.
+      if (m.failed) setPending(null);
+      m.failed = false;
+    });
+  }
+
+  /** Adds below `afterId` (or at the end) in turn; a move still showing keeps the new rows in place. */
+  const add = (rows: readonly NewItem[], afterId: string | null) =>
+    queued(async (from) => {
+      const placed = await addItems(rows, afterId, from);
+      const ids = rows.map((r) => r.id);
+      setPending((p) => (p ? withAdded(p, ids, afterId) : p));
+      return placed;
+    }, false);
+
   const openAdd = (after: ItemRecord | null) =>
-    sheets.open(
-      <AddItemsSheet
-        after={after}
-        current={() => latest.current}
-        onAdded={(ids) => showNew(ids[0], false, after, ids.length)}
-      />,
-    );
+    sheets.open(<AddItemsSheet after={after} add={add} onAdded={(ids) => showNew(ids[0], false, after, ids.length)} />);
 
   function addBelow(item: ItemRecord) {
     const [id] = newItemIds(1);
     attemptList(`below:${item.id}`, addBelowFailed(item.item), async () => {
-      await addItems([{ id, item: "", types: item.types, persons: item.persons }], item.id, latest.current);
+      await add([{ id, item: "", types: item.types, persons: item.persons }], item.id);
       showNew(id, true, item, 1);
     });
   }
@@ -317,26 +339,8 @@ function Items({ items }: { items: ItemRecord[] }) {
     const name = latest.current.find((i) => i.id === movedId)?.item ?? "";
     // The list hands in the rows on the page; the rest of the list follows them.
     const full = withRest(ids, latest.current.map((i) => i.id));
-    const m = moves.current;
     setPending(full);
-    attemptList(`move:${movedId}`, moveFailed(name), () => {
-      m.running += 1;
-      const step = m.chain.then(async () => {
-        m.placed = await moveItem(m.placed ?? latest.current, full, movedId);
-      });
-      m.chain = step.catch(() => {
-        m.failed = true;
-        m.placed = null;
-      });
-      return step.finally(() => {
-        m.running -= 1;
-        if (m.running > 0) return;
-        m.placed = null;
-        // A move that didn't land shows the stored order again, beside its note.
-        if (m.failed) setPending(null);
-        m.failed = false;
-      });
-    });
+    attemptList(`move:${movedId}`, moveFailed(name), () => queued((from) => moveItem(from, full, movedId), true));
   }
 
   async function remove(item: ItemRecord) {

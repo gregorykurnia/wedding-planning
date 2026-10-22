@@ -357,6 +357,47 @@ describe("ordering, the rest (Phase 5 review S21)", () => {
   });
 });
 
+describe("write races (Phase 6 review S8, S11)", () => {
+  // S8: rows X, A, B; Alt+↓ on X, then "add below A" before the next read. The screen runs the add
+  // after the move, from the positions the move left.
+  it("an add queued after a move goes in the gap the move left, and the next move starts from the add", async () => {
+    await seed("x", 0);
+    await seed("a", 1);
+    await seed("b", 2);
+    const afterMove = await moveItem(await placed(), ["a", "x", "b"], "x", g());
+    const [id] = newItemIds(1, g());
+    const afterAdd = await addItems([{ id, item: "", types: [], persons: [] }], "a", afterMove, g());
+    expect(await order()).toEqual(["a", id, "x", "b"]);
+    expect(new Set((await placed()).map((r) => r.sortOrder)).size).toBe(4);
+    expect(afterAdd).toEqual(await placed());
+    await moveItem(afterAdd, ["a", "x", id, "b"], id, g());
+    expect(await order()).toEqual(["a", "x", id, "b"]);
+  });
+
+  // S11: a row removed while the batches run made the second batch fail after the first had moved its rows.
+  it("above 490 items, a row removed while a renumber runs leaves the order as it was, and it lists again", async () => {
+    const total = 495;
+    const ids = Array.from({ length: total }, (_, i) => `i${String(i).padStart(3, "0")}`);
+    for (let from = 0; from < total; from += 400) {
+      const batch = writeBatch(gregory.db);
+      for (let i = from; i < Math.min(total, from + 400); i++) {
+        batch.set(doc(gregory.db, "masterListItems", ids[i]), { id: ids[i], item: "", vendor: "", confirmed: false, types: [], persons: [], next: false, sortOrder: i });
+      }
+      await batch.commit();
+    }
+    let removed = false;
+    await renumberMasterList(gregory.db, async () => {
+      if (removed) return;
+      removed = true;
+      await removeItem("i492", b());
+    });
+    const left = ids.filter((id) => id !== "i492");
+    expect(await order()).toEqual(left);
+    const positions = (await placed()).map((r) => r.sortOrder);
+    expect(new Set(positions).size).toBe(total - 1);
+  });
+});
+
 describe("removing an item", () => {
   it("puts it back exactly, at the same place, on undo", async () => {
     await seed("a", 0);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { addItems, newItemIds, removeItems, type NewItem, type Placed } from "@/lib/data/items";
+import { newItemIds, removeItems, type NewItem } from "@/lib/data/items";
 import type { ItemRecord } from "@/lib/model/items";
 import { FieldRow, FieldText, Fields } from "@/veil/parts/fields/fields";
 import { Banner } from "@/veil/shell/banner";
@@ -21,18 +21,18 @@ export const namesOf = (text: string): string[] =>
  * "Add items" (guide §5.22; T7): one item per line, in the list exactly where
  * they belong, copying the events and the people of the row above. Each item has
  * its id made once and kept until it lands, so Try again after a lost connection
- * writes the same items. `current` gives the list in our own order as it is when
- * the button is pressed, because the sheet can stay open while the partner adds
- * a row.
+ * writes the same items. `add` is the screen's: it writes them from the list as
+ * it is when the button is pressed (the sheet can stay open while the partner
+ * adds a row), after any move still landing (Phase 6 review S8).
  */
 export function AddItemsSheet({
   after,
-  current,
+  add: write,
   onAdded,
 }: {
   /** The row the new ones go below, or null for the end of the list. */
   after: ItemRecord | null;
-  current: () => Placed[];
+  add: (rows: readonly NewItem[], afterId: string | null) => Promise<unknown>;
   onAdded: (ids: string[], after: ItemRecord | null) => void;
 }) {
   const sheet = useSheet();
@@ -63,7 +63,7 @@ export function AddItemsSheet({
     setFailed(false);
     setAdding(true);
     try {
-      await addItems(rows, after?.id ?? null, current());
+      await write(rows, after?.id ?? null);
     } catch {
       setAdding(false);
       setFailed(true);

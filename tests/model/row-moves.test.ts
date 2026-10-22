@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MIN_SORT_GAP, dropEdge, dropId, inOrder, moveId, neighboursOf, positionsBetween, withRest } from "@/lib/model/row-moves";
+import { MIN_SORT_GAP, dropEdge, dropId, inOrder, moveId, neighboursOf, positionsBetween, withAdded, withRest } from "@/lib/model/row-moves";
 
 const ids = ["a", "b", "c", "d"];
 
@@ -110,5 +110,12 @@ describe("a move on a page of the list (Phase 4 review S21)", () => {
     const rows = ["a", "b", "c", "d"].map((id) => ({ id }));
     expect(inOrder(rows, ["c", "a", "b"]).map((r) => r.id)).toEqual(["c", "a", "b", "d"]);
     expect(inOrder(rows, []).map((r) => r.id)).toEqual(["a", "b", "c", "d"]);
+  });
+
+  // Phase 6 review S8: an add lands while a move is still showing.
+  it("puts rows added during a pending move below their row, or at the end", () => {
+    expect(withAdded(["a", "x", "b"], ["n"], "a")).toEqual(["a", "n", "x", "b"]);
+    expect(withAdded(["a", "x", "b"], ["n", "m"], null)).toEqual(["a", "x", "b", "n", "m"]);
+    expect(withAdded(["a", "n", "b"], ["n"], "b")).toEqual(["a", "b", "n"]);
   });
 });

@@ -69,6 +69,14 @@ export const withRest = (pageIds: readonly string[], allIds: readonly string[]):
   return [...pageIds, ...allIds.filter((id) => !onPage.has(id))];
 };
 
+/** A pending order with rows just added below `afterId`, or at the end when it is null or not in it (Phase 6 review S8). */
+export function withAdded(ids: readonly string[], added: readonly string[], afterId: string | null): string[] {
+  const fresh = new Set(added);
+  const rest = ids.filter((id) => !fresh.has(id));
+  const at = afterId === null ? -1 : rest.indexOf(afterId);
+  return at < 0 ? [...rest, ...added] : [...rest.slice(0, at + 1), ...added, ...rest.slice(at + 1)];
+}
+
 /** `rows` in the order `ids` gives; any row it doesn't name keeps its place after them. */
 export function inOrder<T extends { id: string }>(rows: readonly T[], ids: readonly string[]): T[] {
   const at = new Map(ids.map((id, i) => [id, i]));

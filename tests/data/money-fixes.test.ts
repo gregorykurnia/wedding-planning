@@ -148,6 +148,19 @@ describe("Try again with a changed amount (P4-S2)", () => {
     expect(data.subEntries[1].budgetSpent ?? 0).toBe(0);
     expect(data.subEntries[1].payments ?? []).toEqual([]);
   });
+
+  // Phase 6 review S13: the Deposit holds the whole overpaid payment but only its price as paid.
+  it("a lower Try again after an overpaid split leaves no part below 0, and the total right", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendor({ totalPrice: 10_000_000 }));
+    const target = { kind: "vendor" as const, id: "v1" };
+    await recordPayment(target, { amount: 12_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 1000 });
+    await splitBooking(target, b());
+    expect((await read("vendors", "v1")).subEntries.map((p: { budgetSpent: number }) => p.budgetSpent)).toEqual([10_000_000, 2_000_000]);
+
+    await recordPayment(target, { amount: 1_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 2000 });
+    const parts = (await read("vendors", "v1")).subEntries as { budgetSpent: number }[];
+    expect(parts.map((p) => p.budgetSpent)).toEqual([0, 1_000_000]);
+  });
 });
 
 describe("Split right after typing (P4-S5)", () => {

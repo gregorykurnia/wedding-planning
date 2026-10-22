@@ -26,4 +26,25 @@ export class Tries {
     this.latest.delete(key);
     return true;
   }
+
+  /**
+   * Starts a try on `key`: runs `write`, then `landed` when it lands as the newest, or `failed` with
+   * its Try again when it fails as the newest. That Try again does nothing once a newer try has
+   * started, so an older text can't be stored over a newer one (Phase 6 review S9).
+   */
+  run(key: string, write: () => Promise<unknown>, on: { landed: () => void; failed: (retry: () => void) => void }): void {
+    const n = this.start(key);
+    const go = async () => {
+      try {
+        await write();
+        if (this.settle(key, n)) on.landed();
+      } catch {
+        if (this.newest(key, n)) on.failed(retry);
+      }
+    };
+    const retry = () => {
+      if (this.newest(key, n)) void go();
+    };
+    void go();
+  }
 }
