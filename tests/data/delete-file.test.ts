@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { AUTH_EMULATOR, EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../e2e/emulator-config";
-import { clearFirestore, closeClient, makeClient, signIn, twoPartners, type Partner } from "./emulator";
+import { AUTH_EMULATOR, EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR } from "../e2e/emulator-config";
+import { signInAnonymously } from "firebase/auth";
+import { clearFirestore, closeClient, makeClient, twoPartners, type Partner } from "./emulator";
 
 /**
  * Delete for good (Task 6.3), through the real route handler and the real
@@ -21,7 +22,6 @@ const { deleteFileForGood } = await import("@/lib/data/files");
 const { destroyAsset, sign } = await import("@/lib/server/cloudinary");
 const { WriteError } = await import("@/lib/data/write-error");
 const { connect } = await import("../../scripts/migrate/admin");
-const { adminAuth: serverAuth } = await import("@/lib/server/firebase-admin");
 
 const { db } = connect("delete-file-test");
 
@@ -265,38 +265,25 @@ describe("Delete for good", () => {
     expect((await get("shortlist/s1"))?.files).toEqual([{ name: "Shared", url }]);
   });
 
-  it("only lets the two allowed, verified accounts delete", async () => {
+  it("refuses a missing or bad token, and lets any account delete while access is open", async () => {
     fake.assets.add("image/a");
     await db.doc("weddingFiles/f1").set({ name: "A", url: imageUrl("a"), publicId: "a", resourceType: "image" });
 
     expect((await call("f1")).status).toBe(401);
     expect((await call("f1", "not-a-token")).status).toBe(401);
-
-    const adminAuth = serverAuth();
-    const stranger = await adminAuth.createUser({ email: "stranger@example.com", password: "stranger-pw", emailVerified: true });
-    const strangerClient = await signIn(makeClient(), { email: "stranger@example.com", password: "stranger-pw" });
-    try {
-      expect((await call("f1", await strangerClient.auth.currentUser!.getIdToken())).status).toBe(403);
-      const refused = await del(strangerClient, "f1").catch((err: unknown) => err);
-      expect((refused as InstanceType<typeof WriteError>).code).toBe("denied");
-    } finally {
-      await closeClient(strangerClient);
-      await adminAuth.deleteUser(stranger.uid);
-    }
-
-    // An allowlisted address that isn't verified is refused too.
-    const bellaUser = await adminAuth.getUserByEmail(TEST_ACCOUNTS[1].email);
-    await adminAuth.updateUser(bellaUser.uid, { emailVerified: false });
-    const unverified = await signIn(makeClient(), TEST_ACCOUNTS[1]);
-    try {
-      expect((await call("f1", await unverified.auth.currentUser!.getIdToken())).status).toBe(403);
-    } finally {
-      await closeClient(unverified);
-      await adminAuth.updateUser(bellaUser.uid, { emailVerified: true });
-    }
-
     expect(fake.calls).toEqual([]);
     expect(await get("weddingFiles/f1")).toBeDefined();
+
+    // Open access (2026-10-22): the anonymous account the app makes for a visitor.
+    const client = makeClient();
+    const { user } = await signInAnonymously(client.auth);
+    try {
+      await del({ ...client, uid: user.uid }, "f1");
+      expect(fake.calls).toEqual(["image/a"]);
+      expect(await get("weddingFiles/f1")).toBeUndefined();
+    } finally {
+      await closeClient(client);
+    }
   });
 
   it("refuses an id that isn't a document id", async () => {

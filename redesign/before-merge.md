@@ -16,6 +16,7 @@ Sections 1 and 2 change nothing in production, or only add to it. Section 3 is t
 
 ## 2. Production changes that only add (before the merge)
 
+- [ ] **Open access** (owner's call, 2026-10-22): in the Firebase console, Authentication › Sign-in method › Anonymous › Enable. The rules deploy below then lets any visitor in, and the app opens without signing in. Without Anonymous enabled, the app falls back to the sign-in screen.
 - [ ] **Firestore rules** (5.F2, P5-S13 and P5-S14: push subscriptions and presence): `npx firebase deploy --only firestore:rules`. The rules are additive, so the old UI isn't affected. The 4.F3 rules went live on 2026-10-19. Note the date in 5.F2's row of §7.0.
 - [ ] **Server keys in Vercel production** (6.2's owner setup, 6.3): add any that are missing, for Production: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (from `npx web-push generate-vapid-keys`), `CRON_SECRET` (`openssl rand -hex 32`), `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON), and `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. Delete for good fails without the Cloudinary pair, and the Cloudinary key needs the Master Admin role. The daily reminder run starts with the merge's deploy (section 5).
 

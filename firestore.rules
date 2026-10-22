@@ -1,19 +1,17 @@
 rules_version = '2';
 
-// Access is restricted to a fixed allowlist of accounts (the couple), and the
-// address must be verified, so nobody can register an allowlisted address that
-// has no account yet and get in (inventory-notes §5 #33, plan §9.2 Q3).
+// Open access, for now (the owner's call, 2026-10-22): any signed-in account,
+// including the anonymous one the app makes for every visitor, may read and
+// write. Before that, access was restricted to a fixed allowlist of accounts
+// (the couple) with a verified address (inventory-notes §5 #33, plan §9.2 Q3);
+// to restore it, put back the email check below and in
+// `src/lib/server/verify-request.ts`, and deploy the rules.
 // The data model itself is unchanged — still flat, shared collections — this
 // just gates who can read/write them. New collections are additive only:
 // these rules apply to production at once and gate the old UI too.
 service cloud.firestore {
   function isAllowed() {
-    return request.auth != null &&
-      request.auth.token.email_verified == true &&
-      request.auth.token.email in [
-        "gregory.kurnia@gmail.com",
-        "bellabarliana15@gmail.com"
-      ];
+    return request.auth != null;
   }
 
   function isSelf(uid) {

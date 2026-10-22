@@ -6,6 +6,7 @@ import { guarded, type WriteOptions } from "./write";
 export interface MemberUser {
   uid: string;
   email: string | null;
+  isAnonymous?: boolean;
   providerData: { providerId: string }[];
 }
 
@@ -19,7 +20,8 @@ export async function recordMember(user: MemberUser, opts: WriteOptions = {}): P
     const database = requireDb(opts.db);
     const member = {
       email: user.email ?? "",
-      provider: user.providerData[0]?.providerId ?? "password",
+      // An anonymous account (open access) has no sign-in method to show.
+      provider: user.isAnonymous ? "" : (user.providerData[0]?.providerId ?? "password"),
       lastSeenAt: serverTimestamp(),
     };
     await guarded(() => setDoc(doc(database, "members", user.uid), member, { merge: true }));

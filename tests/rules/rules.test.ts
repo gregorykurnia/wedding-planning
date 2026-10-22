@@ -10,8 +10,9 @@ import {
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR } from "../e2e/emulator-config";
 
 /**
- * Both accounts can read and write every collection; anyone else, an
- * unverified allowlisted address, or nobody signed in can't (Task 1.9).
+ * Any signed-in account, anonymous ones included, can read and write every
+ * shared collection; nobody signed in can't. Open access since 2026-10-22;
+ * before, only the two allowlisted, verified accounts could (Task 1.9).
  */
 
 const [host, port] = FIRESTORE_EMULATOR.split(":");
@@ -79,15 +80,16 @@ async function seed(path: string, data: Record<string, unknown>) {
   });
 }
 
-const outsiders: [string, () => RulesTestContext][] = [
-  ["another account", stranger],
-  ["an unverified allowlisted address", unverified],
-  ["nobody signed in", nobody],
-];
+// Open access (2026-10-22): any signed-in account, anonymous ones included,
+// gets in; only nobody signed in is still kept out.
+const anonymous = context("anonymous", () =>
+  env.authenticatedContext("uid-anonymous", { firebase: { sign_in_provider: "anonymous", identities: {} } }),
+);
+const outsiders: [string, () => RulesTestContext][] = [["nobody signed in", nobody]];
 
 describe.each(SHARED)("%s", (name) => {
-  it("both accounts can create, read, update and delete", async () => {
-    for (const who of [gregory, bella]) {
+  it("any signed-in account can create, read, update and delete", async () => {
+    for (const who of [gregory, bella, stranger, unverified, anonymous]) {
       const ref = who().firestore().collection(name).doc("x");
       await assertSucceeds(ref.set({ a: 1 }));
       await assertSucceeds(ref.get());

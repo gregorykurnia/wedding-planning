@@ -13,6 +13,7 @@ import {
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
@@ -75,6 +76,14 @@ interface AuthState {
 
 const LOOK_AROUND_KEY = "veil.lookAround";
 
+/**
+ * Open access, for now (the owner's call, 2026-10-22): nobody signed in gets
+ * an anonymous account at once, and the rules let any account in. Setting
+ * `NEXT_PUBLIC_REQUIRE_SIGN_IN=1` brings the sign-in screen back (the e2e
+ * servers do, so their specs still cover it).
+ */
+export const OPEN_ACCESS = process.env.NEXT_PUBLIC_REQUIRE_SIGN_IN !== "1";
+
 function readLookAround(): boolean {
   try {
     return sessionStorage.getItem(LOOK_AROUND_KEY) === "1";
@@ -129,6 +138,9 @@ export function useSessionSource(): Session {
   // True while the account is let in on trust because the probe couldn't
   // reach the database; it is probed again (`watchReprobe`) until it answers.
   const unconfirmed = useRef<User | null>(null);
+  // Set once an anonymous sign-in failed or was refused, so a page whose
+  // rules still want the allowlist shows sign-in instead of trying forever.
+  const anonymousRefused = useRef(false);
 
   const probe = useCallback(async (user: User, gen: number) => {
     try {
@@ -143,19 +155,18 @@ export function useSessionSource(): Session {
       if (gen !== generation.current) return;
       if (errorCode(err) === "permission-denied") {
         // Not one of the two accounts (or an unverified address). Sign out at
-        // once so nothing is attempted under it, and say why on sign-in.
+        // once so nothing is attempted under it, and say why on sign-in. An
+        // anonymous account refused here means the rules still want sign-in.
+        if (user.isAnonymous) anonymousRefused.current = true;
+        const notice: SessionNotice = user.isAnonymous ? null : { kind: "not-allowed", email: user.email ?? "" };
         unconfirmed.current = null;
-        setState({
-          status: "checking",
-          user: toSessionUser(user),
-          notice: { kind: "not-allowed", email: user.email ?? "" },
-        });
+        setState({ status: "checking", user: toSessionUser(user), notice });
         // If the sign-out itself fails, the screen still mustn't wait forever
         // on the skeleton: show sign-in with the notice.
         if (auth)
           await firebaseSignOut(auth).catch(() => {
             if (gen === generation.current)
-              setState({ status: "signed-out", user: null, notice: { kind: "not-allowed", email: user.email ?? "" } });
+              setState({ status: "signed-out", user: null, notice });
           });
         return;
       }
@@ -183,6 +194,16 @@ export function useSessionSource(): Session {
       generation.current += 1;
       unconfirmed.current = null;
       if (!user) {
+        if (OPEN_ACCESS && !anonymousRefused.current) {
+          // Stays on the skeleton until the anonymous account arrives here.
+          setState({ status: "loading", user: null, notice: null });
+          signInAnonymously(auth!).catch((err) => {
+            console.warn("Couldn't open the app without signing in:", err);
+            anonymousRefused.current = true;
+            setState({ status: "signed-out", user: null, notice: null });
+          });
+          return;
+        }
         // Keep the notice: it explains this sign-out on the sign-in screen.
         setState((prev) => ({ status: "signed-out", user: null, notice: prev.notice }));
         return;

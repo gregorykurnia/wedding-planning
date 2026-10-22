@@ -79,6 +79,9 @@ export const EMULATOR_APP_ENV: Record<string, string> = {
   NEXT_DIST_DIR: ".next-e2e",
   // Shows the new UI's dev-only gallery pages.
   NEXT_PUBLIC_VEIL_GALLERY: "1",
+  // Keeps the sign-in screen (OPEN_ACCESS in src/lib/data/session.ts), so the
+  // specs still sign in as the test accounts and cover sign-in itself.
+  NEXT_PUBLIC_REQUIRE_SIGN_IN: "1",
   // Turns on `?fault=` (src/lib/data/dev-faults.ts).
   NEXT_PUBLIC_VEIL_DEV: "1",
   // Fake Cloudinary config so the upload controls are enabled. The specs

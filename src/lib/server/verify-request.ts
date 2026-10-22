@@ -1,4 +1,3 @@
-import { ALLOWED_EMAILS } from "./allowlist";
 import { adminAuth } from "./firebase-admin";
 import { RequestError } from "./request-error";
 
@@ -9,8 +8,9 @@ export interface Caller {
 
 /**
  * Checks `Authorization: Bearer <Firebase ID token>`: a valid, unrevoked
- * token for a verified address on the allowlist, the same test as
- * `isAllowed()` in `firestore.rules`. Throws a 401 or 403 RequestError.
+ * token for any account, anonymous ones included, the same test as
+ * `isAllowed()` in `firestore.rules` (open access, for now; the allowlist in
+ * `./allowlist` was the test before). Throws a 401 RequestError.
  */
 export async function verifyRequest(request: Request): Promise<Caller> {
   const header = request.headers.get("authorization") ?? "";
@@ -23,8 +23,5 @@ export async function verifyRequest(request: Request): Promise<Caller> {
     if (err instanceof RequestError) throw err;
     throw new RequestError(401, "signed-out", "The sign-in token isn't valid");
   }
-  if (!token.email || token.email_verified !== true || !ALLOWED_EMAILS.includes(token.email)) {
-    throw new RequestError(403, "not-allowed", "This account can't use the app");
-  }
-  return { uid: token.uid, email: token.email };
+  return { uid: token.uid, email: token.email ?? "" };
 }
