@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { logActivity } from "@/lib/data/activity";
 import { recordMember } from "@/lib/data/members";
 import { createNumberedGuest } from "@/lib/collections/guest-meta";
@@ -97,6 +97,14 @@ describe("guest numbers", () => {
     expect(again).toEqual({ id: "g1", number: 1 });
     expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria Lestari", country: "Indonesia", number: 1 });
     expect((await getDoc(doc(gregory.db, "guestMeta", "counter"))).data()?.next).toBe(2);
+  });
+
+  it("a retried add writes only what changed since the first try, keeping the partner's edit (Phase 5 review S20)", async () => {
+    const first = { name: "Maria", country: "", allergies: "" };
+    await createNumberedGuest(first, { db: gregory.db, id: "g1" });
+    await setDoc(doc(bella.db, "guests", "g1"), { allergies: "Peanuts" }, { merge: true });
+    await createNumberedGuest({ name: "Maria", country: "Indonesia", allergies: "" }, { db: gregory.db, id: "g1", first });
+    expect((await getDoc(doc(gregory.db, "guests", "g1"))).data()).toMatchObject({ name: "Maria", country: "Indonesia", allergies: "Peanuts", number: 1 });
   });
 });
 

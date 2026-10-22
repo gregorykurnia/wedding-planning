@@ -1,5 +1,5 @@
 import { plural, rp } from "@/lib/model/format";
-import type { FunderRow } from "@/lib/model/money";
+import { whatIfParts, type FunderRow, type WhatIfRecord } from "@/lib/model/money";
 
 /** The share of the price paid, 0 to 100, for the funder's thread. */
 export function paidShare(row: Pick<FunderRow, "price" | "paid">): number {
@@ -30,9 +30,18 @@ export function restText(row: Pick<FunderRow, "left">): { text: string; over: bo
  * The remove confirm's body: what moves, what stays, and the undo window (guide
  * §5.9). `whatIf` counts the what-if items they would pay for, which move to Not
  * assigned too; the guide's sentence names only costs, so that clause is
- * provisional (G36/N36).
+ * provisional (G36/N36). `null` means the what-if items haven't been read (still
+ * loading, or the read failed): the sentence says "any" instead of a count that
+ * could be wrong (Phase 5 review S2).
  */
-export function removeBody(row: Pick<FunderRow, "count" | "price">, whatIf = 0): string {
+export function removeBody(row: Pick<FunderRow, "count" | "price">, whatIf: number | null = 0): string {
+  if (whatIf === null) {
+    const any = "any what-if items they pay";
+    if (row.count) {
+      return `${plural(row.count, "cost")} (${rp(row.price)}) will move to Not assigned, and so will ${any}. Payments already recorded stay as they are. You can undo for a few seconds.`;
+    }
+    return `No costs are assigned to them; ${any} will move to Not assigned. You can undo for a few seconds.`;
+  }
   const items = plural(whatIf, "what-if item");
   if (row.count) {
     const too = whatIf ? `, and so will ${items}` : "";
@@ -62,3 +71,9 @@ export const ADD_PLACEHOLDER = "For example, Tante Lily";
  * (`booking-new.html?state=failed`) without its reason.
  */
 export const ADD_FAILED = "The funder wasn’t added. What you typed is still here.";
+
+/** How many what-if items the funder pays a part of, or null while they can't be counted. */
+export function whatIfCount(items: readonly WhatIfRecord[] | null | undefined, funderId: string): number | null {
+  if (!items) return null;
+  return items.filter((w) => whatIfParts(w).some((p) => p.funder === funderId)).length;
+}

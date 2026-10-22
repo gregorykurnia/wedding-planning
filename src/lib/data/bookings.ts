@@ -319,12 +319,15 @@ export interface PaymentInput {
  * left is allowed and shows as overpaid. One payment per `paymentId`: Try again
  * after a failure that landed after all writes over it, so an amount changed
  * before trying again is the one recorded, and the toast and Undo agree with
- * it. Undo takes that payment back out.
+ * it. Each try carries when it started (`triedAt`), and only a newer try
+ * replaces what's stored: a first try still retrying when Try again lands
+ * can't put its old amount back over it (Phase 5 review S1). Undo takes that
+ * payment back out.
  */
 export async function recordPayment(
   target: RecordTarget & { partId?: string | null },
   payment: PaymentInput,
-  opts: WriteOptions & { paymentId?: string } = {},
+  opts: WriteOptions & { paymentId?: string; triedAt?: number } = {},
 ): Promise<Undoable & { paymentId: string }> {
   const amount = Math.round(payment.amount);
   if (!Number.isFinite(amount) || amount <= 0) throw new WriteError("failed", "Enter the amount you paid");
@@ -335,6 +338,7 @@ export async function recordPayment(
     paidOn: payment.paidOn,
     funder: payment.paidBy,
     receiptFileId: payment.receiptFileId ?? null,
+    triedAt: opts.triedAt ?? Date.now(),
   };
   const col = collectionOf(target.kind);
   let name = "";
@@ -349,7 +353,7 @@ export async function recordPayment(
     const recorded = (holder: Record<string, unknown>) => {
       const history = withElementIds<Element>(holder.payments);
       const earlier = history.find((p) => p.id === paymentId);
-      if (earlier && sameValue(earlier, entry)) return null;
+      if (earlier && (sameValue(earlier, entry) || num(earlier.triedAt) > entry.triedAt)) return null;
       return {
         budgetSpent: num(holder.budgetSpent) - num(earlier?.amount) + amount,
         payments: earlier ? history.map((p) => (p.id === paymentId ? entry : p)) : [...history, entry],

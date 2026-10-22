@@ -11,13 +11,10 @@ import {
   query,
   runTransaction,
   serverTimestamp,
-  setDoc,
   Timestamp,
   writeBatch,
 } from "firebase/firestore";
 import {
-  deleteDocument,
-  setDocument,
   timestampToMillis,
   updateDocument,
   useCollection,
@@ -239,8 +236,16 @@ export async function renumberMasterList(target?: Firestore, afterListing?: () =
         });
         await batch.commit();
       }
-      await setDoc(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
-      return new Map(refs.map((ref, index) => [ref.id, start + index]));
+      // The batches can't check the version, so the last write does: a row added or removed while
+      // they ran makes it list and renumber again (Phase 5 review S21).
+      const settled = await runTransaction(database, async (transaction) => {
+        const meta = await transaction.get(metaRef);
+        if (versionOf(meta.data()) !== version) return false;
+        transaction.set(metaRef, { nextSortOrder: start + refs.length, updatedAt: serverTimestamp() }, { merge: true });
+        return true;
+      });
+      if (settled) return new Map(refs.map((ref, index) => [ref.id, start + index]));
+      continue;
     }
 
     const placed = await runTransaction(database, async (transaction) => {
@@ -473,12 +478,25 @@ export async function moveMasterListItem(
   });
 }
 
-export function deleteMasterListItem(id: string) {
-  return deleteDocument(COLLECTION, id);
+function requireListDb(): Firestore {
+  if (!isFirebaseConfigured || !db) throw new Error("Firebase is not configured.");
+  return db;
 }
 
-export function restoreMasterListItem(item: MasterListItem) {
-  return setDocument(COLLECTION, item.id, {
+/** Removes a row and bumps the list's version in the same write, so a renumber running meanwhile lists again (Phase 5 review S21). */
+export async function deleteMasterListItem(id: string) {
+  const database = requireListDb();
+  const batch = writeBatch(database);
+  batch.delete(doc(database, COLLECTION, id));
+  batch.set(doc(database, META_COLLECTION, META_ID), { ...LIST_CHANGED, updatedAt: serverTimestamp() }, { merge: true });
+  await batch.commit();
+}
+
+/** Puts a removed row back, bumping the list's version like a removal does. */
+export async function restoreMasterListItem(item: MasterListItem) {
+  const database = requireListDb();
+  const batch = writeBatch(database);
+  batch.set(doc(database, COLLECTION, item.id), {
     id: item.id,
     item: item.item,
     vendor: item.vendor,
@@ -488,5 +506,8 @@ export function restoreMasterListItem(item: MasterListItem) {
     next: item.next,
     sortOrder: item.sortOrder,
     createdAt: Timestamp.fromMillis(item.createdAt ?? Date.now()),
+    updatedAt: serverTimestamp(),
   });
+  batch.set(doc(database, META_COLLECTION, META_ID), { ...LIST_CHANGED, updatedAt: serverTimestamp() }, { merge: true });
+  await batch.commit();
 }

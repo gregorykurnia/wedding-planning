@@ -234,7 +234,7 @@ describe("split, parts, payments and removing a booking", () => {
     );
     let data = await read("vendors", "v1");
     expect(data?.budgetSpent).toBe(50_000_000);
-    expect(data?.payments).toEqual([{ id: "pay1", amount: 20_000_000, paidOn: "2026-10-14", funder: "Gregory", receiptFileId: "f1" }]);
+    expect(data?.payments).toEqual([{ id: "pay1", amount: 20_000_000, paidOn: "2026-10-14", funder: "Gregory", receiptFileId: "f1", triedAt: expect.any(Number) }]);
     await single.undo();
     data = await read("vendors", "v1");
     expect(data?.budgetSpent).toBe(30_000_000);

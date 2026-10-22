@@ -394,6 +394,20 @@ test("our own order moves by Alt and the arrows, by the row menu, and by draggin
   expect((await read("it-gown"))?.sortOrder).toBe(0.5);
 });
 
+// Phase 5 review S21 (P4-S21): each press starts from where the one before left the row, saved or not yet.
+test("three quick Alt+↓ presses move a row three places", async ({ browser }) => {
+  const page = await openItems(browser);
+  const handle = row(page, "it-venue").getByRole("button", { name: /^Move Reception venue/ });
+  await handle.focus();
+  await page.keyboard.press("Alt+ArrowDown");
+  await page.keyboard.press("Alt+ArrowDown");
+  await page.keyboard.press("Alt+ArrowDown");
+  const moved = ["it-cake", "it-gown", "it-makeup", "it-venue", "it-suits", "it-pillow", "it-photo"];
+  await expect.poll(async () => (await stored()).map((d) => d.id)).toEqual(moved);
+  await expectRows(page, moved);
+  await expect(handle).toBeFocused();
+});
+
 test("Add an item below puts a blank row beneath, copying the events and people, with the cursor in its name", async ({ browser }) => {
   const page = await openItems(browser);
 

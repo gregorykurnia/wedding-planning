@@ -178,6 +178,20 @@ describe("master list order", () => {
     expect(meta.nextSortOrder).toBeGreaterThan(after.at(-1)!.sortOrder);
   });
 
+  // Phase 5 review S21: a renumber running meanwhile sees the list changed and lists again.
+  it("bumps the list's version when a row is deleted and when it is restored", async () => {
+    await master.ensureMasterListInitialized();
+    const version = async () => (await data("masterListMeta", "initialization")).version as number;
+    const v0 = await version();
+    const [first] = await rows();
+    const stored = (await getDocs(query(collection(db!, "masterListItems"), orderBy("sortOrder", "asc")))).docs[0];
+    await master.deleteMasterListItem(first.id);
+    expect(await version()).toBe(v0 + 1);
+    await master.restoreMasterListItem({ id: first.id, item: stored.data().item, vendor: "", confirmed: false, types: [], persons: [], next: false, sortOrder: first.sortOrder, createdAt: null, updatedAt: null });
+    expect(await version()).toBe(v0 + 2);
+    expect((await rows())[0].id).toBe(first.id);
+  });
+
   it("renumbers to whole numbers in the current order", async () => {
     await master.ensureMasterListInitialized();
     const [first, second, third] = await rows();

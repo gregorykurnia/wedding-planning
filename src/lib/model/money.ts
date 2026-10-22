@@ -270,7 +270,9 @@ export const collapseParts = (parts: Part[]) => collapse(parts, { keep: (p) => l
  * The parts a single booking becomes (guide §6.9). What's paid becomes a
  * "Deposit", paid in full; the rest becomes a "Balance" with the old due date
  * and next step. If nothing is paid, it becomes one "First payment". Price and
- * paid are kept exactly, so an overpaid booking stays overpaid (on its deposit).
+ * paid are kept exactly. The deposit never reads more than the price: what was
+ * paid over it goes on a Rp 0 Balance, which reads overpaid (prototype
+ * `booking.html`, Phase 5 review S4).
  */
 export function splitPlan(b: Booking, makeId: () => string): Part[] {
   const { price, paid, funder, due, step } = b;
@@ -278,9 +280,9 @@ export function splitPlan(b: Booking, makeId: () => string): Part[] {
     return [{ id: makeId(), name: "First payment", price, paid, funder, due, step }];
   }
   const deposit = Math.min(paid, price);
-  const parts: Part[] = [{ id: makeId(), name: "Deposit", price: deposit, paid, funder, due: null, step: "" }];
-  if (price - deposit > 0) {
-    parts.push({ id: makeId(), name: "Balance", price: price - deposit, paid: 0, funder, due, step });
+  const parts: Part[] = [{ id: makeId(), name: "Deposit", price: deposit, paid: deposit, funder, due: null, step: "" }];
+  if (price - deposit > 0 || paid > deposit) {
+    parts.push({ id: makeId(), name: "Balance", price: price - deposit, paid: paid - deposit, funder, due, step });
   }
   return parts;
 }

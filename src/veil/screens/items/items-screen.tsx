@@ -31,6 +31,7 @@ import {
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import { ITEM_ORDERS, orderItems, ownOrder, type ItemOrderKey } from "@/lib/model/order";
 import { inOrder, moveId, withRest } from "@/lib/model/row-moves";
+import { Tries } from "@/lib/model/tries";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Chip } from "@/veil/parts/chips/chip";
@@ -152,6 +153,7 @@ function Items({ items }: { items: ItemRecord[] }) {
   const [failures, setFailures] = useState<ReadonlyMap<string, Failure>>(new Map());
   const [held, setHeld] = useState<ReadonlyMap<string, Partial<ItemRecord>>>(new Map());
   const [notices, setNotices] = useState<ReadonlyMap<string, Notice>>(new Map());
+  const tries = useRef(new Tries());
 
   // The first time the tracker opens it fills itself in once (T10): asked when the screen opens on an
   // empty list, and not again if the list is emptied while it is open.
@@ -244,18 +246,22 @@ function Items({ items }: { items: ItemRecord[] }) {
 
   /**
    * Runs a write for a row. A tap's choice or typed text (`keep`) shows at once and is let go when the
-   * write lands; if it doesn't, it stays shown with the row's own line and Try again.
+   * write lands; if it doesn't, it stays shown with the row's own line and Try again. Only the field's
+   * newest try lets it go: an earlier one landing leaves a later one's text held while it saves.
    */
   function attempt(item: Pick<ItemRecord, "id">, field: ItemField, write: () => Promise<unknown>, keep?: Partial<ItemRecord>) {
     // Only this field's failure and held choice are let go when it lands; another field's stay.
     const key = keyOf(item.id, field);
+    const tap = tries.current.start(key);
     if (keep) setHeld((h) => new Map(h).set(key, { ...h.get(key), ...keep }));
     const run = async () => {
       try {
         await write();
+        if (!tries.current.settle(key, tap)) return;
         setFailures((map) => without(map, key));
         setHeld((h) => without(h, key));
       } catch {
+        if (!tries.current.newest(key, tap)) return;
         setFailures((map) => new Map(map).set(key, { id: item.id, field, retry: () => void run() }));
       }
     };

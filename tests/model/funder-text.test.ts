@@ -4,6 +4,7 @@ import {
   paidShare,
   removeBody,
   removeTitle,
+  whatIfCount,
   restText,
   threadLabel,
   totalsNote,
@@ -48,6 +49,20 @@ describe("Who pays: the words", () => {
       "3 costs (Rp 30.000.000) will move to Not assigned, and so will 2 what-if items. Payments already recorded stay as they are. You can undo for a few seconds.",
     );
     expect(removeBody({ count: 0, price: 0 }, 1)).toBe("1 what-if item will move to Not assigned. You can undo for a few seconds.");
+  });
+
+  // Phase 5 review S2: while the what-if read loads or has failed, it says "any", not "nothing".
+  it("doesn't count what-if items it hasn't read", () => {
+    expect(whatIfCount(null, "f1")).toBeNull();
+    expect(whatIfCount(undefined, "f1")).toBeNull();
+    expect(whatIfCount([], "f1")).toBe(0);
+    expect(whatIfCount([{ funder: "f1" }, { funder: "f2" }] as never, "f1")).toBe(1);
+    expect(removeBody({ count: 3, price: 30_000_000 }, null)).toBe(
+      "3 costs (Rp 30.000.000) will move to Not assigned, and so will any what-if items they pay. Payments already recorded stay as they are. You can undo for a few seconds.",
+    );
+    expect(removeBody({ count: 0, price: 0 }, null)).toBe(
+      "No costs are assigned to them; any what-if items they pay will move to Not assigned. You can undo for a few seconds.",
+    );
   });
 
   it("writes the closing totals with a true minus when the budget is over", () => {

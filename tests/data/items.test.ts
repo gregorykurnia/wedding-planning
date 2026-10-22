@@ -147,6 +147,20 @@ describe("adding items", () => {
     expect(await read(one)).toMatchObject({ item: "Bride's mother's makeup", types: ["Reception"], persons: ["Bride Mom"], confirmed: false, next: false, createdBy: gregory.uid });
   });
 
+  // Phase 5 review S18: the screen shows a move before it lands, so its order isn't the stored one.
+  it("adds below a row by stored position while a move is still showing, so no two rows share a place", async () => {
+    await seed("a", 0);
+    await seed("b", 1);
+    await seed("c", 2);
+    // c is shown moved up below a; its position is still 2.
+    const shown = [{ id: "a", sortOrder: 0 }, { id: "c", sortOrder: 2 }, { id: "b", sortOrder: 1 }];
+    const [id] = newItemIds(1, g());
+    await addItems([{ id, item: "Veil", types: [], persons: [] }], "a", shown, g());
+    const positions = (await placed()).map((r) => r.sortOrder);
+    expect(new Set(positions).size).toBe(4);
+    expect(await order()).toEqual(["a", id, "b", "c"]);
+  });
+
   it("adds at the end, after the old screen's next position", async () => {
     await seed("a", 0);
     await setDoc(doc(gregory.db, "masterListMeta", "initialization"), { initialized: true, nextSortOrder: 10 });
@@ -316,6 +330,30 @@ describe("ordering under load (Phase 1 review S5, Phase 4 review S21)", () => {
     const next = [ids[0], ids[total - 1], ...ids.slice(1, total - 1)];
     await moveItem(before, next, ids[total - 1], g());
     expect(await order()).toEqual(next);
+  });
+});
+
+describe("ordering, the rest (Phase 5 review S21)", () => {
+  it("above 490 items, a renumber lists again when a row is added while its batches run, so no two rows share a place", async () => {
+    const total = 495;
+    for (let from = 0; from < total; from += 400) {
+      const batch = writeBatch(gregory.db);
+      for (let i = from; i < Math.min(total, from + 400); i++) {
+        batch.set(doc(gregory.db, "masterListItems", `i${String(i).padStart(3, "0")}`), { id: `i${i}`, item: "", vendor: "", confirmed: false, types: [], persons: [], next: false, sortOrder: i });
+      }
+      await batch.commit();
+    }
+    let added = false;
+    await renumberMasterList(gregory.db, async () => {
+      if (added) return;
+      added = true;
+      await addItems([{ id: "late", item: "Late", types: [], persons: [] }], null, await placed(), b());
+    });
+    const positions = (await placed()).map((r) => r.sortOrder);
+    expect(positions).toHaveLength(total + 1);
+    expect(new Set(positions).size).toBe(total + 1);
+    const next = (await getDoc(doc(gregory.db, "masterListMeta", "initialization"))).data()?.nextSortOrder;
+    expect(next).toBeGreaterThan(Math.max(...positions));
   });
 });
 

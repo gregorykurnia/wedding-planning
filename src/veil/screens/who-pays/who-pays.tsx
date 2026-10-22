@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { addFunderWithUndo, removeFunder, renameFunderWithUndo } from "@/lib/data/funders";
 import { useFunderTotals, type FunderTotals } from "@/lib/data/use-funders";
 import { useWhatIf } from "@/lib/data/use-what-if";
-import { budget, byFunder, whatIfParts } from "@/lib/model/money";
+import { budget, byFunder } from "@/lib/model/money";
 import { Btn } from "@/veil/parts/actions/btn";
 import { Hero } from "@/veil/parts/hero/hero";
 import { BackLink } from "@/veil/shell/back-link";
@@ -14,7 +14,7 @@ import { ScreenState } from "@/veil/shell/screen-state";
 import { useToast } from "@/veil/shell/toasts";
 import { AddFunderRow } from "./add-funder-row";
 import { FunderItem } from "./funder-item";
-import { NOTHING_BOOKED, removeBody, removeTitle, totalsNote } from "./funder-text";
+import { NOTHING_BOOKED, removeBody, removeTitle, totalsNote, whatIfCount } from "./funder-text";
 import styles from "./who-pays.module.css";
 
 /** What the screen shows in demonstration mode: no funders, nothing booked, only Not assigned. */
@@ -69,7 +69,7 @@ function Funders({ totals, demo }: { totals: FunderTotals; demo: boolean }) {
     const removed: { undo?: () => Promise<void> } = {};
     const done = await confirm({
       title: removeTitle(row.name),
-      body: removeBody(row, (whatIf.data ?? []).filter((w) => whatIfParts(w).some((p) => p.funder === id)).length),
+      body: removeBody(row, whatIfCount(whatIf.data, id)),
       action: "Remove funder",
       danger: true,
       run: async () => {

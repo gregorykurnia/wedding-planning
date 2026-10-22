@@ -120,6 +120,21 @@ describe("Try again with a changed amount (P4-S2)", () => {
     expect(data.payments).toEqual([]);
   });
 
+  // Phase 5 review S1: the first try was still retrying when Try again committed.
+  it("a late first try doesn't put its amount back over the one Try again recorded", async () => {
+    await setDoc(doc(gregory.db, "vendors", "v1"), vendor({ budgetSpent: 10_000_000 }));
+    const target = { kind: "vendor" as const, id: "v1" };
+    const again = await recordPayment(target, { amount: 7_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 2000 });
+    await recordPayment(target, { amount: 5_000_000, paidOn: null, paidBy: "CK" }, { ...g(), paymentId: "pay1", triedAt: 1000 });
+    let data = await read("vendors", "v1");
+    expect(data.budgetSpent).toBe(17_000_000);
+    expect(data.payments).toEqual([expect.objectContaining({ id: "pay1", amount: 7_000_000 })]);
+
+    await again.undo();
+    data = await read("vendors", "v1");
+    expect(data.budgetSpent).toBe(10_000_000);
+  });
+
   // Phase 5 review B2: the sheet re-picks the part left to pay (P4-S3), which isn't where the payment went.
   it("doesn't record it twice when the partner split the booking before Try again", async () => {
     await setDoc(doc(gregory.db, "vendors", "v1"), vendor());

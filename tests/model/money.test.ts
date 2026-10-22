@@ -442,6 +442,15 @@ describe("splitPlan (guide §6.9)", () => {
     expect(ps[0]).toMatchObject({ name: "First payment", price: 100, paid: 0, due: "2026-11-01" });
   });
 
+  // Phase 5 review S4: the deposit stays at the price; the extra reads overpaid on a Rp 0 Balance.
+  it("caps the Deposit at the price and puts what was paid over it on a Rp 0 Balance", () => {
+    const b = single({ totalPrice: 100, budgetSpent: 130, nextTargetDate: "2026-11-01", nextAction: "Ask for a refund" });
+    expect(splitPlan(b, id)).toEqual([
+      expect.objectContaining({ name: "Deposit", price: 100, paid: 100 }),
+      expect.objectContaining({ name: "Balance", price: 0, paid: 30, due: "2026-11-01", step: "Ask for a refund" }),
+    ]);
+  });
+
   it("keeps the totals exactly, so an overpaid booking stays overpaid", () => {
     for (const [price, paid] of [[100, 30], [100, 100], [100, 130], [0, 0], [100, 0]]) {
       const b = single({ totalPrice: price, budgetSpent: paid });

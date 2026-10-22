@@ -1,6 +1,7 @@
 "use client";
 
 import { doc, type Firestore } from "firebase/firestore";
+import { sameValue } from "@/lib/data/undo";
 import { stamp, transact } from "@/lib/data/write";
 import { newId } from "@/lib/data/write";
 
@@ -12,7 +13,7 @@ const COUNTER = "counter";
 
 export async function createNumberedGuest(
   data: Record<string, unknown>,
-  opts: { db?: Firestore; id?: string } = {},
+  opts: { db?: Firestore; id?: string; first?: Record<string, unknown> } = {},
 ): Promise<{ id: string; number: number }> {
   const id = opts.id ?? newId("guests", opts);
   return transact(async (tx, database) => {
@@ -20,9 +21,13 @@ export async function createNumberedGuest(
     const counterRef = doc(database, META, COUNTER);
     const [existing, counter] = await Promise.all([tx.get(guestRef), tx.get(counterRef)]);
     // A retry after a timed-out attempt that did land keeps its number and writes what the form says
-    // now, so a change made before Try again isn't dropped (Phase 4 review S22).
+    // now, so a change made before Try again isn't dropped (Phase 4 review S22). Given the first try's
+    // data (`first`), it writes only what changed since, so the partner's edit to another field in
+    // between stays (Phase 5 review S20).
     if (existing.exists()) {
-      tx.update(guestRef, { ...data, ...stamp(database) });
+      const first = opts.first;
+      const changed = first ? Object.fromEntries(Object.entries(data).filter(([k, v]) => !sameValue(v, first[k]))) : data;
+      if (Object.keys(changed).length > 0) tx.update(guestRef, { ...changed, ...stamp(database) });
       return { id, number: existing.data().number as number };
     }
     const next = typeof counter.data()?.next === "number" ? (counter.data()!.next as number) : 1;

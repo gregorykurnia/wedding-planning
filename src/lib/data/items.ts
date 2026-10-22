@@ -96,13 +96,16 @@ const renumbered = (ordered: readonly Placed[], positions: ReadonlyMap<string, n
 
 /**
  * Adds items just below `afterId`, or at the end of the list when it is null,
- * in one transaction. `ordered` is the list in our own order as the screen
- * shows it. When the gap below the row has run out the list is renumbered first
+ * in one transaction. `ordered` is the list in our own order; it is sorted by
+ * stored position first, since the screen shows a pending move before it has
+ * landed and its neighbours there aren't the stored ones (Phase 5 review S18).
+ * When the gap below the row has run out the list is renumbered first
  * (inventory-notes §5 #27). The ids are the caller's, so a retry writes the
  * same items.
  */
-export async function addItems(rows: readonly NewItem[], afterId: string | null, ordered: readonly Placed[], opts: WriteOptions = {}, again = false): Promise<void> {
+export async function addItems(rows: readonly NewItem[], afterId: string | null, shown: readonly Placed[], opts: WriteOptions = {}, again = false): Promise<void> {
   if (rows.length < 1 || rows.length > 400) throw new Error("Add between 1 and 400 items.");
+  const ordered = [...shown].sort((a, z) => a.sortOrder - z.sortOrder);
   const anchorAt = afterId === null ? ordered.length - 1 : rankOf(ordered, afterId);
   if (afterId !== null && anchorAt < 0) throw new WriteError("missing", `${COLLECTION}/${afterId} is gone`);
   const before = anchorAt >= 0 ? ordered[anchorAt].sortOrder : null;

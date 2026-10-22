@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { addGuest, newGuestId, removeGuest, setGuestField, setGuestRsvp, useGuests } from "@/lib/data/guests";
+import { addGuest, newGuestId, removeGuest, setGuestField, setGuestRsvp, useGuests, type NewGuest } from "@/lib/data/guests";
 import { useAutosaveField } from "@/lib/data/use-autosave-field";
 import { type GuestRecord } from "@/lib/model/guests";
 import { GUEST_EVENTS, type GuestEvent, type Rsvp } from "@/lib/model/labels";
@@ -75,6 +75,8 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
   // The number just issued: the counter's own update can arrive a moment after the write.
   const [issued, setIssued] = useState(0);
   const id = useRef<string | null>(null);
+  // What the first try for this guest sent: Try again writes only what changed since.
+  const firstTry = useRef<NewGuest | null>(null);
   const nameInput = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof typeof FRESH>(key: K, value: (typeof FRESH)[K]) => setForm((now) => ({ ...now, [key]: value }));
@@ -91,19 +93,22 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
     setBusy(again ? "another" : "add");
     id.current ??= newGuestId();
     const guestId = id.current;
+    const guest: NewGuest = {
+      id: guestId,
+      name: form.name,
+      connection: form.connection.trim(),
+      country: form.country.trim(),
+      eventType: form.eventType,
+      inviteSent: form.inviteSent,
+      rsvpStatus: form.rsvpStatus,
+      plusOnes: form.plusOnes,
+      allergies: form.allergies.trim(),
+    };
+    const first = firstTry.current;
+    firstTry.current ??= guest;
     let added: { id: string; number: number };
     try {
-      added = await addGuest({
-        id: guestId,
-        name: form.name,
-        connection: form.connection.trim(),
-        country: form.country.trim(),
-        eventType: form.eventType,
-        inviteSent: form.inviteSent,
-        rsvpStatus: form.rsvpStatus,
-        plusOnes: form.plusOnes,
-        allergies: form.allergies.trim(),
-      });
+      added = await addGuest(guest, first ? { first } : {});
     } catch {
       setBusy(null);
       setFailed(true);
@@ -119,6 +124,7 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
       return;
     }
     id.current = null;
+    firstTry.current = null;
     setForm(FRESH);
     setProblem(null);
     sheet.focusFirstField();

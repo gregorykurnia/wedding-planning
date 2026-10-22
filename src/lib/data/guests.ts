@@ -60,14 +60,21 @@ export interface NewGuest {
   allergies: string;
 }
 
+function storedGuest(guest: NewGuest) {
+  const { id, ...fields } = guest;
+  void id;
+  return { ...fields, name: fields.name.trim() };
+}
+
 /**
  * Adds a guest and issues their number in one transaction (G6): two people adding at once never
  * share a number, a removed guest's number isn't reused, and Try again after a timed-out attempt
- * that did land keeps what was written.
+ * that did land keeps what was written. Try again passes the first try (`first`), so only what was
+ * changed in the form since is written over a guest that landed (Phase 5 review S20).
  */
-export function addGuest(guest: NewGuest, opts: WriteOptions = {}): Promise<{ id: string; number: number }> {
-  const { id, ...fields } = guest;
-  return createNumberedGuest({ ...fields, name: guest.name.trim() }, { ...opts, id });
+export function addGuest(guest: NewGuest, opts: WriteOptions & { first?: NewGuest } = {}): Promise<{ id: string; number: number }> {
+  const { first, ...rest } = opts;
+  return createNumberedGuest(storedGuest(guest), { ...rest, id: guest.id, ...(first ? { first: storedGuest(first) } : {}) });
 }
 
 /** The fields the guest sheet saves as you go (guide §5.23). */
