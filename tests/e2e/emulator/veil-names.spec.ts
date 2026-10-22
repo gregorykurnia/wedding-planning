@@ -28,11 +28,11 @@ test.afterAll(async () => {
 test("the top bar shows the names from settings, and the menu says who is signed in", async ({ page }) => {
   await writeNames("Greg", "Bella");
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 
   await expect(page.getByRole("link", { name: "Greg & Bella" })).toBeVisible();
   await page.getByRole("button", { name: "Menu" }).click();

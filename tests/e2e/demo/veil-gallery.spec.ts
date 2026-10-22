@@ -7,9 +7,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 const LATER_TASKS = Array.from({ length: 12 }, (_, index) => `3.${index + 1}`);
 
 async function openGallery(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.getByRole("heading", { name: "Component gallery" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -35,10 +35,10 @@ test("every section is built, so none says it is not built yet", async ({ page }
 test("links to the Phase 2 demos", async ({ page }) => {
   await openGallery(page);
   for (const [name, href] of [
-    ["Shell pieces", "/new/gallery/nav"],
-    ["Screen states, messages and banners", "/new/gallery/states"],
-    ["Sheets, confirm and toasts", "/new/gallery/shell"],
-    ["Partner changes and presence", "/new/gallery/partner"],
+    ["Shell pieces", "/gallery/nav"],
+    ["Screen states, messages and banners", "/gallery/states"],
+    ["Sheets, confirm and toasts", "/gallery/shell"],
+    ["Partner changes and presence", "/gallery/partner"],
   ]) {
     await expect(page.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
   }

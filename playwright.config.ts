@@ -90,14 +90,14 @@ export default defineConfig({
     },
     {
       command: `npx next ${NEXT} --port ${EMULATOR_APP_PORT}`,
-      url: `http://localhost:${EMULATOR_APP_PORT}/login`,
+      url: `http://localhost:${EMULATOR_APP_PORT}/sign-in`,
       env: EMULATOR_APP_ENV,
       reuseExistingServer: REUSE,
       timeout: 120_000,
     }] : []),
     ...(needsDemo ? [{
       command: `npx next ${NEXT} --port ${DEMO_APP_PORT}`,
-      url: `http://localhost:${DEMO_APP_PORT}/login`,
+      url: `http://localhost:${DEMO_APP_PORT}/sign-in`,
       env: DEMO_APP_ENV,
       reuseExistingServer: REUSE,
       timeout: 120_000,

@@ -1,10 +1,9 @@
 /**
  * Every internal link and redirect in the old UI goes through legacyHref().
- * Today the old UI is served from the site root, so it returns the path as is.
- * At the switch-over (Task 7.1) LEGACY_BASE becomes "/old" and the old UI moves
- * with it, without touching each link again.
+ * Since the switch-over (Task 7.1) the old UI is the frozen fallback under
+ * `/old`, so `legacyHref("/confirmed")` is `/old/confirmed`.
  */
-export const LEGACY_BASE = "";
+export const LEGACY_BASE = "/old";
 
 export function legacyHref(path: string): string {
   if (!path.startsWith("/")) return path;

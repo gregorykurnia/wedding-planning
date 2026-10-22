@@ -70,12 +70,12 @@ const stub = (page: Page, seen: { size: number }[] = []) =>
 
 async function openGallery(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/gallery");
   await expect(page.getByRole("group", { name: "Files on a record" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByText(/Uploading to: the emulator/)).toBeVisible();
 }

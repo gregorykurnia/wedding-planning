@@ -135,10 +135,10 @@ describe("metaText", () => {
 
 describe("bookingHref", () => {
   it("is the booking's page in the new UI", () => {
-    expect(bookingHref("vendor-1")).toBe("/new/budget/bookings/vendor-1");
+    expect(bookingHref("vendor-1")).toBe("/budget/bookings/vendor-1");
   });
 
   it("encodes the id, so an id with a space still works as an address", () => {
-    expect(bookingHref("venue-a b")).toBe("/new/budget/bookings/venue-a%20b");
+    expect(bookingHref("venue-a b")).toBe("/budget/bookings/venue-a%20b");
   });
 });

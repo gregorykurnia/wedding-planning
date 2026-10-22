@@ -4,7 +4,7 @@ import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.20: the Schedule at /new/schedule and its event sheet, against the
+// Task 4.20: the Schedule at /schedule and its event sheet, against the
 // emulators (guide §5.19, §6.12). Everything is written as the emulator's owner
 // (which skips the rules), with dates counted from today, so the figure, the
 // groups and the reminder choices are the same whenever this runs.
@@ -198,14 +198,14 @@ test.afterEach(async () => {
   await put("settings", "wedding", { yourName: "", partnerName: "", weddingDate: null, startedOn: null });
 });
 
-async function openSchedule(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], viewport?: { width: number; height: number }, path = "/new/schedule") {
+async function openSchedule(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], viewport?: { width: number; height: number }, path = "/schedule") {
   const context = await browser.newContext(viewport ? { viewport } : {});
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Schedule", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
@@ -247,15 +247,15 @@ test("leads with what is late or due today, then the groups, in one line of time
   await expect(call).toContainText("15:30");
   await expect(call).toContainText("Vendor call");
   await expect(call.getByRole("link", { name: "Join the call" })).toHaveAttribute("href", "https://meet.google.com/kbn-arch-call");
-  await expect(call.getByRole("link", { name: "Dapur Lestari Catering" })).toHaveAttribute("href", "/new/vendors/sc-vendor");
+  await expect(call.getByRole("link", { name: "Dapur Lestari Catering" })).toHaveAttribute("href", "/vendors/sc-vendor");
 
   // A payment and a task link to where they live; only the payment has Record payment.
   const payment = row(page, "Dapur Lestari Catering").filter({ hasText: "Payment" });
-  await expect(payment.getByRole("link", { name: "Dapur Lestari Catering" }).first()).toHaveAttribute("href", /\/new\/budget\/bookings\//);
+  await expect(payment.getByRole("link", { name: "Dapur Lestari Catering" }).first()).toHaveAttribute("href", /\/budget\/bookings\//);
   await expect(payment).toContainText("Rp 20.000.000, no funder yet");
   await expect(payment.getByRole("button", { name: "Record payment" })).toBeVisible();
   const task = row(page, "Choose the rings");
-  await expect(task.getByRole("link", { name: "Choose the rings" })).toHaveAttribute("href", "/new/schedule/tasks?open=sc-task");
+  await expect(task.getByRole("link", { name: "Choose the rings" })).toHaveAttribute("href", "/schedule/tasks?open=sc-task");
   await expect(task.getByRole("button", { name: "Record payment" })).toHaveCount(0);
 });
 
@@ -620,15 +620,15 @@ test("Cancel closes the add sheet without adding anything", async ({ browser }) 
 });
 
 test("an address with ?event= opens that event, and ?new=1 the add sheet, and the address is cleared", async ({ browser }) => {
-  const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, "/new/schedule?event=sc-tasting");
+  const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, "/schedule?event=sc-tasting");
   await expect(sheet(page).getByRole("heading", { name: "Tasting at Sendok Emas", level: 2 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL(/\/new\/schedule$/);
+  await expect(page).toHaveURL(/\/schedule$/);
   await sheet(page).getByRole("button", { name: "Done" }).click();
 
-  await page.goto(`/new/schedule?new=1&date=${inDays(6)}`);
+  await page.goto(`/schedule?new=1&date=${inDays(6)}`);
   await expect(sheet(page).getByRole("heading", { name: "Add to the schedule", level: 2 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(sheet(page).getByLabel("Date")).toHaveValue(inDays(6));
-  await expect(page).toHaveURL(/\/new\/schedule$/);
+  await expect(page).toHaveURL(/\/schedule$/);
 });
 
 test("Bella adds an appointment: Greg sees a toast, and the row flashes", async ({ browser }) => {
@@ -765,7 +765,7 @@ test.describe("the month", () => {
   });
 
   test("opens on today, chosen, with its marks and its list, and Month marked in the sub-navigation", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, "/new/schedule/month");
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, "/schedule/month");
     const nav = page.getByRole("navigation", { name: "Agenda, month and tasks" });
     await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("aria-current", "page");
     // Today has the call with Laras and nothing else.
@@ -778,7 +778,7 @@ test.describe("the month", () => {
   });
 
   test("choosing a day lists it, moves the address to it, and each label says what its marks show", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${DRESS}`);
     await expect(dayCell(page, DRESS)).toHaveAttribute("aria-pressed", "true");
     await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, selected, 2 events$/);
     await expect(row(page, "Dress fitting")).toBeVisible();
@@ -793,7 +793,7 @@ test.describe("the month", () => {
   });
 
   test("Earlier and Later move the month and keep the chosen day; Back to today chooses today and clears the address", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${DRESS}`);
     // Exact, because a day's heading ("Monday 10 March 2031") contains the month's name too.
     await expect(page.getByRole("heading", { name: "March 2031", exact: true })).toBeVisible();
     await page.getByRole("button", { name: /^Later:/ }).click();
@@ -810,7 +810,7 @@ test.describe("the month", () => {
   });
 
   test("kind chips and search narrow the marks, completed things count only when asked for, and Everything brings them back", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${DRESS}`);
     await expect(dayCell(page, DRESS)).toHaveAttribute("aria-label", /, 2 events$/);
 
     const chips = page.getByRole("group", { name: "Show" });
@@ -833,7 +833,7 @@ test.describe("the month", () => {
   });
 
   test("an empty day says so, and Add something and the floating button both add to that day", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${EMPTY}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${EMPTY}`);
     await expect(page.getByText("Nothing on this day.")).toBeVisible();
 
     await page.getByRole("button", { name: "Add something" }).click();
@@ -855,12 +855,12 @@ test.describe("the month", () => {
       partnerEmail: TEST_ACCOUNTS[1].email,
       weddingDate: WEDDING,
     });
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${DRESS}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${DRESS}`);
     await expect(dayCell(page, WEDDING)).toHaveAttribute("aria-label", /, the wedding day, nothing$/);
   });
 
   test("an event added elsewhere arrives on the calendar and in the chosen day's list, without a reload", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/new/schedule/month?day=${EMPTY}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], undefined, `/schedule/month?day=${EMPTY}`);
     await expect(page.getByText("Nothing on this day.")).toBeVisible();
     await put("scheduleEvents", "sc-month-live", fixture("Dress shop", "appointment", `${EMPTY}T11:00`, "scheduled"));
     await expect(row(page, "Dress shop")).toBeVisible();
@@ -869,7 +869,7 @@ test.describe("the month", () => {
   });
 
   test("a phone shows the month in one column with no sideways scroll, and each day is a tap target", async ({ browser }) => {
-    const page = await openSchedule(browser, TEST_ACCOUNTS[0], { width: 390, height: 844 }, `/new/schedule/month?day=${DRESS}`);
+    const page = await openSchedule(browser, TEST_ACCOUNTS[0], { width: 390, height: 844 }, `/schedule/month?day=${DRESS}`);
     await expect(dayCell(page, DRESS)).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);

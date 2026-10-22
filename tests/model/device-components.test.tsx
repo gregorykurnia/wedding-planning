@@ -13,9 +13,9 @@ const noop = () => {};
 
 describe("InstallCard", () => {
   it("suggests the install in one sentence, with Show me how and Not now", () => {
-    const html = markup(<InstallCard howHref="/new/settings#install" onNotNow={noop} />);
+    const html = markup(<InstallCard howHref="/settings#install" onNotNow={noop} />);
     expect(html).toContain("Add the planner to your home screen to open it like an app.");
-    expect(html).toMatch(/<a [^>]*href="\/new\/settings#install"[^>]*>Show me how<\/a>/);
+    expect(html).toMatch(/<a [^>]*href="\/settings#install"[^>]*>Show me how<\/a>/);
     expect(html).toMatch(/<button [^>]*>Not now<\/button>/);
   });
 });
@@ -62,9 +62,9 @@ describe("NotificationState", () => {
     expect(settings).toContain("On an iPhone, reminders can only arrive once the planner is on your home screen.");
     expect(settings).toMatch(/<a [^>]*href="#install"[^>]*>Show me how<\/a>/);
     expect(settings).not.toContain("Until then");
-    const sheet = markup(<NotificationState permission="install" where="sheet" installHref="/new/settings#install" />);
+    const sheet = markup(<NotificationState permission="install" where="sheet" installHref="/settings#install" />);
     expect(sheet).toContain("Until then, they arrive only on your other devices.");
-    expect(sheet).toMatch(/<a [^>]*href="\/new\/settings#install"[^>]*>Show me how<\/a>/);
+    expect(sheet).toMatch(/<a [^>]*href="\/settings#install"[^>]*>Show me how<\/a>/);
   });
 
   it("in a browser that can't, says so in rose, that other devices still get them, and which browsers can (N6)", () => {

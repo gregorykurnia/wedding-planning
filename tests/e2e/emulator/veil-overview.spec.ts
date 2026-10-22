@@ -99,11 +99,11 @@ test.afterAll(async () => {
 
 async function openOverview(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 }
 
 const door = (page: Page, name: string) => page.locator("main").getByRole("link", { name: new RegExp(`^${name}`) });
@@ -126,7 +126,7 @@ test("shows the names, the days to go and the time gone, then the next dated thi
   await expect(rows.nth(0)).toContainText("Cake tasting");
   await expect(rows.nth(1)).toContainText("Choose the rings");
   await expect(rows.nth(2)).toContainText("Dapur Lestari Catering");
-  await expect(page.getByRole("link", { name: "See the whole schedule" })).toHaveAttribute("href", "/new/schedule");
+  await expect(page.getByRole("link", { name: "See the whole schedule" })).toHaveAttribute("href", "/schedule");
 
   await expect(door(page, "Budget")).toContainText("Rp 10.000.000 paid of Rp 30.000.000");
   await expect(door(page, "Tasks")).toContainText("1 of 2 tasks done");
@@ -150,7 +150,7 @@ test("an event's title opens the schedule with that event's sheet open", async (
   await page.getByRole("button", { name: "Cake tasting" }).click({ timeout: COMPILE_TIMEOUT });
   // The Schedule (Task 4.20) opens the sheet and clears the address.
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Cake tasting", level: 2 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new/schedule");
+  await expect(page).toHaveURL("/schedule");
 });
 
 test("the day before says tomorrow; the wedding day says Today; after it the count ends", async ({ page }) => {
@@ -225,7 +225,7 @@ test("the install card shows on a phone once Chrome offers to install, goes with
     await page.evaluate(() => window.dispatchEvent(new Event("beforeinstallprompt")));
     await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: 1_000 });
   }).toPass({ timeout: COMPILE_TIMEOUT });
-  await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/new/settings#install");
+  await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/settings#install");
   await page.getByRole("button", { name: "Not now" }).click();
   await expect(page.getByText("Add the planner to your home screen")).toHaveCount(0);
 
@@ -256,7 +256,7 @@ test.describe("on an iPhone", () => {
     await settings({ weddingDate: inDays(157), startedOn: inDays(-73) });
     await openOverview(page);
     await expect(page.getByText("Add the planner to your home screen to open it like an app.")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/new/settings#install");
+    await expect(page.getByRole("link", { name: "Show me how" })).toHaveAttribute("href", "/settings#install");
   });
 });
 

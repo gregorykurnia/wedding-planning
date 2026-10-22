@@ -114,21 +114,21 @@ describe("rowSub and the late flag", () => {
 
 describe("recordHref", () => {
   it("links a payment to its booking and a task to its open row, and an event to nothing", () => {
-    expect(recordHref(payment())).toBe("/new/budget/bookings/vendor-v");
-    expect(recordHref(task())).toBe("/new/schedule/tasks?open=t");
+    expect(recordHref(payment())).toBe("/budget/bookings/vendor-v");
+    expect(recordHref(task())).toBe("/schedule/tasks?open=t");
     expect(recordHref(item())).toBeNull();
   });
 
   it("escapes an id", () => {
-    expect(recordHref(task({ id: "a b/c" }))).toBe("/new/schedule/tasks?open=a%20b%2Fc");
+    expect(recordHref(task({ id: "a b/c" }))).toBe("/schedule/tasks?open=a%20b%2Fc");
   });
 });
 
 describe("AgendaRow", () => {
   it("makes an event title a button and a payment or task title a link", () => {
     expect(row(item())).toMatch(/<button[^>]*>Tasting<\/button>/);
-    expect(row(payment({ title: "Catering" }))).toMatch(/<a[^>]*href="\/new\/budget\/bookings\/vendor-v"[^>]*>Catering<\/a>/);
-    expect(row(task())).toMatch(/<a[^>]*href="\/new\/schedule\/tasks\?open=t"[^>]*>Book flights<\/a>/);
+    expect(row(payment({ title: "Catering" }))).toMatch(/<a[^>]*href="\/budget\/bookings\/vendor-v"[^>]*>Catering<\/a>/);
+    expect(row(task())).toMatch(/<a[^>]*href="\/schedule\/tasks\?open=t"[^>]*>Book flights<\/a>/);
   });
 
   it("marks titles and lines for either writing direction", () => {
@@ -143,8 +143,8 @@ describe("AgendaRow", () => {
   });
 
   it("links an event to its vendor or venue", () => {
-    expect(row(item(), { related: { name: "Sendok Emas", href: "/new/vendors/sendok" } })).toMatch(
-      /<a[^>]*href="\/new\/vendors\/sendok"[^>]*>Sendok Emas<\/a>/,
+    expect(row(item(), { related: { name: "Sendok Emas", href: "/vendors/sendok" } })).toMatch(
+      /<a[^>]*href="\/vendors\/sendok"[^>]*>Sendok Emas<\/a>/,
     );
     expect(row(payment(), { related: { name: "Sendok Emas", href: "/x" } })).not.toContain("Sendok Emas");
   });

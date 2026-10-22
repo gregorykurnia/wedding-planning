@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { editCell, expectStored, signInAndGoto, uniqueName } from "../helpers";
 
 test("add a to-do with a subtask", async ({ page }) => {
-  await signInAndGoto(page, "/todo");
+  await signInAndGoto(page, "/old/todo");
   await expect(
     page.getByRole("heading", { name: "To Do", level: 1 }),
   ).toBeVisible();

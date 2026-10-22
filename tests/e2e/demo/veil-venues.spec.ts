@@ -5,10 +5,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // empty, and adding is turned off.
 
 test("shows the empty venues, and an Add a venue that is off and says why", async ({ page }) => {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/venues");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/vendors/venues");
   await expect(page.getByRole("heading", { name: "Venues", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 
   await expect(page.getByText("Places you’re weighing up")).toBeVisible();

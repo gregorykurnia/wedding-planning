@@ -6,10 +6,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // there is no closing line, since there is no wedding date to count to.
 
 async function openBudget(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget");
   await expect(page.getByRole("heading", { name: "Budget", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -19,8 +19,8 @@ test("shows the empty layout: nothing booked, with Add booking and Try a what-if
   await expect(page.getByRole("heading", { name: "Nothing booked yet", level: 2 })).toBeVisible();
   await expect(page.getByText("When you choose a vendor or book a venue, it lands here")).toBeVisible();
   await expect(page.getByRole("link", { name: "Add booking" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/new/budget/bookings/new");
-  await expect(page.getByRole("link", { name: "Try a what-if item" })).toHaveAttribute("href", "/new/budget/what-if");
+  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/budget/bookings/new");
+  await expect(page.getByRole("link", { name: "Try a what-if item" })).toHaveAttribute("href", "/budget/what-if");
   await expect(page.getByText(/days until/)).toHaveCount(0);
   await expect(page.getByText("Still to pay", { exact: true })).toHaveCount(0);
 });

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { editCell, expectStored, signInAndGoto, uniqueName } from "../helpers";
 
 test("delete a guest and undo it from the toast", async ({ page }) => {
-  await signInAndGoto(page, "/guests");
+  await signInAndGoto(page, "/old/guests");
   await expect(page.getByRole("heading", { name: "Guests" })).toBeVisible();
 
   // Two "Add guest" buttons exist (header and floating); either one works.

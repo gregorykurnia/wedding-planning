@@ -75,7 +75,7 @@ describe("NextCard", () => {
       <NextCard today={TODAY} next={late[0]!} lateCount={3} funders={FUNDERS} onRecord={() => {}} />,
     );
     expect(html).toMatch(
-      /<h2 class="[^"]*"><a class="[^"]*" href="\/new\/budget\/bookings\/vendor-catering">Dapur Lestari Catering<\/a><\/h2>/,
+      /<h2 class="[^"]*"><a class="[^"]*" href="\/budget\/bookings\/vendor-catering">Dapur Lestari Catering<\/a><\/h2>/,
     );
   });
 
@@ -126,13 +126,13 @@ describe("Doors", () => {
     {
       id: "payments",
       name: "Payments due",
-      href: "/new/budget/payments",
+      href: "/budget/payments",
       summary: [{ text: "1 late", attention: true }, { text: ", 6 payments until March" }],
     },
     {
       id: "who-pays",
       name: "Who pays",
-      href: "/new/budget/who-pays",
+      href: "/budget/who-pays",
       summary: [{ text: "CK and Gregory" }],
     },
   ];
@@ -146,7 +146,7 @@ describe("Doors", () => {
   it("makes each door a link to its address, with the name and the summary inside", () => {
     const html = markup(<Doors doors={doors} />);
     expect(html).toMatch(
-      /<a class="[^"]*" href="\/new\/budget\/payments"><span class="[^"]*">Payments due<\/span><span class="[^"]*"><span class="[^"]*">1 late<\/span>, 6 payments until March<\/span>/,
+      /<a class="[^"]*" href="\/budget\/payments"><span class="[^"]*">Payments due<\/span><span class="[^"]*"><span class="[^"]*">1 late<\/span>, 6 payments until March<\/span>/,
     );
   });
 

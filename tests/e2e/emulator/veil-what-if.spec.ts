@@ -5,7 +5,7 @@ import { restorePairing } from "../seed";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.10: the What-if items screen at /new/budget/what-if, against the emulators (guide §5.10).
+// Task 4.10: the What-if items screen at /budget/what-if, against the emulators (guide §5.10).
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -98,12 +98,12 @@ async function signInAs(browser: Browser, viewport?: { width: number; height: nu
   const account = TEST_ACCOUNTS[0];
   const context = await browser.newContext(viewport ? { viewport } : {});
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/what-if");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/what-if");
   await expect(page.getByRole("heading", { name: "What-if items", level: 1 })).toBeAttached({ timeout: COMPILE_TIMEOUT });
   return page;
 }

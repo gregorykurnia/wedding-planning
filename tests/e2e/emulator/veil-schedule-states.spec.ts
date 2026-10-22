@@ -10,11 +10,11 @@ import { seed } from "../seed";
 
 async function open(page: Page, path: string) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
 }
 
@@ -28,17 +28,17 @@ test.describe("the normal set", () => {
   test.afterAll(seed);
 
   test("the Schedule, its month and Tasks each say they didn't load under ?fault=load", async ({ page }) => {
-    await open(page, "/new/schedule?fault=load");
+    await open(page, "/schedule?fault=load");
     await expect(page.getByText("Your schedule didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await page.goto("/new/schedule/month?fault=load");
+    await page.goto("/schedule/month?fault=load");
     await expect(page.getByText("Your schedule didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await page.goto("/new/schedule/tasks?fault=load");
+    await page.goto("/schedule/tasks?fault=load");
     await expect(page.getByText("Your tasks didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   });
 
   test("an event whose delete doesn't finish keeps its confirm open with Try again, and the event stays", async ({ page }) => {
     const title = "Tasting at Sendok Emas";
-    await open(page, "/new/schedule?fault=save");
+    await open(page, "/schedule?fault=save");
     await agendaRow(page, title).getByRole("button", { name: title }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
     const confirm = page.getByRole("dialog").filter({ hasText: `Delete ${title}?` });
@@ -49,7 +49,7 @@ test.describe("the normal set", () => {
   });
 
   test("a task whose delete doesn't finish keeps its confirm open with Try again, and the task stays", async ({ page }) => {
-    await open(page, "/new/schedule/tasks?fault=save");
+    await open(page, "/schedule/tasks?fault=save");
     const first = page.locator("[data-task-id]").first();
     await first.locator("summary").click();
     await first.getByRole("button", { name: "Delete task" }).click();
@@ -63,7 +63,7 @@ test.describe("the normal set", () => {
   test("the event sheet says notifications aren't allowed yet, and offers to allow them", async ({ page }) => {
     // This browser reports "denied" unless told otherwise; "default" is the permission not allowed yet.
     await page.addInitScript(() => Object.defineProperty(Notification, "permission", { get: () => "default" }));
-    await open(page, "/new/schedule?new=1");
+    await open(page, "/schedule?new=1");
     const sheet = page.getByRole("dialog", { name: "Add to the schedule" });
     await expect(sheet.getByText(/Not allowed yet on this/)).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await expect(sheet.getByRole("button", { name: "Allow notifications" })).toBeVisible();
@@ -71,7 +71,7 @@ test.describe("the normal set", () => {
 
   test("the event sheet says notifications are turned off, and where to turn them on", async ({ page }) => {
     await page.addInitScript(() => Object.defineProperty(Notification, "permission", { get: () => "denied" }));
-    await open(page, "/new/schedule?new=1");
+    await open(page, "/schedule?new=1");
     await expect(page.getByRole("dialog").getByText(/Turned off for the planner on this/)).toBeVisible({
       timeout: COMPILE_TIMEOUT,
     });
@@ -85,7 +85,7 @@ test.describe("the empty set", () => {
   test.afterAll(seed);
 
   test("when nothing is left open, the screen says so and the finished task is open below", async ({ page }) => {
-    await open(page, "/new/schedule/tasks");
+    await open(page, "/schedule/tasks");
     await expect(page.getByText("No tasks yet")).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await page.getByRole("button", { name: "Add a task" }).click();
     const sheet = page.getByRole("dialog", { name: "Add a task" });

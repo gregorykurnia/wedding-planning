@@ -64,11 +64,11 @@ const textOf = (content: unknown) => JSON.stringify(content);
 
 async function signIn(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 }
 
 async function open(page: Page, path: string) {
@@ -118,7 +118,7 @@ async function typeAtEnd(page: Page, text: string) {
 }
 
 test("meeting notes start with the layout, save after a pause, and the address becomes the document's", async ({ page }) => {
-  await open(page, "/new/documents/new?start=meeting");
+  await open(page, "/documents/new?start=meeting");
   const title = page.getByLabel("Title");
   await expect(title).toHaveValue("Meeting: ");
   await expect(title).toBeFocused();
@@ -132,7 +132,7 @@ test("meeting notes start with the layout, save after a pause, and the address b
   await page.keyboard.type("Kebun Bunga Atelier");
   await expect(saveState(page)).toHaveText("Not saved yet");
   await expect(saveState(page)).toHaveText("Saved just now", { timeout: 15_000 });
-  await expect(page).toHaveURL(/\/new\/documents\/(?!new)[A-Za-z0-9]+$/);
+  await expect(page).toHaveURL(/\/documents\/(?!new)[A-Za-z0-9]+$/);
   const id = page.url().split("/").pop()!;
   IDS.push(id);
   const stored = await read(id);
@@ -162,7 +162,7 @@ test("an old document opens complete, with its fonts and sizes mapped and colour
       { type: "bulletList", content: [{ type: "listItem", content: [para("Kyoto ryokans")] }] },
     ),
   });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await expect(page.getByLabel("Title")).toHaveValue("Honeymoon research");
   await expect(bodyOf(page).getByRole("heading", { name: "Japan or Lombok?" })).toBeVisible();
   const serif = bodyOf(page).getByText("Serif words");
@@ -185,7 +185,7 @@ test("a document the editor can't read opens read-only with a line, and typing s
   const stored = body(para("Before the mystery."), { type: "mysteryBlock", content: [para("Inside it.")] });
   await put(id, { title: "Vendor contract notes", content: stored });
   await signIn(page);
-  await page.goto(`/new/documents/${id}`);
+  await page.goto(`/documents/${id}`);
   await expect(page.getByText(/can’t show/)).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByLabel("Title")).toHaveAttribute("readonly", "");
   await expect(bodyOf(page)).toHaveAttribute("contenteditable", "false");
@@ -204,7 +204,7 @@ test("a partner's saved change the editor can't read turns the page read-only in
 }) => {
   const id = docId("unreadable-later");
   await put(id, { title: "Hymns", content: body(para("Amazing Grace")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   // Each node type exists, but a heading can't hold a paragraph: only the content check refuses it.
   const broken = body({ type: "heading", attrs: { level: 2 }, content: [para("Inside a heading")] });
   await put(id, { title: "Hymns", content: broken, updatedBy: "partner" });
@@ -223,7 +223,7 @@ test("a change that can't save keeps the text and says so; Try again and coming 
 }) => {
   const id = docId("offline");
   await put(id, { title: "Seating ideas", content: body(para("Grandmothers together.")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
 
   await context.setOffline(true);
   await typeAtEnd(page, " Near the front.");
@@ -249,11 +249,11 @@ test("a change that can't save keeps the text and says so; Try again and coming 
 test("leaving before it's saved saves first, then goes (N18)", async ({ page }) => {
   const id = docId("leave");
   await put(id, { title: "Questions", content: body(para("Is our date free?")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await typeAtEnd(page, " How long can you hold it?");
   await expect(saveState(page)).toHaveText("Not saved yet");
   await page.getByRole("link", { name: "Documents", exact: true }).click();
-  await expect(page).toHaveURL("/new/documents", { timeout: 30_000 });
+  await expect(page).toHaveURL("/documents", { timeout: 30_000 });
   expect(textOf((await read(id))?.content)).toContain("How long can you hold it?");
 });
 
@@ -263,7 +263,7 @@ test("leaving after a change didn't save asks first: Stay keeps it, Leave withou
 }) => {
   const id = docId("leave-failed");
   await put(id, { title: "Trays", content: body(para("Fruit.")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
 
   // Offline: the question says so, and Stay keeps the page and the text.
   await context.setOffline(true);
@@ -275,7 +275,7 @@ test("leaving after a change didn't save asks first: Stay keeps it, Leave withou
   await expect(sheet.getByRole("button", { name: "Stay and try again" })).toBeFocused();
   await sheet.getByRole("button", { name: "Stay and try again" }).click();
   await expect(sheet).toHaveCount(0);
-  await expect(page).toHaveURL(`/new/documents/${id}`);
+  await expect(page).toHaveURL(`/documents/${id}`);
   await expect(bodyOf(page)).toContainText("Fruit. Cakes.");
   // Back online, it saves by itself.
   await context.setOffline(false);
@@ -289,7 +289,7 @@ test("leaving after a change didn't save asks first: Stay keeps it, Leave withou
   const again = page.getByRole("dialog", { name: "Your last changes aren’t saved" });
   await expect(again).toContainText("The planner couldn’t save them.");
   await again.getByRole("button", { name: "Leave without them" }).click();
-  await expect(page).toHaveURL("/new/documents");
+  await expect(page).toHaveURL("/documents");
   await page.unroute("**/google.firestore.v1.Firestore/Write/**");
 });
 
@@ -298,7 +298,7 @@ test("a partner's saved change appears when nothing is unsaved here; with unsave
 }) => {
   const id = docId("partner");
   await put(id, { title: "Playlist", content: body(para("Lucky")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
 
   await put(id, { title: "Playlist", content: body(para("Lucky"), para("Can’t Help Falling in Love")), updatedBy: "partner" });
   await expect(bodyOf(page)).toContainText("Can’t Help Falling in Love", { timeout: 15_000 });
@@ -316,7 +316,7 @@ test("a partner's saved change appears when nothing is unsaved here; with unsave
 test("Delete for good asks, says it can't be undone, and the document is gone", async ({ page }) => {
   const id = docId("delete");
   await put(id, { title: "Seating ideas", content: body(para("x")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await page.getByRole("button", { name: "Delete this document" }).click();
   const sheet = page.getByRole("dialog", { name: "Delete “Seating ideas”?" });
   await expect(sheet).toContainText("This can’t be undone.");
@@ -328,7 +328,7 @@ test("Delete for good asks, says it can't be undone, and the document is gone", 
 
 test("an old link says the document isn't here; one deleted while open says so", async ({ page }) => {
   await signIn(page);
-  await page.goto("/new/documents/no-such-document");
+  await page.goto("/documents/no-such-document");
   await expect(page.getByRole("heading", { name: "This document isn’t here", level: 1 })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -336,7 +336,7 @@ test("an old link says the document isn't here; one deleted while open says so",
 
   const id = docId("gone");
   await put(id, { title: "Old plan", content: body(para("x")) });
-  await page.goto(`/new/documents/${id}`);
+  await page.goto(`/documents/${id}`);
   await expect(page.getByLabel("Title")).toHaveValue("Old plan", { timeout: COMPILE_TIMEOUT });
   await fetch(`${DOCS}/notes/${id}`, { method: "DELETE", headers: ADMIN });
   await expect(page.getByRole("heading", { name: "This document was deleted", level: 1 })).toBeVisible();
@@ -346,7 +346,7 @@ test("an old link says the document isn't here; one deleted while open says so",
 test("Cmd/Ctrl+K adds a link, a click shows its bubble, and colours store the palette's own values", async ({ page }) => {
   const id = docId("links");
   await put(id, { title: "Florists", content: body(para("Call ")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await select(page, "Call ", true);
   await page.keyboard.press("ControlOrMeta+k");
   const sheet = page.getByRole("dialog", { name: "Add a link" });
@@ -381,7 +381,7 @@ test("on a phone the toolbar docks at the bottom and the save state floats at th
   const id = docId("phone");
   await put(id, { title: "Phone", content: body(para("x")) });
   await page.setViewportSize({ width: 390, height: 844 });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   const toolbar = page.getByRole("toolbar", { name: "Formatting" });
   await expect(toolbar).toHaveCSS("position", "fixed");
   const box = await toolbar.boundingBox();
@@ -434,7 +434,7 @@ test("totals are worked out in gold, errors are named, and the formula bar shows
       },
     ),
   });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   const total = cells(page).nth(7);
   await expect(total).toHaveAttribute("data-cell", "total");
   await expect(total).toHaveAttribute("data-total", "Rp 14.500.000");
@@ -468,7 +468,7 @@ test("the table bar adds and removes rows and columns, sorts, widens, and remove
 }) => {
   const id = docId("tools");
   await put(id, { title: "Vendors to compare", content: body(para("Quotes"), pricesTable()) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   const bar = tableBar(page);
   const total = () => bodyOf(page).locator('[data-cell="total"]');
 
@@ -540,14 +540,14 @@ test("the table bar adds and removes rows and columns, sorts, widens, and remove
   await expect(removed).toBeVisible();
   await expect(saveState(page)).toHaveText("Saved just now", { timeout: 15_000 });
   await page.getByRole("link", { name: "Documents", exact: true }).click();
-  await expect(page).toHaveURL("/new/documents");
+  await expect(page).toHaveURL("/documents");
   await expect(removed).toHaveCount(0);
 });
 
 test("Table opens an 8 × 8 size grid, and Tab moves between the new table's cells", async ({ page }) => {
   const id = docId("insert");
   await put(id, { title: "Seating", content: body(para("Tables")) });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await select(page, "Tables", true);
   await page.getByRole("button", { name: "Table", exact: true }).click();
   const pop = page.getByRole("dialog", { name: "Table size" });
@@ -579,7 +579,7 @@ test("on a phone the table bar sits above the docked toolbar and a wide table sc
     }),
   });
   await page.setViewportSize({ width: 390, height: 844 });
-  await open(page, `/new/documents/${id}`);
+  await open(page, `/documents/${id}`);
   await cells(page).nth(7).click();
   const bar = tableBar(page);
   await expect(bar).toHaveCSS("position", "fixed");

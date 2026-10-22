@@ -116,7 +116,7 @@ describe("the daily run", () => {
     expect(first.calls[0].payload).toEqual({
       title: "Tasting at Sendok Emas",
       body: "Tomorrow, Friday 16 October, 11:00\nSendok Emas, Kemang",
-      url: "/new/schedule?event=tasting",
+      url: "/schedule?event=tasting",
       tag: "reminder-tasting-1440",
     });
     expect(await sentOf("tasting")).toEqual([1440]);
@@ -234,7 +234,7 @@ describe("POST /api/push/test", () => {
     await savePushSubscription({ endpoint: endpoint("greg-mac"), keys: { p256dh: "p", auth: "a" } }, "Mac", gregory.db);
     expect(await call(gregory, { endpoint: endpoint("greg-mac") })).toEqual({ status: 200, body: { result: "sent" } });
     expect(pushes.sent).toHaveLength(1);
-    expect(JSON.parse(pushes.sent[0].payload)).toMatchObject({ title: "Test reminder", url: "/new/settings", tag: "test-reminder" });
+    expect(JSON.parse(pushes.sent[0].payload)).toMatchObject({ title: "Test reminder", url: "/settings", tag: "test-reminder" });
   });
 
   it("refuses without sign-in, for another account's device, and for a device that isn't saved", async () => {

@@ -33,12 +33,12 @@ test.afterAll(async () => {
 
 async function openAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number]): Promise<Page> {
   const page = await (await browser.newContext()).newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery/partner");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/gallery/partner");
   await expect(page.getByRole("heading", { name: "Live partner changes" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });

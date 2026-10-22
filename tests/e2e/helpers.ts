@@ -26,14 +26,14 @@ export function uniqueName(label: string) {
   return `${label}-${Date.now().toString(36)}${counter}`;
 }
 
-/** Signs in with the first allowlisted test account through the /login email form. */
+/** Signs in to the old UI (the frozen fallback under /old) with the first allowlisted test account. */
 export async function signIn(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/login");
+  await page.goto("/old/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/old", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByText("Our Wedding").first()).toBeVisible();
 }
 

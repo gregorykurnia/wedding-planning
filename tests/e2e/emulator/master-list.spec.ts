@@ -9,7 +9,7 @@ import {
 test("add master-list rows, reorder with the arrows, delete and undo", async ({
   page,
 }) => {
-  await signInAndGoto(page, "/master-list");
+  await signInAndGoto(page, "/old/master-list");
   await expect(
     page.getByRole("heading", { name: "Master List" }),
   ).toBeVisible();

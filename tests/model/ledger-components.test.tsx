@@ -70,7 +70,7 @@ const buttonClass = (html: string, label: string) =>
 describe("booking entries", () => {
   it("links the whole entry to its booking, with the name, price, meta and status", () => {
     const html = markup(<BookingEntry booking={pelaminan} funders={FUNDERS} today={TODAY} />);
-    expect(html).toMatch(/<a[^>]*href="\/new\/budget\/bookings\/vendor-v1"[^>]*>/);
+    expect(html).toMatch(/<a[^>]*href="\/budget\/bookings\/vendor-v1"[^>]*>/);
     expect(html).toContain("Pelaminan Ayu");
     expect(html).toContain("Rp 25.000.000");
     expect(html).toContain("Decoration, paid by Greg and Bella’s family, Rp 3.000.000 over the estimate");
@@ -141,8 +141,8 @@ describe("vendor rows", () => {
   };
 
   it("shows the preferred price, the rating, the shortlist link and the price options", () => {
-    const html = markup(<VendorRow vendor={vendor} href="/new/vendors/v1" shortlistHref="/new/shortlist/v1" />);
-    expect(html).toMatch(/<a[^>]*href="\/new\/vendors\/v1"[^>]*>Pelaminan Ayu<\/a>/);
+    const html = markup(<VendorRow vendor={vendor} href="/vendors/v1" shortlistHref="/shortlist/v1" />);
+    expect(html).toMatch(/<a[^>]*href="\/vendors\/v1"[^>]*>Pelaminan Ayu<\/a>/);
     expect(html).toContain("Rp 25.000.000");
     expect(html).toMatch(/<b class="[^"]*score[^"]*">4,8<\/b> from 120 reviews/);
     expect(html).toContain("Bu Ayu");
@@ -154,18 +154,18 @@ describe("vendor rows", () => {
     const html = markup(
       <VendorRow
         vendor={vendor}
-        href="/new/vendors/v1"
+        href="/vendors/v1"
         failed={{ message: "Couldn’t save the change to Pelaminan Ayu. Your choice is kept.", onRetry: () => {} }}
       />,
     );
     expect(html).toMatch(/role="alert"[^>]*><span>Couldn’t save the change to Pelaminan Ayu\. Your choice is kept\.<\/span>/);
     expect(html).toContain("Try again");
-    expect(markup(<VendorRow vendor={vendor} href="/new/vendors/v1" />)).not.toContain("Try again");
+    expect(markup(<VendorRow vendor={vendor} href="/vendors/v1" />)).not.toContain("Try again");
   });
 
   it("says No price yet and No rating yet, and keeps the meta's height when empty", () => {
     const empty: VendorRowData = { id: "v2", name: "Studio Dimas", category: "Photography", contact: null, price: null, optionCount: 0, rating: null, reviewers: 0 };
-    const html = markup(<VendorRow vendor={empty} href="/new/vendors/v2" />);
+    const html = markup(<VendorRow vendor={empty} href="/vendors/v2" />);
     expect(html).toContain("No price yet");
     expect(html).toContain("No rating yet");
     expect(html).toContain(NO_TEXT);
@@ -174,7 +174,7 @@ describe("vendor rows", () => {
 
   it("greys a ruled-out vendor's name and leaves the keen heart and stage slots for Task 3.9", () => {
     const ruled: VendorRowData = { ...vendor, id: "v4", name: "Organ and Co", ruledOut: true };
-    const html = markup(<VendorRow vendor={ruled} href="/new/vendors/v4" keen={<i>KEEN</i>} stage={<i>STAGE</i>} />);
+    const html = markup(<VendorRow vendor={ruled} href="/vendors/v4" keen={<i>KEEN</i>} stage={<i>STAGE</i>} />);
     expect(html).toMatch(/<li class="[^"]*ruled/);
     expect(html).toMatch(/class="[^"]*vname[^"]*"[^>]*>Organ and Co/);
     expect(html).toContain("KEEN");
@@ -216,7 +216,7 @@ describe("documents", () => {
   };
 
   it("marks the search matches in the title and in the words under it", () => {
-    const html = markup(<DocumentRow doc={doc} href="/new/documents/d3" now={NOW} query="contract" />);
+    const html = markup(<DocumentRow doc={doc} href="/documents/d3" now={NOW} query="contract" />);
     expect(html).toMatch(/<mark class="[^"]*mark[^"]*">contract<\/mark>/);
     expect(html).not.toMatch(/<mark[^>]*>photographer<\/mark>/i);
   });
@@ -257,8 +257,8 @@ describe("files and folders", () => {
   });
 
   it("draws a folder as a link with its counts, and says Empty for an empty one", () => {
-    const html = markup(<FolderRow folder={{ id: "fo1", name: "Vendors", folders: 6, files: 12 }} href="/new/files/fo1" />);
-    expect(html).toMatch(/<a[^>]*href="\/new\/files\/fo1"[^>]*>/);
+    const html = markup(<FolderRow folder={{ id: "fo1", name: "Vendors", folders: 6, files: 12 }} href="/files/fo1" />);
+    expect(html).toMatch(/<a[^>]*href="\/files\/fo1"[^>]*>/);
     expect(html).toContain("6 folders, 12 files");
     expect(html.match(/<svg/g)).toHaveLength(2);
     expect(markup(<FolderRow folder={{ id: "fo3", name: "Empty", folders: 0, files: 0 }} href="/x" />)).toContain("Empty");
@@ -277,8 +277,8 @@ describe("venue rows", () => {
   };
 
   it("shows the cost, the place, the capacity, the files and the note with its link", () => {
-    const html = markup(<VenueRow venue={venue} href="/new/vendors/venues?venue=ven1" stage={<i>thread</i>} onOpen={() => {}} />);
-    expect(html).toMatch(/<a[^>]*href="\/new\/vendors\/venues\?venue=ven1"[^>]*>Puri Taman Sari<\/a>/);
+    const html = markup(<VenueRow venue={venue} href="/vendors/venues?venue=ven1" stage={<i>thread</i>} onOpen={() => {}} />);
+    expect(html).toMatch(/<a[^>]*href="\/vendors\/venues\?venue=ven1"[^>]*>Puri Taman Sari<\/a>/);
     expect(html).toContain("Rp 180.000.000");
     expect(html).toContain("Seminyak, Bali");
     expect(html).toContain("Up to 200 guests");
@@ -289,7 +289,7 @@ describe("venue rows", () => {
 
   it("says No estimate, No location and Capacity unknown, and shows no files or note when there are none", () => {
     const bare: VenueRowData = { id: "ven2", name: "Bukit", cost: null, location: "", capacity: null, fileCount: 0, notes: "" };
-    const html = markup(<VenueRow venue={bare} href="/new/vendors/venues?venue=ven2" onOpen={() => {}} />);
+    const html = markup(<VenueRow venue={bare} href="/vendors/venues?venue=ven2" onOpen={() => {}} />);
     expect(html).toContain("No estimate");
     expect(html).toContain("No location");
     expect(html).toContain("Capacity unknown");

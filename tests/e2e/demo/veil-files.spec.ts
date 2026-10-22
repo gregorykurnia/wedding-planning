@@ -8,9 +8,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 const MB = 1_048_576;
 
 async function openDemo(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.getByRole("group", { name: "Files on a record" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 

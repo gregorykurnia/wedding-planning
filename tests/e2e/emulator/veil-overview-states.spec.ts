@@ -50,14 +50,14 @@ const catering = (paid: number) => ({
   nextTargetDate: inDays(5),
 });
 
-async function open(page: Page, path = "/new") {
+async function open(page: Page, path = "/") {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  if (path !== "/new") await page.goto(path);
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  if (path !== "/") await page.goto(path);
 }
 
 const door = (page: Page, name: string) => page.locator("main").getByRole("link", { name: new RegExp(`^${name}`) });
@@ -93,7 +93,7 @@ test.describe("when a read fails, hasn't arrived, or the connection is down", ()
   });
 
   test("?fault=load: the overview says it didn't load, and Try again reads it again", async ({ page }) => {
-    await open(page, "/new?fault=load");
+    await open(page, "/?fault=load");
     const failed = page.getByRole("heading", { name: "Your overview didn’t load" });
     await expect(failed).toBeVisible({ timeout: COMPILE_TIMEOUT });
 
@@ -106,7 +106,7 @@ test.describe("when a read fails, hasn't arrived, or the connection is down", ()
   test("a read that hasn't arrived shows Loading your overview, with the page busy", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
-    await page.goto("/new");
+    await page.goto("/");
     await expect(page.getByText("Loading your overview", { exact: true })).toBeAttached({ timeout: COMPILE_TIMEOUT });
     await expect(page.locator("main")).toHaveAttribute("aria-busy", "true");
     await expect(page.getByRole("heading", { name: "Coming up", level: 2 })).toHaveCount(0);
@@ -115,7 +115,7 @@ test.describe("when a read fails, hasn't arrived, or the connection is down", ()
   test("offline before any data has arrived, the full offline message shows and never an empty overview", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
-    await page.goto("/new?fault=offline");
+    await page.goto("/?fault=offline");
     await expect(page.getByRole("heading", { name: "You’re offline" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await expect(page.getByText("The planner needs a connection to show your overview.")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Coming up", level: 2 })).toHaveCount(0);

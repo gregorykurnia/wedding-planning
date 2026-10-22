@@ -120,9 +120,9 @@ const TASKS: TaskRecord[] = [
 
 const FUNDERS: Record<string, string> = { CK: "CK", Gregory: "Gregory", Bella: "Bella" };
 const RELATED: Record<string, { name: string; href: string }> = {
-  kebun: { name: "Kebun Dekor", href: "/new/vendors/kebun" },
-  sendok: { name: "Sendok Emas", href: "/new/vendors/sendok" },
-  villa: { name: "Villa Samaya Ubud, venue", href: "/new/vendors/venues" },
+  kebun: { name: "Kebun Dekor", href: "/vendors/kebun" },
+  sendok: { name: "Sendok Emas", href: "/vendors/sendok" },
+  villa: { name: "Villa Samaya Ubud, venue", href: "/vendors/venues" },
 };
 
 const funderNameOf = (item: AgendaItem) => FUNDERS[item.funder ?? ""] ?? null;

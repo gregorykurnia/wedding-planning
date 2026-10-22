@@ -56,8 +56,8 @@ test.afterAll(async () => {
   await write("settings/wedding", seededWedding);
 });
 
-async function signInAs(page: Page, account: (typeof TEST_ACCOUNTS)[number], landing = "/new") {
-  await page.goto("/new/sign-in");
+async function signInAs(page: Page, account: (typeof TEST_ACCOUNTS)[number], landing = "/") {
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -133,7 +133,7 @@ test("a change from your own other computer arrives in your name, and is never t
       await page.getByRole("button", { name: "Continue as Greg" }).click();
     }
     await expect(page.getByRole("link", { name: "Greg & Bella" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await page.goto("/new/gallery/partner");
+    await page.goto("/gallery/partner");
     await expect(page.getByRole("heading", { name: "Live partner changes" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
     return page;
   };

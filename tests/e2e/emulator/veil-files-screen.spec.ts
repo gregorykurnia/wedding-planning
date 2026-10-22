@@ -3,7 +3,7 @@ import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emula
 import { COMPILE_TIMEOUT } from "../helpers";
 import { restorePairing } from "../seed";
 
-// Task 4.19: the Files screen at /new/documents/files, against the emulators (guide §5.18, R8–R14).
+// Task 4.19: the Files screen at /documents/files, against the emulators (guide §5.18, R8–R14).
 // Folders and files are written as the emulator's owner (which skips the rules); the screen reads them
 // live. Deleting a file for good goes through the server, so only its question is tested here.
 
@@ -73,13 +73,13 @@ test.beforeEach(async () => {
   await put("weddingFiles", "f5", stored("Rasa Nusantara quote.pdf", "old", 60));
 });
 
-async function open(page: Page, path = "/new/documents/files") {
+async function open(page: Page, path = "/documents/files") {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
@@ -154,7 +154,7 @@ test("a new folder refuses a name already there, and then appears", async ({ pag
 });
 
 test("renaming a folder saves, and Undo puts the old name back", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=rings");
+  await open(page, "/documents/files?folder=rings");
   await expect(page.getByRole("heading", { name: "This folder is empty", level: 2 })).toBeVisible();
   await page.getByRole("button", { name: "Rename" }).click();
   await sheet(page).getByLabel("Name").fill("Rings and bands");
@@ -167,13 +167,13 @@ test("renaming a folder saves, and Undo puts the old name back", async ({ page }
 });
 
 test("an empty folder is deleted after a question, and Undo brings it back", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=rings");
+  await open(page, "/documents/files?folder=rings");
   await page.getByRole("button", { name: "Delete folder" }).click();
   await expect(sheet(page).getByRole("heading", { name: "Delete Rings?" })).toBeVisible();
   await expect(sheet(page).getByText("The folder is empty. You can undo for a few seconds.")).toBeVisible();
   await sheet(page).getByRole("button", { name: "Delete folder" }).click();
 
-  await expect(page).toHaveURL(/\/new\/documents\/files$/);
+  await expect(page).toHaveURL(/\/documents\/files$/);
   await expect(page.getByText("Deleted Rings")).toBeVisible();
   await expect(page.locator('[data-folder-id="rings"]')).toHaveCount(0);
 
@@ -183,7 +183,7 @@ test("an empty folder is deleted after a question, and Undo brings it back", asy
 });
 
 test("a folder with things inside can't be deleted: it says what to empty first", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=catering");
+  await open(page, "/documents/files?folder=catering");
   await page.getByRole("button", { name: "Delete folder" }).click();
   await expect(sheet(page).getByRole("heading", { name: "Empty Catering first" })).toBeVisible();
   await expect(sheet(page).getByText("It still holds 2 files and 1 folder. Move or delete them, then delete the folder.")).toBeVisible();
@@ -192,7 +192,7 @@ test("a folder with things inside can't be deleted: it says what to empty first"
 });
 
 test("a file's sheet shows its details and saves changes as you go, with Undo for a new name", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue");
+  await open(page, "/documents/files?folder=venue");
   await page.locator('[data-file-id="f1"]').click();
   await expect(sheet(page).getByRole("heading", { name: "Villa Samaya contract.pdf" })).toBeVisible();
   await expect(sheet(page).getByText(/^2,4 MB, added .+, in Files › Venue$/)).toBeVisible();
@@ -218,7 +218,7 @@ test("a file's sheet shows its details and saves changes as you go, with Undo fo
 });
 
 test("moving a file shows where it is, disables where it already is, and Undo moves it back", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue");
+  await open(page, "/documents/files?folder=venue");
   await page.locator('[data-file-id="f2"]').click();
   await sheet(page).getByRole("button", { name: "Move" }).click();
 
@@ -238,7 +238,7 @@ test("moving a file shows where it is, disables where it already is, and Undo mo
 });
 
 test("Undo after Bella moved the same file again changes nothing and says where it is now (N13)", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue");
+  await open(page, "/documents/files?folder=venue");
   await page.locator('[data-file-id="f2"]').click();
   await sheet(page).getByRole("button", { name: "Move" }).click();
   await sheet(page).getByRole("radio", { name: /^Legal and church$/ }).check();
@@ -254,7 +254,7 @@ test("Undo after Bella moved the same file again changes nothing and says where 
 });
 
 test("Undo after Bella deleted the old folder says so and goes, and the file stays (P5-S9)", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue");
+  await open(page, "/documents/files?folder=venue");
   await page.locator('[data-file-id="f2"]').click();
   await sheet(page).getByRole("button", { name: "Move" }).click();
   await sheet(page).getByRole("radio", { name: /^Legal and church$/ }).check();
@@ -271,7 +271,7 @@ test("Undo after Bella deleted the old folder says so and goes, and the file sta
 });
 
 test("moving a folder takes everything inside it, and can't go inside itself", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=catering");
+  await open(page, "/documents/files?folder=catering");
   await page.getByRole("button", { name: "Move" }).click();
   await expect(sheet(page).getByRole("heading", { name: "Move Catering" })).toBeVisible();
   await expect(sheet(page).getByText("With everything inside it: 2 files and 1 folder.")).toBeVisible();
@@ -297,12 +297,12 @@ test("Delete for good asks first, says it can't be undone, and Keep it leaves th
 });
 
 test("a file's own link opens its sheet on arrival", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue&file=f1");
+  await open(page, "/documents/files?folder=venue&file=f1");
   await expect(sheet(page).getByRole("heading", { name: "Villa Samaya contract.pdf" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
 test("the upload sheet files into the folder you are in", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=catering");
+  await open(page, "/documents/files?folder=catering");
   await page.getByRole("button", { name: "Upload files" }).click();
   await expect(sheet(page).getByText(/^Into Files › Vendors › Catering\./)).toBeVisible();
 });

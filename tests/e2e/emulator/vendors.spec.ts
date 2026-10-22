@@ -11,7 +11,7 @@ import {
 test("add a vendor, mark it Chosen and see it among the confirmed bookings", async ({
   page,
 }) => {
-  await signInAndGoto(page, "/vendors");
+  await signInAndGoto(page, "/old/vendors");
   await expect(page.getByRole("heading", { name: "Vendors" })).toBeVisible();
 
   await page.getByRole("button", { name: "Add vendor" }).first().click();
@@ -46,7 +46,7 @@ test("add a vendor, mark it Chosen and see it among the confirmed bookings", asy
     "vendors",
     (d) => d.name === name && d.contractStatus === "Chosen",
   );
-  await page.goto("/confirmed");
+  await page.goto("/old/confirmed");
   await expect(
     page.getByRole("heading", { name: "Confirmed", level: 1 }),
   ).toBeVisible({
@@ -55,7 +55,7 @@ test("add a vendor, mark it Chosen and see it among the confirmed bookings", asy
   await expect(page.getByRole("button", { name })).toBeVisible();
 
   // Moving it back to Inquiring takes it off Confirmed again.
-  await page.goto("/vendors");
+  await page.goto("/old/vendors");
   const again = page.getByRole("row").filter({ hasText: name });
   await chooseOption(page, vendorStatusPill(again), "Inquiring");
   await expect(vendorStatusPill(again)).toContainText("Inquiring");
@@ -63,7 +63,7 @@ test("add a vendor, mark it Chosen and see it among the confirmed bookings", asy
     "vendors",
     (d) => d.name === name && d.contractStatus === "Inquiring",
   );
-  await page.goto("/confirmed");
+  await page.goto("/old/confirmed");
   await expect(
     page.getByRole("heading", { name: "Confirmed", level: 1 }),
   ).toBeVisible();

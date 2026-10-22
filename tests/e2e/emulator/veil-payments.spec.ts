@@ -74,12 +74,12 @@ test.afterAll(async () => {
 
 async function openPayments(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/payments");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/payments");
   await expect(page.getByRole("heading", { name: "Payments due", level: 1 })).toBeAttached({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -113,10 +113,10 @@ test("each row says when and who, and links to its booking", async ({ page }) =>
   await expect(late).toContainText("Pay the balance");
   await expect(late.getByRole("link", { name: "Dapur Lestari Catering" })).toHaveAttribute(
     "href",
-    "/new/budget/bookings/vendor-pd-late",
+    "/budget/bookings/vendor-pd-late",
   );
   await expect(page.locator('[data-booking-id="vendor-pd-soon"]')).toContainText("due in 5 days");
-  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/new/budget");
+  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/budget");
 });
 
 test("Record payment opens the sheet for that booking", async ({ page }) => {

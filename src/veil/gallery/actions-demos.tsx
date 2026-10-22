@@ -58,7 +58,7 @@ export function ActionDemos() {
       <h3>Links</h3>
       <p>
         <TextLink>Rename</TextLink> <TextLink tone="rose">Remove this booking</TextLink>{" "}
-        <TextLink href="/new/gallery/states">On the shortlist</TextLink>
+        <TextLink href="/gallery/states">On the shortlist</TextLink>
       </p>
       <p>
         Order by{" "}

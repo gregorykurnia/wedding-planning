@@ -5,9 +5,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // fake bookings and a stand-in write. The emulator spec runs the real write.
 
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   const section = page.locator("#section-4-4");
   await expect(section.getByRole("button", { name: "Record payment for Dapur Lestari Catering" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,

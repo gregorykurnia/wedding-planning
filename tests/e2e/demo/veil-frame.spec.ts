@@ -5,9 +5,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // banner above main, outside it, and screens sit in a centred page column.
 
 async function lookAround(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByRole("heading", { level: 1, name: "When is the wedding?" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -41,7 +41,7 @@ test("the top bar and the demonstration banner come before main, outside it", as
 });
 
 test("sign-in has no top bar and no banner", async ({ page }) => {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await expect(page.getByRole("button", { name: "Look around" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });

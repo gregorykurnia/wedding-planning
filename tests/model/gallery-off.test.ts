@@ -33,3 +33,14 @@ describe("the gallery switch", () => {
     expect(await response.text()).toBe("Not found");
   });
 });
+
+describe("unknown API addresses", () => {
+  it("answer 404 with JSON, not the new UI's not-found screen", async () => {
+    const { GET, POST, DELETE } = await import("@/app/api/[...rest]/route");
+    for (const handler of [GET, POST, DELETE]) {
+      const response = handler();
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: "Not found" });
+    }
+  });
+});

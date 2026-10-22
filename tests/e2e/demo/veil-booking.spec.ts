@@ -5,10 +5,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // there is no booking to open: the screen says so, with the way back to Bookings.
 
 async function openBooking(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/bookings/vendor-samaya");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/bookings/vendor-samaya");
   await expect(page.getByRole("heading", { name: "No bookings in demonstration mode", level: 1 })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -19,8 +19,8 @@ test("says there are no bookings in demonstration mode, with a way back to Booki
   await expect(page).toHaveTitle("Booking · Our wedding planner");
   // The demonstration banner says the first half too, so match the message whole.
   await expect(page.getByText("The planner isn’t connected to its database yet, so there are no bookings to open.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "See all bookings" })).toHaveAttribute("href", "/new/budget/bookings");
-  await expect(page.getByRole("link", { name: "Bookings", exact: true })).toHaveAttribute("href", "/new/budget/bookings");
+  await expect(page.getByRole("link", { name: "See all bookings" })).toHaveAttribute("href", "/budget/bookings");
+  await expect(page.getByRole("link", { name: "Bookings", exact: true })).toHaveAttribute("href", "/budget/bookings");
 });
 
 test.describe("on a phone", () => {

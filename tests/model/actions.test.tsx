@@ -39,8 +39,8 @@ describe("Btn", () => {
   });
 
   it("renders as a link when it has a path", () => {
-    expect(markup(<Btn href="/new/budget">Add a booking</Btn>)).toMatch(
-      /^<a [^>]*href="\/new\/budget"/,
+    expect(markup(<Btn href="/budget">Add a booking</Btn>)).toMatch(
+      /^<a [^>]*href="\/budget"/,
     );
   });
 
@@ -75,8 +75,8 @@ describe("TextLink", () => {
   });
 
   it("is a link when it has a path", () => {
-    expect(markup(<TextLink href="/new/vendors">On the shortlist</TextLink>)).toMatch(
-      /^<a [^>]*href="\/new\/vendors"/,
+    expect(markup(<TextLink href="/vendors">On the shortlist</TextLink>)).toMatch(
+      /^<a [^>]*href="\/vendors"/,
     );
   });
 

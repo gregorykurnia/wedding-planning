@@ -5,15 +5,15 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // shortlist is empty, and adding is turned off.
 
 test("shows the empty shortlist, a way to Vendors, and an Add finalist that is off and says why", async ({ page }) => {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/shortlist");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/vendors/shortlist");
   await expect(page.getByRole("heading", { name: "Shortlist", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 
   await expect(page.getByText("Finalists, side by side")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Nothing on the shortlist yet", level: 2 })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Go to Vendors" })).toHaveAttribute("href", "/new/vendors");
+  await expect(page.getByRole("link", { name: "Go to Vendors" })).toHaveAttribute("href", "/vendors");
 
   await page.getByRole("button", { name: "Add a finalist" }).first().click();
   const sheet = page.getByRole("dialog", { name: "Add a finalist" });

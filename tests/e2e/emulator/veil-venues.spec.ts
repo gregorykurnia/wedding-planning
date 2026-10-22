@@ -5,7 +5,7 @@ import { restorePairing } from "../seed";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.15: the Venues screen at /new/vendors/venues, against the emulators (guide §5.15).
+// Task 4.15: the Venues screen at /vendors/venues, against the emulators (guide §5.15).
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -110,15 +110,15 @@ async function signInAs(
   browser: Browser,
   account: (typeof TEST_ACCOUNTS)[number],
   viewport?: { width: number; height: number },
-  path = "/new/vendors/venues",
+  path = "/vendors/venues",
 ) {
   const context = await browser.newContext(viewport ? { viewport } : {});
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Venues", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
@@ -132,7 +132,7 @@ test("shows the booked line, the rows and the count with the ruled-out one hidde
 
   await expect(page.getByRole("link", { name: "Villa Samaya Ubud", exact: true }).first()).toHaveAttribute(
     "href",
-    "/new/budget/bookings/venue-ven1",
+    "/budget/bookings/venue-ven1",
   );
   await expect(page.getByText("Booked:")).toBeVisible();
   await expect(page.getByText("3 venues, 1 ruled out hidden")).toBeVisible();
@@ -163,7 +163,7 @@ test("shows the booked line, the rows and the count with the ruled-out one hidde
   await expect(bare).toContainText("Noted");
 
   // The default order is cost, cheapest first, blanks last.
-  const names = page.locator('ul[aria-label="Venues"] > li a[href^="/new/vendors/venues"]');
+  const names = page.locator('ul[aria-label="Venues"] > li a[href^="/vendors/venues"]');
   await expect(names).toHaveText(["Puri Taman Sari", "Villa Samaya Ubud", "Bukit Ungasan Cliff"]);
 });
 
@@ -205,7 +205,7 @@ test("search, the filters and the orders narrow the list, with a way back", asyn
 
   // Orders: capacity starts with the largest, name from A.
   await page.getByLabel("Order by").selectOption("capacity");
-  const names = page.locator('ul[aria-label="Venues"] > li a[href^="/new/vendors/venues"]');
+  const names = page.locator('ul[aria-label="Venues"] > li a[href^="/vendors/venues"]');
   await expect(names.first()).toHaveText("Villa Samaya Ubud");
   await page.getByLabel("Order by").selectOption("name");
   await expect(names.first()).toHaveText("Bukit Ungasan Cliff");
@@ -252,9 +252,9 @@ test("a venue's sheet saves as you go, shows its files and the partner's address
   expect((await stored("venues", "ven2"))?.status.stringValue).toBe("Contacted");
 
   // `?venue=<id>` (the agenda and the overview link here) opens the sheet and clears the address.
-  await page.goto("/new/vendors/venues?venue=ven3");
+  await page.goto("/vendors/venues?venue=ven3");
   await expect(page.getByRole("dialog", { name: "Bukit Ungasan Cliff" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new/vendors/venues");
+  await expect(page).toHaveURL("/vendors/venues");
 });
 
 test("choosing Booked makes the venue a booking, once, and the toast opens it", async ({ browser }) => {
@@ -270,7 +270,7 @@ test("choosing Booked makes the venue a booking, once, and the toast opens it", 
   expect(doc?.agreedPrice.integerValue).toBe("180000000");
 
   await toasts(page).getByRole("button", { name: "Open" }).click();
-  await expect(page).toHaveURL("/new/budget/bookings/venue-ven2", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/budget/bookings/venue-ven2", { timeout: COMPILE_TIMEOUT });
 });
 
 test("adds a venue with a name, books one at once, and undoes the add", async ({ browser }) => {
@@ -365,7 +365,7 @@ test("removing a booked venue leaves Venues but keeps its booking in the budget"
   expect(doc?.booking.mapValue?.fields.removed.booleanValue).toBe(false);
 
   // The booking is still there.
-  await page.goto("/new/budget/bookings/venue-ven1");
+  await page.goto("/budget/bookings/venue-ven1");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Villa Samaya Ubud/, { timeout: COMPILE_TIMEOUT });
 
 });

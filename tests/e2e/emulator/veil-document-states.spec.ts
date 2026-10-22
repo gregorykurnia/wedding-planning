@@ -23,11 +23,11 @@ test.afterAll(seed);
 type Account = (typeof TEST_ACCOUNTS)[number];
 
 async function signIn(page: Page, account: Account) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 }
 
 async function open(page: Page, path: string, account: Account = TEST_ACCOUNTS[0]) {
@@ -60,7 +60,7 @@ const saveState = (page: Page) => page.getByRole("toolbar", { name: "Formatting"
 // ---------- the shared states: couldn't load, offline ----------
 
 test("Documents says it's offline when nothing has arrived, with Try again", async ({ page }) => {
-  await goOfflineThen(page, "/new/documents/files", "Documents");
+  await goOfflineThen(page, "/documents/files", "Documents");
   await expect(page.getByText("You’re offline")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("The planner needs a connection to show your documents.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
@@ -69,24 +69,24 @@ test("Documents says it's offline when nothing has arrived, with Try again", asy
 });
 
 test("Files says it's offline when nothing has arrived", async ({ page }) => {
-  await goOfflineThen(page, "/new/documents", "Files");
+  await goOfflineThen(page, "/documents", "Files");
   await expect(page.getByText("You’re offline")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("The planner needs a connection to show your files.")).toBeVisible();
 });
 
 test("a document and the Files screen each say they didn't load under ?fault=load", async ({ page }) => {
-  await open(page, "/new/documents/seating?fault=load");
+  await open(page, "/documents/seating?fault=load");
   await expect(page.getByText("This document didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByText("This document didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/documents/files");
+  await page.goto("/documents/files");
   await expect(page.getByText("Your files didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
 // ---------- the editor's own states ----------
 
 test("while the write is on its way the save state says Saving, then Saved", async ({ page }) => {
-  await open(page, "/new/documents/questions");
+  await open(page, "/documents/questions");
   const title = page.getByLabel("Title");
   await expect(title).toBeVisible({ timeout: COMPILE_TIMEOUT });
   // Holds the write back for a while, so the state between typing and the server's answer shows.
@@ -101,7 +101,7 @@ test("while the write is on its way the save state says Saving, then Saved", asy
 });
 
 test("a delete that can't finish keeps the question open with Nothing was deleted and Try again", async ({ page }) => {
-  await open(page, "/new/documents/seating?fault=save");
+  await open(page, "/documents/seating?fault=save");
   await expect(page.getByLabel("Title")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.getByRole("button", { name: "Delete this document" }).click();
   const sheet = page.getByRole("dialog", { name: "Delete “Seating ideas”?" });
@@ -114,7 +114,7 @@ test("a delete that can't finish keeps the question open with Nothing was delete
 });
 
 test("deleting a file that can't finish says Nothing was deleted and offers Try again", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue&file=f1&fault=save");
+  await open(page, "/documents/files?folder=venue&file=f1&fault=save");
   const sheet = page.getByRole("dialog");
   await expect(sheet.getByRole("heading", { name: "Villa Samaya contract.pdf" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await sheet.getByRole("button", { name: "Delete for good" }).click();
@@ -152,7 +152,7 @@ async function bellaNews(kind: string, name: string, target: { kind: string; id:
 }
 
 test("Bella starts a document: a toast names it and its card flashes", async ({ page }) => {
-  await open(page, "/new/documents");
+  await open(page, "/documents");
   await expect(page.getByText("6 documents, newest first")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   const bella = (await accountUids())[1];
   await putRaw("notes", "e2e-bella-doc", {
@@ -172,7 +172,7 @@ test("Bella starts a document: a toast names it and its card flashes", async ({ 
 });
 
 test("Bella uploads a file: a toast names it and its row flashes", async ({ page }) => {
-  await open(page, "/new/documents/files?folder=venue");
+  await open(page, "/documents/files?folder=venue");
   await expect(page.locator('[data-file-id="f1"]')).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await putRaw("weddingFiles", "e2e-bella-file", {
     name: str("Bella’s dress fitting.jpg"),
@@ -191,8 +191,8 @@ test("Bella uploads a file: a toast names it and its row flashes", async ({ page
 });
 
 test("Bella in the same document shows the gold banner; when she deletes it, Greg is told by name", async ({ browser }) => {
-  const greg = await openAs(browser, TEST_ACCOUNTS[0], "/new/documents/sangjit");
-  const bella = await openAs(browser, TEST_ACCOUNTS[1], "/new/documents/sangjit");
+  const greg = await openAs(browser, TEST_ACCOUNTS[0], "/documents/sangjit");
+  const bella = await openAs(browser, TEST_ACCOUNTS[1], "/documents/sangjit");
   await expect(greg.getByLabel("Title")).toHaveValue("Sangjit checklist", { timeout: COMPILE_TIMEOUT });
   await expect(bella.getByLabel("Title")).toHaveValue("Sangjit checklist", { timeout: COMPILE_TIMEOUT });
   await expect(greg.getByText("Bella is also in this document. Their changes appear as they type.")).toBeVisible({ timeout: 30_000 });

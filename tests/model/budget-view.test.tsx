@@ -91,10 +91,10 @@ describe("BudgetView, booked", () => {
 
   it("shows the four doors with their summaries and where each leads", () => {
     const page = html(<BudgetView view={viewOf([CATERING], { whatIfCount: 0 })} onRecord={onRecord} />);
-    expect(page).toContain('href="/new/budget/bookings"');
-    expect(page).toContain('href="/new/budget/payments"');
-    expect(page).toContain('href="/new/budget/who-pays"');
-    expect(page).toContain('href="/new/budget/what-if"');
+    expect(page).toContain('href="/budget/bookings"');
+    expect(page).toContain('href="/budget/payments"');
+    expect(page).toContain('href="/budget/who-pays"');
+    expect(page).toContain('href="/budget/what-if"');
     const text = words(<BudgetView view={viewOf([CATERING])} onRecord={onRecord} />);
     expect(text).toContain("1 booking");
     expect(text).toContain("1 payment until October");
@@ -107,7 +107,7 @@ describe("BudgetView, booked", () => {
     expect(words(<BudgetView view={viewOf([CATERING])} onRecord={onRecord} />)).toContain(
       "157 days until Saturday 20 March 2027",
     );
-    expect(page).toContain('href="/new/budget/bookings/new"');
+    expect(page).toContain('href="/budget/bookings/new"');
   });
 
   it("says overpaid, with the amount over and the overpaid thread, when paid more than committed", () => {

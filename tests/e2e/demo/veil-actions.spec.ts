@@ -7,9 +7,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Opens the gallery and returns Task 3.3's section. Other sections have buttons
 // too, so every locator in these tests starts from this section.
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   const section = page.locator("#section-3-3");
   await expect(section.getByRole("heading", { name: "Buttons", exact: true })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
@@ -128,7 +128,7 @@ test("a text link is ink with a champagne underline, and rose when it removes", 
 test("a text link with a path goes there", async ({ page }) => {
   const section = await openSection(page);
   await section.getByRole("link", { name: "On the shortlist", exact: true }).click();
-  await expect(page).toHaveURL(/\/new\/gallery\/states$/, { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL(/\/gallery\/states$/, { timeout: COMPILE_TIMEOUT });
 });
 
 test("the direction word flips between Ascending and Descending", async ({ page }) => {

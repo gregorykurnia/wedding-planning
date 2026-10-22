@@ -69,7 +69,7 @@ describe("the empty layouts", () => {
     const view = page(listOf([]));
     expect(words(view)).toContain("Nothing booked yet");
     expect(words(view)).toContain("Everything you’ve committed to");
-    expect(html(view)).toContain('href="/new/budget/bookings/new"');
+    expect(html(view)).toContain('href="/budget/bookings/new"');
     expect(html(view)).not.toContain('type="search"');
   });
 
@@ -123,8 +123,8 @@ describe("the list", () => {
 
   it("links back to the budget, and floats Add booking under the list", () => {
     const markup = html(page(listOf([DAPUR])));
-    expect(markup).toContain('href="/new/budget"');
-    expect(markup).toContain('href="/new/budget/bookings/new"');
+    expect(markup).toContain('href="/budget"');
+    expect(markup).toContain('href="/budget/bookings/new"');
   });
 });
 

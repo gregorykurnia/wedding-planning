@@ -6,7 +6,7 @@ import { restorePairing } from "../seed";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.11: the Vendors screen at /new/vendors, against the emulators (guide §5.11).
+// Task 4.11: the Vendors screen at /vendors, against the emulators (guide §5.11).
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -87,12 +87,12 @@ test.beforeEach(async () => {
 async function signInAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number], viewport?: { width: number; height: number }) {
   const context = await browser.newContext({ acceptDownloads: true, ...(viewport ? { viewport } : {}) });
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/vendors");
   await expect(page.getByRole("heading", { name: "Vendors", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
 }
@@ -123,8 +123,8 @@ test("lists the vendors under their categories, with the hero, chips and rows", 
   await expect(row).toContainText("Considering");
   await expect(row).toContainText("2 price options");
   await expect(row.getByRole("link", { name: "WhatsApp" })).toHaveAttribute("href", "https://wa.me/6281234567890");
-  await expect(row.getByRole("link", { name: "On the shortlist" })).toHaveAttribute("href", "/new/vendors/shortlist/s1");
-  await expect(row.getByRole("link", { name: "Kebun Bunga Atelier" })).toHaveAttribute("href", "/new/vendors/v1");
+  await expect(row.getByRole("link", { name: "On the shortlist" })).toHaveAttribute("href", "/vendors/shortlist/s1");
+  await expect(row.getByRole("link", { name: "Kebun Bunga Atelier" })).toHaveAttribute("href", "/vendors/v1");
   await expect(row.getByRole("button", { name: "Keen on Kebun Bunga Atelier" })).toHaveAttribute("aria-pressed", "true");
 
   // A bare row and a ruled-out one.
@@ -163,7 +163,7 @@ test("search, a category, the keen filter and the orders narrow the list, with a
   // A sorted list is flat, with the category in each row's meta; the order flips.
   await page.getByLabel("Order by").selectOption("name");
   await expect(page.getByRole("heading", { level: 2 })).toHaveCount(0);
-  const names = page.locator('ul[aria-label="Vendors"] > li a[href^="/new/vendors/v"]');
+  const names = page.locator('ul[aria-label="Vendors"] > li a[href^="/vendors/v"]');
   await expect(names.first()).toHaveText("Dapur Lestari Catering");
   await expect(rowOf(page, "Dapur Lestari Catering")).toContainText("Food");
   await page.getByRole("button", { name: "Ascending" }).click();

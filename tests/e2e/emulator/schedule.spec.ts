@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { expectStored, signInAndGoto, uniqueName } from "../helpers";
 
 test("add a schedule item, complete it and delete it", async ({ page }) => {
-  await signInAndGoto(page, "/schedule");
+  await signInAndGoto(page, "/old/schedule");
   await expect(
     page.getByRole("heading", { name: "Schedule", level: 1 }),
   ).toBeVisible();

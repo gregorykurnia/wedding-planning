@@ -58,8 +58,8 @@ export const GALLERY_SECTIONS: GallerySection[] = [
  * them rather than embedding them.
  */
 export const EARLIER_DEMOS: { href: string; title: string; task: string }[] = [
-  { href: "/new/gallery/nav", title: "Shell pieces", task: "2.4" },
-  { href: "/new/gallery/states", title: "Screen states, messages and banners", task: "2.5" },
-  { href: "/new/gallery/shell", title: "Sheets, confirm and toasts", task: "2.6" },
-  { href: "/new/gallery/partner", title: "Partner changes and presence", task: "2.7" },
+  { href: "/gallery/nav", title: "Shell pieces", task: "2.4" },
+  { href: "/gallery/states", title: "Screen states, messages and banners", task: "2.5" },
+  { href: "/gallery/shell", title: "Sheets, confirm and toasts", task: "2.6" },
+  { href: "/gallery/partner", title: "Partner changes and presence", task: "2.7" },
 ];

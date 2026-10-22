@@ -6,10 +6,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // way to one sentence, and there is nothing to sign out of.
 
 async function openSettings(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/settings");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/settings");
   await expect(page.getByRole("heading", { name: "Wedding settings", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -46,8 +46,8 @@ test("has the reminders, the install steps and the two doors", async ({ page }) 
   await expect(page.getByText("open the planner in Safari, tap Share, then Add to Home Screen.")).toBeVisible();
   await expect(page.getByText("open it in Chrome, tap the menu, then Install app.")).toBeVisible();
 
-  await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/new/budget/who-pays");
-  await expect(page.getByRole("link", { name: /Vendor categories/ })).toHaveAttribute("href", "/new/vendors?categories=1");
+  await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/budget/who-pays");
+  await expect(page.getByRole("link", { name: /Vendor categories/ })).toHaveAttribute("href", "/vendors?categories=1");
 });
 
 test("the notification button is off in demonstration mode", async ({ page }) => {

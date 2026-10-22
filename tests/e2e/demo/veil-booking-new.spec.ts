@@ -5,10 +5,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // form shows with its fields, and Add booking is off with the line that says why.
 
 async function openForm(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/bookings/new");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/bookings/new");
   await expect(page.getByRole("heading", { name: "Add a booking", level: 1 })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -20,7 +20,7 @@ test("shows the form in demonstration mode, with Add booking off and the reason"
   await expect(page.getByLabel("What it is")).toBeVisible();
   await expect(page.getByRole("button", { name: "Add booking" })).toBeDisabled();
   await expect(page.getByText("Demonstration mode: adding is turned off.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Cancel" })).toHaveAttribute("href", "/new/budget");
+  await expect(page.getByRole("link", { name: "Cancel" })).toHaveAttribute("href", "/budget");
 });
 
 test.describe("on a phone", () => {

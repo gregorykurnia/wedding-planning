@@ -225,7 +225,7 @@ const TASK: TaskRecord = {
 };
 
 /** The section's own address: the demo's links go back to it rather than to pages that aren't built yet. */
-const HERE = "/new/gallery#section-3-5";
+const HERE = "/gallery#section-3-5";
 
 /** What the flash buttons flash, as the partner's change would. */
 const FLASHES: { label: string; target: FlashTarget; said: string }[] = [

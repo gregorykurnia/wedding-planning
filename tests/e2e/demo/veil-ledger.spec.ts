@@ -6,9 +6,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Wednesday 14 October 2026, 11:30 in Jakarta.
 
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.locator("#section-3-5")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page.locator("#section-3-5");
 }
@@ -87,7 +87,7 @@ test("a flash highlights the row that changed and fades after it", async ({ page
 
 test("a folder is a link to its page, and a file reports which one was opened", async ({ page }) => {
   const section = await openSection(page);
-  await expect(section.locator('a[data-folder-id="fo1"]')).toHaveAttribute("href", "/new/gallery#section-3-5");
+  await expect(section.locator('a[data-folder-id="fo1"]')).toHaveAttribute("href", "/gallery#section-3-5");
   await section.locator('button[data-file-id="f2"]').click();
   await expect(log(section)).toHaveText("Opened Moodboard.jpg");
 });

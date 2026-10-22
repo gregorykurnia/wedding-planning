@@ -11,7 +11,7 @@ test.afterEach(closeOtherContexts);
 // taking their wiring out of the screens left every test green. Each test here fails without its wiring.
 
 async function signInAt(page: Page, email: string, password: string) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -45,7 +45,7 @@ async function openAs(browser: Browser, path: string): Promise<Page> {
   const page = await context.newPage();
   const { email, password } = TEST_ACCOUNTS[0];
   await signInAt(page, email, password);
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   return page;
 }
@@ -58,7 +58,7 @@ test.describe("the normal set", () => {
   test.afterAll(seed);
 
   test("P3-S5: a removal refused in demonstration mode says why and offers no Try again (confirm.tsx)", async ({ browser }) => {
-    const page = await openAs(browser, "/new/guests?fault=save:demo");
+    const page = await openAs(browser, "/guests?fault=save:demo");
     const sarah = page.locator("[data-guest-id]", { hasText: "Sarah Lim" });
     await sarah.getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
     await page.getByRole("dialog", { name: "Sarah Lim" }).getByRole("button", { name: "Remove guest" }).click();
@@ -70,17 +70,17 @@ test.describe("the normal set", () => {
   });
 
   test("P5-S12: Bookings, Payments due and Add a booking name what they show as the prototype does (ScreenState's what)", async ({ browser }) => {
-    const page = await openAs(browser, "/new/budget/bookings?fault=load");
+    const page = await openAs(browser, "/budget/bookings?fault=load");
     await expect(page.getByRole("heading", { name: "Your bookings didn’t load" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await page.goto("/new/budget/payments?fault=load");
+    await page.goto("/budget/payments?fault=load");
     await expect(page.getByRole("heading", { name: "Payments due didn’t load" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
     // Add a booking keeps its form when a read fails; its noun is in the loading line.
-    await page.goto("/new/budget/bookings/new?fault=loading");
+    await page.goto("/budget/bookings/new?fault=loading");
     await expect(page.getByText("Loading the budget", { exact: true })).toBeAttached({ timeout: COMPILE_TIMEOUT });
   });
 
   test("P5-S26: more than three of Bella's changes arriving together make one toast (usePartnerNews, partner.ts)", async ({ browser }) => {
-    const page = await openAs(browser, "/new/schedule/tasks");
+    const page = await openAs(browser, "/schedule/tasks");
     await expect(page.getByRole("button", { name: "Add a task" }).first()).toBeVisible({ timeout: COMPILE_TIMEOUT });
     // Entries count as news once the activity read has had its first answer: one alone first, until it shows.
     await expect(async () => {
@@ -96,10 +96,10 @@ test.describe("the normal set", () => {
   });
 
   test("P3-S6, P6-S14: a sheet kept open by its save across a move to another screen stays to say the save failed, and Try again adds it (sheet.tsx)", async ({ browser }) => {
-    const page = await openAs(browser, "/new/schedule");
+    const page = await openAs(browser, "/schedule");
     // Moved within the app, so Back below stays in it too.
     await page.getByRole("link", { name: "Tasks" }).click({ timeout: COMPILE_TIMEOUT });
-    await expect(page).toHaveURL("/new/schedule/tasks");
+    await expect(page).toHaveURL("/schedule/tasks");
     await page.getByRole("button", { name: "Add a task" }).click({ timeout: COMPILE_TIMEOUT });
     const sheet = page.getByRole("dialog", { name: "Add a task" });
     await sheet.getByLabel("What needs doing").fill("Hold the sheet open");
@@ -109,7 +109,7 @@ test.describe("the normal set", () => {
     await sheet.getByRole("button", { name: "Add task" }).click();
     await expect(sheet.getByRole("button", { name: "Adding" })).toBeVisible();
     await page.goBack();
-    await expect(page).toHaveURL("/new/schedule");
+    await expect(page).toHaveURL("/schedule");
     await expect(sheet).toBeVisible();
     // The add times out: the sheet stays, says so, and keeps what was typed (it used to close with no word).
     await expect(sheet.getByText("The task wasn’t added. What you typed is still here.")).toBeVisible({ timeout: 20_000 });
@@ -134,7 +134,7 @@ test("P2-S1: an account let in because the database couldn't be asked is asked a
   const toFirestore = (url: URL) => url.port === String(TEST_PORTS.firestore);
   await page.route(toFirestore, (route) => route.abort());
   await signInAt(page, email, "test-password-3");
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 
   // Reachable again, with nothing telling the browser it was ever offline: the page showing again asks.
   // The database takes a moment to be reached again, so it shows again every few seconds until asked.
@@ -146,5 +146,5 @@ test("P2-S1: an account let in because the database couldn't be asked is asked a
       { timeout: 5_000 },
     );
   }).toPass({ timeout: 60_000 });
-  await expect(page).toHaveURL("/new/sign-in");
+  await expect(page).toHaveURL("/sign-in");
 });

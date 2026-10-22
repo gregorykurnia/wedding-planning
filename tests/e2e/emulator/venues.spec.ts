@@ -8,7 +8,7 @@ import {
 } from "../helpers";
 
 test("add a venue and mark it Booked", async ({ page }) => {
-  await signInAndGoto(page, "/venues");
+  await signInAndGoto(page, "/old/venues");
   await expect(page.getByRole("heading", { name: "Venues" })).toBeVisible();
 
   await page.getByRole("button", { name: "Add venue" }).click();

@@ -5,15 +5,15 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // empty, and adding is turned off.
 
 test("shows no tasks, the sub-navigation, and an Add a task that is off and says why", async ({ page }) => {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/schedule/tasks");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/schedule/tasks");
   await expect(page.getByRole("heading", { name: "Tasks", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 
   await expect(page.getByText("Big jobs, broken into steps")).toBeVisible();
   await expect(page.getByRole("link", { name: "Tasks", exact: true }).first()).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("link", { name: "Agenda", exact: true })).toHaveAttribute("href", "/new/schedule");
+  await expect(page.getByRole("link", { name: "Agenda", exact: true })).toHaveAttribute("href", "/schedule");
   await expect(page.getByRole("heading", { name: "No tasks yet", level: 2 })).toBeVisible();
 
   await page.getByRole("button", { name: "Add a task" }).first().click();

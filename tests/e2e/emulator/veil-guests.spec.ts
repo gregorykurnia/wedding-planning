@@ -4,7 +4,7 @@ import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.24: Guests at /new/guests against the emulators (guide §5.23, §6.1, §6.2, G1–G8). Everything is
+// Task 4.24: Guests at /guests against the emulators (guide §5.23, §6.1, §6.2, G1–G8). Everything is
 // written as the emulator's owner (which skips the rules), so the numbers and counts read the same whenever
 // this runs.
 
@@ -143,14 +143,14 @@ test.afterEach(async () => {
   await put("settings", "wedding", { yourName: "", partnerName: "", weddingDate: null, startedOn: null });
 });
 
-async function openAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], size = { width: 1280, height: 900 }, path = "/new/guests") {
+async function openAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], size = { width: 1280, height: 900 }, path = "/guests") {
   const context = await browser.newContext({ viewport: size });
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Guests", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
@@ -379,9 +379,9 @@ test("a guest's sheet saves every field as you go, and a cleared name comes back
 });
 
 test("a link with ?guest= opens that guest's sheet and clears the address", async ({ browser }) => {
-  const page = await openAs(browser, TEST_ACCOUNTS[0], undefined, "/new/guests?guest=g-maria");
+  const page = await openAs(browser, TEST_ACCOUNTS[0], undefined, "/guests?guest=g-maria");
   await expect(page.getByRole("dialog", { name: "Maria Goretti" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new/guests");
+  await expect(page).toHaveURL("/guests");
 });
 
 test("Add a guest says which number is next, adds with the number issued once, and Add and start another keeps going", async ({ browser }) => {

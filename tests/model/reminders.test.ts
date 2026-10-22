@@ -105,14 +105,14 @@ describe("plannerClock", () => {
 });
 
 describe("reminderPush", () => {
-  const href = (id: string) => `/new/schedule?event=${id}`;
+  const href = (id: string) => `/schedule?event=${id}`;
 
   it("names the event, its day and time, and the place", () => {
     const [r] = remindersDue([event({ id: "a", location: "Sendok Emas, Kemang" })], "2026-10-15", "07:00");
     expect(reminderPush(r, "2026-10-15", href)).toEqual({
       title: "Tasting at Sendok Emas",
       body: "Tomorrow, Friday 16 October, 11:00\nSendok Emas, Kemang",
-      url: "/new/schedule?event=a",
+      url: "/schedule?event=a",
       tag: "reminder-a-1440",
     });
   });

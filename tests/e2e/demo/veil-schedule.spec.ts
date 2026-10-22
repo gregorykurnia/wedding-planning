@@ -5,10 +5,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // nothing is scheduled; adding is turned off with its reason, and the screen
 // keeps its title, sub-navigation and add button (guide §5.19).
 
-async function openSchedule(page: Page, path = "/new/schedule") {
-  await page.goto("/new/sign-in");
+async function openSchedule(page: Page, path = "/schedule") {
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Schedule", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
@@ -18,8 +18,8 @@ test("says nothing is scheduled yet, with the sub-navigation and no figure", asy
   await expect(page.getByText("Appointments, calls, payments and tasks, in one line of time")).toBeVisible();
   const nav = page.getByRole("navigation", { name: "Agenda, month and tasks" });
   await expect(nav.getByRole("link", { name: "Agenda" })).toHaveAttribute("aria-current", "page");
-  await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("href", "/new/schedule/month");
-  await expect(nav.getByRole("link", { name: "Tasks" })).toHaveAttribute("href", "/new/schedule/tasks");
+  await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("href", "/schedule/month");
+  await expect(nav.getByRole("link", { name: "Tasks" })).toHaveAttribute("href", "/schedule/tasks");
 
   await expect(page.getByRole("heading", { name: "Nothing scheduled yet", level: 2 })).toBeVisible();
   await expect(
@@ -46,14 +46,14 @@ test("Add to the schedule opens the sheet with adding turned off and its reason"
 });
 
 test("?new=1 opens the add sheet and clears the address", async ({ page }) => {
-  await openSchedule(page, "/new/schedule?new=1");
+  await openSchedule(page, "/schedule?new=1");
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Add to the schedule", level: 2 })).toBeVisible();
-  await expect(page).toHaveURL(/\/new\/schedule$/);
+  await expect(page).toHaveURL(/\/schedule$/);
 });
 
 // Task 4.21: the month route has the same empty state, with Month marked current (guide §5.20).
 test("the month says nothing is scheduled yet, with Month marked current", async ({ page }) => {
-  await openSchedule(page, "/new/schedule/month");
+  await openSchedule(page, "/schedule/month");
   const nav = page.getByRole("navigation", { name: "Agenda, month and tasks" });
   await expect(nav.getByRole("link", { name: "Month" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Agenda" })).not.toHaveAttribute("aria-current");

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { signInAndGoto, uniqueName } from "../helpers";
 
 test("write a note with a =SUM table and see the total", async ({ page }) => {
-  await signInAndGoto(page, "/notes");
+  await signInAndGoto(page, "/old/notes");
   await expect(
     page.getByRole("heading", { name: "Notes", level: 1 }),
   ).toBeVisible();

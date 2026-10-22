@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from "vitest";
  */
 const SOURCE = readFileSync(join(__dirname, "../../public/sw.js"), "utf8");
 const ORIGIN = "https://planner.example";
-const CACHE = "planner-static-v3";
+const CACHE = "planner-static-v4";
 
 type Listener = (event: unknown) => void;
 
@@ -124,7 +124,7 @@ describe("fetch", () => {
   it("leaves page loads to the network, even when an old cache holds the page", async () => {
     const sw = worker({ caches: { "wedding-planner-v2": { [`${ORIGIN}/`]: new Response("old page") } } });
     expect(await sw.get("/", { mode: "navigate" })).toBeUndefined();
-    expect(await sw.get("/new/schedule?day=2026-11-02", { mode: "navigate" })).toBeUndefined();
+    expect(await sw.get("/schedule?day=2026-11-02", { mode: "navigate" })).toBeUndefined();
   });
 
   it("leaves everything outside /_next/static/ alone", async () => {
@@ -193,13 +193,13 @@ describe("push", () => {
     const sw = worker();
     await sw.fire(
       "push",
-      push({ title: "Florist tasting tomorrow", body: "10:00 at Bloom", url: "/new/schedule/month?day=2026-11-02", tag: "event-1" }),
+      push({ title: "Florist tasting tomorrow", body: "10:00 at Bloom", url: "/schedule/month?day=2026-11-02", tag: "event-1" }),
     );
     expect(sw.registration.showNotification).toHaveBeenCalledWith("Florist tasting tomorrow", {
       body: "10:00 at Bloom",
       tag: "event-1",
       icon: "/icon-192.png",
-      data: { url: "/new/schedule/month?day=2026-11-02" },
+      data: { url: "/schedule/month?day=2026-11-02" },
     });
   });
 
@@ -228,27 +228,27 @@ describe("notificationclick", () => {
   const client = (url: string): FakeClient => ({ url, focus: vi.fn(async () => {}), navigate: vi.fn(async () => {}) });
 
   it("focuses an open planner and takes it to the day", async () => {
-    const open = client(`${ORIGIN}/new`);
+    const open = client(`${ORIGIN}`);
     const sw = worker({ clients: [open] });
-    const event = click("/new/schedule/month?day=2026-11-02");
+    const event = click("/schedule/month?day=2026-11-02");
     await sw.fire("notificationclick", event);
     expect(event.notification.close).toHaveBeenCalled();
     expect(open.focus).toHaveBeenCalled();
-    expect(open.navigate).toHaveBeenCalledWith(`${ORIGIN}/new/schedule/month?day=2026-11-02`);
+    expect(open.navigate).toHaveBeenCalledWith(`${ORIGIN}/schedule/month?day=2026-11-02`);
     expect(sw.clients.openWindow).not.toHaveBeenCalled();
   });
 
   it("opens the day when no planner is open", async () => {
     const sw = worker({ clients: [] });
-    await sw.fire("notificationclick", click("/new/schedule/month?day=2026-11-02"));
-    expect(sw.clients.openWindow).toHaveBeenCalledWith(`${ORIGIN}/new/schedule/month?day=2026-11-02`);
+    await sw.fire("notificationclick", click("/schedule/month?day=2026-11-02"));
+    expect(sw.clients.openWindow).toHaveBeenCalledWith(`${ORIGIN}/schedule/month?day=2026-11-02`);
   });
 
   it("stays on the page when the open window can't be moved", async () => {
     const open = client(`${ORIGIN}/`);
     open.navigate.mockRejectedValueOnce(new TypeError("not controlled"));
     const sw = worker({ clients: [open] });
-    await sw.fire("notificationclick", click("/new/schedule"));
+    await sw.fire("notificationclick", click("/schedule"));
     expect(open.focus).toHaveBeenCalled();
     expect(sw.clients.openWindow).not.toHaveBeenCalled();
   });

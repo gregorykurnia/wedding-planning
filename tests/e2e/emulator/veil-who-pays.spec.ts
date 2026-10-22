@@ -51,12 +51,12 @@ test.afterAll(async () => {
 
 async function openWhoPays(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/who-pays");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/who-pays");
   await expect(page.getByRole("heading", { name: "Who pays", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -91,8 +91,8 @@ test("each funder shows what's still to pay and what's been paid, with Not assig
 test("Not assigned links to Bookings searched for what has no funder", async ({ page }) => {
   await openWhoPays(page);
   const link = page.getByRole("link", { name: "See what has no funder" });
-  await expect(link).toHaveAttribute("href", "/new/budget/bookings?q=Not%20assigned");
-  await expect(page.getByRole("link", { name: "Budget" })).toHaveAttribute("href", "/new/budget");
+  await expect(link).toHaveAttribute("href", "/budget/bookings?q=Not%20assigned");
+  await expect(page.getByRole("link", { name: "Budget" })).toHaveAttribute("href", "/budget");
 });
 
 test("rename: Escape cancels, Enter saves with Undo, and focus returns to Rename", async ({ page }) => {

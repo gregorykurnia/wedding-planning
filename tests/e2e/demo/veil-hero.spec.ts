@@ -7,9 +7,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Opens the gallery and returns Task 3.1's section. Other sections have headings
 // too, so every locator in these tests starts from this section.
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   const section = page.locator("#section-3-1");
   await expect(
     section.getByRole("heading", { name: "Still to pay, the budget", exact: true }),

@@ -5,17 +5,17 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // no funders and nothing is booked: only Not assigned, and adding is turned off.
 
 async function openWhoPays(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/who-pays");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/who-pays");
   await expect(page.getByRole("heading", { name: "Who pays", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
 test("shows only Not assigned, the nothing-booked note and a way back to the budget", async ({ page }) => {
   await openWhoPays(page);
   await expect(page.getByText("What each of you and your families have paid, and what’s still to pay")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Budget" })).toHaveAttribute("href", "/new/budget");
+  await expect(page.getByRole("link", { name: "Budget" })).toHaveAttribute("href", "/budget");
   await expect(page.getByText(/^Nothing is booked yet, so nobody owes anything\./)).toBeVisible();
 
   const rows = page.locator("main li");

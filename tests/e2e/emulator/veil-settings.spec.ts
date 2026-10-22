@@ -75,16 +75,16 @@ test.afterAll(async () => {
 });
 
 async function signInAs(page: Page, account: (typeof TEST_ACCOUNTS)[number]) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 }
 
 async function openSettings(page: Page) {
   await signInAs(page, TEST_ACCOUNTS[0]);
-  await page.goto("/new/settings");
+  await page.goto("/settings");
   await expect(page.getByRole("heading", { name: "Wedding settings", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByLabel("First name")).toHaveValue("Greg");
 }
@@ -157,7 +157,7 @@ test("Sign out of this computer leaves, and says so on the sign-in screen", asyn
   await openSettings(page);
   await page.getByRole("button", { name: "Sign out of this computer" }).click();
   // The gate keeps where we were, so signing in again comes back to settings.
-  await expect(page).toHaveURL("/new/sign-in?next=%2Fnew%2Fsettings", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/sign-in?next=%2Fsettings", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByText("You’ve signed out. Nothing is shown on this device")).toBeVisible();
 });
 
@@ -180,7 +180,7 @@ test("a reminder set for a time of day is counted, with a way to choose again", 
   await openSettings(page);
   const line = page.locator("p", { hasText: "1 appointment or call has a reminder you set before for a time of day, which can’t arrive." });
   await expect(line).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(line.getByRole("link", { name: "Choose again in the schedule" })).toHaveAttribute("href", "/new/schedule");
+  await expect(line.getByRole("link", { name: "Choose again in the schedule" })).toHaveAttribute("href", "/schedule");
 
   // Once it is chosen again (no reminder), the line goes.
   await put("scheduleEvents/set-old-reminder", {
@@ -201,11 +201,11 @@ test("a reminder set for a time of day is counted, with a way to choose again", 
 
 test("the doors lead to Who pays and open the vendor categories", async ({ page }) => {
   await openSettings(page);
-  await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/new/budget/who-pays");
+  await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/budget/who-pays");
 
   await page.getByRole("link", { name: /Vendor categories/ }).click();
   await expect(page.getByRole("dialog", { name: "Vendor categories" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new/vendors");
+  await expect(page).toHaveURL("/vendors");
 });
 
 // Task 6.2: reminders on this device. The browser's permission and push
@@ -277,7 +277,7 @@ test.describe("on a Mac", () => {
     expect(tests).toEqual([{ endpoint: ENDPOINT }]);
 
     await page.getByRole("button", { name: "Sign out of this computer" }).click();
-    await expect(page).toHaveURL(/\/new\/sign-in/, { timeout: COMPILE_TIMEOUT });
+    await expect(page).toHaveURL(/\/sign-in/, { timeout: COMPILE_TIMEOUT });
     expect((await storedDocs("pushSubscriptions")).filter(saved)).toEqual([]);
     expect(await page.evaluate(() => (window as unknown as { __pushUnsubscribed: number }).__pushUnsubscribed)).toBe(1);
   });

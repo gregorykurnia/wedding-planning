@@ -1,14 +1,15 @@
+import { LEGACY_BASE } from "@/lib/legacy-href";
 import type { Section } from "./shell/menu-index";
 
 /**
- * The new UI's address prefix. Its routes are final (plan §4), and until Task
- * 7.1 moves the new UI to the root, every one of them sits under `/new`.
+ * The new UI's address prefix. Its routes are final (plan §4). It served from
+ * `/new` while it was built; since Task 7.1 it serves the site root.
  */
-export const VEIL_BASE = "/new";
+export const VEIL_BASE = "";
 
 /**
- * An address inside the new UI. Every link goes through here, so Task 7.1 only
- * changes the prefix: `veilHref("/budget")` is `/new/budget`, and
+ * An address inside the new UI. Every link goes through here, so the switch
+ * only changed the prefix: `veilHref("/budget")` is `/budget`, and
  * `veilHref("/")` is the overview.
  */
 export function veilHref(path: string): string {
@@ -19,7 +20,7 @@ export function veilHref(path: string): string {
 /** The menu sections that own a first path segment; the overview is the root. */
 const SECTION_ROOTS: readonly Section[] = ["budget", "vendors", "items", "schedule", "documents", "guests"];
 
-/** A pathname as the new UI's own path: `/new/budget` is `/budget`, `/new` is `/`. */
+/** A pathname as the new UI's own path: under a `/new` base, `/new/budget` is `/budget` and `/new` is `/`. */
 function localPath(pathname: string, base: string): string {
   if (!base) return pathname;
   if (pathname === base) return "/";
@@ -47,14 +48,19 @@ export function showsTopBar(pathname: string, base: string = VEIL_BASE): boolean
   return first !== "sign-in" && first !== "gallery";
 }
 
+/** Whether `path` is the base itself or an address under it. */
+const under = (path: string, base: string) =>
+  path.startsWith(base) && (path.length === base.length || "/?#".includes(path[base.length]));
+
 /**
  * Where to go after sign-in: `next` only when it is an address inside the new
- * UI, otherwise the overview. `base` is for tests of the root setup (7.1).
+ * UI, otherwise the overview. At the root that is any path except the old UI's
+ * frozen fallback (`/old`). `base` is for tests of a prefixed setup.
  * Backslashes are refused because browsers read `/\evil.com` as `//evil.com`.
  */
 export function safeNext(next: string | null, base: string = VEIL_BASE): string {
   const home = base || "/";
   if (!next || next.startsWith("//") || /[\\\s]/.test(next) || /%5c/i.test(next)) return home;
-  const inside = base ? next === base || next.startsWith(`${base}/`) || next.startsWith(`${base}?`) : next.startsWith("/");
+  const inside = base ? under(next, base) : next.startsWith("/") && !(LEGACY_BASE && under(next, LEGACY_BASE));
   return inside ? next : home;
 }

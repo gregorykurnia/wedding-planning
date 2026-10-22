@@ -4,7 +4,7 @@ import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.23: Wedding items at /new/items against the emulators (guide §5.22,
+// Task 4.23: Wedding items at /items against the emulators (guide §5.22,
 // §6.8, T1–T10, N12). Everything is written as the emulator's owner (which
 // skips the rules), so the order and the counts read the same whenever this runs.
 
@@ -142,12 +142,12 @@ test.afterEach(async () => {
 async function openItems(browser: Browser, size = { width: 1280, height: 900 }) {
   const context = await browser.newContext({ viewport: size });
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(TEST_ACCOUNTS[0].email);
   await page.getByLabel("Password").fill(TEST_ACCOUNTS[0].password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/items");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/items");
   await expect(page.getByRole("heading", { name: "Wedding items", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
 }

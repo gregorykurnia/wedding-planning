@@ -4,9 +4,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Task 2.6: the sheet host, confirm and toasts, on the dev-only demo page.
 
 async function openDemos(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery/shell");
+  await page.goto("/gallery/shell");
   await expect(page.getByRole("heading", { name: "Sheets, confirm and toasts" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });
@@ -181,7 +181,7 @@ test("toasts stack, last 6 seconds (9 for a partner), and Open acts at once", as
 // Phase 2 review: leaving the screen while a confirm is busy doesn't lose the undo.
 test("leaving while Removing keeps the sheet until the write lands, then offers Undo", async ({ page }) => {
   // Compile the page it leaves for first, so the move lands inside the write.
-  await page.goto("/new/gallery/partner");
+  await page.goto("/gallery/partner");
   await openDemos(page);
   await page.getByLabel("Make the next write slow").check();
   await page.getByRole("button", { name: "Remove Villa Samaya Ubud" }).click();
@@ -192,7 +192,7 @@ test("leaving while Removing keeps the sheet until the write lands, then offers 
   // The link sits behind the modal, so it is clicked from script, as a
   // navigation from elsewhere (a partner toast's Open, the back button) would be.
   await page.evaluate(() => document.getElementById("leave-demo")?.click());
-  await expect(page).toHaveURL("/new/gallery/partner", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/gallery/partner", { timeout: COMPILE_TIMEOUT });
   await expect(dialog.getByRole("button", { name: "Removing" })).toBeVisible();
 
   await expect(dialog).toHaveCount(0);
@@ -205,6 +205,6 @@ test("leaving the screen closes an idle sheet", async ({ page }) => {
   await page.getByRole("button", { name: "Open a sheet" }).click();
   await expect(page.getByRole("dialog", { name: "A demo sheet" })).toBeVisible();
   await page.evaluate(() => document.getElementById("leave-demo")?.click());
-  await expect(page).toHaveURL("/new/gallery/partner", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/gallery/partner", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });

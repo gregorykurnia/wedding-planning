@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
 
             {NAV_ITEMS.filter(
-              (item) => item.href !== "/" && !PLANNING_ITEMS.some((p) => p.href === item.href),
+              (item) => item.href !== legacyHref("/") && !PLANNING_ITEMS.some((p) => p.href === item.href),
             ).map((item) => {
               const active = pathname?.startsWith(item.href);
               return (

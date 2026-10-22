@@ -63,7 +63,7 @@ describe("the empty layouts", () => {
     const view = page(listOf([booking("paid", 1000, "2026-10-10", { paid: 1000 })]));
     expect(words(view)).toContain("Nothing to pay right now");
     expect(words(view)).toContain("Every booking with a due date is paid up.");
-    expect(html(view)).toContain('href="/new/budget/bookings"');
+    expect(html(view)).toContain('href="/budget/bookings"');
   });
 
   it("says something different when nothing is booked at all", () => {
@@ -93,7 +93,7 @@ describe("the list", () => {
 
   it("links each row to its booking and offers Record payment", () => {
     const view = page(listOf([LATE]));
-    expect(html(view)).toContain('href="/new/budget/bookings/vendor-Dapur%20Lestari%20Catering"');
+    expect(html(view)).toContain('href="/budget/bookings/vendor-Dapur%20Lestari%20Catering"');
     expect(words(view)).toContain("Record payment");
     expect(words(view)).toContain("4 days late");
   });

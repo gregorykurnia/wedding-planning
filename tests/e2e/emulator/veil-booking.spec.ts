@@ -118,12 +118,12 @@ test.afterAll(async () => {
 
 async function openBooking(page: Page, id: string, heading: string | RegExp) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto(`/new/budget/bookings/vendor-${id}`);
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto(`/budget/bookings/vendor-${id}`);
   await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -139,7 +139,7 @@ test("shows the figure, the thread, the next step and where it came from", async
   await expect(next).toContainText("Rp 20.000.000");
   await expect(next).toContainText("CK");
   await expect(page.getByText("Booked from Vendors on Sunday 1 March")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Bookings", exact: true })).toHaveAttribute("href", "/new/budget/bookings");
+  await expect(page.getByRole("link", { name: "Bookings", exact: true })).toHaveAttribute("href", "/budget/bookings");
   await expect(page.getByText("Every change saves as you go")).toBeVisible();
 });
 
@@ -291,7 +291,7 @@ test("removes the booking in place, and Undo brings it back", async ({ page }) =
 
 test("an old link says the booking isn't here", async ({ page }) => {
   await openBooking(page, "no-such-booking", "This booking isn’t here");
-  await expect(page.getByRole("link", { name: "See all bookings" })).toHaveAttribute("href", "/new/budget/bookings");
+  await expect(page.getByRole("link", { name: "See all bookings" })).toHaveAttribute("href", "/budget/bookings");
 });
 
 test.describe("on a phone", () => {

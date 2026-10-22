@@ -8,9 +8,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Opens the gallery and returns Task 3.8's section. The sheets it opens are
 // dialogs on the page, so every locator here starts from the section.
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   const section = page.locator("#section-3-8");
   await expect(section.getByRole("heading", { name: "Create sheet", exact: true })).toBeVisible({
     timeout: COMPILE_TIMEOUT,

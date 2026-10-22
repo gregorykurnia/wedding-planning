@@ -129,12 +129,12 @@ const stub = (page: Page) =>
 
 async function openGallery(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/gallery");
   const section = page.locator("#section-4-4");
   await expect(section.getByRole("button", { name: "Record payment for Dapur Lestari Catering" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,

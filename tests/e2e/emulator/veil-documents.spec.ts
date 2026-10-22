@@ -6,7 +6,7 @@ import { editedText } from "../../../src/lib/model/dates";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.16: the Documents list at /new/documents, against the emulators (guide §5.16, R6).
+// Task 4.16: the Documents list at /documents, against the emulators (guide §5.16, R6).
 // Documents are written as the emulator's owner (which skips the rules); the screen reads them live.
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
@@ -76,12 +76,12 @@ test.beforeEach(async () => {
 
 async function open(page: Page) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/documents");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/documents");
   await expect(page.getByRole("heading", { name: "Documents", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -99,7 +99,7 @@ test("shows the three newest as cards and the rest as rows under Earlier", async
   // Yours isn't named.
   await expect(cards.nth(1)).toContainText(`Edited ${editedText(ago(5).getTime(), Date.now())}`);
   await expect(cards.nth(1).getByText(/^Edited/)).not.toContainText("by");
-  await expect(cards.nth(0)).toHaveAttribute("href", "/new/documents/n1");
+  await expect(cards.nth(0)).toHaveAttribute("href", "/documents/n1");
 
   await expect(page.getByRole("heading", { name: /^Earlier/, level: 2 })).toContainText("3 documents");
   const rows = page.getByRole("list", { name: "Documents" }).locator("a[data-doc-id]");
@@ -141,19 +141,19 @@ test("a search that finds nothing says so and clears", async ({ page }) => {
 test("the two starts open a new document", async ({ page }) => {
   await open(page);
   await page.getByRole("link", { name: "Meeting notes" }).click();
-  await expect(page).toHaveURL(/\/new\/documents\/new\?start=meeting/, { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL(/\/documents\/new\?start=meeting/, { timeout: COMPILE_TIMEOUT });
   await expect(page.getByLabel("Title")).toHaveValue(/^Meeting: /, { timeout: COMPILE_TIMEOUT });
 
-  await page.goto("/new/documents");
+  await page.goto("/documents");
   await page.getByRole("link", { name: "New document" }).click();
-  await expect(page).toHaveURL(/\/new\/documents\/new\?start=blank/, { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL(/\/documents\/new\?start=blank/, { timeout: COMPILE_TIMEOUT });
   await expect(page.getByLabel("Title")).toHaveValue("", { timeout: COMPILE_TIMEOUT });
 });
 
 test("a document card opens its document", async ({ page }) => {
   await open(page);
   await page.locator("a[data-doc-id='n2']").click();
-  await expect(page).toHaveURL("/new/documents/n2", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/documents/n2", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByLabel("Title")).toHaveValue("Seating ideas", { timeout: COMPILE_TIMEOUT });
 });
 

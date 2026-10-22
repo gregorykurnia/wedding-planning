@@ -5,9 +5,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // component gallery. "Today" in the demo is Wednesday 14 October 2026.
 
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.locator("#section-3-6")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page.locator("#section-3-6");
 }

@@ -5,7 +5,7 @@ import { restorePairing } from "../seed";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.12: a vendor's own screen at /new/vendors/<id>, against the emulators (guide §5.12).
+// Task 4.12: a vendor's own screen at /vendors/<id>, against the emulators (guide §5.12).
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -129,12 +129,12 @@ async function signInAs(
 ) {
   const context = await browser.newContext(viewport ? { viewport } : {});
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto(`/new/vendors/${id}`);
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto(`/vendors/${id}`);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
 }
@@ -144,7 +144,7 @@ const toasts = (page: Page) => page.getByRole("status");
 test("shows the hero, the rows, the prices, the notes, the files and the shortlist card", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0], "v1");
 
-  await expect(page.getByRole("link", { name: "Vendors", exact: true }).first()).toHaveAttribute("href", "/new/vendors");
+  await expect(page.getByRole("link", { name: "Vendors", exact: true }).first()).toHaveAttribute("href", "/vendors");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Kebun Bunga Atelier/);
   await expect(page.getByText("Decoration", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Keen on Kebun Bunga Atelier" })).toHaveAttribute("aria-pressed", "true");
@@ -181,7 +181,7 @@ test("shows the hero, the rows, the prices, the notes, the files and the shortli
 
   // It is on the shortlist already.
   await expect(page.getByRole("heading", { name: "On the shortlist" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open on the shortlist" })).toHaveAttribute("href", "/new/vendors/shortlist/s1");
+  await expect(page.getByRole("link", { name: "Open on the shortlist" })).toHaveAttribute("href", "/vendors/shortlist/s1");
   await expect(page.getByRole("button", { name: "Copy to the shortlist" })).toHaveCount(0);
 });
 
@@ -205,15 +205,15 @@ test("a ruled-out vendor has its name struck through and Ruled out chosen", asyn
 
 test("a link that leads nowhere says the vendor isn't here", async ({ browser }) => {
   const page = await browser.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(TEST_ACCOUNTS[0].email);
   await page.getByLabel("Password").fill(TEST_ACCOUNTS[0].password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/old-link");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/vendors/old-link");
   await expect(page.getByRole("heading", { name: "This vendor isn’t here" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page.getByText("The link may be out of date, or the vendor was removed a while ago.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "See all vendors" })).toHaveAttribute("href", "/new/vendors");
+  await expect(page.getByRole("link", { name: "See all vendors" })).toHaveAttribute("href", "/vendors");
 });
 
 test("fields save as you go, say so, and survive a reload", async ({ browser }) => {
@@ -283,7 +283,7 @@ test("choosing Chosen makes the vendor a booking, with a toast to open it", asyn
   await expect(toasts(page).getByText("Kebun Bunga Atelier is now a booking")).toBeVisible();
   await expect(toasts(page).getByRole("button", { name: "Open" })).toBeVisible();
   await expect(page.getByText("Chosen, and now a booking.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open the booking" })).toHaveAttribute("href", "/new/budget/bookings/vendor-v1");
+  await expect(page.getByRole("link", { name: "Open the booking" })).toHaveAttribute("href", "/budget/bookings/vendor-v1");
 
   const doc = await stored("vendors", "v1");
   expect(doc?.contractStatus).toBe("Chosen");
@@ -393,7 +393,7 @@ test("removing a vendor asks first, says it in place, and can be undone", async 
   await confirm.getByRole("button", { name: "Remove vendor" }).click();
   await expect(page.getByRole("heading", { name: "Kebun Bunga Atelier was removed" })).toBeVisible();
   await expect(page.getByText("It’s no longer in Vendors.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "See all vendors" })).toHaveAttribute("href", "/new/vendors");
+  await expect(page.getByRole("link", { name: "See all vendors" })).toHaveAttribute("href", "/vendors");
   expect(await stored("vendors", "v1")).toBeNull();
   // What came from it stays.
   expect(await stored("weddingFiles", "f1")).not.toBeNull();

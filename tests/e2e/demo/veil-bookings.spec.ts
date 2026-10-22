@@ -6,10 +6,10 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // the budget, and there is no search or order to use.
 
 async function openBookings(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget/bookings");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget/bookings");
   await expect(page.getByRole("heading", { name: "Bookings", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -18,8 +18,8 @@ test("shows the empty layout: nothing booked, with Add booking and a link back t
   await expect(page).toHaveTitle("Bookings · Our wedding planner");
   await expect(page.getByRole("heading", { name: "Nothing booked yet", level: 2 })).toBeVisible();
   await expect(page.getByText("Everything you’ve committed to")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/new/budget/bookings/new");
-  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/new/budget");
+  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/budget/bookings/new");
+  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/budget");
   await expect(page.getByRole("searchbox")).toHaveCount(0);
 });
 

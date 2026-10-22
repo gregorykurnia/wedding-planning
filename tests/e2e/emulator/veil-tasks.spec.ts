@@ -4,7 +4,7 @@ import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.22: Tasks at /new/schedule/tasks against the emulators (guide §5.21,
+// Task 4.22: Tasks at /schedule/tasks against the emulators (guide §5.21,
 // §6.2, S8, S9). Everything is written as the emulator's owner (which skips the
 // rules), with dates counted from today, so the order, the late line and the
 // finished days read the same whenever this runs.
@@ -130,14 +130,14 @@ test.afterEach(async () => {
   await put("settings", "wedding", { yourName: "", partnerName: "", weddingDate: null, startedOn: null });
 });
 
-async function openTasks(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], path = "/new/schedule/tasks") {
+async function openTasks(browser: Browser, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0], path = "/schedule/tasks") {
   const context = await browser.newContext();
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Tasks", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
@@ -174,12 +174,12 @@ test("open tasks run by due date with undated last, and finished ones sit in a d
 });
 
 test("?open= opens that task, and a finished one opens the finished disclosure", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   await expect(task(page, "tk-rings")).toHaveAttribute("open", "");
   await expect(task(page, "tk-rings").getByLabel("Due date", { exact: true })).toHaveValue(inDays(3));
   await expect(task(page, "tk-dress")).not.toHaveAttribute("open", "");
 
-  const finished = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-church");
+  const finished = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-church");
   await expect(task(finished, "tk-church")).toHaveAttribute("open", "");
   await expect(task(finished, "tk-church")).toBeVisible();
   await expect(finished.getByText("Hide 2 finished tasks")).toBeVisible();
@@ -213,7 +213,7 @@ test("Finish records today, Reopen clears it, and Undo puts either back", async 
 });
 
 test("steps: add, name, date, tick and remove, each saved on its own, with Undo for a removal", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   const rings = task(page, "tk-rings");
 
   await rings.getByRole("button", { name: "Add a step" }).click();
@@ -240,7 +240,7 @@ test("steps: add, name, date, tick and remove, each saved on its own, with Undo 
 });
 
 test("the due date and notes save as you go, and the order follows the date", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-trip");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-trip");
   const trip = task(page, "tk-trip");
 
   await trip.getByLabel("Notes").fill("Bali or Lombok");
@@ -261,7 +261,7 @@ test("the due date and notes save as you go, and the order follows the date", as
 });
 
 test("Delete task asks first, names its steps, and Undo brings it back exactly", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   const before = await read("todos", "tk-rings");
 
   await task(page, "tk-rings").getByRole("button", { name: "Delete task" }).click();
@@ -307,7 +307,7 @@ test("Add a task says what's missing and keeps the date, then adds and opens it"
 });
 
 test("a step that can't be saved keeps what was typed, and Try again saves it", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   const rings = task(page, "tk-rings");
   const second = rings.getByLabel("Step", { exact: true }).nth(1);
 
@@ -327,7 +327,7 @@ test("a step that can't be saved keeps what was typed, and Try again saves it", 
 });
 
 test("a failed step title stays failed when a tick on the same step saves, and the notes' failure shows beside it", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   const rings = task(page, "tk-rings");
   const first = rings.getByLabel("Step", { exact: true }).first();
   const notes = rings.getByPlaceholder("Notes");
@@ -362,7 +362,7 @@ test("a failed step title stays failed when a tick on the same step saves, and t
 });
 
 test("an added then removed step doesn't take the cursor back when Undo brings it back", async ({ browser }) => {
-  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/new/schedule/tasks?open=tk-rings");
+  const page = await openTasks(browser, TEST_ACCOUNTS[0], "/schedule/tasks?open=tk-rings");
   const rings = task(page, "tk-rings");
   await rings.getByRole("button", { name: "Add a step" }).click();
   const added = rings.getByLabel("Step", { exact: true }).nth(2);
@@ -378,7 +378,7 @@ test("an added then removed step doesn't take the cursor back when Undo brings i
 
 test("Bella finishes a step: Greg sees a toast", async ({ browser }) => {
   const greg = await openTasks(browser, TEST_ACCOUNTS[0]);
-  const bella = await openTasks(browser, TEST_ACCOUNTS[1], "/new/schedule/tasks?open=tk-rings");
+  const bella = await openTasks(browser, TEST_ACCOUNTS[1], "/schedule/tasks?open=tk-rings");
 
   await bella.getByRole("checkbox", { name: "Step done: Visit the jeweller" }).click();
   await expect(greg.getByRole("status").getByText("Bella finished “Visit the jeweller”")).toBeVisible({ timeout: 15_000 });

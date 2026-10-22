@@ -25,7 +25,7 @@ test("create a folder and upload a file (Cloudinary stubbed)", async ({
     });
   });
 
-  await signInAndGoto(page, "/files");
+  await signInAndGoto(page, "/old/files");
   await expect(
     page.getByRole("heading", { name: "Wedding Files" }),
   ).toBeVisible();

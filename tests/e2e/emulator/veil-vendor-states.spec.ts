@@ -16,32 +16,32 @@ test.afterAll(seed);
 
 async function open(page: Page, path: string) {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
 }
 
 test("the Vendors list says it didn't load under ?fault=load, and Try again says so again", async ({ page }) => {
-  await open(page, "/new/vendors?fault=load");
+  await open(page, "/vendors?fault=load");
   await expect(page.getByText("Your vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByText("Your vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
 test("the Shortlist, the Venues and a vendor's own screen each say they didn't load under ?fault=load", async ({ page }) => {
-  await open(page, "/new/vendors/shortlist?fault=load");
+  await open(page, "/vendors/shortlist?fault=load");
   await expect(page.getByText("Your shortlist didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/venues?fault=load");
+  await page.goto("/vendors/venues?fault=load");
   await expect(page.getByText("Your venues didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/kebun?fault=load");
+  await page.goto("/vendors/kebun?fault=load");
   await expect(page.getByText("This vendor didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
 test("a rating that doesn't save keeps what was typed, with the rose line and the save line saying so", async ({ page }) => {
-  await open(page, "/new/vendors/kebun?fault=save");
+  await open(page, "/vendors/kebun?fault=save");
   const rating = page.getByLabel("Review rating");
   await expect(rating).toBeVisible({ timeout: COMPILE_TIMEOUT });
   // 4,9, not the stored 4,8: a value that hasn't changed isn't written, so nothing would fail.
@@ -53,7 +53,7 @@ test("a rating that doesn't save keeps what was typed, with the rose line and th
 });
 
 test("a finalist with no packages says so on its card, where the packages would be", async ({ page }) => {
-  await open(page, "/new/vendors/shortlist");
+  await open(page, "/vendors/shortlist");
   await page.getByRole("button", { name: "Add a finalist" }).first().click();
   const sheet = page.getByRole("dialog", { name: "Add a finalist" });
   await sheet.getByLabel("Name").fill("Card with no packages");
@@ -63,7 +63,7 @@ test("a finalist with no packages says so on its card, where the packages would 
 });
 
 test("offline, a keen mark and Copy to the shortlist say they aren't saved and to keep the page open (guide §6.5, P6-S17)", async ({ page }) => {
-  await open(page, "/new/vendors/ara?fault=offline");
+  await open(page, "/vendors/ara?fault=offline");
   const offline = page.getByRole("alert").filter({ hasText: "Not saved: you’re offline. Keep this page open." });
   await page.getByRole("button", { name: "Keen on Moments by Ara" }).click({ timeout: COMPILE_TIMEOUT });
   await expect(offline).toHaveCount(1, { timeout: 15_000 });

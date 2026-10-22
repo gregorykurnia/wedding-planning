@@ -5,12 +5,12 @@ const BANNER = "Firebase isn't connected yet";
 test("with no Firebase config the app shows the demo layout", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/old");
   await expect(page.getByText(BANNER)).toBeVisible();
 });
 
 test("demo mode shows the app shell without signing in", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/old");
   await expect(page.getByText(BANNER)).toBeVisible();
   await expect(
     page.getByText("You're viewing demo layouts with empty data."),
@@ -29,7 +29,7 @@ test("demo mode shows the app shell without signing in", async ({ page }) => {
   ]) {
     await expect(nav.getByRole("link", { name: label })).toBeVisible();
   }
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/old");
 });
 
 test("demo mode renders Guests empty, and adding a guest does not crash the page", async ({
@@ -40,7 +40,7 @@ test("demo mode renders Guests empty, and adding a guest does not crash the page
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
-  await page.goto("/guests");
+  await page.goto("/old/guests");
   await expect(page.getByText(BANNER)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Guests" })).toBeVisible();
   await expect(page.getByText("0 listed (incl. plus-ones)")).toBeVisible();

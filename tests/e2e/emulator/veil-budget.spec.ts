@@ -115,12 +115,12 @@ test.afterAll(async () => {
 
 async function openBudget(page: Page, account: (typeof TEST_ACCOUNTS)[number] = TEST_ACCOUNTS[0]) {
   const { email, password } = account;
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/budget");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/budget");
   await expect(page.getByRole("heading", { name: "Budget", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -137,7 +137,7 @@ test("shows what is still to pay, the next payment, the doors and the closing li
   await expect(next.getByText("Next to pay", { exact: true })).toBeVisible();
   await expect(next.getByRole("link", { name: "Dapur Lestari Catering" })).toHaveAttribute(
     "href",
-    "/new/budget/bookings/vendor-bd-catering",
+    "/budget/bookings/vendor-bd-catering",
   );
   await expect(next.getByText("due in 5 days")).toBeVisible();
   await expect(next.getByText("Rp 20.000.000")).toBeVisible();
@@ -152,7 +152,7 @@ test("shows what is still to pay, the next payment, the doors and the closing li
   );
 
   await expect(page.getByText(`${DAYS_TO_WEDDING} days until Saturday 20 March 2027`)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/new/budget/bookings/new");
+  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/budget/bookings/new");
 });
 
 test("paid more than committed says overpaid, with the amount over and the overpaid thread", async ({ page }) => {

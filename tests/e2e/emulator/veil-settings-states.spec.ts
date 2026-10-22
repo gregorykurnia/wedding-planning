@@ -27,13 +27,13 @@ async function storedPartnerName(): Promise<string | undefined> {
   return ((await res.json()) as { fields?: { partnerName?: { stringValue?: string } } }).fields?.partnerName?.stringValue;
 }
 
-async function open(page: Page, path = "/new/settings") {
+async function open(page: Page, path = "/settings") {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
 }
 
@@ -51,7 +51,7 @@ test.describe("Wedding settings states", () => {
   test("a name that didn't save keeps what was typed, rings its field and says so, and Try again fails the same", async ({
     page,
   }) => {
-    await open(page, "/new/settings?fault=save");
+    await open(page, "/settings?fault=save");
     const second = page.getByLabel("Second name");
     await second.fill("Isabella");
     await second.blur();
@@ -105,7 +105,7 @@ test.describe("Wedding settings states", () => {
   test("while the settings are read, Loading your settings keeps the page busy", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
-    await page.goto("/new/settings");
+    await page.goto("/settings");
     await expect(page.getByText("Loading your settings", { exact: true })).toBeAttached({ timeout: COMPILE_TIMEOUT });
     await expect(page.locator("main")).toHaveAttribute("aria-busy", "true");
     await expect(page.getByLabel("Second name")).toHaveCount(0);
@@ -114,7 +114,7 @@ test.describe("Wedding settings states", () => {
   test("offline before any data has arrived, the offline message shows and no form does", async ({ page }) => {
     await open(page);
     await page.route(LISTEN, (route) => route.abort());
-    await page.goto("/new/settings?fault=offline");
+    await page.goto("/settings?fault=offline");
     await expect(page.getByRole("heading", { name: "You’re offline" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await expect(page.getByText("The planner needs a connection to show your settings.")).toBeVisible();
     await expect(page.getByLabel("Second name")).toHaveCount(0);

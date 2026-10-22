@@ -6,9 +6,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // the demo can be told to make every save fail.
 
 async function openDemo(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.getByRole("group", { name: "Detail screen form" })).toBeVisible({
     timeout: COMPILE_TIMEOUT,
   });

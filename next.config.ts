@@ -36,15 +36,38 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Since the switch-over (Task 7.1) the new UI serves the site root and the old
+  // one is the frozen fallback under /old. Old addresses with no page of the same
+  // name in the new UI, and every /new address the new UI had while it was built
+  // (bookmarks, links in reminders already sent), go to their new pages. These
+  // stay temporary until the fallback is removed (Phase 9): a browser remembers a
+  // permanent redirect, and after a rollback (plan §9.3) it would keep sending
+  // /login to a /sign-in that no longer exists.
+  async redirects() {
+    const moved: [string, string][] = [
+      ["/new", "/"],
+      ["/new/:path*", "/:path*"],
+      ["/login", "/sign-in"],
+      ["/confirmed", "/budget/bookings"],
+      ["/master-list", "/items"],
+      ["/todo", "/schedule/tasks"],
+      ["/checklist", "/schedule/tasks"],
+      ["/notes", "/documents"],
+      ["/venues", "/vendors/venues"],
+      ["/shortlist", "/vendors/shortlist"],
+      ["/files", "/documents/files"],
+    ];
+    return moved.map(([source, destination]) => ({ source, destination, permanent: false }));
+  },
   // The component gallery is dev-only. With its switch off, its addresses are
-  // rewritten to a path outside the new UI that doesn't exist, so the server answers
-  // 404. Under /new an unknown address reaches the not-found page (the catch-all in
-  // app/(veil)/new), which streams and answers 200, so the target must stay outside
-  // /new. beforeFiles runs before the page match, so the gallery pages never render.
+  // rewritten to /gallery-off, whose own route answers a plain 404 (any other
+  // unknown address reaches the new UI's catch-all, which shows the not-found
+  // screen with a 200). beforeFiles runs before the page match, so the gallery
+  // pages never render.
   async rewrites() {
     if (process.env.NEXT_PUBLIC_VEIL_GALLERY === "1") return [];
     return {
-      beforeFiles: [{ source: "/new/gallery/:path*", destination: "/gallery-off" }],
+      beforeFiles: [{ source: "/gallery/:path*", destination: "/gallery-off" }],
       afterFiles: [],
       fallback: [],
     };

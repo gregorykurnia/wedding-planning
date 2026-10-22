@@ -31,7 +31,7 @@ test.afterAll(async () => {
 test("split a confirmed booking into sub-entries and change a payment", async ({
   page,
 }) => {
-  await signInAndGoto(page, "/confirmed");
+  await signInAndGoto(page, "/old/confirmed");
   await expect(
     page.getByRole("heading", { name: "Confirmed", level: 1 }),
   ).toBeVisible();

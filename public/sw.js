@@ -13,7 +13,7 @@
 // Bump the version when this file changes what it caches: activating a new
 // version deletes every other cache, including the old `wedding-planner-v2`.
 
-const CACHE = "planner-static-v3";
+const CACHE = "planner-static-v4";
 const MAX_ENTRIES = 300;
 const FALLBACK_TITLE = "Our wedding planner";
 

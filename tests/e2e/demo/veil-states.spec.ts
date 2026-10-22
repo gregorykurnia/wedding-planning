@@ -5,9 +5,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // dev-only gallery page. The page shows each state from a fake read.
 
 async function openDemos(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery/states");
+  await page.goto("/gallery/states");
   await expect(
     page.getByRole("heading", { name: "Screen states, messages and banners" }),
   ).toBeVisible({ timeout: COMPILE_TIMEOUT });

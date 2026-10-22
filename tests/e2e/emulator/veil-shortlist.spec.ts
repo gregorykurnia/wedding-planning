@@ -5,7 +5,7 @@ import { restorePairing } from "../seed";
 
 test.afterEach(closeOtherContexts);
 
-// Task 4.13: the Shortlist at /new/vendors/shortlist, against the emulators (guide §5.13).
+// Task 4.13: the Shortlist at /vendors/shortlist, against the emulators (guide §5.13).
 
 const DOCUMENTS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -143,12 +143,12 @@ test.beforeEach(async () => {
 async function signInAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number], viewport?: { width: number; height: number }) {
   const context = await browser.newContext(viewport ? { viewport } : {});
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/vendors/shortlist");
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto("/vendors/shortlist");
   await expect(page.getByRole("heading", { name: "Shortlist", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page;
 }
@@ -183,7 +183,7 @@ test("lists the finalists under their categories, as cards", async ({ browser })
   await expect(kebun).toContainText("Next: Ask about the delivery fee");
   await expect(kebun.getByRole("link", { name: "Kebun Bunga Atelier" })).toHaveAttribute(
     "href",
-    "/new/vendors/shortlist/f1",
+    "/vendors/shortlist/f1",
   );
 
   // Six packages: four listed, then how many more.
@@ -216,7 +216,7 @@ test("a category focus and the four orders narrow and reorder the cards", async 
   await expect(cardOf(page, "Arka Visual")).toHaveCount(0);
   await page.getByRole("button", { name: /^All$/ }).click();
 
-  const names = page.locator('a[href^="/new/vendors/shortlist/f"]');
+  const names = page.locator('a[href^="/vendors/shortlist/f"]');
   await expect(names).toHaveText(["Kebun Bunga Atelier", "Pelaminan Ayu", "Dapur Lestari Catering", "Arka Visual"]);
 
   // Preferred price starts low to high; a finalist with no price is last either way.
@@ -304,7 +304,7 @@ test("nothing on the shortlist: the message, a way to Vendors and the add sheet"
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   await expect(page.getByText("Finalists, side by side")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Nothing on the shortlist yet", level: 2 })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Go to Vendors" })).toHaveAttribute("href", "/new/vendors");
+  await expect(page.getByRole("link", { name: "Go to Vendors" })).toHaveAttribute("href", "/vendors");
   await page.getByRole("button", { name: "Add a finalist" }).first().click();
   await expect(page.getByRole("dialog", { name: "Add a finalist" })).toBeVisible();
 });

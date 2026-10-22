@@ -45,12 +45,12 @@ test.afterAll(async () => {
 
 async function signInAndOpenForm(page: Page, query = "") {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
-  await page.goto(`/new/budget/bookings/new${query}`);
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
+  await page.goto(`/budget/bookings/new${query}`);
   await expect(page.getByRole("heading", { name: "Add a booking", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -69,7 +69,7 @@ test("adds a booking that lands on Bookings with its amounts, funder, date and n
   await page.getByLabel("Next step").fill("Collect");
   await page.getByRole("button", { name: "Add booking" }).click();
 
-  await expect(page).toHaveURL("/new/budget/bookings", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/budget/bookings", { timeout: COMPILE_TIMEOUT });
   await expect(page.getByText(`Added ${name}`)).toBeVisible();
   const row = page.locator('[data-booking-id^="vendor-"]').filter({ hasText: name });
   await expect(row).toBeVisible({ timeout: COMPILE_TIMEOUT });
@@ -88,7 +88,7 @@ test("asks for a name before it writes anything, and keeps the form", async ({ p
   await page.getByRole("button", { name: "Add booking" }).click();
   await expect(page.getByText("Give the booking a name so you can find it later.")).toBeVisible();
   await expect(page.getByLabel("What it is")).toBeFocused();
-  await expect(page).toHaveURL("/new/budget/bookings/new");
+  await expect(page).toHaveURL("/budget/bookings/new");
 });
 
 // Task 5.2: the couldn't-add state (guide §5.7), reached with `?fault=save`, which fails every write.
@@ -137,7 +137,7 @@ test("a file attached while adding goes into Files › Bookings › its name (P4
   await expect(sheet.getByText("Uploaded", { exact: true })).toBeVisible();
   await sheet.getByRole("button", { name: "Done" }).click();
   await page.getByRole("button", { name: "Add booking" }).click();
-  await expect(page).toHaveURL("/new/budget/bookings", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/budget/bookings", { timeout: COMPILE_TIMEOUT });
 
   const file = (await all("weddingFiles")).find((f) => f.fields.originalFilename?.stringValue === "Invoice.pdf")!;
   const folders = await all("fileFolders");

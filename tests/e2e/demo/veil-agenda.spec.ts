@@ -5,9 +5,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // gallery. "Today" in the demo is Wednesday 14 October 2026.
 
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   await expect(page.locator("#section-3-11")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   return page.locator("#section-3-11");
 }
@@ -44,7 +44,7 @@ test("kind labels, times, call links and related links read as designed", async 
     "href",
     "https://meet.google.com/kbn-arch-call",
   );
-  await expect(call.getByRole("link", { name: "Kebun Dekor" })).toHaveAttribute("href", "/new/vendors/kebun");
+  await expect(call.getByRole("link", { name: "Kebun Dekor" })).toHaveAttribute("href", "/vendors/kebun");
 
   const tasting = rowOf(groups, "Tasting at Sendok Emas");
   await expect(tasting).toContainText("Jl. Raya Kerobokan 88, Kerobokan");
@@ -53,7 +53,7 @@ test("kind labels, times, call links and related links read as designed", async 
   await expect(task).toContainText("2 of 3 steps done");
   await expect(task.getByRole("link", { name: "Book the honeymoon flights" })).toHaveAttribute(
     "href",
-    "/new/schedule/tasks?open=t1",
+    "/schedule/tasks?open=t1",
   );
 
   const allDay = rowOf(groups, "Transfer the band’s deposit");
@@ -70,7 +70,7 @@ test("a payment links to its booking and offers Record payment, primary once lat
   await expect(late).toContainText("4 days late");
   await expect(late.getByRole("link", { name: "Kirana Photography" })).toHaveAttribute(
     "href",
-    "/new/budget/bookings/vendor-photo",
+    "/budget/bookings/vendor-photo",
   );
 
   const soon = rowOf(groups, "Dapur Lestari Catering");

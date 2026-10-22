@@ -14,11 +14,11 @@ test.afterEach(closeOtherContexts);
 async function openAs(browser: Browser, account: (typeof TEST_ACCOUNTS)[number], path: string): Promise<Page> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(account.email);
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   return page;
 }
@@ -35,21 +35,21 @@ test.describe("the normal set", () => {
   test.afterAll(seed);
 
   test("Wedding items says it didn't load under ?fault=load, and Try again says so again", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/items?fault=load");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/items?fault=load");
     await expect(page.getByText("Your wedding items didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await page.getByRole("button", { name: "Try again" }).click();
     await expect(page.getByText("Your wedding items didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   });
 
   test("Guests says it didn't load under ?fault=load, and Try again says so again", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/guests?fault=load");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/guests?fault=load");
     await expect(page.getByText("Your guests didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
     await page.getByRole("button", { name: "Try again" }).click();
     await expect(page.getByText("Your guests didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   });
 
   test("an item whose removal doesn't finish keeps its confirm open with Try again, and the item stays (N14)", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/items?fault=save");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/items?fault=save");
     const cake = itemRow(page, "Wedding cake");
     await cake.getByRole("button", { name: "More for Wedding cake" }).click();
     await page.getByRole("menuitem", { name: "Remove" }).click();
@@ -61,7 +61,7 @@ test.describe("the normal set", () => {
   });
 
   test("a guest whose removal doesn't finish keeps the confirm open with Try again, and the guest stays (N14)", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/guests?fault=save");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/guests?fault=save");
     const sarah = guestRow(page, "Sarah Lim");
     await sarah.getByRole("button", { name: /^Sarah Lim/ }).click();
     await page.getByRole("dialog", { name: "Sarah Lim" }).getByRole("button", { name: "Remove guest" }).click();
@@ -73,7 +73,7 @@ test.describe("the normal set", () => {
   });
 
   test("a tick made offline says it isn't saved and to keep the page open, with Try again (guide §6.5, P5-S16)", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/items?fault=offline");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/items?fault=offline");
     const cake = itemRow(page, "Wedding cake");
     await cake.getByRole("button", { name: /^Confirmed:/ }).click({ timeout: COMPILE_TIMEOUT });
     await expect(cake.getByText("Not saved: you’re offline. Keep this page open.")).toBeVisible({ timeout: 15_000 });
@@ -81,8 +81,8 @@ test.describe("the normal set", () => {
   });
 
   test("Bella's tick on Wedding cake reaches Greg's list in place: the row flashes and says so", async ({ browser }) => {
-    const greg = await openAs(browser, TEST_ACCOUNTS[0], "/new/items");
-    const bella = await openAs(browser, TEST_ACCOUNTS[1], "/new/items");
+    const greg = await openAs(browser, TEST_ACCOUNTS[0], "/items");
+    const bella = await openAs(browser, TEST_ACCOUNTS[1], "/items");
 
     await itemRow(bella, "Wedding cake").getByRole("button", { name: /^Confirmed:/ }).click();
     await expect(toasts(greg).getByText("Bella confirmed Wedding cake")).toBeVisible({ timeout: 15_000 });
@@ -92,7 +92,7 @@ test.describe("the normal set", () => {
   });
 
   test("a dropped connection keeps every item on screen once the list has loaded", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/items");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/items");
     const rows = page.locator("[data-item-id]");
     await expect(rows.first()).toBeVisible({ timeout: COMPILE_TIMEOUT });
     const shown = await rows.count();
@@ -105,7 +105,7 @@ test.describe("the normal set", () => {
   });
 
   test("a dropped connection keeps every guest on screen once the list has loaded", async ({ browser }) => {
-    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/guests");
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/guests");
     const rows = page.locator("[data-guest-id]");
     await expect(rows.first()).toBeVisible({ timeout: COMPILE_TIMEOUT });
     const shown = await rows.count();

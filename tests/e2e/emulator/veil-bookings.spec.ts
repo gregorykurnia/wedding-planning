@@ -134,13 +134,13 @@ test.afterAll(async () => {
   await remove("funders", GREGORY);
 });
 
-async function openBookings(page: Page, path = "/new/budget/bookings") {
+async function openBookings(page: Page, path = "/budget/bookings") {
   const { email, password } = TEST_ACCOUNTS[0];
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "Bookings", level: 1 })).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
@@ -175,10 +175,10 @@ test("each row links to its booking, Add booking floats, and the back link goes 
   await openBookings(page);
   await expect(page.locator('[data-booking-id="vendor-bk-dapur"]')).toHaveAttribute(
     "href",
-    "/new/budget/bookings/vendor-bk-dapur",
+    "/budget/bookings/vendor-bk-dapur",
   );
-  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/new/budget/bookings/new");
-  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/new/budget");
+  await expect(page.getByRole("link", { name: "Add booking" })).toHaveAttribute("href", "/budget/bookings/new");
+  await expect(page.getByRole("link", { name: "Budget", exact: true })).toHaveAttribute("href", "/budget");
 });
 
 test("orders by the chosen order, and the direction word flips it", async ({ page }) => {
@@ -222,12 +222,12 @@ test("searches the bookings, keeps focus in the search, and says when nothing ma
 });
 
 test("opens with the search Who pays sends for Not assigned, and clears the address", async ({ page }) => {
-  await openBookings(page, "/new/budget/bookings?q=Not%20assigned");
+  await openBookings(page, "/budget/bookings?q=Not%20assigned");
   await expect(page.getByRole("searchbox", { name: "Search bookings" })).toHaveValue("Not assigned");
   await expect(page.getByText("1 booking matches")).toBeVisible();
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page)).toContainText("Harmoni String Quartet");
-  await expect(page).toHaveURL("/new/budget/bookings");
+  await expect(page).toHaveURL("/budget/bookings");
 });
 
 test("a booking paid in full elsewhere lands in the list without a reload", async ({ page }) => {

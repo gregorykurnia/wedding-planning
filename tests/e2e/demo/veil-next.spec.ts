@@ -7,9 +7,9 @@ import { COMPILE_TIMEOUT } from "../helpers";
 // Opens the gallery and returns Task 3.2's section. Other sections have headings
 // too, so every locator in these tests starts from this section.
 async function openSection(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await page.getByRole("button", { name: "Look around" }).click({ timeout: COMPILE_TIMEOUT });
-  await page.goto("/new/gallery");
+  await page.goto("/gallery");
   const section = page.locator("#section-3-2");
   await expect(
     section.getByRole("heading", { name: "Three late, the first one shown", exact: true }),
@@ -59,7 +59,7 @@ test("the name links to the booking, and Record payment is pressed in the card",
   const card = section.getByRole("region", { name: "Next payment" }).first();
   await expect(card.getByRole("link", { name: "Dapur Lestari Catering", exact: true })).toHaveAttribute(
     "href",
-    "/new/budget/bookings/vendor-catering",
+    "/budget/bookings/vendor-catering",
   );
 
   await card.getByRole("button", { name: "Record payment", exact: true }).click();
@@ -102,13 +102,13 @@ test("each door is a link with its summary in its name, and a rose fragment read
 }) => {
   const section = await openSection(page);
   const payments = section.getByRole("link", { name: /Payments due\s*1 late, 6 payments until March/ });
-  await expect(payments).toHaveAttribute("href", "/new/budget/payments");
+  await expect(payments).toHaveAttribute("href", "/budget/payments");
   await expect(payments.getByText("1 late", { exact: true })).toHaveCSS("color", ROSE_INK);
 
   const budget = section.getByRole("link", {
     name: /Budget\s*Rp 473\.150\.000 paid of Rp 882\.800\.000/,
   });
-  await expect(budget).toHaveAttribute("href", "/new/budget");
+  await expect(budget).toHaveAttribute("href", "/budget");
 });
 
 test("on a phone each door's summary moves under its name, left-aligned", async ({ page }) => {

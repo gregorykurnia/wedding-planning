@@ -9,7 +9,7 @@ const WRONG =
   "That email and password don’t match. Check them and try again, or continue with Google.";
 
 async function open(page: Page) {
-  await page.goto("/new/sign-in");
+  await page.goto("/sign-in");
   await expect(page.getByLabel("Email")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 }
 
@@ -42,7 +42,7 @@ test("a wrong password keeps the email, rings the password and says so", async (
   await expect(password).toHaveValue("");
   await expect(password).toHaveAttribute("aria-invalid", "true");
   await expect(password).toBeFocused();
-  await expect(page).toHaveURL("/new/sign-in");
+  await expect(page).toHaveURL("/sign-in");
 });
 
 test("an address nobody has used reads the same as a wrong password", async ({ page }) => {
@@ -80,7 +80,7 @@ test("while signing in the fields are read-only and the button says Signing in",
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeDisabled();
 
   release();
-  await expect(page).toHaveURL("/new", { timeout: COMPILE_TIMEOUT });
+  await expect(page).toHaveURL("/", { timeout: COMPILE_TIMEOUT });
 });
 
 test("a blocked Google window says so, and the button offers another try", async ({ page }) => {
