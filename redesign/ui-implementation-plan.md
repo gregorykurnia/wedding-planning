@@ -1007,7 +1007,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 6 | 6.F1 Review fixes: write races | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 6) | 2026-10-22 · main folder, commit "6.F1 Review fixes…"; no gaps | [x] |
 | 6 | 6.F2 Review fixes: offline states and wiring tests | Opus 5.5 Medium | $1.34 | Same | 2026-10-22 · main folder, commit "6.F2 Review fixes…"; no gaps | [x] |
 | 7 | 7.1 Switch-over commit | Opus 5.5 High | $1.82 | **Risk: breaks production** for both of you at once | 2026-10-22 · main folder, eb94a87 "Switch to the new UI" (prep ad54d25); full e2e on local production builds passes; who-pays and who fail only after other specs' leftover funders and bookings (pass alone, for the review); owner steps in `before-merge.md` | [x] |
-| 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | | [ ] |
+| 7 | 7.2 Rollback rehearsal, locally | Sonnet 5.5 High | $0.88 | A written procedure to run and record | 2026-10-22 · main folder; procedure and result in §9.3; the revert applied cleanly and the old UI came back at `/` | [x] |
 | 7 | 7.3 Delete old rendering code the fallback doesn't need | Sonnet 5.5 High | $0.88 | Deletions checked by the build and the old-names check | | [ ] |
 | 7 | Review | Opus 5.5 High | $1.82 | Phase 7 rule: a missed bug breaks production | | [ ] |
 | 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | | [ ] |
@@ -1593,8 +1593,13 @@ The owner took every recommendation on 2026-10-14. For Q8 the project turned out
 ### 9.3 Rollback
 
 - **Launch window:** two weeks from the merge (§9.2 Q15). During it the old UI is frozen at **`/old/…`** (for example `/old/confirmed`): no changes except security fixes.
-- **One-commit way back:** revert the commit titled **"Switch to the new UI"** (Task 7.1; its hash is recorded here at 7.2: `________`): `git revert <hash>` on `main` and push. Vercel deploys the old UI at `/` and the new one at `/new`. Fastest in an emergency: promote the last pre-merge production deployment in Vercel (no commit), then do the revert calmly.
-- **Rehearsed:** once on a preview in Task 7.2 (date and time taken recorded here: `________`).
+- **One-commit way back:** revert the commit titled **"Switch to the new UI"** (Task 7.1; hash recorded at 7.2: `eb94a87d1d3ebddf05d6ea94132122b752b3d13b`): `git revert <hash>` on `main` and push. Vercel deploys the old UI at `/` and the new one at `/new`. Fastest in an emergency: promote the last pre-merge production deployment in Vercel (no commit), then do the revert calmly.
+- **Rehearsed:** once locally in Task 7.2 (a preview would use the day's deployments), 2026-10-22, about 5 minutes with one failed attempt; a straight run is about 4, plus Vercel's own build and deploy when done for real. Steps:
+  1. On the switched build (`NEXT_DIST_DIR=.next-x npm run build`, then `next start -p 3077`), open `/` in Chromium with a kept profile: it lands on `/sign-in` and the service worker installs (cache `planner-static-v4`).
+  2. Stop that server by the PID holding the port (`ss -ltnp`), not the `npx` wrapper. On a throwaway branch (never pushed) `git revert --no-edit eb94a87`; it applied with no conflicts even with the later commit "7.1 Clear handled addresses…" on top. Build it into another folder and serve it on the same port.
+  3. Reopen `/` in the same profile: the old UI loads (`/login`, "Welcome back"), `/new` shows the new UI, `/old` answers 404, and the worker took over: cache `planner-static-v3` replaced `v4`.
+  4. Delete the branch and the build folders; end on `redesign`, tree clean.
+  Notes: `next build` type-checks the stale `types/` of every other build folder (`.next`, `.next-demo`, `.next-e2e`) listed in `tsconfig.json`, and failed on their old routes; move them aside for the rehearsal build, and restore `tsconfig.json`, which the build rewrites. `public/` is read when the server runs, so serve each build from its own branch.
 - **Data is safe both ways:** every schema change is additive (§2.7). The old UI reads data written by the new one, with known limits: funders added in the new UI show as unknown values in the old selects; a booking removed in the new UI still shows in the old Confirmed if its vendor is Chosen; files uploaded in the new UI appear in the old record arrays (dual write until Phase 9) but not the other way round until re-imported.
 - **Service worker:** the same `sw.js` serves both UIs, and navigations are never cached, so a rollback shows on the next open of an installed app.
 - **After the window:** Task 9.2 deletes the fallback and everything old, and the old-names check runs with no exclusions.
