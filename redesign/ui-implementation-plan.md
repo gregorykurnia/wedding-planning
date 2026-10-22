@@ -735,45 +735,45 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | G6 stable number | Guests | gold number | `guests.number`, `guestMeta/counter` | 1.9, 1.11, 4.24 | [x] |
 | G7 remove with undo | Guests | `ConfirmSheet`, undo toast | write `removeWithUndo` | 1.8, 4.24 | [x] |
 | G8 on the phone | Guests | `RsvpSwitch` (phone size), stacked rows | CSS under 760px | 3.12, 4.24 | [x] |
-| T1 item and vendor | Wedding items | `ItemRow` | `collections/master-list.ts` | 4.23 | [ ] |
-| T2 confirmed, events, person | Wedding items | event chips, person select, tick | `types[]`, `persons[]` (§9.2 Q4), `confirmed` | 4.23 | [ ] |
-| T3 work on next | Wedding items | star, `.irow.next`, `WorkOnNextCard` | `next` | 4.23 | [ ] |
-| T4 counts | Wedding items | `Hero`, `Thread` | model `items.ts` (`itemCounts`) | 1.5, 4.23 | [ ] |
-| T5 narrow items | Wedding items | search, filters, `ShowEverything` | model `items.ts` (`filterItems`, any-of events and people) | 1.5, 4.23 | [ ] |
-| T6 temporary order | Wedding items | `OrderBy`, `SortedNote` | model `order.ts`; handles hidden while sorted | 4.23 | [ ] |
-| T7 own order, insert | Wedding items | handle, drag, Alt+arrows, row menu, add-items sheet | `addMasterListItems`, `moveMasterListItem` (renumber when gaps run out) | 1.8, 4.23 | [ ] |
-| T8 remove with undo | Wedding items | `ConfirmSheet`, undo | `restoreMasterListItem` (same `sortOrder`) | 1.8, 4.23 | [ ] |
+| T1 item and vendor | Wedding items | `ItemRow` | `collections/master-list.ts` | 4.23 | [x] |
+| T2 confirmed, events, person | Wedding items | event chips, person select, tick | `types[]`, `persons[]` (§9.2 Q4), `confirmed` | 4.23 | [x] |
+| T3 work on next | Wedding items | star, `.irow.next`, `WorkOnNextCard` | `next` | 4.23 | [x] |
+| T4 counts | Wedding items | `Hero`, `Thread` | model `items.ts` (`itemCounts`) | 1.5, 4.23 | [x] |
+| T5 narrow items | Wedding items | search, filters, `ShowEverything` | model `items.ts` (`filterItems`, any-of events and people) | 1.5, 4.23 | [x] |
+| T6 temporary order | Wedding items | `OrderBy`, `SortedNote` | model `order.ts`; handles hidden while sorted | 4.23 | [x] |
+| T7 own order, insert | Wedding items | handle, drag, Alt+arrows, row menu, add-items sheet | `addMasterListItems`, `moveMasterListItem` (renumber when gaps run out) | 1.8, 4.23 | [x] |
+| T8 remove with undo | Wedding items | `ConfirmSheet`, undo | `restoreMasterListItem` (same `sortOrder`) | 1.8, 4.23 | [x] |
 | T9 failed save keeps input | Wedding items | `.irow.failed`, Try again | write layer timeout and retry | 1.8, 3.12 | [x] |
-| T10 starts filled in | Wedding items | first-use `Banner`, Start with common items | `ensureMasterListInitialized` (guard kept; list per §9.2 Q12) | 4.23 | [ ] |
+| T10 starts filled in | Wedding items | first-use `Banner`, Start with common items | `ensureMasterListInitialized` (guard kept; list per §9.2 Q12) | 4.23 | [x] |
 | S1 record an event | Schedule (event sheet) | kind chips, `Fields`, related select | `collections/schedule-events.ts` (`organiser_call` added) | 4.20 | [x] |
 | S2 complete, cancel, delete | Event sheet | status actions, `ConfirmSheet`, undo | write layer | 4.20 | [x] |
 | S3 one agenda | Schedule | `AgendaGroup`, `AgendaRow` | model `agenda.ts` (events + dues + dated tasks; real today, §5 #11) | 1.6, 4.20 | [x] |
-| S4 month | Month | `MonthCalendar` | model `agenda.ts` (`monthCells`, Monday first) | 1.6, 4.21 | [ ] |
+| S4 month | Month | `MonthCalendar` | model `agenda.ts` (`monthCells`, Monday first) | 1.6, 4.21 | [x] |
 | S5 search and kind | Schedule | kind chips, search | model `agenda.ts` (payments filter includes Payment events) | 1.6, 4.20 | [x] |
 | S6 urgency at a glance | Schedule, Payments due | `Hero` figure, context sentence | model `agenda.ts` (`lateOrToday`) | 1.6, 4.20 | [x] |
 | S7 jump to the source | Schedule | row links | routes to booking (`vendor-…`) and `/schedule/tasks?open=` | 4.20 | [x] |
-| S8 tasks with steps | Tasks | `TaskRow`, `StepRow`, `Thread small` | `collections/todos.ts` (steps by transaction) | 1.8, 4.22 | [ ] |
-| S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [ ] |
+| S8 tasks with steps | Tasks | `TaskRow`, `StepRow`, `Thread small` | `collections/todos.ts` (steps by transaction) | 1.8, 4.22 | [x] |
+| S9 order, finished, delete | Tasks | `FinishedTasks`, `ConfirmSheet` | model `tasks.ts` (due order, undated last); `doneOn` | 1.6, 4.22 | [x] |
 | S10 reminders | Event sheet, Settings | reminder select, `NotificationState` | push subscription, `/api/cron/reminders`, service worker | 6.1, 6.2 | [x] |
 | R1 rich documents | A document | `EditorToolbar`, pops | Tiptap StarterKit, TextStyleKit; `editor/marks.ts` | 4.17 | [x] |
-| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [ ] |
-| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [ ] |
-| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [ ] |
+| R2 tables | A document | `TableSizePop`, `TableBar` | TableKit commands | 4.18 | [x] |
+| R3 sort a table | A document | `TableBar` sort | model `formulas.ts` (`sortTableRows`, totals stay put) | 1.7, 4.18 | [x] |
+| R4 SUM totals | A document | `FormulaBar`, total cells | model `formulas.ts` | 1.7, 4.18 | [x] |
 | R5 autosave state | A document | `DocSaveState` | `editor/use-doc-autosave.ts` (0.9s, failure kept, flush on leave) | 4.17 | [x] |
-| R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [ ] |
+| R6 find documents | Documents | starts, search, recent cards, rows | data `useDocuments` (extract from JSON, search inside tables) | 4.16 | [x] |
 | R7 delete for good | A document | `ConfirmSheet` (Delete for good), message | `deleteNote` (no undo) | 4.17 | [x] |
-| R8 folders | Files | `PathTrail`, folder rows, folder sheet, `BlockedNotice` | `collections/wedding-files.ts` | 4.19 | [ ] |
+| R8 folders | Files | `PathTrail`, folder rows, folder sheet, `BlockedNotice` | `collections/wedding-files.ts` | 4.19 | [x] |
 | R9 upload | Files, every record | `UploadSheet`, `UploadQueue` | upload pipeline + `compress-pdf.ts` | 3.10 | [x] |
 | R10 name, category, description | Upload sheet | queue fields | `createWeddingFile` | 3.10 | [x] |
-| R11 open, download, move, edit, delete | Files | `FileDetailsSheet`, `MoveSheet` | `updateWeddingFile`, move | 4.19 | [ ] |
-| R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [ ] |
+| R11 open, download, move, edit, delete | Files | `FileDetailsSheet`, `MoveSheet` | `updateWeddingFile`, move | 4.19 | [x] |
+| R12 move a folder | Files | `MoveSheet` | write `moveFolder` (no cycles) | 1.8, 4.19 | [x] |
 | R13 really removed | Files | `ConfirmSheet` (Delete for good) | `DELETE /api/files/[fileId]` | 6.3 | [x] |
-| R14 find a file anywhere | Files | `SearchField`, `ShowMore` | data `useFileSearch` | 4.19 | [ ] |
+| R14 find a file anywhere | Files | `SearchField`, `ShowMore` | data `useFileSearch` | 4.19 | [x] |
 | A1 sign in | Sign in | gate | `auth-context.tsx`; not-allowed probe | 2.3, 4.1 | [x] |
-| A2 live partner changes | every screen | `.flash`, partner toast, `Banner` (document) | `activity` listener, `presence` | 1.8, 2.7 | [ ] |
+| A2 live partner changes | every screen | `.flash`, partner toast, `Banner` (document) | `activity` listener, `presence` | 1.8, 2.7 | [x] |
 | A3 install | Settings, Overview | `InstallCard`, install steps | `beforeinstallprompt`, display-mode check | 6.4 | [x] |
-| A4 phone and computer | every screen | breakpoints | module CSS | all | [ ] |
-| A5 account, settings, sign out | Menu, Settings | `MenuIndex` account line, `AccountsList` | `members` | 2.4, 4.25 | [ ] |
+| A4 phone and computer | every screen | breakpoints | module CSS | all | [x] |
+| A5 account, settings, sign out | Menu, Settings | `MenuIndex` account line, `AccountsList` | `members` | 2.4, 4.25 | [x] |
 | A6 save without a save step | every editing screen | `useAutosaveField`, `SaveLine` | write layer | 1.8, 3.4 | [x] |
 
 ---
@@ -1015,7 +1015,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 7 | 7.F1 Review fixes: write races, money and scripts | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 7) | 2026-10-22 · main folder · this commit: P7-S6–S11 fixed | [x] |
 | 7 | 7.F2 Review fixes: sheets and offline | Opus 5.5 Medium | $1.34 | Same; a sheet that must hold during an autosave may need a design decision (a gap) | 2026-10-22 · main folder · this commit: P7-S12–S18 fixed; gap G42 | [x] |
 | 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | 2026-10-22 · main folder · this commit: 36 tests (O2, O5, O6; F1, F3–F5, F7, F17–F22, F24; B1–B4, B6, B8–B10, B12; G1–G8) and 4 smoke tests; the T, S, R, A smoke tests stay for 8.1b | [x] |
-| 8 | 8.1b Behaviour tests: tasks, schedule, files and documents, partner (T, S, R, A) | Sonnet 5.5 High | $0.88 | Same, with the two-context A2 tests | | [ ] |
+| 8 | 8.1b Behaviour tests: tasks, schedule, files and documents, partner (T, S, R, A) | Sonnet 5.5 High | $0.88 | Same, with the two-context A2 tests | 2026-10-22 · main folder · this commit: 23 stories (T1–T8, T10; S4, S8, S9; R2–R4, R6, R8, R11, R12, R14; A2, A4, A5) in 5 new specs, and 5 smoke tests replace the old-UI items, schedule, tasks, notes and files ones | [x] |
 | 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | | [ ] |
 | 8 | 8.3a Screenshot fixes: budget, vendors, documents and files | Haiku 5.5 Max | $0.21 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | | [ ] |
 | 8 | 8.3b Screenshot fixes: schedule, items, guests, shell, overview, sign-in and settings | Haiku 5.5 Max | $0.21 | Same; ticked as covered when 8.3a did every group | | [ ] |
