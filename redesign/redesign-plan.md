@@ -505,7 +505,7 @@ You approve the plan before Step 7.
 - [x] `redesign` branch created (2026-10-14)
 - [x] Phase 1: data separated from rendering, no visual change, tests green (2026-10-14: review passed after the blocker fixes in b345d83; owner compared the old UI on the preview with production and found it unchanged; report in `redesign/reviews/phase-1-review.md`)
 - [x] Phases 2–6 (Phase 2 done 2026-10-15: review passed after the blocker fixes; report in `redesign/reviews/phase-2-review.md`. Phase 3 done 2026-10-16: review passed after the four blocker fixes; report in `redesign/reviews/phase-3-review.md`. Phase 4 done 2026-10-19: review passed after the four blocker fixes; report in `redesign/reviews/phase-4-review.md`. Phase 5 done 2026-10-19: review passed after the four blocker fixes; report in `redesign/reviews/phase-5-review.md`. Phase 6 done 2026-10-22: review passed with no blockers; report in `redesign/reviews/phase-6-review.md`; fix tasks 6.F1 and 6.F2 come before Phase 7)
-- [ ] Phase 7: new UI is the default; frozen fallback and one-commit rollback in place and tested; old-names check passes (fallback excluded)
+- [x] Phase 7: new UI is the default; frozen fallback and one-commit rollback in place and tested; old-names check passes (fallback excluded) (done 2026-10-22: review passed after four blocker fixes; report in `redesign/reviews/phase-7-review.md`; fix tasks 7.F1 and 7.F2 come before Phase 8)
 - [ ] Phase 8: tests rewritten and passing; screenshots match; accessibility passes
 - [ ] Merged to `main`; `CLAUDE.md` updated to the new UI
 - [ ] Phase 9: after-launch check done; fallback and every old file deleted; old-names check passes with no exclusions; every `needs.md` row designed and built

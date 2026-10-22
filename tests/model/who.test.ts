@@ -107,6 +107,11 @@ describe("swapping", () => {
     expect(swappedSlots(settings({ accountSlots: { g: "first" } }), "g", "", null)).toEqual({ g: "second" });
   });
 
+  it("keeps the other account's place when the members list hasn't caught up", () => {
+    const s = settings({ accountSlots: { g: "first", b: "second" } });
+    expect(swappedSlots(s, "g", "", null)).toEqual({ g: "second", b: "first" });
+  });
+
   it("works from the old email pairing too, and does nothing while this account has no name", () => {
     expect(swappedSlots(settings({ partnerEmail: "b@x.com" }), "g", "g@x.com", "b")).toEqual({ g: "second", b: "first" });
     expect(swappedSlots(settings(), "g", "", null)).toBeNull();

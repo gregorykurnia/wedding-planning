@@ -100,7 +100,11 @@ export function swappedSlots(settings: WhoSettings, uid: string, email: string, 
   const mine = slotOf(settings, uid, email);
   if (!mine) return null;
   const slots: AccountSlots = { [uid]: otherSlot(mine) };
-  if (partnerUid && partnerUid !== uid) slots[partnerUid] = mine;
+  // The members list can lag the stored pairing (the partner's record not read
+  // yet); the whole map is written, so a partner already in it must stay
+  // (Phase 7 review).
+  const partner = partnerUid ?? Object.keys(settings.accountSlots ?? {}).find((id) => id !== uid) ?? null;
+  if (partner && partner !== uid) slots[partner] = mine;
   return slots;
 }
 

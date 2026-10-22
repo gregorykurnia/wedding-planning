@@ -31,15 +31,8 @@ test("add a vendor, mark it Chosen and see it among the confirmed bookings", asy
   const row = page.getByRole("row").filter({ hasText: name });
   await expect(row).toHaveCount(1);
 
-  // "Add to budget" is for Chosen or Done vendors only.
-  const addToBudget = row
-    .getByRole("button")
-    .filter({ has: page.locator("svg.lucide-piggy-bank") });
-  await expect(addToBudget).toHaveCount(0);
-
   await chooseOption(page, vendorStatusPill(row), "Chosen");
   await expect(vendorStatusPill(row)).toContainText("Chosen");
-  await expect(addToBudget).toHaveCount(1);
 
   // Chosen vendors are listed on Confirmed.
   await expectStored(

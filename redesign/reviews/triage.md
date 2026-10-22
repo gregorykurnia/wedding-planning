@@ -89,3 +89,22 @@ Phase 5's routed items were re-checked: 5.F1–5.F3 fixed them, except the parts
 | P6-S19 (the old UI keeps `remindersSent` when an event's date changes) | Old UI only: it's the fallback for the launch window, deleted in 9.2; the new UI clears it |
 | Chrome's own install offer beside the card (no `preventDefault`) | Keeps the browser's offer, which is what an installed-from-menu user sees anyway; P6-S1 hides the card after either |
 | A `maxDuration` on the cron route | Only a few reminders are ever due; the default 300 s is far above a run |
+
+## Phase 7 (sorted 2026-10-22, in the review)
+
+Phase 6's routed items were re-checked: 6.F1 and 6.F2 fixed them, except the parts listed below as P7-S6, P7-S7 (P6-S8, P6-S13), P7-S12, P7-S13 (P6-S14) and P7-S14, P7-S15 (P6-S15). The review fixed B1–B4, P7-S1–S5 and P7-S19.
+
+### Before Phase 8: fix tasks 7.F1–7.F2
+
+| Task | Lane | Items |
+|---|---|---|
+| 7.F1 Write races, money and scripts | main folder | P7-S6 (an add then a move share a gap), P7-S7 (a lower Try again after an overpaid split puts paid on the wrong parts; Undo refused), P7-S8 (a move or add during a renumber above 490 items), P7-S9 (a guest field changed back is lost), P7-S10 (a stale Try again stays on screen), P7-S11 (script tests for `contentJson` documents, foreign nodes, finalist marks, venues with parts) |
+| 7.F2 Sheets and offline | main folder | P7-S12 (confirms still close with no word), P7-S13 (the categories sheet too), P7-S14 (offline venue sheet blank; synced empty collections held), P7-S15 (a booking's files read "None yet" offline), P7-S16 (an edit sheet closes on Back during a failing autosave), P7-S17 (the rest of the offline wording), P7-S18 (a wiring test with a fixed wait; an e2e for the plain release-close) |
+
+### Dropped
+
+| Item | Reason |
+|---|---|
+| The Shortlist's "booked" label offline comes from `movedTo` only (6.F2 review, no ID) | Only the label can be wrong, while offline; Book it can't run offline, and the label corrects itself when the vendors arrive |
+| Unknown addresses (and `/old/budget`, `/old/checklist`) answer the not-found screen with a 200 | The screen is right for a person; the only wrong one is the status code, which nothing reads. Redirects for the two old pages would change `next.config.ts` lines the switch commit owns, which would make the revert conflict. Task 7.3's "answer 404" wording is corrected |
+| The files check groups by exact address, not also `publicId` | P1-S15 is about one address copied twice, which it finds; an asset under two addresses is safe, since Delete for good keeps an asset another file shares |

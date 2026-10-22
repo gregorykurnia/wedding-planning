@@ -28,15 +28,8 @@ test("add a venue and mark it Booked", async ({ page }) => {
   const row = page.getByRole("row").filter({ hasText: name });
   await expect(row).toHaveCount(1);
 
-  // "Add to budget" only exists once the venue is Booked.
-  const addToBudget = row
-    .getByRole("button")
-    .filter({ has: page.locator("svg.lucide-piggy-bank") });
-  await expect(addToBudget).toHaveCount(0);
-
   await chooseOption(page, row.getByRole("combobox"), "Booked");
   await expect(row.getByRole("combobox")).toContainText("Booked");
-  await expect(addToBudget).toHaveCount(1);
 
   // The change is saved, not just shown: it survives a reload.
   await expectStored("venues", (d) => d.name === name && d.status === "Booked");

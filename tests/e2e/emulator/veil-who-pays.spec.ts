@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT } from "../helpers";
+import { restorePairing } from "../seed";
 
 // Task 4.9: Who pays against the emulators. Funders and bookings are written as
 // the emulator's owner (which skips the rules); everything else goes through
@@ -35,6 +36,11 @@ const booked = (name: string, funder: string | null, totalPrice: number, budgetS
 });
 
 test.beforeAll(async () => {
+  // Start from an empty database: another spec's funders or bookings would
+  // change the totals here (Phase 7 review; veil-what-if leaves a "Greg").
+  const res = await fetch(DOCS.replace("/v1/", "/emulator/v1/"), { method: "DELETE" });
+  expect(res.ok).toBe(true);
+  await put("settings", "wedding", { yourName: "Greg", partnerName: "Bella", partnerEmail: TEST_ACCOUNTS[1].email });
   await put("funders", "wp-greg", { name: "Greg", order: 0 });
   await put("funders", "wp-family", { name: "Bella’s family", order: 1 });
   await put("funders", "wp-empty", { name: "Tante Lily", order: 2 });
@@ -47,6 +53,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   for (const id of IDS.funders) await fetch(`${DOCS}/funders/${id}`, { method: "DELETE", headers: ADMIN });
   for (const id of IDS.vendors) await fetch(`${DOCS}/vendors/${id}`, { method: "DELETE", headers: ADMIN });
+  await restorePairing();
 });
 
 async function openWhoPays(page: Page) {
