@@ -63,3 +63,40 @@ export const TEST_ACCOUNTS = [
   { email: "gregory.kurnia@gmail.com", password: "test-password-1" },
   { email: "bellabarliana15@gmail.com", password: "test-password-2" },
 ] as const;
+
+// The app servers' environment for the e2e runs (playwright.config.ts), also
+// used by scripts/test-e2e.mjs to build both apps first when E2E_BUILD=1.
+// Placeholder web config for the emulator build. The real values in
+// .env.local are overridden here so the tests can never reach production.
+export const EMULATOR_APP_ENV: Record<string, string> = {
+  NEXT_PUBLIC_USE_EMULATORS: "1",
+  NEXT_PUBLIC_AUTH_EMULATOR: AUTH_EMULATOR,
+  NEXT_PUBLIC_FIRESTORE_EMULATOR: FIRESTORE_EMULATOR,
+  NEXT_PUBLIC_FIREBASE_API_KEY: "fake-api-key",
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "localhost",
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: EMULATOR_PROJECT_ID,
+  NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:test",
+  NEXT_DIST_DIR: ".next-e2e",
+  // Shows the new UI's dev-only gallery pages.
+  NEXT_PUBLIC_VEIL_GALLERY: "1",
+  // Turns on `?fault=` (src/lib/data/dev-faults.ts).
+  NEXT_PUBLIC_VEIL_DEV: "1",
+  // Fake Cloudinary config so the upload controls are enabled. The specs
+  // stub every request to api.cloudinary.com, so nothing leaves the machine.
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",
+  NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "test-preset",
+  // A throwaway VAPID public key: the specs stub the browser's push manager,
+  // and no private key exists for it.
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: "BFQ4oSwuS89KgDx5UcyfB-URJxEU9HvlFEOdcm_V3k9TTUhvRVAbEE_RVRYrOoUvTM5QvDGAm2aPFtl9LZoWOCE",
+};
+
+// Demo mode: every Firebase variable empty. Values already in the process
+// environment win over .env.local, so the empty strings stick.
+export const DEMO_APP_ENV: Record<string, string> = {
+  NEXT_PUBLIC_FIREBASE_API_KEY: "",
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "",
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: "",
+  NEXT_PUBLIC_FIREBASE_APP_ID: "",
+  NEXT_DIST_DIR: ".next-demo",
+  NEXT_PUBLIC_VEIL_GALLERY: "1",
+};

@@ -2,7 +2,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig } from "@playwright/test";
 import {
-  AUTH_EMULATOR,
+  DEMO_APP_ENV,
+  EMULATOR_APP_ENV,
   EMULATOR_PROJECT_ID,
   FIRESTORE_EMULATOR,
   TEST_PORTS,
@@ -23,6 +24,9 @@ const needsEmulator = SERVERS !== "demo";
 const needsDemo = SERVERS !== "emulator";
 const STRESS = process.env.E2E_STRESS;
 const STRESS_SPECS = "emulator/**/*-stress.spec.ts";
+// E2E_BUILD=1 (scripts/test-e2e.mjs builds both apps first): the app servers
+// run the production builds with `next start` instead of `next dev`.
+const NEXT = process.env.E2E_BUILD === "1" ? "start" : "dev";
 
 // The Firebase emulators need Java. Homebrew's openjdk is keg-only, so it is
 // not on PATH unless the owner linked it.
@@ -46,41 +50,6 @@ const REUSE = false;
 // firestore-debug.log (see the file; P5-S29).
 const EMULATOR_JAVA_OPTIONS =
   `-Xmx1g -Djava.util.logging.config.file=${join(process.cwd(), "tests/e2e/emulator-logging.properties")}`;
-
-// Placeholder web config for the emulator build. The real values in
-// .env.local are overridden here so the tests can never reach production.
-const emulatorAppEnv = {
-  NEXT_PUBLIC_USE_EMULATORS: "1",
-  NEXT_PUBLIC_AUTH_EMULATOR: AUTH_EMULATOR,
-  NEXT_PUBLIC_FIRESTORE_EMULATOR: FIRESTORE_EMULATOR,
-  NEXT_PUBLIC_FIREBASE_API_KEY: "fake-api-key",
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "localhost",
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: EMULATOR_PROJECT_ID,
-  NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:test",
-  NEXT_DIST_DIR: ".next-e2e",
-  // Shows the new UI's dev-only gallery pages.
-  NEXT_PUBLIC_VEIL_GALLERY: "1",
-  // Turns on `?fault=` (src/lib/data/dev-faults.ts).
-  NEXT_PUBLIC_VEIL_DEV: "1",
-  // Fake Cloudinary config so the upload controls are enabled. The specs
-  // stub every request to api.cloudinary.com, so nothing leaves the machine.
-  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "test-cloud",
-  NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "test-preset",
-  // A throwaway VAPID public key: the specs stub the browser's push manager,
-  // and no private key exists for it.
-  NEXT_PUBLIC_VAPID_PUBLIC_KEY: "BFQ4oSwuS89KgDx5UcyfB-URJxEU9HvlFEOdcm_V3k9TTUhvRVAbEE_RVRYrOoUvTM5QvDGAm2aPFtl9LZoWOCE",
-};
-
-// Demo mode: every Firebase variable empty. Values already in the process
-// environment win over .env.local, so the empty strings stick.
-const demoAppEnv = {
-  NEXT_PUBLIC_FIREBASE_API_KEY: "",
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "",
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: "",
-  NEXT_PUBLIC_FIREBASE_APP_ID: "",
-  NEXT_DIST_DIR: ".next-demo",
-  NEXT_PUBLIC_VEIL_GALLERY: "1",
-};
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -120,16 +89,16 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: `npx next dev --port ${EMULATOR_APP_PORT}`,
+      command: `npx next ${NEXT} --port ${EMULATOR_APP_PORT}`,
       url: `http://localhost:${EMULATOR_APP_PORT}/login`,
-      env: emulatorAppEnv,
+      env: EMULATOR_APP_ENV,
       reuseExistingServer: REUSE,
       timeout: 120_000,
     }] : []),
     ...(needsDemo ? [{
-      command: `npx next dev --port ${DEMO_APP_PORT}`,
+      command: `npx next ${NEXT} --port ${DEMO_APP_PORT}`,
       url: `http://localhost:${DEMO_APP_PORT}/login`,
-      env: demoAppEnv,
+      env: DEMO_APP_ENV,
       reuseExistingServer: REUSE,
       timeout: 120_000,
     }] : []),

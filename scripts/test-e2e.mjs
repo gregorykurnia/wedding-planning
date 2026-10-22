@@ -9,9 +9,10 @@
 // It also stops a run whose emulator log floods (see LOG below), and runs the
 // stress specs in a second pass on fresh servers (see stressSpecs), and splits
 // a full run into passes on fresh servers (see CHUNK_TESTS).
-import { spawn, execFileSync } from "node:child_process";
+import { spawn, spawnSync, execFileSync } from "node:child_process";
 import { closeSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, rmSync, statSync, truncateSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
+import { DEMO_APP_ENV, EMULATOR_APP_ENV } from "../tests/e2e/emulator-config.ts";
 
 const WAIT_MS = 5000;
 const WAIT_LIMIT_MS = Number(process.env.E2E_LOCK_WAIT_MINUTES ?? 60) * 60_000;
@@ -363,8 +364,25 @@ function runPass(pass) {
   });
 }
 
-let exitCode = 0;
-for (const pass of passes) {
+// E2E_BUILD=1 tests the production build: each app the passes need is built
+// once here, with its test environment (the NEXT_PUBLIC_ values are fixed at
+// build time), and playwright.config.ts serves it with `next start`.
+function buildApps() {
+  const needed = new Set(passes.map((p) => p.servers));
+  const apps = [
+    ...(needed.has("all") || needed.has("emulator") ? [["emulator", EMULATOR_APP_ENV]] : []),
+    ...(needed.has("all") || needed.has("demo") ? [["demo", DEMO_APP_ENV]] : []),
+  ];
+  for (const [name, env] of apps) {
+    console.log(`\ne2e: building the ${name} app for production (E2E_BUILD=1).`);
+    const result = spawnSync("npx", ["next", "build"], { stdio: "inherit", env: { ...process.env, ...env } });
+    if (result.status !== 0) return result.status ?? 1;
+  }
+  return 0;
+}
+
+let exitCode = process.env.E2E_BUILD === "1" ? buildApps() : 0;
+for (const pass of exitCode === 0 ? passes : []) {
   const code = await runPass(pass);
   if (code !== 0) exitCode = code;
   if (stopped || flooded) break;

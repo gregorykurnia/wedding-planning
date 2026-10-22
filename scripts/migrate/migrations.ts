@@ -326,6 +326,59 @@ const itemPeople: Migration = {
   },
 };
 
+/* ---------- 8. old-UI edits since the migrations (review P1-S13) ---------- */
+
+const VENDOR_BOOKED = new Set(["Chosen", "Done"]);
+
+const isLiveMark = (raw: unknown): raw is Record<string, unknown> => isObject(raw) && raw.removed !== true;
+
+/**
+ * The old UI keeps writing until the switch-over reaches production, and it
+ * doesn't know about `booking` or `agreedPrice`. Two of its edits leave the new
+ * UI reading something else:
+ * - a booked venue's price, which the old UI edits as `budgetEstimate` while
+ *   the model reads `agreedPrice` first: the agreed price takes the edited one;
+ * - a vendor moved off Chosen or Done, or a venue off Booked, which the old UI
+ *   counts out of the budget while its `booking` still counts it in: the
+ *   booking is marked removed, as the new UI's Remove booking does.
+ * Direct bookings (Add a booking, a venue taken off the list) are left alone:
+ * their stage isn't what makes them bookings. Run before the merge, while only
+ * the old UI has written to production; afterwards the new UI's own stage and
+ * price edits are deliberate and this would undo them.
+ */
+const oldUiSync: Migration = {
+  name: "8-old-ui-sync",
+  title: "Bring bookings in line with old-UI edits: venue prices and stages moved off booked (P1-S13)",
+  async plan(db) {
+    const writes: PlannedWrite[] = [];
+    const report: string[] = [];
+    const unbook = (snap: DocumentSnapshot, mark: Record<string, unknown>, label: string, stage: unknown) =>
+      writes.push(update(snap, { booking: { ...mark, removed: true } }, `${label} is "${String(stage ?? "")}" now; booking removed`));
+    for (const v of (await db.collection("vendors").get()).docs) {
+      const data = v.data();
+      if (!isLiveMark(data.booking) || data.booking.from === "direct") continue;
+      if (!VENDOR_BOOKED.has(data.contractStatus)) unbook(v, data.booking, `vendor "${data.name ?? ""}"`, data.contractStatus);
+    }
+    for (const v of (await db.collection("venues").get()).docs) {
+      const data = v.data();
+      if (!isLiveMark(data.booking) || data.booking.from === "direct") continue;
+      const label = `venue "${data.name ?? ""}"`;
+      if (data.status !== "Booked") {
+        unbook(v, data.booking, label, data.status);
+        continue;
+      }
+      const edited = data.budgetEstimate;
+      if (typeof edited !== "number" || edited === data.agreedPrice) continue;
+      if (edited === 0) {
+        report.push(`${label}: the old UI's price is blank and the agreed price is ${data.agreedPrice}; left as it is, check it by hand`);
+        continue;
+      }
+      writes.push(update(v, { agreedPrice: edited }, `${label} agreed price ${data.agreedPrice ?? "none"} → ${edited} (edited in the old UI)`));
+    }
+    return { writes, report };
+  },
+};
+
 export const MIGRATIONS: Migration[] = [
   funders,
   guestNumbers,
@@ -334,4 +387,5 @@ export const MIGRATIONS: Migration[] = [
   legacyFilesMigration,
   startedOn,
   itemPeople,
+  oldUiSync,
 ];

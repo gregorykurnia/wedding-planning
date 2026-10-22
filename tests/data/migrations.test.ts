@@ -78,6 +78,7 @@ describe("migrations", () => {
       ["5-legacy-files", expect.any(Number)],
       ["6-started-on", 1],
       ["7-item-people-report", 0],
+      ["8-old-ui-sync", 0],
     ]);
     expect((await db.collection("funders").get()).size).toBe(0);
     expect(await get("vendors/v1")).not.toHaveProperty("booking");
@@ -145,7 +146,7 @@ describe("migrations", () => {
 
     // Idempotent: a second run plans nothing.
     const again = await run(["all"], false, quiet);
-    expect(again.map((r) => r.planned)).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(again.map((r) => r.planned)).toEqual(MIGRATIONS.map(() => 0));
   });
 
   it("refuses to apply a migration already recorded, unless forced (review P1-S14)", async () => {
