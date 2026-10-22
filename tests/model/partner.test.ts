@@ -7,6 +7,8 @@ import {
   ownToast,
   partnerIsHere,
   activityNews,
+  burstToast,
+  mergeNewsBurst,
   partnerToast,
   removes,
 } from "@/lib/model/partner";
@@ -177,5 +179,27 @@ describe("your own change from another device (N3)", () => {
   it("has no toast for a removal or a kind it doesn't know, as for the partner", () => {
     expect(own("booking.removed", { name: "x" })).toBeNull();
     expect(own("something.new", {})).toBeNull();
+  });
+});
+
+describe("a burst of news (P5-S26)", () => {
+  const news = (id: string, own: boolean, text: string | null) => ({ id, name: own ? "Greg" : "Bella", own, text, flash: [id] });
+  const summary = (first: { name: string; own: boolean }, count: number) => burstToast(first.name, count, first.own);
+
+  it("leaves up to three toasts as they are", () => {
+    const three = [news("a", false, "A"), news("b", false, "B"), news("c", false, "C"), news("d", true, "D")];
+    expect(mergeNewsBurst(three, summary)).toEqual(three);
+  });
+
+  it("merges more than three of the partner's into one toast, keeping every flash and your own toasts apart", () => {
+    const many = [news("a", false, "A"), news("b", false, null), news("c", false, "C"), news("d", false, "D"), news("e", false, "E"), news("o", true, "O")];
+    const merged = mergeNewsBurst(many, summary);
+    expect(merged.filter((n) => n.text).map((n) => n.text)).toEqual(["Bella made 4 changes. Everything here is up to date.", "O"]);
+    expect(merged.flatMap((n) => n.flash)).toEqual(["a", "b", "c", "d", "e", "o"]);
+    expect(merged[0]).toMatchObject({ id: "a-burst", text: "Bella made 4 changes. Everything here is up to date." });
+  });
+
+  it("words your own burst from another device without naming the partner", () => {
+    expect(burstToast("Greg", 5, true)).toBe("You made 5 changes on another device. Everything here is up to date.");
   });
 });

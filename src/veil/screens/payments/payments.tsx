@@ -36,7 +36,7 @@ export function Payments() {
   const recordPayment = useRecordPayment();
   return (
     <PageColumn>
-      <ScreenState read={read} what="the payments due" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="payments due" onRetry={() => window.location.reload()}>
         {(list) => <PaymentsView list={list} onRecord={recordPayment} />}
       </ScreenState>
     </PageColumn>

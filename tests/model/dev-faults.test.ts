@@ -22,6 +22,12 @@ describe("parseFaults", () => {
     expect(parseFaults("save:nonsense").save).toBe("failed");
   });
 
+  it("reads a held loading, and an offline start with nothing arrived (P5-S23)", () => {
+    expect(parseFaults("loading")).toEqual({ ...NO_FAULTS, loading: true });
+    expect(parseFaults("offline:cold")).toEqual({ ...NO_FAULTS, offline: true, cold: true, save: "offline" });
+    expect(parseFaults("offline").cold).toBe(false);
+  });
+
   it("ignores what it doesn't know, and `off` or nothing is no faults", () => {
     expect(parseFaults("explode,load:7")).toEqual({ ...NO_FAULTS, load: true });
     expect(parseFaults("off")).toEqual(NO_FAULTS);
@@ -80,6 +86,18 @@ describe("with the dev flag on", () => {
     expect(readOf("online", [{ loading: false, error: null }], [1, 2])).toEqual({ status: "error", data: null });
     expect(readOf("demo", [], [1, 2])).toEqual({ status: "demo", data: null });
   });
+
+  it("holds every read in loading, and an offline:cold read has nothing to show (P5-S23)", async () => {
+    const { go } = browser("?fault=loading");
+    const { readOf } = await import("@/lib/data/read");
+    const idle = { loading: false, error: null };
+    expect(readOf("online", [idle], [1, 2])).toEqual({ status: "loading", data: null });
+    go("?fault=offline:cold");
+    expect(readOf("offline", [idle], [1, 2])).toEqual({ status: "offline", data: null });
+    // Plain `offline` keeps what has arrived, as a connection lost mid-session does.
+    go("?fault=offline");
+    expect(readOf("offline", [idle], [1, 2])).toEqual({ status: "offline", data: [1, 2] });
+  });
 });
 
 describe("with the dev flag off", () => {
@@ -94,5 +112,21 @@ describe("with the dev flag off", () => {
     expect(devFaults()).toEqual(NO_FAULTS);
     await expect(guarded(async () => "written")).resolves.toBe("written");
     expect(readOf("online", [{ loading: false, error: null }], [1])).toEqual({ status: "ready", data: [1] });
+  });
+});
+
+describe("the build's switch (P5-S22)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("is a constant: \"0\" unless the build asked for \"1\", so production drops the fault code", async () => {
+    vi.stubEnv("NEXT_PUBLIC_VEIL_DEV", undefined);
+    vi.resetModules();
+    expect((await import("../../next.config")).default.env).toEqual({ NEXT_PUBLIC_VEIL_DEV: "0" });
+    vi.stubEnv("NEXT_PUBLIC_VEIL_DEV", "1");
+    vi.resetModules();
+    expect((await import("../../next.config")).default.env).toEqual({ NEXT_PUBLIC_VEIL_DEV: "1" });
   });
 });

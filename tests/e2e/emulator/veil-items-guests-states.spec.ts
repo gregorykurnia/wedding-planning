@@ -72,6 +72,14 @@ test.describe("the normal set", () => {
     await expect(sarah).toHaveCount(1);
   });
 
+  test("a tick made offline says it isn't saved and to keep the page open, with Try again (guide §6.5, P5-S16)", async ({ browser }) => {
+    const page = await openAs(browser, TEST_ACCOUNTS[0], "/new/items?fault=offline");
+    const cake = itemRow(page, "Wedding cake");
+    await cake.getByRole("button", { name: /^Confirmed:/ }).click({ timeout: COMPILE_TIMEOUT });
+    await expect(cake.getByText("Not saved: you’re offline. Keep this page open.")).toBeVisible({ timeout: 15_000 });
+    await expect(cake.getByText("Try again")).toBeVisible();
+  });
+
   test("Bella's tick on Wedding cake reaches Greg's list in place: the row flashes and says so", async ({ browser }) => {
     const greg = await openAs(browser, TEST_ACCOUNTS[0], "/new/items");
     const bella = await openAs(browser, TEST_ACCOUNTS[1], "/new/items");

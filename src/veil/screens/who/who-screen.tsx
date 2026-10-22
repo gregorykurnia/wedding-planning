@@ -20,6 +20,8 @@ import { ChipGroup } from "@/veil/parts/chips/chip";
 import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { Problem } from "@/veil/shell/banner";
 import styles from "./who.module.css";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 
 /**
  * After an account's first sign-in, while neither account has a name
@@ -37,6 +39,7 @@ export function WhoScreen({
   email: string;
   names: { first: string; second: string };
 }) {
+  const offline = !useOnline();
   const [picked, setPicked] = useState<Slot | null>(null);
   const [mine, setMine] = useState("");
   const [theirs, setTheirs] = useState("");
@@ -101,7 +104,7 @@ export function WhoScreen({
           <p className={styles.why}>{WHO_WHY}</p>
           {failed && (
             <div className={styles.problem}>
-              <Problem role="alert">{ask === "choose" ? WHO_PICK_FAILED : WHO_NAMES_FAILED}</Problem>
+              <Problem role="alert">{offlineOr(ask === "choose" ? WHO_PICK_FAILED : WHO_NAMES_FAILED, offline)}</Problem>
             </div>
           )}
           <Btn type="submit" className={styles.go} disabled={!ready} busy={saving} busyLabel="Saving">

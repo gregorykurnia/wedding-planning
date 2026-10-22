@@ -1,4 +1,4 @@
-Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32, N33, N34, N35, N36, N37, N38, N39. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
+Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32, N33, N34, N35, N36, N37, N38, N39, N40, N41. N1–N18 are designed (N1–N14 in design-guide v1.1, N15–N18 in v1.2, frozen 2026-10-16).
 
 | ID | Need (job story) | Raised in | Status |
 |---|---|---|---|
@@ -41,3 +41,5 @@ Open needs: N19, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32
 | N37 | When I open a document and the planner can't show what's in it (something in it it doesn't understand), I want to be told so, and for nothing I do there to change what's stored, so that a document is never wiped out just because it couldn't be shown. | Step 7 | open |
 | N38 | When I ask to remove or delete something and it can't be done for a reason trying again won't fix (I'm only looking around, the planner didn't accept my account just now, it was already removed, or something changed in it while it was being removed, such as a file put in a folder), I want to be told that reason and not be offered to try again, so that I don't keep trying something that can't work. | Step 7 | open |
 | N39 | When I take back a change and what it needs isn't there any more (the thing itself, or the folder a file would go back into, was deleted on another device), or I make a folder inside one that has just been deleted, I want to be told that plainly and not be offered to try again, so that I know nothing changed and why. | Step 7 | open |
+| N40 | When a change I make in the wedding settings doesn't save, I want the message to use the same words as everywhere else a single change doesn't save, so that the same problem always reads the same. Today the design words it two ways: "Couldn't save this change. What you typed is kept." and "Couldn't save. What you typed is kept." | Step 7 | open |
+| N41 | When my partner (or I, on another device) made many changes while I was away or offline, I want to be told once how many there were rather than see a long row of messages one after another, so that I can see what's changed without being flooded. | Step 7 | open |

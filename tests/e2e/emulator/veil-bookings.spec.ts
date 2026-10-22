@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT } from "../helpers";
+import { COMPILE_TIMEOUT, expectNoLeftoverBookings } from "../helpers";
 
 // Task 4.5: the Bookings list against the emulators. Funders and vendors are written
 // as the emulator's owner (which skips the rules); the screen reads them live. Every
@@ -122,6 +122,7 @@ const BASE: Record<string, Record<string, Json>> = {
 };
 
 test.beforeAll(async () => {
+  await expectNoLeftoverBookings("bk-");
   await put("funders", CK, { name: "CK", order: 0 });
   await put("funders", GREGORY, { name: "Gregory", order: 1 });
   for (const [id, fields] of Object.entries(BASE)) await put("vendors", id, fields);

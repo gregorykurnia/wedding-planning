@@ -76,6 +76,7 @@ const part = (id: string, name: string, totalPrice: number, budgetSpent: number,
 const DOCS_TO_CLEAN = {
   single: "b6-single",
   split: "b6-split",
+  conflict: "b6-conflict",
   parts: "b6-parts",
   over: "b6-over",
   gone: "b6-gone",
@@ -87,6 +88,7 @@ test.beforeAll(async () => {
   await put("funders", GREGORY, { name: "Gregory", order: 1 });
   await put("vendors", DOCS_TO_CLEAN.single, base({ name: "Dapur Lestari Catering" }));
   await put("vendors", DOCS_TO_CLEAN.split, base({ name: "Bunga Melati Florist", category: "Flowers", totalPrice: 8_000_000, budgetSpent: 3_000_000, nextAction: "Choose the flowers" }));
+  await put("vendors", DOCS_TO_CLEAN.conflict, base({ name: "Kebun Bunga Atelier", category: "Flowers", totalPrice: 8_000_000, budgetSpent: 3_000_000 }));
   await put(
     "vendors",
     DOCS_TO_CLEAN.parts,
@@ -190,6 +192,37 @@ test("a late payment shows its flag on the next step, and a direct booking drops
   await expect(page.getByLabel("Next payment")).toContainText("4 days late");
   await expect(page.getByLabel("Next payment")).toContainText("was due");
   await expect(page.getByText("Added directly", { exact: true })).toBeVisible();
+});
+
+test("Undo of a split after a payment on the balance says what was recorded, and the parts stay (N13, P5-S3)", async ({ page }) => {
+  await openBooking(page, DOCS_TO_CLEAN.conflict, "Kebun Bunga Atelier");
+  await page.getByRole("button", { name: "Split into parts" }).click();
+  await expect(page.getByText("Split into 2 parts")).toBeVisible();
+
+  // Rp 1.000.000 recorded on the balance meanwhile, written straight to the store.
+  type Stored = { arrayValue: { values: { mapValue: { fields: Record<string, { integerValue?: string; stringValue?: string }> } }[] } };
+  let parts: Stored | undefined;
+  await expect
+    .poll(async () => {
+      parts = (await read("vendors", DOCS_TO_CLEAN.conflict, "subEntries")) as Stored | undefined;
+      return parts?.arrayValue.values?.length ?? 0;
+    })
+    .toBe(2);
+  const balance = parts!.arrayValue.values[1].mapValue.fields;
+  balance.budgetSpent = { integerValue: String(Number(balance.budgetSpent?.integerValue ?? 0) + 1_000_000) };
+  const res = await fetch(`${DOCS}/vendors/${DOCS_TO_CLEAN.conflict}?updateMask.fieldPaths=subEntries`, {
+    method: "PATCH",
+    headers: ADMIN,
+    body: JSON.stringify({ fields: { subEntries: parts } }),
+  });
+  expect(res.ok).toBe(true);
+  await expect(page.locator("summary", { hasText: "Balance" })).toContainText("Rp 4.000.000");
+
+  await page.getByRole("status").getByRole("button", { name: "Undo" }).click();
+  await expect(
+    page.getByRole("status").getByText(/^Can’t undo the split: \S+ recorded Rp 1\.000\.000 on the balance since\. Both parts stay as they are now\.$/),
+  ).toBeVisible();
+  await expect(page.locator("summary", { hasText: "Deposit" })).toBeVisible();
 });
 
 test("splits into parts, opens the balance, and Undo puts it back as one", async ({ page }) => {

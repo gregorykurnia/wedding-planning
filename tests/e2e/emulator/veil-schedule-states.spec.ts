@@ -91,11 +91,21 @@ test.describe("the empty set", () => {
     const sheet = page.getByRole("dialog", { name: "Add a task" });
     await sheet.getByLabel("What needs doing").fill("Order the cake");
     await sheet.getByRole("button", { name: "Add task" }).click();
+    await page.getByRole("button", { name: "Add a task" }).click();
+    await sheet.getByLabel("What needs doing").fill("Book the band");
+    await sheet.getByRole("button", { name: "Add task" }).click();
     await page.getByRole("checkbox", { name: "Finish Order the cake" }).click();
+    // One still open: the finished one can be folded away.
+    const finished = page.locator("details", { hasText: /finished task/ });
+    if ((await finished.getAttribute("open")) !== null) await finished.locator("summary").click();
+    await expect(finished).not.toHaveAttribute("open");
+    // Ticking the last open one opens them again at once, with no reload (P5-S17).
+    await page.getByRole("checkbox", { name: "Finish Book the band" }).click();
     await expect(page.getByText("Everything’s done")).toBeVisible();
+    await expect(page.locator("details", { hasText: "Hide 2 finished tasks" })).toHaveAttribute("open", "");
 
     await page.reload();
     await expect(page.getByText("Everything’s done")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-    await expect(page.locator("details", { hasText: "Hide 1 finished task" })).toHaveAttribute("open", "");
+    await expect(page.locator("details", { hasText: "Hide 2 finished tasks" })).toHaveAttribute("open", "");
   });
 });

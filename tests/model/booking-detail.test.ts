@@ -129,6 +129,35 @@ describe("removing and splitting", () => {
 
   it("words the split toast and the conflict when Undo can't take it back (N13)", () => {
     expect(splitToast(2)).toBe("Split into 2 parts");
-    expect(splitConflict("Bella")).toBe("Can’t undo the split: Bella has changed a part since. The parts stay as they are now.");
+  });
+
+  it("says what changed since a split when Undo can't take it back, as the prototype does (N13, P5-S3)", () => {
+    const made = [
+      part({ id: "d", name: "Deposit", price: 10_000_000, paid: 10_000_000 }),
+      part({ id: "b", name: "Balance", price: 20_000_000, paid: 0 }),
+    ];
+    const paid = [made[0], { ...made[1], paid: 5_000_000 }];
+    expect(splitConflict("Bella", made, paid)).toBe(
+      "Can’t undo the split: Bella recorded Rp 5.000.000 on the balance since. Both parts stay as they are now.",
+    );
+    expect(splitConflict(null, made, paid)).toBe(
+      "Can’t undo the split: you recorded Rp 5.000.000 on the balance since. Both parts stay as they are now.",
+    );
+    const dated = [made[0], { ...made[1], due: "2026-12-01" }];
+    expect(splitConflict("Bella", made, dated)).toBe(
+      "Can’t undo the split: Bella has changed the balance since. Both parts stay as they are now.",
+    );
+    expect(splitConflict(null, made, dated)).toBe(
+      "Can’t undo the split: you have changed the balance since. Both parts stay as they are now.",
+    );
+    // Both parts changed, or a third added: no single change to name.
+    const both = [{ ...made[0], step: "Call" }, { ...made[1], paid: 1 }];
+    expect(splitConflict("Bella", made, both)).toBe(
+      "Can’t undo the split: Bella has changed a part since. Both parts stay as they are now.",
+    );
+    const added = [...made, part({ id: "x", name: "Add-on" })];
+    expect(splitConflict(null, made, added)).toBe(
+      "Can’t undo the split: you’ve changed a part since. The parts stay as they are now.",
+    );
   });
 });

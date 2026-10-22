@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { addPart, removeBooking, removePart, splitBooking, type RecordTarget } from "@/lib/data/bookings";
 import { setBookingField, setPartField } from "@/lib/data/booking-fields";
-import { usePartnerName, useRemovedByPartner } from "@/lib/data/partner";
+import { useRemovedByPartner } from "@/lib/data/partner";
 import { useAutosaveField } from "@/lib/data/use-autosave-field";
 import { useBooking, type BookingFile, type BookingPage } from "@/lib/data/use-booking";
 import { useUploadQueue } from "@/lib/data/uploads";
@@ -41,11 +41,10 @@ import {
   removedTitle,
   removedToast,
   splitConflict,
-  SPLIT_CONFLICT_OWN,
   splitToast,
 } from "@/lib/model/booking-detail";
 import { rp } from "@/lib/model/format";
-import { leftOf } from "@/lib/model/money";
+import { leftOf, splitPlan } from "@/lib/model/money";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { DateInput, FieldInput, FieldRow, Fields, FieldSelect, StaticValue } from "@/veil/parts/fields/fields";
@@ -149,10 +148,14 @@ function Detail({
   const toast = useToast();
   const confirm = useConfirm();
   const record = useRecordPayment();
-  const { name: partnerName } = usePartnerName();
   const { today, funders } = page;
   const target: RecordTarget = { kind: booking.kind, id: booking.recordId };
   const inParts = booking.parts.length > 0;
+  // The parts as they are now, for a split's Undo that finds one changed since.
+  const partsNow = useRef<readonly Part[]>(booking.parts);
+  useEffect(() => {
+    partsNow.current = booking.parts;
+  }, [booking.parts]);
   const figures = bookingFigures(booking);
   const next = nextDue(booking, today);
   const sentence = estimateSentence(booking);
@@ -216,10 +219,19 @@ function Detail({
     setSplitting(true);
     setActionFailed(false);
     try {
+      const before = booking;
       const done = await splitBooking(target);
       const last = done.partIds.at(-1);
       if (last) show(last);
-      toast.undoable(splitToast(done.partIds.length), done.undo, splitConflict(partnerName), SPLIT_CONFLICT_OWN);
+      // The parts as the split made them, against the parts when Undo finds a change since (N13, P5-S3).
+      let n = 0;
+      const made = splitPlan(before, () => done.partIds[n++] ?? "");
+      toast.undoable(
+        splitToast(done.partIds.length),
+        done.undo,
+        (partner) => splitConflict(partner, made, partsNow.current),
+        () => splitConflict(null, made, partsNow.current),
+      );
     } catch {
       setActionFailed(true);
     }

@@ -12,8 +12,9 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 import { SaveScopeContext } from "@/lib/data/use-autosave-field";
-import { FIELD_FAILED } from "@/lib/model/save-state";
+import { FIELD_FAILED, offlineOr } from "@/lib/model/save-state";
 import styles from "./fields.module.css";
+import { useOnline } from "@/lib/data/session";
 
 /** What a control takes from `useAutosaveField`: spread `field.bind` onto it. */
 export type Bound<T> = {
@@ -88,6 +89,7 @@ export function FieldRow({
   stacked = false,
   children,
 }: FieldRowProps) {
+  const offline = !useOnline();
   const id = useId();
   const [refusal, setRefusal] = useState<string | null>(null);
   const problem = problemProp ?? refusal;
@@ -136,7 +138,7 @@ export function FieldRow({
       </FieldContext.Provider>
       {failure && field ? (
         <p className={styles.err} id={noteId}>
-          <span>{FIELD_FAILED}</span>
+          <span>{offlineOr(FIELD_FAILED, offline)}</span>
           <button type="button" className={`${styles.link} ${styles.rose}`} onClick={field.retry}>
             Try again
           </button>

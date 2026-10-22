@@ -70,7 +70,7 @@ export function BookingNewScreen() {
     <PageColumn>
       <BackLink path={BUDGET} label="Budget" />
       <Hero title="Add a booking" sub={BOOKING_SUB} />
-      <ScreenState read={read} what="the form" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="the budget" onRetry={() => window.location.reload()}>
         {(data) => (
           <AddForm funders={data?.funders ?? []} categories={data?.categories ?? []} inDemo={connection === "demo"} />
         )}

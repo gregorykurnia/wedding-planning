@@ -51,7 +51,7 @@ export function useVenues(): Loaded<VenueListItem[]> {
     );
   }, [venues.data, files.data]);
 
-  return readOf(connection, [venues, files], items);
+  return readOf(connection, [venues, files], items, 1);
 }
 
 /**
@@ -73,7 +73,7 @@ export function useVenue(id: string): Loaded<{ venue: VenueDetail | null }> {
     };
   }, [venues.data, files.data, id]);
 
-  return readOf(connection, [venues, files], page);
+  return readOf(connection, [venues, files], page, 1);
 }
 
 export interface NewVenue {

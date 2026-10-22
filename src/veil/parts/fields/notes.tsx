@@ -2,9 +2,10 @@
 
 import { useId, useState } from "react";
 import { linkParts } from "@/lib/model/format";
-import { FIELD_FAILED } from "@/lib/model/save-state";
+import { FIELD_FAILED, offlineOr } from "@/lib/model/save-state";
 import { FieldText, Fields, FieldRow, type Bound } from "./fields";
 import styles from "./fields.module.css";
+import { useOnline } from "@/lib/data/session";
 
 /** Text with its web addresses as links that open in a new tab, shown without "https://". */
 export function LinkedText({ text }: { text: string }) {
@@ -52,6 +53,7 @@ type NotesProps = Bound<string> & {
  * keeps its line and Try again under the reading text, so it never looks saved.
  */
 export function Notes({ value, onChange, onCommit, disabled, label = "Notes", empty = "Nothing written yet.", field }: NotesProps) {
+  const offline = !useOnline();
   const [editing, setEditing] = useState(false);
   const headingId = useId();
   return (
@@ -91,7 +93,7 @@ export function Notes({ value, onChange, onCommit, disabled, label = "Notes", em
       )}
       {!editing && field?.failed ? (
         <p className={styles.err} role="alert">
-          <span>{FIELD_FAILED}</span>
+          <span>{offlineOr(FIELD_FAILED, offline)}</span>
           <button type="button" className={`${styles.link} ${styles.rose}`} onClick={field.retry}>
             Try again
           </button>

@@ -95,6 +95,21 @@ test("a blocked Google window says so, and the button offers another try", async
   await expect(page.getByLabel("Email")).toBeEditable();
 });
 
+test("a Google sign-in that fails for any other reason says so, and email is still a way in (P5-S24)", async ({ page }) => {
+  await page.addInitScript(() => {
+    // Something unexpected while opening the Google window: not blocked, not closed.
+    window.open = () => {
+      throw new Error("Something unexpected");
+    };
+  });
+  await open(page);
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.locator("main").getByRole("alert")).toContainText(
+    "Google couldn’t finish signing you in. Nothing was changed. Try again in a moment, or sign in with your email below.",
+  );
+  await expect(page.getByLabel("Email")).toBeEditable();
+});
+
 test("a Google window that is closed says so, calmly", async ({ page }) => {
   await page.addInitScript(() => {
     // A window that is already closed: Firebase notices and gives up.

@@ -23,7 +23,10 @@ export function useSettings(): Loaded<WeddingSettings> {
   const { data, loading, error } = useWeddingSettings();
   const { connection } = useSession();
   if (connection === "demo") return { status: "demo", data: null };
-  if (devFaults().load) return { status: "error", data: null };
+  const faults = devFaults();
+  if (faults.load) return { status: "error", data: null };
+  if (faults.loading) return { status: "loading", data: null };
+  if (faults.cold && connection === "offline") return { status: "offline", data: null };
   if (error) return { status: "error", data };
   if (connection === "offline") return { status: "offline", data };
   if (loading) return { status: "loading", data: null };

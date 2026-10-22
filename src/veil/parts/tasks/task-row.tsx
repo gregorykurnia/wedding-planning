@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type MouseEvent } from "react";
 import type { IsoDate } from "@/lib/model/bookings";
-import { FIELD_FAILED } from "@/lib/model/save-state";
+import { FIELD_FAILED, offlineOr } from "@/lib/model/save-state";
 import type { SubtaskRecord, TaskRecord } from "@/lib/model/tasks";
 import { Chevron } from "@/veil/icons/chevron";
 import { TextLink } from "@/veil/parts/actions/text-link";
@@ -20,6 +20,7 @@ import {
   tickLabel,
 } from "./task-text";
 import styles from "./tasks.module.css";
+import { useOnline } from "@/lib/data/session";
 
 const NONE: ReadonlySet<never> = new Set();
 
@@ -61,6 +62,7 @@ interface StepRowProps {
 
 /** One step: a 24px check, a title, a date and a 32px ×. A change that didn't save keeps what was typed. */
 function StepRow({ task, step, actions, failed, focus, onFocused, disabled }: StepRowProps) {
+  const offline = !useOnline();
   const [title, setTitle] = useDraft(step.title);
   const [due, setDue] = useDraft(step.dueDate ?? "");
   const input = useRef<HTMLInputElement>(null);
@@ -128,7 +130,7 @@ function StepRow({ task, step, actions, failed, focus, onFocused, disabled }: St
       </button>
       {failed ? (
         <p className={styles.rowErr} role="alert">
-          <span>{STEP_FAILED}</span>
+          <span>{offlineOr(STEP_FAILED, offline)}</span>
           <TextLink tone="rose" onClick={() => actions.onRetryStep?.(task, step)}>
             Try again
           </TextLink>
@@ -177,6 +179,7 @@ export function TaskRow({
   failedFields = NONE,
   demo = false,
 }: TaskRowProps) {
+  const offline = !useOnline();
   const flash = useFlash({ kind: "task", id: task.id });
   const [notes, setNotes] = useDraft(task.notes);
   const [due, setDue] = useDraft(task.dueDate ?? "");
@@ -276,7 +279,7 @@ export function TaskRow({
           />
           {failedFields.has("notes") ? (
             <p className={styles.rowErr} role="alert">
-              <span>{FIELD_FAILED}</span>
+              <span>{offlineOr(FIELD_FAILED, offline)}</span>
               <TextLink tone="rose" onClick={() => actions.onRetryField?.(task, "notes")}>
                 Try again
               </TextLink>

@@ -2,8 +2,9 @@
 
 import { useContext, type ReactNode } from "react";
 import { SaveScopeContext, useSaveScopeState } from "@/lib/data/use-autosave-field";
-import { SHEET_FAILED } from "@/lib/model/save-state";
+import { offlineOr, SHEET_FAILED } from "@/lib/model/save-state";
 import styles from "./fields.module.css";
+import { useOnline } from "@/lib/data/session";
 
 /**
  * One save scope: a detail screen, or (`sheet`) a sheet that edits an existing
@@ -32,6 +33,7 @@ export function SaveScopeProvider({
  * for something to be fixed ("1 change not saved yet: the end time").
  */
 export function SaveLine({ held }: { held?: string | null }) {
+  const offline = !useOnline();
   const scope = useContext(SaveScopeContext);
   if (!scope) return null;
   const { line, retryAll, sheet } = scope;
@@ -48,7 +50,7 @@ export function SaveLine({ held }: { held?: string | null }) {
     <p className={failed ? `${styles.saveLine} ${styles.saveFailed}` : styles.saveLine} role="status">
       {failed && sheet ? (
         <>
-          {SHEET_FAILED}{" "}
+          {offlineOr(SHEET_FAILED, offline)}{" "}
           <button type="button" className={`${styles.link} ${styles.rose}`} onClick={retryAll}>
             Try again
           </button>

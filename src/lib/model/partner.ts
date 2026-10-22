@@ -182,3 +182,39 @@ export function activityNews(): (snapshot: ActivitySnapshot) => string[] {
     return fresh;
   };
 }
+
+/** More partner toasts than this at once (a long offline spell, a tab left asleep) become one (P5-S26). */
+export const NEWS_BURST = 3;
+
+/**
+ * "Bella made 12 changes. Everything here is up to date." in place of 12 toasts at once, and
+ * "You made 4 changes on another device. …" for your own (N3). Not in the guide; provisional (G41/N41).
+ */
+export function burstToast(who: string, count: number, own: boolean): string {
+  return own
+    ? `You made ${count} changes on another device. Everything here is up to date.`
+    : `${who} made ${count} changes. Everything here is up to date.`;
+}
+
+/**
+ * Toasts arriving together, merged: when more than `NEWS_BURST` of the partner's (or of your other
+ * device's) have words, those lose them and one summary takes the place of the first. Flashes stay
+ * on every item; the order is kept.
+ */
+export function mergeNewsBurst<T extends { id: string; name: string; own: boolean; text: string | null; flash: unknown[] }>(
+  news: readonly T[],
+  summary: (first: T, count: number) => string,
+): T[] {
+  let out = [...news];
+  for (const own of [false, true]) {
+    const worded = out.filter((n) => n.own === own && n.text);
+    if (worded.length <= NEWS_BURST) continue;
+    const first = worded[0];
+    out = out.flatMap((n) => {
+      if (n.own !== own || !n.text) return [n];
+      const quiet = { ...n, text: null };
+      return n === first ? [{ ...n, id: `${n.id}-burst`, text: summary(first, worded.length), flash: [] }, quiet] : [quiet];
+    });
+  }
+  return out;
+}

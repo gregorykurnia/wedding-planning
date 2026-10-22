@@ -44,7 +44,7 @@ export function useFinalists(): Loaded<FinalistListItem[]> {
     const byId = new Map(vendors.data.map((v) => [v.id, v]));
     return finalists.data.map((f) => finalistListItem({ ...f, bookingId: finalistBookingId(f, byId) }));
   }, [finalists.data, vendors.data]);
-  return readOf(connection, [finalists, vendors], items);
+  return readOf(connection, [finalists, vendors], items, 1);
 }
 
 /** The finalists and the category list as one read, for the screen and its add sheet. */

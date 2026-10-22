@@ -26,16 +26,16 @@ async function open(page: Page, path: string) {
 
 test("the Vendors list says it didn't load under ?fault=load, and Try again says so again", async ({ page }) => {
   await open(page, "/new/vendors?fault=load");
-  await expect(page.getByText("The vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Your vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.getByRole("button", { name: "Try again" }).click();
-  await expect(page.getByText("The vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Your vendors didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });
 
 test("the Shortlist, the Venues and a vendor's own screen each say they didn't load under ?fault=load", async ({ page }) => {
   await open(page, "/new/vendors/shortlist?fault=load");
-  await expect(page.getByText("The shortlist didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Your shortlist didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.goto("/new/vendors/venues?fault=load");
-  await expect(page.getByText("The venues didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("Your venues didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await page.goto("/new/vendors/kebun?fault=load");
   await expect(page.getByText("This vendor didn’t load")).toBeVisible({ timeout: COMPILE_TIMEOUT });
 });

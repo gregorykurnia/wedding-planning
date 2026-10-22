@@ -9,6 +9,7 @@
  * (Q10); colours are kept exactly as typed.
  */
 import type { JSONContent } from "@tiptap/core";
+import { SAVE_OFFLINE } from "./save-state";
 
 export type DocFontKey = "jost" | "cormorant" | "georgia" | "mono";
 export type DocSizeKey = "small" | "normal" | "large" | "huge";
@@ -309,7 +310,7 @@ export function docSaveText(kind: DocSaveKind, savedAgo: string | null): string 
     case "failed":
       return "Couldn’t save your last changes. They’re still here.";
     case "offline":
-      return "Not saved: you’re offline. Keep this page open.";
+      return SAVE_OFFLINE;
     case "demo":
       return "Demonstration mode: not saved";
   }

@@ -54,6 +54,13 @@ export function fieldFailure(code?: string): { text: string; retry: boolean } {
   return code === "demo" ? { text: SAVE_DEMO, retry: false } : { text: FIELD_FAILED, retry: true };
 }
 
+/**
+ * A save that failed while the device is offline says so instead (guide §6.5),
+ * as a document's save line does; the Try again after it stays.
+ */
+export const SAVE_OFFLINE = "Not saved: you’re offline. Keep this page open.";
+export const offlineOr = (text: string, offline: boolean) => (offline ? SAVE_OFFLINE : text);
+
 /** The same failure in a sheet's save line, which covers every field in the sheet (guide §6.1). */
 export const SHEET_FAILED = "Couldn’t save. What you typed is kept.";
 

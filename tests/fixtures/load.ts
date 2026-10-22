@@ -1,5 +1,5 @@
 import { connect } from "../../scripts/migrate/admin";
-import { FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../e2e/emulator-config";
+import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../e2e/emulator-config";
 import { accountUids, seed } from "../e2e/seed";
 import type { FixtureContext } from "./build";
 import { FIXTURES, type FixtureName } from "./index";
@@ -20,7 +20,8 @@ export async function loadFixture(name: FixtureName): Promise<Record<string, num
   const docs = FIXTURES[name](ctx);
 
   process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_EMULATOR;
-  const { db } = connect("fixtures");
+  // The project `seed()` emptied, not whatever FIREBASE_PROJECT_ID the shell has (P5-S23).
+  const { db } = connect("fixtures", EMULATOR_PROJECT_ID);
   try {
     db.settings({ ignoreUndefinedProperties: true });
   } catch {

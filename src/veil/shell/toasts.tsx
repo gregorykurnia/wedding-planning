@@ -21,6 +21,8 @@ export const PARTNER_TOAST_MS = 9000;
 
 /** A conflict sentence, or one made from the partner's name, which the host knows. */
 type Conflict = ReactNode | ((partner: string) => ReactNode);
+/** The same for your own change since, made when Undo finds it if a function. */
+type OwnConflict = ReactNode | (() => ReactNode);
 
 type ToastKind = "confirmation" | "undo" | "next" | "partner" | "demo";
 
@@ -36,7 +38,7 @@ interface ToastItem {
   /** What an Undo that finds the thing changed since says (N13); the generic line if not given. */
   conflict?: Conflict;
   /** The same, when the change since was your own (G35); the generic line if not given. */
-  ownConflict?: ReactNode;
+  ownConflict?: OwnConflict;
   /** What an Undo that finds the thing, or where it goes back to, gone says (G39); the generic line if not given. */
   gone?: ReactNode;
   /** Undo was tapped and the restore hasn't finished. */
@@ -60,7 +62,7 @@ export interface Toasts {
     message: ReactNode,
     undo: () => void | Promise<void>,
     conflict?: Conflict,
-    ownConflict?: ReactNode,
+    ownConflict?: OwnConflict,
     gone?: ReactNode,
   ): number;
   /** "Kebun Bunga Atelier is now a booking · Open". */
@@ -216,7 +218,8 @@ export function ToastHost({ children }: { children: ReactNode }) {
         // is nothing left to try, and what is there now stays. The toast says so.
         dismiss(item.id);
         if (err.by === "you") {
-          add({ kind: "partner", message: item.ownConflict ?? UNDO_CONFLICT_OWN }, PARTNER_TOAST_MS);
+          const own = typeof item.ownConflict === "function" ? item.ownConflict() : item.ownConflict;
+          add({ kind: "partner", message: own ?? UNDO_CONFLICT_OWN }, PARTNER_TOAST_MS);
         } else {
           const partner = partnerNameRef.current;
           const said = typeof item.conflict === "function" ? item.conflict(partner) : item.conflict;

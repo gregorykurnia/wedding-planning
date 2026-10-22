@@ -87,7 +87,10 @@ export function useDocument(id: string | null): DocumentRead {
   }, [id]);
 
   if (connection === "demo") return { status: "demo", data: null, pending: false, by: null };
-  if (devFaults().load) return { status: "error", data: null, pending: false, by: null };
+  const faults = devFaults();
+  if (faults.load) return { status: "error", data: null, pending: false, by: null };
+  if (faults.loading) return { status: "loading", data: null, pending: false, by: null };
+  if (faults.cold && connection === "offline") return { status: "offline", data: null, pending: false, by: null };
   if (!id) return { status: "ready", data: null, pending: false, by: null };
   const current = state.id === id ? state : { data: null, status: "loading" as const, pending: false };
   const by = removed?.by ?? null;

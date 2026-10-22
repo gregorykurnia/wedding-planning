@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { toWriteError } from "@/lib/data/write-error";
-import { fieldFailure } from "@/lib/model/save-state";
+import { fieldFailure, offlineOr } from "@/lib/model/save-state";
+import { useOnline } from "@/lib/data/session";
 import styles from "./fields.module.css";
 
 type InlineRenameProps = {
@@ -36,6 +37,7 @@ export function InlineRename({ name, label, onSave, onClose, check, maxLength = 
   const [text, setText] = useState(name);
   const [state, setState] = useState<"typing" | "saving" | "failed">("typing");
   const [failure, setFailure] = useState(fieldFailure());
+  const offline = !useOnline();
   const [problem, setProblem] = useState<string | null>(null);
   const alive = useRef(true);
 
@@ -121,7 +123,7 @@ export function InlineRename({ name, label, onSave, onClose, check, maxLength = 
       ) : null}
       {state === "failed" ? (
         <p className={`${styles.err} ${styles.renameErr}`} role="alert">
-          <span>{failure.text}</span>
+          <span>{failure.retry ? offlineOr(failure.text, offline) : failure.text}</span>
           {failure.retry && (
             <button type="button" className={`${styles.link} ${styles.rose}`} onClick={save}>
               Try again

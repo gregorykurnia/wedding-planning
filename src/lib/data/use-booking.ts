@@ -114,6 +114,6 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
     };
   }, [bookingId, vendors.data, venues.data, files.data, finalists.data, funders.data, categories.data, today]);
 
-  const status = mergeStatus(readOf(connection, [vendors, venues, files, finalists], page), funders, categories);
+  const status = mergeStatus(readOf(connection, [vendors, venues, files, finalists], page, 2), funders, categories);
   return { status, data: status === "demo" ? null : page };
 }

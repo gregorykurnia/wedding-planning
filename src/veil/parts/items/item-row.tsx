@@ -22,6 +22,8 @@ import {
 } from "./item-text";
 import styles from "./items.module.css";
 import { PeopleMenu } from "./people-menu";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 
 const NONE: ReadonlySet<never> = new Set();
 
@@ -87,6 +89,7 @@ export function ItemRow({
   onMoveKey,
   dragHandlers,
 }: ItemRowProps) {
+  const offline = !useOnline();
   const flash = useFlash({ kind: "item", id: item.id });
   const [name, setName] = useDraft(item.item);
   const [vendor, setVendor] = useDraft(item.vendor);
@@ -153,8 +156,10 @@ export function ItemRow({
   // One line under the row; with several failures it words the first (a typed field before a choice),
   // and its Try again runs every one of them again.
   const typedFailure = failedName ? name : vendor;
-  const failedLine =
-    failedName || failedVendor ? itemFailed(typedFailure) : itemChoiceFailed(item.item);
+  const failedLine = offlineOr(
+    failedName || failedVendor ? itemFailed(typedFailure) : itemChoiceFailed(item.item),
+    offline,
+  );
   const ringed = (field: ItemField) => (failedFields.has(field) ? styles.ringed : undefined);
 
   return (

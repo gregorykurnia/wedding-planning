@@ -17,7 +17,7 @@ export function Bookings() {
   const initialQuery = useInitialQuery();
   return (
     <PageColumn width="wide">
-      <ScreenState read={read} what="the bookings" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="your bookings" onRetry={() => window.location.reload()}>
         {(list) => <BookingsView list={list} initialQuery={initialQuery} />}
       </ScreenState>
     </PageColumn>

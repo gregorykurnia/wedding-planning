@@ -38,7 +38,7 @@ export function ShortlistScreen() {
   const read = useFinalistsAndCategories();
   return (
     <PageColumn width="wide">
-      <ScreenState read={read} what="the shortlist" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="your shortlist" onRetry={() => window.location.reload()}>
         {(data) => <Shortlist finalists={data?.[0] ?? []} categories={data?.[1].list ?? buildCategories([])} />}
       </ScreenState>
     </PageColumn>

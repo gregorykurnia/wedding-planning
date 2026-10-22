@@ -33,6 +33,8 @@ import { useToast } from "@/veil/shell/toasts";
 import { EventForm, OLD_REMINDER } from "./event-form";
 import styles from "./event-sheet.module.css";
 import { STATUS_FAILED, STATUS_TOAST, deleteConfirm, deletedToast, sheetSub } from "./schedule-text";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 
 /**
  * An event's sheet (guide §5.19; S1, S2, S10): every change saves as you go, and
@@ -77,6 +79,7 @@ function Editor({
   withChoices: readonly { value: string; label: string }[];
   currentRelated: { value: string; label: string } | null;
 }) {
+  const offline = !useOnline();
   const sheet = useSheet();
   const toast = useToast();
   const confirm = useConfirm();
@@ -230,7 +233,7 @@ function Editor({
         />
         {statusFailed && (
           <Banner tone="rose" inline role="alert">
-            {STATUS_FAILED}
+            {offlineOr(STATUS_FAILED, offline)}
           </Banner>
         )}
         <EditSheetActions

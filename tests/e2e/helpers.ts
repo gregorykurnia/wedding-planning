@@ -172,3 +172,25 @@ export async function expectStored(
     })
     .toBe(true);
 }
+
+/**
+ * For a spec that counts every vendor and venue (Bookings, Budget): stops at once, naming them, if an
+ * earlier spec left any behind, rather than failing later on a total that is off by one (P5-S27: the
+ * old-UI smoke test once left a booking that way, and these specs failed in a full run but not alone).
+ * `ownPrefix` is this spec's own ids, which a run stopped half-way may have left.
+ */
+export async function expectNoLeftoverBookings(ownPrefix: string) {
+  const left: string[] = [];
+  for (const collection of ["vendors", "venues"]) {
+    for (const doc of await storedDocs(collection)) {
+      const id = String(doc.id);
+      if (!id.startsWith(ownPrefix)) left.push(`${collection}/${id} (${String(doc.name ?? "no name")})`);
+    }
+  }
+  if (left.length > 0) {
+    throw new Error(
+      `Another spec left ${left.length === 1 ? "this" : "these"} behind, so the totals here would be wrong: ` +
+        `${left.join(", ")}. Find the spec that writes it and make it remove what it adds.`,
+    );
+  }
+}

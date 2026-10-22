@@ -55,7 +55,7 @@ export function VendorsScreen() {
   const read = useVendorsAndCategories();
   return (
     <PageColumn width="wide">
-      <ScreenState read={read} what="the vendors" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="your vendors" onRetry={() => window.location.reload()}>
         {(data) => <VendorsList vendors={data?.[0] ?? []} categories={data?.[1].list ?? buildCategories([])} />}
       </ScreenState>
     </PageColumn>

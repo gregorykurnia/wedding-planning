@@ -52,7 +52,7 @@ export function VenuesScreen() {
   const read = useVenues();
   return (
     <PageColumn width="wide">
-      <ScreenState read={read} what="the venues" onRetry={() => window.location.reload()}>
+      <ScreenState read={read} what="your venues" onRetry={() => window.location.reload()}>
         {(data) => <VenuesList venues={data ?? []} ready={read.status === "ready"} />}
       </ScreenState>
     </PageColumn>

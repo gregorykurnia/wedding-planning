@@ -7,6 +7,8 @@ import { TextLink } from "@/veil/parts/actions/text-link";
 import { useFlash } from "@/veil/shell/flash";
 import { inviteLine, metaParts, plusText, rsvpFailed } from "./guest-text";
 import styles from "./guests.module.css";
+import { useOnline } from "@/lib/data/session";
+import { offlineOr } from "@/lib/model/save-state";
 
 const join = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
@@ -101,6 +103,7 @@ export interface GuestRowProps {
  * didn't save keeps the choice and offers Try again.
  */
 export function GuestRow({ guest, onRsvp, onOpen, failed = false, onRetry, demo = false }: GuestRowProps) {
+  const offline = !useOnline();
   const flash = useFlash({ kind: "guest", id: guest.id });
   const meta = metaParts(guest);
   const plus = plusText(guest.plusOnes);
@@ -137,7 +140,7 @@ export function GuestRow({ guest, onRsvp, onOpen, failed = false, onRetry, demo 
       </span>
       {failed ? (
         <p className={styles.rowErr} role="alert">
-          <span>{rsvpFailed(guest.name)}</span>
+          <span>{offlineOr(rsvpFailed(guest.name), offline)}</span>
           <TextLink tone="rose" onClick={() => onRetry?.(guest)}>
             Try again
           </TextLink>

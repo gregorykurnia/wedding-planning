@@ -12,7 +12,11 @@ import type { WriteFailure } from "./write-error";
  *   `save:timeout` is also how to see a write that got no answer.
  * - `load`: every screen read (`readOf`, settings, a document) fails before any data.
  * - `offline`: the device reads as offline, and writes fail as `offline` (what a
- *   write made offline comes to) unless `save:` names another failure.
+ *   write made offline comes to) unless `save:` names another failure. What has
+ *   loaded stays on screen, as when the connection drops mid-session.
+ * - `offline:cold`: the same, as if offline from the start: no read has anything
+ *   to show, so screens say they're offline (a page opened with no connection).
+ * - `loading`: every screen read waits forever, so the loading state stays.
  * - `upload`: every file upload fails part-way.
  * `?fault=off` clears them. They stay for the tab (`sessionStorage`), because a
  * move between screens drops the query.
@@ -21,10 +25,14 @@ export interface Faults {
   save: WriteFailure | null;
   load: boolean;
   offline: boolean;
+  /** With `offline`: nothing had arrived before the connection went. */
+  cold: boolean;
+  /** Every screen read is held before its first answer. */
+  loading: boolean;
   upload: boolean;
 }
 
-export const NO_FAULTS: Faults = { save: null, load: false, offline: false, upload: false };
+export const NO_FAULTS: Faults = { save: null, load: false, offline: false, cold: false, loading: false, upload: false };
 
 const SAVE_CODES: readonly WriteFailure[] = ["timeout", "offline", "denied", "missing", "changed", "demo", "failed"];
 
@@ -37,8 +45,9 @@ export function parseFaults(spec: string | null | undefined): Faults {
     const [kind, code] = part.trim().toLowerCase().split(":");
     if (kind === "save") {
       faults.save = SAVE_CODES.find((c) => c === code) ?? "failed";
-    } else if (kind === "load" || kind === "offline" || kind === "upload") {
+    } else if (kind === "load" || kind === "offline" || kind === "upload" || kind === "loading") {
       faults[kind] = true;
+      if (kind === "offline" && code === "cold") faults.cold = true;
     }
   }
   if (faults.offline && !faults.save) faults.save = "offline";

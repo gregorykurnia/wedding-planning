@@ -72,3 +72,16 @@ test("?fault=upload makes an upload fail part-way, with Try again", async ({ pag
   await expect(dialog.getByText(/^Upload failed\./)).toBeVisible({ timeout: 15_000 });
   await expect(dialog.getByRole("button", { name: "Try again" })).toBeVisible();
 });
+
+test("?fault=loading holds Documents in its loading state, and ?fault=offline:cold in its offline one (P5-S23)", async ({ page }) => {
+  await open(page, "/new/documents?fault=loading");
+  await expect(page.getByText("Loading your documents")).toBeAttached({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("6 documents, newest first")).toHaveCount(0);
+  // Plain `offline` keeps what has loaded, as a connection lost mid-session does; `cold` is a page
+  // opened with no connection at all.
+  await page.goto("/new/documents?fault=offline");
+  await expect(page.getByText("6 documents, newest first")).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await page.goto("/new/documents?fault=offline:cold");
+  await expect(page.getByRole("heading", { name: "You’re offline" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await expect(page.getByText("6 documents, newest first")).toHaveCount(0);
+});

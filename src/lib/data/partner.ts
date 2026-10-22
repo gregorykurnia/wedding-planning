@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useActivityNews, type ActivityEntry } from "@/lib/collections/activity";
 import { localIso } from "@/lib/model/dates";
 import {
+  burstToast,
   flashTargets,
   isRemoval,
+  mergeNewsBurst,
   ownToast,
   partnerToast,
   removes,
@@ -55,6 +57,7 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
       if (!ready || !user) return;
       const entries = waiting.current;
       waiting.current = [];
+      const out: PartnerNews[] = [];
       for (const entry of entries) {
         if (!entry.by || isRemoval(entry.kind)) continue;
         const today = localIso(new Date());
@@ -62,7 +65,7 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
           // This account on another device, never this one (entries from before
           // the device was kept, and every one made here, are not news).
           if (!entry.device || entry.device === deviceId()) continue;
-          onNews({
+          out.push({
             id: entry.id,
             name: myName || "You",
             own: true,
@@ -71,7 +74,7 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
           });
           continue;
         }
-        onNews({
+        out.push({
           id: entry.id,
           name,
           own: false,
@@ -79,6 +82,8 @@ export function usePartnerNews(onNews: (news: PartnerNews) => void) {
           flash: flashTargets(entry.target),
         });
       }
+      // A burst (after a long offline spell, say) is one toast, not dozens (P5-S26).
+      for (const news of mergeNewsBurst(out, (first, count) => burstToast(first.name, count, first.own))) onNews(news);
     };
     deliver.current();
   });

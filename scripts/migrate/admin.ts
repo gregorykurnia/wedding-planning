@@ -13,10 +13,14 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 export const PRODUCTION_PROJECT_ID = "wedding-planning-75c0c";
 
-export function connect(name = "migrate"): { db: Firestore; projectId: string; emulator: boolean } {
+export function connect(
+  name = "migrate",
+  /** A project to use whatever the shell says (the fixtures: always the emulators' own). */
+  project?: string,
+): { db: Firestore; projectId: string; emulator: boolean } {
   const emulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
   const projectId =
-    process.env.FIREBASE_PROJECT_ID ?? (emulator ? "demo-wedding-planning" : PRODUCTION_PROJECT_ID);
+    project ?? process.env.FIREBASE_PROJECT_ID ?? (emulator ? "demo-wedding-planning" : PRODUCTION_PROJECT_ID);
   const existing = getApps().find((a) => a.name === name);
   let app: App;
   if (existing) {

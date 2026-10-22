@@ -91,11 +91,35 @@ export const NO_ESTIMATE = "No estimate";
 export const NEXT_STEP_PLACEHOLDER = "What has to happen next";
 
 export const splitToast = (parts: number) => `Split into ${plural(parts, "part")}`;
-/** N13: the split can't be taken back once a part was changed since; the toast says who, and that both stay. */
-export const splitConflict = (partner: string) =>
-  `Can’t undo the split: ${partner} has changed a part since. The parts stay as they are now.`;
-/** The same for your own change since, so the partner isn't named for it. Provisional (G35/N35). */
-export const SPLIT_CONFLICT_OWN = "Can’t undo the split: you’ve changed a part since. The parts stay as they are now.";
+/**
+ * N13: the split can't be taken back once a part was changed since; the toast says who, what
+ * they did and that the parts stay: "Can’t undo the split: Bella recorded Rp 5.000.000 on the
+ * balance since. Both parts stay as they are now." `split` is the parts as the split made them
+ * and `now` as they are when Undo finds the change (P5-S3). A payment is named with its amount;
+ * any other change to one part names the part; otherwise it says a part changed. `who` is the
+ * partner's name, or null for your own change (G35/N35), which is never put on the partner.
+ */
+export function splitConflict(who: string | null, split: readonly Part[], now: readonly Part[]): string {
+  const subject = who ?? "you";
+  const changed = split
+    .map((before) => ({ before, after: now.find((p) => p.id === before.id) }))
+    .filter(({ before, after }) => after && !samePart(before, after));
+  const stay = now.length === 2 ? "Both parts stay as they are now." : "The parts stay as they are now.";
+  const first = changed[0];
+  if (changed.length === 1 && first.after) {
+    const part = first.after.name.trim().toLowerCase() || "a part";
+    const paid = first.after.paid - first.before.paid;
+    const what =
+      paid > 0
+        ? `${subject} recorded ${rp(paid)} on the ${part} since.`
+        : `${subject} ${who ? "has" : "have"} changed the ${part} since.`;
+    return `Can’t undo the split: ${what} ${stay}`;
+  }
+  return `Can’t undo the split: ${who ? `${who} has` : "you’ve"} changed a part since. ${stay}`;
+}
+
+const samePart = (a: Part, b: Part) =>
+  a.name === b.name && a.price === b.price && a.paid === b.paid && a.funder === b.funder && a.due === b.due && a.step === b.step;
 export const removedToast = (name: string) => `Removed ${name}`;
 export const removedTitle = (name: string) => `${name} was removed`;
 export const REMOVED_NOTE = "It’s no longer part of the budget.";

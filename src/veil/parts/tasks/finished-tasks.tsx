@@ -17,10 +17,21 @@ export function FinishedTasks({
   defaultOpen?: boolean;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // The screen's wish, unless the list was opened or closed by hand since that wish was made. When
+  // the wish changes, as when the last open task is ticked (Everything done, guide §5.21), it applies
+  // again at once, not only on the first draw (P5-S17).
+  const [choice, setChoice] = useState<{ wish: boolean; open: boolean } | null>(null);
+  const open = choice && choice.wish === defaultOpen ? choice.open : defaultOpen;
   if (count === 0) return null;
   return (
-    <details className={styles.doneWrap} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <details
+      className={styles.doneWrap}
+      open={open}
+      onToggle={(event) => {
+        const now = event.currentTarget.open;
+        if (now !== open) setChoice({ wish: defaultOpen, open: now });
+      }}
+    >
       <summary>{finishedLabel(count, open)}</summary>
       {children}
     </details>

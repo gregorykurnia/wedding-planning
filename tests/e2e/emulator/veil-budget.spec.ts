@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
-import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
+import { COMPILE_TIMEOUT, closeOtherContexts, expectNoLeftoverBookings } from "../helpers";
 
 test.afterEach(closeOtherContexts);
 
@@ -81,6 +81,7 @@ async function setWeddingDate(value: string | null) {
 let previousWeddingDate: string | null = null;
 
 test.beforeAll(async () => {
+  await expectNoLeftoverBookings("bd-");
   previousWeddingDate = await readWeddingDate();
   await setWeddingDate(WEDDING);
   await put("funders", "bd-ck", { name: "CK", order: 0 });

@@ -92,7 +92,8 @@ function subscribeOnline(onChange: () => void) {
   };
 }
 
-function useOnline(): boolean {
+/** Whether the browser has a connection (and `?fault=offline` isn't on); true while rendering on the server. */
+export function useOnline(): boolean {
   return useSyncExternalStore(
     subscribeOnline,
     () => navigator.onLine && !devFaults().offline,

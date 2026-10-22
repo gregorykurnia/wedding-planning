@@ -267,6 +267,8 @@ test("the categories sheet adds, renames and removes ours, each with its undo", 
   // Rename: a taken name is refused in place, a good one saves with an undo.
   await card.filter({ hasText: "Henna art" }).getByRole("button", { name: "Rename" }).click();
   const rename = sheet.getByLabel("Rename Henna art");
+  // A category's own cap, not the rename field's usual 60 (P4-S12, P5-S15).
+  await expect(rename).toHaveAttribute("maxlength", "40");
   await rename.fill("Food");
   await rename.press("Enter");
   await expect(sheet.getByText("There's already a category called Food.")).toBeVisible();

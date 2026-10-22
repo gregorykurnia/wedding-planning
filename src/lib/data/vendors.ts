@@ -55,7 +55,7 @@ export function useVendors(): Loaded<VendorListItem[]> {
     );
   }, [vendors.data, finalists.data, files.data]);
 
-  return readOf(connection, [vendors, finalists, files], items);
+  return readOf(connection, [vendors, finalists, files], items, 1);
 }
 
 export interface CategoriesData {
@@ -196,7 +196,7 @@ export function useVendor(id: string): Loaded<VendorPage> {
     };
   }, [vendors.data, finalists.data, files.data, custom.data, id]);
 
-  return readOf(connection, [vendors, finalists, files, custom], page);
+  return readOf(connection, [vendors, finalists, files, custom], page, 1);
 }
 
 /** The fields the contact and reputation rows save (guide §5.12). */

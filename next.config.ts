@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   // The test runs start two dev servers from this folder; each needs its own
   // build folder (tests set NEXT_DIST_DIR). Normal runs use .next.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // The state harness's switch (src/lib/data/dev-faults.ts) is fixed at build time:
+  // "0" unless the build asked for "1", so a production build drops the fault code
+  // rather than reading process.env when it runs (P5-S22).
+  env: { NEXT_PUBLIC_VEIL_DEV: process.env.NEXT_PUBLIC_VEIL_DEV === "1" ? "1" : "0" },
   // The dev disk cache (on by default since 16.1) never shrinks; in the test
   // folders it reached 4 GB each per lane. Test servers start cold instead.
   experimental: {
