@@ -86,7 +86,7 @@ The four lanes each had a task in hand. Finish those, then close down to two:
 | **Review fixes (finish these before Phase 8; items in `redesign/reviews/triage.md`, Phase 7)** | |
 | [x] 7.F1 Write races, money and scripts · Opus 5.5 Medium | [x] 7.F2 Sheets and offline · Opus 5.5 Medium |
 | **Phase 8: QA** | |
-| [ ] 8.1a Behaviour tests: O, F, B, G · Sonnet 5.5 High | [ ] 8.2 Screenshots · Sonnet 5.5 High |
+| [x] 8.1a Behaviour tests: O, F, B, G · Sonnet 5.5 High | [ ] 8.2 Screenshots · Sonnet 5.5 High |
 | [ ] 8.1b Behaviour tests: T, S, R, A · Sonnet 5.5 High | wait for 8.2 |
 | [ ] 8.3a Fixes: budget, vendors, documents and files (after 8.2; all groups if the report is small) · Haiku 5.5 Max | [ ] 8.4 Accessibility · Sonnet 5.5 High |
 | [ ] 8.5 Device checklist · Haiku 5.5 xHigh | [ ] 8.3b Fixes: schedule, items, guests, shell, overview, sign-in, settings (ticked as covered if 8.3a did them) · Haiku 5.5 Max |

@@ -687,18 +687,18 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | Story | Screen | Components | Code | Tasks | Done |
 |---|---|---|---|---|---|
 | O1 days and time gone | Overview | `Hero` (days), `Thread` | model `dates.ts` (`daysUntil`, `timeGone(startedOn, wedding)`); `settings.startedOn` | 1.6, 1.11, 4.2 | [x] |
-| O2 coming up | Overview, Budget, Payments due | agenda rows, `NextCard`, `DueRow` | model `agenda.ts` (`comingUp(5)`), `money.ts` (`dues`) | 1.4, 1.6, 4.2, 4.3, 4.8 | [ ] |
+| O2 coming up | Overview, Budget, Payments due | agenda rows, `NextCard`, `DueRow` | model `agenda.ts` (`comingUp(5)`), `money.ts` (`dues`) | 1.4, 1.6, 4.2, 4.3, 4.8 | [x] |
 | O3 pulse check | Overview | `Doors` | data `useBudget`, `useTasks`, `useGuests`, `useItems` | 4.2 | [x] |
 | O4 one step to detail | Overview, Budget, Settings | `Doors` | routes | 4.2 | [x] |
-| O5 wedding date once | Overview (no date), Settings | date field, `FieldRow` | `settings.weddingDate`; every countdown reads `useSettings` | 4.2, 4.25 | [ ] |
-| O6 our two names | Settings, top bar, overview | `FieldRow`, `TopBar` | `settings.yourName`, `settings.partnerName` | 2.4, 4.25 | [ ] |
-| F1 capture a venue | Venues | venue sheet | `collections/venues.ts`; data `useVenues` | 4.15 | [ ] |
-| F3 venue stage | Venues | `StageChips`, `StageThread` | model `labels.ts` (venue stages); write `markBooked` | 1.5, 1.10, 4.15 | [ ] |
-| F4 narrow venues | Venues | `SearchField`, `FilterSelect`, `RangeField`, `FilterCheck` | model `search.ts` | 1.5, 4.15 | [ ] |
-| F5 order venues | Venues | `OrderBy` | model `order.ts` | 1.5, 4.15 | [ ] |
-| F22 files on a venue | Venue sheet | `FileTiles`, `UploadSheet` | data `useRecordFiles({kind:'venue'})`, upload pipeline | 3.10, 4.15 | [ ] |
+| O5 wedding date once | Overview (no date), Settings | date field, `FieldRow` | `settings.weddingDate`; every countdown reads `useSettings` | 4.2, 4.25 | [x] |
+| O6 our two names | Settings, top bar, overview | `FieldRow`, `TopBar` | `settings.yourName`, `settings.partnerName` | 2.4, 4.25 | [x] |
+| F1 capture a venue | Venues | venue sheet | `collections/venues.ts`; data `useVenues` | 4.15 | [x] |
+| F3 venue stage | Venues | `StageChips`, `StageThread` | model `labels.ts` (venue stages); write `markBooked` | 1.5, 1.10, 4.15 | [x] |
+| F4 narrow venues | Venues | `SearchField`, `FilterSelect`, `RangeField`, `FilterCheck` | model `search.ts` | 1.5, 4.15 | [x] |
+| F5 order venues | Venues | `OrderBy` | model `order.ts` | 1.5, 4.15 | [x] |
+| F22 files on a venue | Venue sheet | `FileTiles`, `UploadSheet` | data `useRecordFiles({kind:'venue'})`, upload pipeline | 3.10, 4.15 | [x] |
 | F6 capture a vendor | Vendors, A vendor | add-vendor sheet, `Fields` | `collections/vendors.ts` via the write layer | 4.11, 4.12 | [x] |
-| F7 WhatsApp | Vendors, A vendor, A finalist | `WhatsAppLink` | model `whatsapp.ts` (`waHref`, leading 0 → 62) | 1.5, 3.9 | [ ] |
+| F7 WhatsApp | Vendors, A vendor, A finalist | `WhatsAppLink` | model `whatsapp.ts` (`waHref`, leading 0 → 62) | 1.5, 3.9 | [x] |
 | F8 price options, preferred | A vendor | `MenuCardList`, price-option sheet, `Figure` | `priceOptions[]` through transactions (Task 1.8) | 1.8, 4.12 | [x] |
 | F9 rating and reviewers | A vendor, Vendors | `Fields`, `VendorRow` | `bridestoryRating`, `bridestoryReviewCount`; model `format.ts` (decimal comma) | 1.5, 4.11, 4.12 | [x] |
 | F10 vendor stage | A vendor, Vendors | `StageChips`, `StageThread`, `.ruled` | model `labels.ts`; Chosen creates a booking (`markBooked`) | 1.10, 4.12 | [x] |
@@ -709,32 +709,32 @@ Every story in inventory v1.4 (F2 is dropped). "Model" and "data" are files in `
 | F15 export to a spreadsheet | Vendors | `CountLine` export link | model `csv.ts` (columns per N5) | 6.6 | [x] |
 | F23 rename or remove categories | Vendors (categories sheet) | `InlineRename`, `InlineConfirm` | write `renameCategory`, `removeCategory` (moves records to Other, undo) | 1.8, 4.11 | [x] |
 | F16 copy to the shortlist | A vendor | shortlist card, busy "Copying" | write `copyToShortlist` (sets `sourceVendorId`) | 1.10, 4.12 | [x] |
-| F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [ ] |
-| F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [ ] |
-| F19 finalists by category | Shortlist | `FocusChips`, `OrderBy` | model `order.ts` | 4.13 | [ ] |
-| F20 vendor files appear | A finalist | `FileTiles` ("from the vendor") | `useRecordFiles` includes the source vendor's files | 1.11, 3.10, 4.14 | [ ] |
-| F21 finalist from scratch | Shortlist | add-finalist sheet | `collections/shortlist.ts` | 4.13 | [ ] |
-| F24 move into vendors or book | A finalist | book-it sheet, move sheet | write `bookFinalist`, `moveFinalistToVendors` | 1.10, 4.14 | [ ] |
-| B1 booking created automatically | A vendor, Venues, A finalist, A booking | toast with Open, origin line | write `markBooked` (sets `booking`, `estimate`) | 1.10, 4.12, 4.14, 4.15 | [ ] |
-| B2 add a booking directly | Add a booking | `Fields`, `UploadSheet`, `Problem` | write `addDirectBooking` (client id, retry-safe) | 1.10, 4.7 | [ ] |
-| B3 a booking's details | A booking | `Fields`, `SaveLine`, `FileTiles` | data `useBooking`, write layer | 4.6 | [ ] |
-| B4 parts | A booking | `PartDisclosure`, split | model `money.ts` (`totals`, `splitBooking`), write `splitBooking`, `addPart`, `removePart`, `mergeLastPart` | 1.4, 1.10, 4.6 | [ ] |
+| F17 packages | A finalist, Shortlist | `MenuCardList`, package sheet, `FileTiles` | shortlist adapter (`main` + `subEntries`, `preferredPackageId`) | 1.9, 4.14 | [x] |
+| F18 reviews and followers | A finalist, Shortlist | `Fields`, card meta | model `format.ts` (`compact`: 12,3k, 98,8M) | 1.5, 4.13, 4.14 | [x] |
+| F19 finalists by category | Shortlist | `FocusChips`, `OrderBy` | model `order.ts` | 4.13 | [x] |
+| F20 vendor files appear | A finalist | `FileTiles` ("from the vendor") | `useRecordFiles` includes the source vendor's files | 1.11, 3.10, 4.14 | [x] |
+| F21 finalist from scratch | Shortlist | add-finalist sheet | `collections/shortlist.ts` | 4.13 | [x] |
+| F24 move into vendors or book | A finalist | book-it sheet, move sheet | write `bookFinalist`, `moveFinalistToVendors` | 1.10, 4.14 | [x] |
+| B1 booking created automatically | A vendor, Venues, A finalist, A booking | toast with Open, origin line | write `markBooked` (sets `booking`, `estimate`) | 1.10, 4.12, 4.14, 4.15 | [x] |
+| B2 add a booking directly | Add a booking | `Fields`, `UploadSheet`, `Problem` | write `addDirectBooking` (client id, retry-safe) | 1.10, 4.7 | [x] |
+| B3 a booking's details | A booking | `Fields`, `SaveLine`, `FileTiles` | data `useBooking`, write layer | 4.6 | [x] |
+| B4 parts | A booking | `PartDisclosure`, split | model `money.ts` (`totals`, `splitBooking`), write `splitBooking`, `addPart`, `removePart`, `mergeLastPart` | 1.4, 1.10, 4.6 | [x] |
 | B5 committed, paid, to pay | Budget, Bookings | `Hero`, `Thread`, `.over` | model `money.ts` (`budget`, overpaid) | 1.4, 4.3 | [x] |
-| B6 payments due | Payments due | `DueRow`, groups | model `money.ts` (`dues`, `urgency`, `SOON = 14`) | 1.4, 4.8 | [ ] |
+| B6 payments due | Payments due | `DueRow`, groups | model `money.ts` (`dues`, `urgency`, `SOON = 14`) | 1.4, 4.8 | [x] |
 | B7 per funder | Who pays | funder rows | model `money.ts` (`byFunder`, Not assigned) | 1.4, 4.9 | [x] |
-| B8 what-if items | What-if | `WhatIfEntry`, sheet with parts | model `money.ts` (`whatIfTotals`, `projected`) | 1.4, 4.10 | [ ] |
-| B9 order bookings and what-ifs | Bookings, What-if | `OrderBy` | model `order.ts` (parts stay with their booking) | 1.4, 4.5, 4.10 | [ ] |
-| B10 who would pay | What-if | sheet funder select, carry lines | `hypotheticalItems.funder`, `subEntries[].funder` | 1.9, 4.10 | [ ] |
+| B8 what-if items | What-if | `WhatIfEntry`, sheet with parts | model `money.ts` (`whatIfTotals`, `projected`) | 1.4, 4.10 | [x] |
+| B9 order bookings and what-ifs | Bookings, What-if | `OrderBy` | model `order.ts` (parts stay with their booking) | 1.4, 4.5, 4.10 | [x] |
+| B10 who would pay | What-if | sheet funder select, carry lines | `hypotheticalItems.funder`, `subEntries[].funder` | 1.9, 4.10 | [x] |
 | B11 manage funders | Who pays | `InlineRename`, `ConfirmSheet` | `funders` collection; write `removeFunder` (records → null, undo) | 1.8, 1.9, 4.9 | [x] |
-| B12 estimate apart from price | A booking, Bookings | estimate field and sentence, Order by difference | `vendors.estimate`, `venues.agreedPrice`; model `estimateDifference` | 1.4, 1.11, 4.6 | [ ] |
-| G1 guest details | Guests (guest sheet) | `Fields`, chips, `RsvpSwitch`, `Stepper` | `collections/guests.ts` | 4.24 | [ ] |
-| G2 event options | Guest sheet | chips (radiogroup) | model `labels.ts` (`eventType`) | 1.5, 4.24 | [ ] |
-| G3 headcounts | Guests | `HeadcountsCard`, `Hero` | model `guests.ts` (`headcounts`, decided §5 #7, #9) | 1.5, 4.24 | [ ] |
-| G4 both sides | Guests | `SidesCard` | model `guests.ts` (`sides`: first side named wins, friends are family) | 1.5, 4.24 | [ ] |
-| G5 find guests | Guests | tools, filters | model `search.ts`, `order.ts` | 4.24 | [ ] |
-| G6 stable number | Guests | gold number | `guests.number`, `guestMeta/counter` | 1.9, 1.11, 4.24 | [ ] |
-| G7 remove with undo | Guests | `ConfirmSheet`, undo toast | write `removeWithUndo` | 1.8, 4.24 | [ ] |
-| G8 on the phone | Guests | `RsvpSwitch` (phone size), stacked rows | CSS under 760px | 3.12, 4.24 | [ ] |
+| B12 estimate apart from price | A booking, Bookings | estimate field and sentence, Order by difference | `vendors.estimate`, `venues.agreedPrice`; model `estimateDifference` | 1.4, 1.11, 4.6 | [x] |
+| G1 guest details | Guests (guest sheet) | `Fields`, chips, `RsvpSwitch`, `Stepper` | `collections/guests.ts` | 4.24 | [x] |
+| G2 event options | Guest sheet | chips (radiogroup) | model `labels.ts` (`eventType`) | 1.5, 4.24 | [x] |
+| G3 headcounts | Guests | `HeadcountsCard`, `Hero` | model `guests.ts` (`headcounts`, decided §5 #7, #9) | 1.5, 4.24 | [x] |
+| G4 both sides | Guests | `SidesCard` | model `guests.ts` (`sides`: first side named wins, friends are family) | 1.5, 4.24 | [x] |
+| G5 find guests | Guests | tools, filters | model `search.ts`, `order.ts` | 4.24 | [x] |
+| G6 stable number | Guests | gold number | `guests.number`, `guestMeta/counter` | 1.9, 1.11, 4.24 | [x] |
+| G7 remove with undo | Guests | `ConfirmSheet`, undo toast | write `removeWithUndo` | 1.8, 4.24 | [x] |
+| G8 on the phone | Guests | `RsvpSwitch` (phone size), stacked rows | CSS under 760px | 3.12, 4.24 | [x] |
 | T1 item and vendor | Wedding items | `ItemRow` | `collections/master-list.ts` | 4.23 | [ ] |
 | T2 confirmed, events, person | Wedding items | event chips, person select, tick | `types[]`, `persons[]` (§9.2 Q4), `confirmed` | 4.23 | [ ] |
 | T3 work on next | Wedding items | star, `.irow.next`, `WorkOnNextCard` | `next` | 4.23 | [ ] |
@@ -1014,7 +1014,7 @@ Every phase is built on the `redesign` branch, checked on a local preview (Verce
 | 7 | Review | Opus 5.5 High | $1.82 | Phase 7 rule: a missed bug breaks production | 2026-10-22 · main folder: 4 blockers fixed in the review (the revert conflicted after 7.3, now `scripts/rollback.mjs`; a first load's query came back on production builds; migration 8 could undo new-UI edits; the owner's `--apply` didn't apply) with S1–S5, S19; full e2e on production builds 600 of 607, the 7 fixed and passing; the rest routed to 7.F1, 7.F2; see `redesign/reviews/phase-7-review.md` | [x] |
 | 7 | 7.F1 Review fixes: write races, money and scripts | Opus 5.5 Medium | $1.34 | Fixes from reviews go one row stronger; items in `redesign/reviews/triage.md` (Phase 7) | 2026-10-22 · main folder · this commit: P7-S6–S11 fixed | [x] |
 | 7 | 7.F2 Review fixes: sheets and offline | Opus 5.5 Medium | $1.34 | Same; a sheet that must hold during an autosave may need a design decision (a gap) | 2026-10-22 · main folder · this commit: P7-S12–S18 fixed; gap G42 | [x] |
-| 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | | [ ] |
+| 8 | 8.1a Behaviour tests: overview, money, bookings, guests (O, F, B, G) | Sonnet 5.5 High | $0.88 | One test per story group, against the emulator; split from one L task so each session fits autorun's cutoff | 2026-10-22 · main folder · this commit: 36 tests (O2, O5, O6; F1, F3–F5, F7, F17–F22, F24; B1–B4, B6, B8–B10, B12; G1–G8) and 4 smoke tests; the T, S, R, A smoke tests stay for 8.1b | [x] |
 | 8 | 8.1b Behaviour tests: tasks, schedule, files and documents, partner (T, S, R, A) | Sonnet 5.5 High | $0.88 | Same, with the two-context A2 tests | | [ ] |
 | 8 | 8.2 Screenshot comparison | Sonnet 5.5 High | $0.88 | Playwright against the prototype and the build | | [ ] |
 | 8 | 8.3a Screenshot fixes: budget, vendors, documents and files | Haiku 5.5 Max | $0.21 | Each diff points at an exact prototype rule; cut from four sessions by the owner (2026-10-19) | | [ ] |
