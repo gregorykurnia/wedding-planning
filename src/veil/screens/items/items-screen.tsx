@@ -88,6 +88,7 @@ import {
   removedToast,
   startedWith,
 } from "./items-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** Items shown at a time (guide §6.8: 150 at a time on this screen). */
 const PAGE = 150;
@@ -429,7 +430,7 @@ function Items({ items }: { items: ItemRecord[] }) {
   const noticeBoxes = [...notices.entries()].map(([key, notice]) => (
     <div key={key} className={styles.notice}>
       <Banner tone="rose" inline role="alert">
-        {notice.text}{" "}
+        <OfflineOr>{notice.text}</OfflineOr>{" "}
         <TextLink tone="rose" onClick={notice.retry}>
           Try again
         </TextLink>

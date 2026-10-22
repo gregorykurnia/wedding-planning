@@ -34,8 +34,10 @@ import { Banner } from "@/veil/shell/banner";
 import { useConfirm } from "@/veil/shell/confirm";
 import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
+import { SheetReadState } from "@/veil/shell/sheet-read-state";
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./venue-sheet.module.css";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 const bookingHref = (id: string) => veilHref(`/budget/bookings/${bookingIdOf({ kind: "venue", id })}`);
 
@@ -121,7 +123,7 @@ export function AddVenueSheet() {
       </Fields>
       {failed && (
         <Banner tone="rose" inline>
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions
@@ -170,7 +172,7 @@ export function EditVenueSheet({ venueId }: { venueId: string }) {
 
   return (
     <SaveScopeProvider sheet>
-      {venue ? <EditBody venue={venue} /> : <Sheet title="Venue" />}
+      {venue ? <EditBody venue={venue} /> : <SheetReadState read={read} title="Venue" what="this venue" />}
     </SaveScopeProvider>
   );
 }

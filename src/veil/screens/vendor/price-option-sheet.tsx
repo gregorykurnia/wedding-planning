@@ -10,6 +10,7 @@ import { SaveScopeProvider } from "@/veil/parts/fields/save-scope";
 import { Banner } from "@/veil/shell/banner";
 import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 const LEANING = "The one we’re leaning towards";
 
@@ -81,7 +82,7 @@ export function AddPriceOptionSheet({
       </Fields>
       {failed && (
         <Banner tone="rose" inline>
-          {OPTION_ADD_FAILED}
+          <OfflineOr>{OPTION_ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions

@@ -9,6 +9,7 @@ import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { ADD_FAILED, ADD_ITEMS, ADD_SHEET_LINES, ADD_SHEET_PLACEHOLDER, addSheetSub, addedToast } from "./items-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** The lines of the box as item names: one per line, blanks left out. */
 export const namesOf = (text: string): string[] =>
@@ -84,7 +85,7 @@ export function AddItemsSheet({
       </Fields>
       {failed && (
         <Banner tone="rose" inline role="alert">
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions action={failed ? "Try again" : "Add"} busy={adding} busyLabel="Adding" onAction={() => void add()} />

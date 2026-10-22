@@ -27,8 +27,10 @@ import { UNDO_GONE } from "@/lib/model/confirm-text";
 import { Btn } from "@/veil/parts/actions/btn";
 import { useFlasher } from "@/veil/shell/flash";
 import { Sheet, SheetActions, useSheet } from "@/veil/shell/sheet";
+import { useSheetFailure, useSheetHold } from "@/veil/shell/sheet-failure";
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./files.module.css";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** What the sheet moves: a file, or a folder with everything inside it. */
 export type MoveTarget = { kind: "file"; id: string } | { kind: "folder"; id: string };
@@ -66,6 +68,9 @@ export function MoveSheet({ target }: { target: MoveTarget }) {
   const [choice, setChoice] = useState<string | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  // Held while the move runs; a failure keeps it open to say so (guide §6.2, P6-S14).
+  useSheetHold(busy);
+  useSheetFailure(failed);
   const working = useRef(false);
 
   const tree = useMemo(() => folderTree(data?.folders ?? []), [data?.folders]);
@@ -152,7 +157,7 @@ export function MoveSheet({ target }: { target: MoveTarget }) {
       </ul>
       {failed && (
         <p className={styles.note} role="alert">
-          {MOVE_FAILED}
+          <OfflineOr>{MOVE_FAILED}</OfflineOr>
         </p>
       )}
       {demo && <p className={styles.demoLine}>{DEMO_MOVE_LINE}</p>}

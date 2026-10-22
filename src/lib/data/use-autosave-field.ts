@@ -33,6 +33,8 @@ export interface SaveScope {
   /** A sheet that edits a record: its line carries the failure and one Try again for every field. */
   sheet: boolean;
   line: SaveLine;
+  /** Some change is on its way. A sheet scope holds its sheet meanwhile. */
+  saving: boolean;
   report: (id: string, status: FieldStatus, retry?: () => void) => void;
   forget: (id: string) => void;
   /** Try again for every field whose change didn't save. */
@@ -69,10 +71,11 @@ export function useSaveScopeState(demo?: boolean, sheet = false): SaveScope {
   }, []);
 
   const line = useMemo(() => saveLine(Object.values(statuses), inDemo), [statuses, inDemo]);
+  const saving = Object.values(statuses).includes("saving");
 
   return useMemo(
-    () => ({ demo: inDemo, sheet, line, report, forget, retryAll }),
-    [inDemo, sheet, line, report, forget, retryAll],
+    () => ({ demo: inDemo, sheet, line, saving, report, forget, retryAll }),
+    [inDemo, sheet, line, saving, report, forget, retryAll],
   );
 }
 

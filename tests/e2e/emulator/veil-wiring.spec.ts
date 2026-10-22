@@ -17,6 +17,17 @@ async function signInAt(page: Page, email: string, password: string) {
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 
+/** What a failure line says while offline (`SAVE_OFFLINE`). */
+const OFFLINE_LINE = "Not saved: you’re offline. Keep this page open.";
+
+/** Opens a screen through the menu from the overview, so Back stays in the app and lands on the overview. */
+async function openFromMenu(browser: Browser, title: string): Promise<Page> {
+  const page = await openAs(browser, "/");
+  await page.getByRole("button", { name: "Menu" }).click({ timeout: COMPILE_TIMEOUT });
+  await page.getByRole("dialog", { name: "Menu" }).getByRole("link", { name: new RegExp(`^${title}`) }).click();
+  return page;
+}
+
 const DOCS = `http://${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents`;
 const ADMIN = { Authorization: "Bearer owner", "Content-Type": "application/json" };
 
@@ -112,11 +123,85 @@ test.describe("the normal set", () => {
     await expect(page).toHaveURL("/schedule");
     await expect(sheet).toBeVisible();
     // The add times out: the sheet stays, says so, and keeps what was typed (it used to close with no word).
-    await expect(sheet.getByText("The task wasn’t added. What you typed is still here.")).toBeVisible({ timeout: 20_000 });
+    await expect(sheet.getByText(OFFLINE_LINE)).toBeVisible({ timeout: 20_000 });
     await expect(sheet.getByLabel("What needs doing")).toHaveValue("Hold the sheet open");
     await page.context().setOffline(false);
     await sheet.getByRole("button", { name: "Try again" }).click();
     await expect(sheet).toBeHidden({ timeout: 15_000 });
+  });
+
+  test("P7-S18: a sheet held by its save across a move closes once the save lands, with no word (sheet.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Guests");
+    await page.locator("[data-guest-id]", { hasText: "Sarah Lim" }).getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
+    const sheet = page.getByRole("dialog", { name: "Sarah Lim" });
+    // The save's request is held for 4 s, so it is still on its way after the move.
+    let held = false;
+    await page.route(/google\.firestore\.v1\.Firestore\/Write\/channel/, async (route) => {
+      if (!held && route.request().postData()?.includes("LandingCountry")) {
+        held = true;
+        await new Promise((done) => setTimeout(done, 4_000));
+      }
+      await route.continue();
+    });
+    const country = sheet.getByLabel("Country");
+    await country.fill("LandingCountry");
+    await country.press("Tab");
+    await page.goBack();
+    await expect(page).toHaveURL("/");
+    await expect(sheet).toBeVisible();
+    // It lands: the hold goes with no failure showing, and the sheet closes on its own.
+    await expect(sheet).toBeHidden({ timeout: 15_000 });
+    expect(held).toBe(true);
+  });
+
+  test("P7-S16: an edit sheet whose change is saving stays across a move to say it didn't save, with Try again (save-scope.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Guests");
+    await page.locator("[data-guest-id]", { hasText: "Sarah Lim" }).getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
+    const sheet = page.getByRole("dialog", { name: "Sarah Lim" });
+    await page.context().setOffline(true);
+    const country = sheet.getByLabel("Country");
+    await country.fill("Held country");
+    await country.press("Tab");
+    await page.goBack();
+    await expect(page).toHaveURL("/");
+    await expect(sheet).toBeVisible();
+    // The save times out: the line and Try again stay with what was typed (the sheet used to close).
+    await expect(sheet.getByText(OFFLINE_LINE).first()).toBeVisible({ timeout: 20_000 });
+    await expect(country).toHaveValue("Held country");
+    await page.context().setOffline(false);
+    await sheet.getByRole("button", { name: "Try again" }).first().click();
+    await expect(sheet.getByText(OFFLINE_LINE)).toHaveCount(0, { timeout: 15_000 });
+  });
+
+  test("P7-S13: the categories sheet's failed add keeps it open across a move to say so (categories-sheet.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Vendors");
+    await page.getByRole("button", { name: "Edit categories" }).click({ timeout: COMPILE_TIMEOUT });
+    const sheet = page.getByRole("dialog", { name: "Vendor categories" });
+    await page.context().setOffline(true);
+    await sheet.getByLabel("New category").fill("Held category");
+    await sheet.getByRole("button", { name: "Add category" }).click();
+    await expect(sheet.getByRole("button", { name: "Adding" })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL("/");
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByText(OFFLINE_LINE)).toBeVisible({ timeout: 20_000 });
+    await expect(sheet.getByLabel("New category")).toHaveValue("Held category");
+  });
+
+  test("P7-S12: a confirm whose removal fails after a move stays to say nothing was removed (confirm.tsx)", async ({ browser }) => {
+    const page = await openFromMenu(browser, "Guests");
+    await page.locator("[data-guest-id]", { hasText: "Sarah Lim" }).getByRole("button", { name: /^Sarah Lim/ }).click({ timeout: COMPILE_TIMEOUT });
+    await page.getByRole("dialog", { name: "Sarah Lim" }).getByRole("button", { name: "Remove guest" }).click();
+    const confirm = page.getByRole("dialog", { name: "Remove Sarah Lim?" });
+    // Offline, the removal waits for its timeout, holding the confirm. The page closes offline, so it never lands.
+    await page.context().setOffline(true);
+    await confirm.getByRole("button", { name: "Remove guest" }).click();
+    await expect(confirm.getByRole("button", { name: "Removing" })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL("/");
+    await expect(confirm).toBeVisible();
+    await expect(confirm.getByText("Nothing was removed.")).toBeVisible({ timeout: 20_000 });
+    await expect(confirm.getByRole("button", { name: "Try again" })).toBeVisible();
   });
 });
 

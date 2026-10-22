@@ -6,7 +6,7 @@ import { confirmFailure, TRY_AGAIN, type ConfirmFailure } from "@/lib/model/conf
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { Sheet, SheetActions, useSheet, useSheets } from "./sheet";
-import { useSheetFailure } from "./sheet-failure";
+import { useSheetFailure, useSheetHold } from "./sheet-failure";
 import styles from "./confirm.module.css";
 
 /**
@@ -86,19 +86,20 @@ export function ConfirmSheet({
   // next try, so the same button keeps focus while it is busy.
   const [failure, setFailure] = useState<ConfirmFailure | null>(null);
   const working = useRef(false);
+  // Held while busy. Taken and let go by an effect, so a failure's box has told
+  // the sheet it is showing before the hold goes (P7-S12).
+  useSheetHold(state === "busy");
 
   async function go() {
     if (working.current) return;
     working.current = true;
     setState("busy");
-    const release = sheet.hold();
     try {
       await run?.();
     } catch (err) {
       working.current = false;
       setFailure(confirmFailure(action, toWriteError(err).code));
       setState("failed");
-      release();
       return;
     }
     onAnswer(true);
@@ -158,27 +159,28 @@ export interface InlineConfirmProps {
  * busy state holds that sheet open.
  */
 export function InlineConfirm({ question, body, action, run, onKeep, onDone }: InlineConfirmProps) {
-  const sheet = useSheet();
+  useSheet(); // only inside a sheet: it holds that sheet while busy
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
   const [failure, setFailure] = useState<ConfirmFailure | null>(null);
   const working = useRef(false);
+  // Held while busy, the way ConfirmSheet is (P7-S12).
+  useSheetHold(state === "busy");
 
   async function go() {
     if (working.current) return;
     working.current = true;
     setState("busy");
-    const release = sheet.hold();
     try {
       await run();
     } catch (err) {
       working.current = false;
       setFailure(confirmFailure(action, toWriteError(err).code));
       setState("failed");
-      release();
       return;
     }
-    // The row goes with onDone, so the sheet is released first.
-    release();
+    // The row goes with onDone; the hold goes with the busy state.
+    working.current = false;
+    setState("idle");
     onDone();
   }
 

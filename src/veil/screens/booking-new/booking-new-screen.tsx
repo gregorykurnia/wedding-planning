@@ -47,6 +47,7 @@ import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./booking-new.module.css";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 const BUDGET = "/budget";
 const BOOKINGS = "/budget/bookings";
@@ -239,7 +240,7 @@ function AddForm({ funders, categories, inDemo }: { funders: Funder[]; categorie
       <p className={styles.note}>{INSTALMENTS_NOTE}</p>
       {failed && (
         <Banner tone="rose" inline>
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <div className={styles.actions}>

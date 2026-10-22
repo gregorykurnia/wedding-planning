@@ -42,6 +42,8 @@ export interface BookingPage {
   /** For the category select; the booking's own category is in it even if it isn't a known one. */
   categories: string[];
   files: BookingFile[];
+  /** The files haven't arrived yet (offline, P7-S15): `files` is empty, not "none". */
+  filesHeld: boolean;
   /** The files on each part, by the part's id. */
   partFiles: Record<string, BookingFile[]>;
 }
@@ -65,7 +67,14 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
 
   const page = useMemo<BookingPage>(() => {
     const known = categories.data?.list ?? [];
-    const base = { today, funders: funders.data?.funders ?? [], categories: known, files: [], partFiles: {} };
+    const base = {
+      today,
+      funders: funders.data?.funders ?? [],
+      categories: known,
+      files: [],
+      filesHeld: files.loading,
+      partFiles: {},
+    };
     const target = parseBookingId(bookingId);
     if (!target) return { ...base, booking: null };
     const record =
@@ -112,7 +121,7 @@ export function useBooking(bookingId: string): Loaded<BookingPage> {
       files: tiles([bookingRef(), recordRef(), ...finalistRefs], record.files),
       partFiles,
     };
-  }, [bookingId, vendors.data, venues.data, files.data, finalists.data, funders.data, categories.data, today]);
+  }, [bookingId, vendors.data, venues.data, files.data, files.loading, finalists.data, funders.data, categories.data, today]);
 
   // Offline with the vendors or venues still waiting, `readOf` has no data, so the
   // screen says it's offline instead of "This booking isn't here" (P6-S16).

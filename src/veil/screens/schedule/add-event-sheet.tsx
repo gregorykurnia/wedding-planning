@@ -23,6 +23,7 @@ import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { EventForm } from "./event-form";
 import { ADD_FAILED, ADD_TITLE, addedToast } from "./schedule-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /**
  * "Add to the schedule" (guide §5.19; S1, N9). A new event saves on its button,
@@ -112,7 +113,7 @@ export function AddEventSheet({ date }: { date?: IsoDate | null }) {
         />
         {failed && (
           <Banner tone="rose" inline role="alert">
-            {ADD_FAILED}
+            <OfflineOr>{ADD_FAILED}</OfflineOr>
           </Banner>
         )}
         <CreateSheetActions

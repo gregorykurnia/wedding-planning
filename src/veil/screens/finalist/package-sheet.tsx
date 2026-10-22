@@ -23,6 +23,7 @@ import { FileTiles } from "@/veil/parts/files/file-tiles";
 import { Banner } from "@/veil/shell/banner";
 import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 const NAME_PLACEHOLDER = "For example, Full styling";
 const STEP_PLACEHOLDER = "What has to happen next";
@@ -106,7 +107,7 @@ export function AddPackageSheet({ finalistId, finalistName }: { finalistId: stri
       </Fields>
       {failed && (
         <Banner tone="rose" inline>
-          {PACKAGE_ADD_FAILED}
+          <OfflineOr>{PACKAGE_ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions

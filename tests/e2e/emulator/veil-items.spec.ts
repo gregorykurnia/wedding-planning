@@ -309,9 +309,14 @@ test("an earlier name save landing late keeps the later one's failure and text (
   // The first lands; it isn't the newest try, so the second's line and text stay.
   await expect.poll(async () => (await read("it-cake"))?.item, { timeout: 15_000 }).toBe("FirstTry cake");
   expect(held).toBe(true);
-  await page.waitForTimeout(500);
-  await expect(line).toBeVisible();
-  await expect(name).toHaveValue("SecondTry cake");
+  // Its acknowledgement can come back a while after the stored value shows: the line and text must
+  // hold throughout, so they're watched for a few seconds rather than checked once (P7-S18).
+  const until = Date.now() + 4_000;
+  while (Date.now() < until) {
+    await expect(line).toBeVisible({ timeout: 250 });
+    await expect(name).toHaveValue("SecondTry cake", { timeout: 250 });
+    await page.waitForTimeout(250);
+  }
 });
 
 test("an emptied name comes back, and a vendor can be cleared", async ({ browser }) => {

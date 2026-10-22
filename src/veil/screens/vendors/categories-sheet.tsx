@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { addCategory, removeCategory, renameCategory } from "@/lib/data/categories";
 import { usePartnerName } from "@/lib/data/partner";
+import { useOnline } from "@/lib/data/session";
 import { useVendorsAndCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
 import {
@@ -13,12 +14,14 @@ import {
   validateCategoryName,
   type CategoryRow,
 } from "@/lib/model/categories";
+import { offlineOr } from "@/lib/model/save-state";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { InlineRename } from "@/veil/parts/fields/inline-rename";
 import { MenuCardList, type MenuOption } from "@/veil/parts/menu-card/menu-card-list";
 import { InlineConfirm } from "@/veil/shell/confirm";
 import { CreateSheetActions, Sheet } from "@/veil/shell/sheet";
+import { useSheetFailure } from "@/veil/shell/sheet-failure";
 import { useToast } from "@/veil/shell/toasts";
 import {
   CATEGORY_ADD_FAILED,
@@ -59,6 +62,9 @@ export function CategoriesSheet({
   const [adding, setAdding] = useState(false);
   const id = useRef<string | null>(null);
   const removal = useRef<Awaited<ReturnType<typeof removeCategory>> | null>(null);
+  // A failed add is the field's problem line, not a rose Banner: it tells the sheet itself (P7-S13).
+  useSheetFailure(problem === CATEGORY_ADD_FAILED);
+  const offline = !useOnline();
 
   const rows = categoryRows(
     categories.custom.map((c) => c.name),
@@ -168,7 +174,7 @@ export function CategoriesSheet({
         }}
       >
         <Fields>
-          <FieldRow label="New category" problem={problem} hint={charactersNote(charactersLeft(text))}>
+          <FieldRow label="New category" problem={problem === CATEGORY_ADD_FAILED ? offlineOr(problem, offline) : problem} hint={charactersNote(charactersLeft(text))}>
             <FieldInput
               placeholder="Up to 40 characters"
               value={text}

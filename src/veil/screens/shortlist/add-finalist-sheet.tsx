@@ -12,6 +12,7 @@ import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { NAME_MISSING, ADD_FAILED, addSheet, addedToast } from "./shortlist-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /**
  * "Add a finalist" (guide §5.13, F21): Name, Category, First package, Its price.
@@ -85,7 +86,7 @@ export function AddFinalistSheet({ category }: { category: string }) {
       </Fields>
       {failed && (
         <Banner tone="rose" inline>
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions

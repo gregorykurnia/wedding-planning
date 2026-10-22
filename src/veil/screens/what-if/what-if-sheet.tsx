@@ -37,6 +37,7 @@ import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./what-if-sheet.module.css";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** The funders as chips or a select: each one, then Not assigned (the empty value). */
 const funderOptions = (funders: readonly Funder[]) => [
@@ -124,7 +125,7 @@ export function AddWhatIfSheet() {
       <p className={styles.stages}>{STAGES_ADD}</p>
       {failed && (
         <Banner tone="rose" inline>
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions

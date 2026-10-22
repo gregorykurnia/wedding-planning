@@ -125,6 +125,10 @@ describe("removing and splitting", () => {
       "It leaves the budget, with its 2 parts, Rp 10.000.000 of recorded payments and 2 files. You can undo for a few seconds.",
     );
     expect(removeBookingBody(booking({ paid: 0 }), 0)).toBe("It leaves the budget. You can undo for a few seconds.");
+    // Offline before the files arrive (P7-S15): they're named without a count, never left out.
+    expect(removeBookingBody(booking({ paid: 0 }), null)).toBe(
+      "It leaves the budget, with its files. You can undo for a few seconds.",
+    );
   });
 
   it("words the split toast and the conflict when Undo can't take it back (N13)", () => {

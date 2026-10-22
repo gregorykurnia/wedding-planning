@@ -130,12 +130,13 @@ export const removePartBody = (p: Pick<Part, "price" | "paid">) =>
 
 /** "Remove Villa Samaya Ubud?" and what goes with it. */
 export const removeBookingTitle = (name: string) => `Remove ${name}?`;
-export function removeBookingBody(b: Booking, fileCount: number): string {
+export function removeBookingBody(b: Booking, fileCount: number | null): string {
   const t = totals(b);
   const what = [
     b.parts.length > 0 ? plural(b.parts.length, "part") : null,
     t.paid ? `${rp(t.paid)} of recorded payments` : null,
-    fileCount ? plural(fileCount, "file") : null,
+    // Null while the files haven't arrived (offline, P7-S15): they go too, uncounted.
+    fileCount === null ? "files" : fileCount ? plural(fileCount, "file") : null,
   ].filter((x): x is string => x !== null);
   return `It leaves the budget${what.length ? `, with its ${andList(what)}` : ""}. You can undo for a few seconds.`;
 }

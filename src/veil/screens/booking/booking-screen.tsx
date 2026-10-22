@@ -272,7 +272,7 @@ function Detail({
   async function removeThisBooking() {
     await confirm({
       title: removeBookingTitle(booking.name),
-      body: removeBookingBody(booking, page.files.length),
+      body: removeBookingBody(booking, page.filesHeld ? null : page.files.length),
       action: REMOVE_BOOKING_ACTION,
       danger: true,
       run: async () => {
@@ -424,7 +424,8 @@ function Detail({
         </p>
       )}
 
-      <SectionHeading small={filesHeading(page.files.length)}>Files</SectionHeading>
+      {/* While the files haven't arrived, no count: "None yet" would be wrong (P7-S15). */}
+      <SectionHeading small={page.filesHeld ? undefined : filesHeading(page.files.length)}>Files</SectionHeading>
       <FileTiles files={toTiles(page.files)} queue={queue} />
 
       <div className={styles.danger}>

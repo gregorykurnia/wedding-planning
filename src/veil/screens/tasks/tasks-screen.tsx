@@ -48,6 +48,7 @@ import {
   reopenedToast,
   tasksSub,
 } from "./tasks-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** Tasks shown at a time, open and finished each (guide §5.21). */
 const PAGE = 100;
@@ -251,7 +252,7 @@ function Tasks({ tasks }: { tasks: TaskRecord[] }) {
       {notices.map((f) => (
         <div key={keyOf(f)} className={styles.notice}>
           <Banner tone="rose" inline role="alert">
-            {f.what}{" "}
+            <OfflineOr>{f.what}</OfflineOr>{" "}
             <TextLink tone="rose" onClick={f.retry}>
               Try again
             </TextLink>

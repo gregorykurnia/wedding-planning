@@ -26,7 +26,7 @@ const noop = () => {};
 const working = { failed: false, retry: noop, disabled: false };
 
 function scope(statuses: FieldStatus[], demo = false, sheet = false): SaveScope {
-  return { demo, sheet, line: saveLine(statuses, demo), report: noop, forget: noop, retryAll: noop };
+  return { demo, sheet, line: saveLine(statuses, demo), saving: statuses.includes("saving"), report: noop, forget: noop, retryAll: noop };
 }
 
 const render = (node: React.ReactNode) => renderToStaticMarkup(node);

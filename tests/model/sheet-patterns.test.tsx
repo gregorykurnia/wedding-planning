@@ -15,6 +15,7 @@ import { SAVE_DEMO, SAVE_IDLE, SHEET_FAILED, saveLine, type FieldStatus } from "
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { BlockedNotice, InlineConfirm } from "@/veil/shell/confirm";
 import { CreateSheetActions, EditSheetActions, SheetContext } from "@/veil/shell/sheet";
+import { SheetReadState } from "@/veil/shell/sheet-read-state";
 
 // Task 3.8: the create and edit sheet frames, the inline and blocked confirms, as
 // markup (guide §4.14, §4.15). The session is a stand-in (the components read
@@ -44,6 +45,7 @@ const scopeOf = (statuses: FieldStatus[], demo = false): SaveScope => ({
   demo,
   sheet: true,
   line: saveLine(statuses, demo),
+  saving: statuses.includes("saving"),
   report: noop,
   forget: noop,
   retryAll: noop,
@@ -257,5 +259,19 @@ describe("the words of a sheet asked to close before a change has saved (N18)", 
     expect(CLOSED_WITHOUT).toBe("Closed without your last change. It wasn’t saved.");
     expect(STARTED_TYPING).toBe("You’ve started typing here. Close and it’s not added, or keep going.");
     expect(CLOSE_WITHOUT_ADDING).toBe("Close without adding it");
+  });
+});
+
+describe("a sheet whose own record hasn't arrived (P7-S14)", () => {
+  it("says it's offline or didn't load, with Done, instead of a bare title", () => {
+    const offline = markup(<SheetReadState read={{ status: "offline", data: null }} title="Venue" what="this venue" />);
+    expect(offline).toContain("You’re offline");
+    expect(offline).toContain("The planner needs a connection to show this venue.");
+    expect(offline).toContain(">Done<");
+    const failed = markup(<SheetReadState read={{ status: "error", data: null }} title="Venue" what="this venue" />);
+    expect(failed).toContain("Venue didn’t load");
+    const loading = markup(<SheetReadState read={{ status: "loading", data: null }} title="Venue" what="this venue" />);
+    expect(loading).toContain("Loading this venue");
+    expect(loading).not.toContain("Done");
   });
 });

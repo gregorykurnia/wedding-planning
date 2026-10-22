@@ -10,6 +10,7 @@ import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { ADD_FAILED, NAME_MISSING, addedToast } from "./vendors-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 type Mode = "idle" | "adding" | "another";
 
@@ -104,7 +105,7 @@ export function AddVendorSheet({ category }: { category: string }) {
       </Fields>
       {failed && (
         <Banner tone="rose" inline>
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions

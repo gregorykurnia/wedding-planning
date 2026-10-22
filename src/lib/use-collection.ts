@@ -16,6 +16,7 @@ import {
   type QueryConstraint,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { readAnswer } from "@/lib/collection-answers";
 
 /**
  * Generic realtime Firestore collection hook. Gracefully returns an empty,
@@ -32,36 +33,28 @@ export function useCollection<T extends { id: string }>(
   const arrived = useRef(false);
   // For screens: whether any answer has come, so a read that fails before one isn't shown as empty.
   const [answered, setAnswered] = useState(false);
-  const held = useRef(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) {
       return;
     }
     arrived.current = false;
-    held.current = false;
-    // The connection is back: an empty collection sends no new answer, so stop waiting for one.
-    const onOnline = () => {
-      if (!held.current) return;
-      held.current = false;
-      arrived.current = true;
-      setAnswered(true);
-      setLoading(false);
-    };
-    window.addEventListener("online", onOnline);
     const q = query(collection(db, collectionName), ...constraints);
+    // With metadata changes, so a read held offline hears the server's answer
+    // even when the collection is empty and nothing else changes (P7-S14).
     const unsubscribe = onSnapshot(
       q,
+      { includeMetadataChanges: true },
       (snapshot) => {
-        // With no connection and nothing held on the device, the first answer is an empty one
-        // from the cache. That says "nothing has arrived", not "there is nothing": keep loading.
-        // (Only when the browser knows it is offline: an empty collection that is online
-        // gets no second answer to wait for.)
-        if (!arrived.current && snapshot.metadata.fromCache && snapshot.empty && !navigator.onLine) {
-          held.current = true;
-          return;
-        }
-        held.current = false;
+        const verdict = readAnswer({
+          name: collectionName,
+          arrived: arrived.current,
+          fromCache: snapshot.metadata.fromCache,
+          empty: snapshot.empty,
+          changed: snapshot.docChanges().length > 0,
+          online: navigator.onLine,
+        });
+        if (verdict !== "take") return;
         arrived.current = true;
         setAnswered(true);
         setData(snapshot.docs.map((d) => fromDoc(d.id, d.data())));
@@ -74,10 +67,7 @@ export function useCollection<T extends { id: string }>(
         setLoading(false);
       },
     );
-    return () => {
-      window.removeEventListener("online", onOnline);
-      unsubscribe();
-    };
+    return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName]);
 

@@ -20,6 +20,7 @@ import {
   addedToast,
 } from "./tasks-text";
 import styles from "./tasks-screen.module.css";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /**
  * "Add a task" (guide §5.21; S8, N9). A new task saves on its button, because
@@ -81,7 +82,7 @@ export function AddTaskSheet({ onAdded }: { onAdded: (id: string) => void }) {
       <p className={styles.sheetSub}>{ADD_SUB}</p>
       {failed && (
         <Banner tone="rose" inline role="alert">
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions action={failed ? "Try again" : "Add task"} busy={adding} busyLabel="Adding" onAction={() => void add()} />

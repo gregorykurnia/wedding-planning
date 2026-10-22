@@ -5,7 +5,7 @@ import { SaveScopeContext, useSaveScopeState } from "@/lib/data/use-autosave-fie
 import { offlineOr, SHEET_FAILED } from "@/lib/model/save-state";
 import styles from "./fields.module.css";
 import { useOnline } from "@/lib/data/session";
-import { useSheetFailure } from "@/veil/shell/sheet-failure";
+import { useSheetFailure, useSheetHold } from "@/veil/shell/sheet-failure";
 
 /**
  * One save scope: a detail screen, or (`sheet`) a sheet that edits an existing
@@ -22,6 +22,9 @@ export function SaveScopeProvider({
   children: ReactNode;
 }) {
   const scope = useSaveScopeState(demo, sheet);
+  // A change on its way holds the sheet, so moving to another screen doesn't
+  // take its "Not saved" line and Try again with it if it fails (P7-S16).
+  useSheetHold(sheet && scope.saving);
   return <SaveScopeContext.Provider value={scope}>{children}</SaveScopeContext.Provider>;
 }
 

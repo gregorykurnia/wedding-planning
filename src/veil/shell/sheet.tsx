@@ -31,7 +31,7 @@ import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
 import { SaveLine } from "@/veil/parts/fields/save-scope";
 import fieldStyles from "@/veil/parts/fields/fields.module.css";
-import { SheetFailureContext } from "./sheet-failure";
+import { SheetFailureContext, SheetHoldContext, useSheetHold } from "./sheet-failure";
 import styles from "./sheet.module.css";
 import { useOptionalToast } from "./toasts";
 
@@ -349,6 +349,7 @@ function SheetFrame({
   );
 
   const failure = useCallback(() => fail(entry.id), [fail, entry.id]);
+  const holdThis = useCallback(() => hold(entry.id), [hold, entry.id]);
 
   // Tab stays inside the sheet (guide §8).
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -397,7 +398,9 @@ function SheetFrame({
         onKeyDown={onKeyDown}
       >
         <SheetContext.Provider value={control}>
-          <SheetFailureContext.Provider value={failure}>{entry.node}</SheetFailureContext.Provider>
+          <SheetHoldContext.Provider value={holdThis}>
+            <SheetFailureContext.Provider value={failure}>{entry.node}</SheetFailureContext.Provider>
+          </SheetHoldContext.Provider>
         </SheetContext.Provider>
       </div>
     </div>
@@ -433,14 +436,6 @@ export function Sheet({
 /** The centred row of actions at the foot of a sheet: quiet first, then the primary. */
 export function SheetActions({ children }: { children: ReactNode }) {
   return <div className={styles.acts}>{children}</div>;
-}
-
-/**
- * While a write runs, Escape and a tap on the scrim don't close the sheet: the
- * write has to report back (guide §6.2).
- */
-function useBusy(sheet: SheetControl, busy: boolean) {
-  useEffect(() => (busy ? sheet.hold() : undefined), [sheet, busy]);
 }
 
 /**
@@ -484,7 +479,8 @@ export function CreateSheetActions({
   const sheet = useSheet();
   const { connection } = useSession();
   const inDemo = demo ?? connection === "demo";
-  useBusy(sheet, busy || Boolean(another?.busy));
+  // While a write runs, Escape and a tap on the scrim don't close the sheet (guide §6.2).
+  useSheetHold(busy || Boolean(another?.busy));
 
   // Escape or a tap outside with text typed in: ask once before throwing it away
   // (N18). A second one closes. Cancel is a clear choice, so it closes at once.

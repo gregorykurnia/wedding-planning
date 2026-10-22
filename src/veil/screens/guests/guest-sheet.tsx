@@ -41,6 +41,7 @@ import {
   removeTitle,
   removedToast,
 } from "./guests-text";
+import { OfflineOr } from "@/veil/parts/fields/offline-or";
 
 /** What a new guest starts as (the prototype's defaults). */
 const FRESH = {
@@ -175,7 +176,7 @@ export function AddGuestSheet({ onAdded }: { onAdded: (id: string) => void }) {
       </Fields>
       {failed && (
         <Banner tone="rose" inline role="alert">
-          {ADD_FAILED}
+          <OfflineOr>{ADD_FAILED}</OfflineOr>
         </Banner>
       )}
       <CreateSheetActions
