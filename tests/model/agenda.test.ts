@@ -199,10 +199,11 @@ describe("agendaItems", () => {
   });
 
   it("reads a vendor-less venue link, and a kind this version doesn't know as other", () => {
-    const [a, b] = build([event({ id: "a", relatedVendorId: null, relatedVenueId: "samaya", type: "vendor_call" }), event({ id: "b", type: "mystery", startAt: "2026-10-17T10:00" })]);
+    const [a, b, c] = build([event({ id: "a", relatedVendorId: null, relatedVenueId: "samaya", type: "vendor_call" }), event({ id: "b", type: "mystery", startAt: "2026-10-17T10:00" }), event({ id: "c", type: "key_date", startAt: "2026-10-18" })]);
     expect(a.relatedId).toBe("samaya");
     expect(a.kind).toBe("vendor_call");
     expect(b.kind).toBe("other");
+    expect(c.kind).toBe("key_date");
   });
 
   it("skips an event whose date isn't real", () => {

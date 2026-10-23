@@ -18,6 +18,7 @@ import type {
 const COLLECTION = "scheduleEvents";
 
 const EVENT_TYPES: ScheduleEventType[] = [
+  "key_date",
   "vendor_call",
   "organiser_call",
   "appointment",

@@ -55,6 +55,7 @@ import { cn } from "@/lib/utils";
 import { legacyHref } from "@/lib/legacy-href";
 
 const TYPE_LABELS: Record<ScheduleEventType | "task", string> = {
+  key_date: "Key date",
   vendor_call: "Vendor / WO call",
   organiser_call: "Organiser call",
   appointment: "Appointment",

@@ -76,6 +76,7 @@ describe("rowKind", () => {
   it("names the kind and the end state", () => {
     expect(rowKind(item({ kind: "vendor_call" }))).toBe("Vendor call");
     expect(rowKind(item({ kind: "organiser_call" }))).toBe("Organiser call");
+    expect(rowKind(item({ kind: "key_date" }))).toBe("Key date");
     expect(rowKind(payment())).toBe("Payment");
     expect(rowKind(task())).toBe("Task");
     expect(rowKind(item({ status: "completed" }))).toBe("Appointment, completed");

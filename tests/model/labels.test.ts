@@ -59,8 +59,9 @@ describe("labels", () => {
     expect(ITEM_PEOPLE).toHaveLength(10);
   });
 
-  it("maps schedule kinds, including the new organiser call", () => {
+  it("maps schedule kinds, including the new key date and organiser call", () => {
     expect(SCHEDULE_KINDS.map((k) => k.label)).toEqual([
+      "Key date",
       "Vendor call",
       "Organiser call",
       "Appointment",

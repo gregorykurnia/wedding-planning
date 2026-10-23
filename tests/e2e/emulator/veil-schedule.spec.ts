@@ -352,8 +352,8 @@ test("the event sheet shows the event and saves each change as you go", async ({
   await dialog.getByLabel("Where, or a call link").click();
   await expect(dialog.getByText("Saved", { exact: true })).toBeVisible();
   await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.title).toBe("Tasting at Sendok Emas, Sanur");
-  await dialog.getByRole("radio", { name: "Deadline" }).click();
-  await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.type).toBe("deadline");
+  await dialog.getByRole("radio", { name: "Key date" }).click();
+  await expect.poll(async () => (await read("scheduleEvents", "sc-tasting"))?.type).toBe("key_date");
 
   // A new time keeps the date and the end.
   await dialog.getByLabel("Starts").fill("09:30");
@@ -381,7 +381,7 @@ test("the event sheet shows the event and saves each change as you go", async ({
 
   await dialog.getByRole("button", { name: "Done" }).click();
   await expect(dialog).toHaveCount(0);
-  await expect(row(page, "Tasting at Sendok Emas, Sanur")).toBeVisible();
+  await expect(row(page, "Tasting at Sendok Emas, Sanur")).toContainText("Key date");
 });
 
 test("a change that would leave the event without a title is held, and Done goes to the field (N9)", async ({ browser }) => {

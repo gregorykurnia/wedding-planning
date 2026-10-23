@@ -100,10 +100,11 @@ export const ITEM_PEOPLE = choices<ItemPerson>([
   ["Bride Brothers", "Bride's brothers"],
 ]);
 
-export type ScheduleKind = "vendor_call" | "organiser_call" | "appointment" | "payment" | "deadline" | "other";
+export type ScheduleKind = "key_date" | "vendor_call" | "organiser_call" | "appointment" | "payment" | "deadline" | "other";
 
-/** "organiser_call" is new; the old UI reads it as an unknown type and shows it as written. */
+/** "organiser_call" and "key_date" (a milestone such as the sangjit or the pre-wedding shoot) are new. */
 export const SCHEDULE_KINDS = choices<ScheduleKind>([
+  ["key_date", "Key date"],
   ["vendor_call", "Vendor call"],
   ["organiser_call", "Organiser call"],
   ["appointment", "Appointment"],

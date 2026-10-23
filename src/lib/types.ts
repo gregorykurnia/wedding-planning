@@ -192,6 +192,7 @@ export interface TodoItem {
 }
 
 export type ScheduleEventType =
+  | "key_date"
   | "vendor_call"
   | "organiser_call"
   | "appointment"
