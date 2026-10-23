@@ -29,6 +29,10 @@ const eslintConfig = defineConfig([
     ".next/**",
     ".next-e2e/**",
     ".next-demo/**",
+    // The screenshot builds and the vendored PDF.js worker aren't our code.
+    ".next-shots/**",
+    ".next-shots-demo/**",
+    "public/pdf.worker.min.mjs",
     "test-results/**",
     "playwright-report/**",
     "out/**",

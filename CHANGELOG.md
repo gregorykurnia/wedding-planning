@@ -2,6 +2,7 @@
 
 Newest first. One entry per change: the date, then one to three lines on what changed and why, naming the main files. Test counts, check lists and design detail belong in the commit body, not here.
 
+- 2026-10-23: `eslint.config.mjs` ignores the screenshot builds (`.next-shots*`) and the vendored PDF.js worker, so a full lint run reports our code only.
 - 2026-10-23: Schedule events can be a Key date (sangjit, pre-wedding shoot and other milestones): a new `key_date` kind, first among the add sheet's kind chips (`src/lib/model/labels.ts`, `src/lib/types.ts`, `src/lib/collections/schedule-events.ts`). The frozen old UI gets only its label, so it still type-checks. The agenda's filter chips gain Key dates (`src/lib/model/agenda.ts`).
 - 2026-10-23: The owner accepted every open design gap as built: §9.1 G19–G47 closed, decision Q16 in §9.2, needs N19–N47 marked accepted in `redesign/handoff/needs.md`. None goes to the studio.
 - 2026-10-23: Server routes (Delete for good, Test notification, daily reminders) failed to load on Vercel with `ERR_REQUIRE_ESM`: `firebase-admin`'s `jwks-rsa` 4 requires the ES-only `jose` 6. `package.json` overrides `jwks-rsa` to 3.x (`jose` 4, same API).
