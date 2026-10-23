@@ -6,7 +6,7 @@ Sections 1 and 2 change nothing in production, or only add to it. Section 3 is t
 
 ## 1. Checks that change nothing
 
-- [ ] **Vercel production variables** (P3-S13, P5-S22, Phase 6 review): in Vercel › Project › Settings › Environment Variables, for Production, `NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` are not set, and neither are `FIRESTORE_EMULATOR_HOST` or `FIREBASE_AUTH_EMULATOR_HOST`. With an emulator variable set, the server starts without credentials, and the second `verifyIdToken` accepts unsigned tokens.
+- [x] **Vercel production variables** (P3-S13, P5-S22, Phase 6 review): in Vercel › Project › Settings › Environment Variables, for Production, `NEXT_PUBLIC_VEIL_GALLERY` and `NEXT_PUBLIC_VEIL_DEV` are not set, and neither are `FIRESTORE_EMULATOR_HOST` or `FIREBASE_AUTH_EMULATOR_HOST`. With an emulator variable set, the server starts without credentials, and the second `verifyIdToken` accepts unsigned tokens.
 - [x] **Doubled package files** (P1-S15): `npm run migrate:check files` (read-only). If it lists any, a cleanup migration comes first: raise it in a redesign session before the merge.
 - [x] **Documents the editor refuses** (P5-S8, second half): `npm run migrate:check documents` (read-only). Each one it lists opens empty and read-only in the new UI. Fix it in the old UI before the merge, or raise a task.
 - [ ] **Bella's sign-in** (Phase 1, owner check 1; still open at the Phase 4 review): Bella loads and saves once on production. If they use a password, they sign in with Google once. The rules require a verified address, a password account isn't verified, and nothing sends a verification email.
@@ -16,9 +16,9 @@ Sections 1 and 2 change nothing in production, or only add to it. Section 3 is t
 
 ## 2. Production changes that only add (before the merge)
 
-- [ ] **Open access** (owner's call, 2026-10-22): in the Firebase console, Authentication › Sign-in method › Anonymous › Enable. The rules deploy below then lets any visitor in, and the app opens without signing in. Without Anonymous enabled, the app falls back to the sign-in screen.
+- [x] **Open access** (owner's call, 2026-10-22): in the Firebase console, Authentication › Sign-in method › Anonymous › Enable. The rules deploy below then lets any visitor in, and the app opens without signing in. Without Anonymous enabled, the app falls back to the sign-in screen.
 - [ ] **Firestore rules** (5.F2, P5-S13 and P5-S14: push subscriptions and presence): `npx firebase deploy --only firestore:rules`. The rules are additive, so the old UI isn't affected. The 4.F3 rules went live on 2026-10-19. Note the date in 5.F2's row of §7.0.
-- [ ] **Server keys in Vercel production** (6.2's owner setup, 6.3): add any that are missing, for Production: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (from `npx web-push generate-vapid-keys`), `CRON_SECRET` (`openssl rand -hex 32`), `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON), and `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. Delete for good fails without the Cloudinary pair, and the Cloudinary key needs the Master Admin role. The daily reminder run starts with the merge's deploy (section 5).
+- [x] **Server keys in Vercel production** (6.2's owner setup, 6.3): add any that are missing, for Production: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (from `npx web-push generate-vapid-keys`), `CRON_SECRET` (`openssl rand -hex 32`), `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON), and `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. Delete for good fails without the Cloudinary pair, and the Cloudinary key needs the Master Admin role. The daily reminder run starts with the merge's deploy (section 5).
 
 ## 3. Old-UI drift (the last production step before the merge)
 
