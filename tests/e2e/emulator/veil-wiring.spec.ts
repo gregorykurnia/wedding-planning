@@ -234,7 +234,8 @@ test.describe("the normal set", () => {
   });
 });
 
-test("P2-S1: an account let in because the database couldn't be asked is asked again, and turned away (reprobe.ts)", async ({ page }) => {
+// Open access (2026-10-22): the rules let any account in, so none is turned away. Unskip when the allowlist returns.
+test.skip("P2-S1: an account let in because the database couldn't be asked is asked again, and turned away (reprobe.ts)", async ({ page }) => {
   // The 30-second re-probe timer never fires here, so only the page showing again can ask: without
   // the `visibilitychange` wiring this stays signed in (the timer used to answer within the wait).
   await page.addInitScript((every) => {

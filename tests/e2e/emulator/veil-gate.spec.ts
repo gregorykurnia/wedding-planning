@@ -33,7 +33,8 @@ test("an allowed account signs in to the overview, and signing out says so", asy
   await expect(page.getByText("You’ve signed out. Nothing is shown on this device")).toBeVisible();
 });
 
-test("a third account is signed out and told it isn't allowed", async ({ page }) => {
+// Open access (2026-10-22): the rules let any account in, so none is turned away. Unskip when the allowlist returns.
+test.skip("a third account is signed out and told it isn't allowed", async ({ page }) => {
   const email = `${uniqueName("someone")}@example.com`;
   await createAccount(email, "test-password-3");
 
