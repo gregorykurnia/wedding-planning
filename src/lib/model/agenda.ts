@@ -184,10 +184,11 @@ export function agendaItems(events: readonly EventRecord[], dues: readonly Due[]
     .map((x) => x.item);
 }
 
-export type AgendaFilterKey = "all" | "payment" | "task" | "call" | "appointment" | "deadline" | "own" | "other";
+export type AgendaFilterKey = "all" | "key_date" | "payment" | "task" | "call" | "appointment" | "deadline" | "own" | "other";
 
 export const AGENDA_FILTERS: { key: AgendaFilterKey; label: string }[] = [
   { key: "all", label: "Everything" },
+  { key: "key_date", label: "Key dates" },
   { key: "payment", label: "Payments" },
   { key: "task", label: "Tasks" },
   { key: "call", label: "Calls" },

@@ -225,6 +225,7 @@ describe("filterAgenda", () => {
       event({ id: "hold", title: "Hold on our date ends", type: "deadline", startAt: "2026-10-31", allDay: true }),
       event({ id: "pay", title: "Pay the photographer", type: "payment", startAt: "2026-10-22", allDay: true }),
       event({ id: "misc", title: "Marriage course", type: "other", startAt: "2026-11-07T09:00" }),
+      event({ id: "sangjit", title: "Sangjit", type: "key_date", startAt: "2026-11-14", allDay: true }),
       event({ id: "old", title: "Venue walkthrough", type: "appointment", startAt: "2026-10-10T10:00", status: "completed" }),
       event({ id: "cut", title: "Call Rasa Nusantara back", type: "vendor_call", startAt: "2026-10-08T16:00", status: "cancelled" }),
     ],
@@ -246,8 +247,9 @@ describe("filterAgenda", () => {
     expect(ids({ kind: "appointment" })).toEqual(["tasting"]);
     expect(ids({ kind: "deadline" })).toEqual(["hold"]);
     expect(ids({ kind: "other" })).toEqual(["misc"]);
+    expect(ids({ kind: "key_date" })).toEqual(["sangjit"]);
     expect(ids({ kind: "task" })).toEqual(["t1"]);
-    expect(ids({ kind: "own" })).toEqual(["call", "tasting", "org", "pay", "hold", "misc"]);
+    expect(ids({ kind: "own" })).toEqual(["call", "tasting", "org", "pay", "hold", "misc", "sangjit"]);
   });
 
   it("includes our own Payment events in the Payments filter, with payments due on bookings", () => {
@@ -277,7 +279,7 @@ describe("filterAgenda", () => {
   });
 
   it("offers the chips the design shows, and knows when something is filtering", () => {
-    expect(AGENDA_FILTERS.map((f) => f.label)).toEqual(["Everything", "Payments", "Tasks", "Calls", "Appointments", "Deadlines", "Our events", "Other"]);
+    expect(AGENDA_FILTERS.map((f) => f.label)).toEqual(["Everything", "Key dates", "Payments", "Tasks", "Calls", "Appointments", "Deadlines", "Our events", "Other"]);
     expect(isFilteringAgenda(NO_AGENDA_FILTER)).toBe(false);
     expect(isFilteringAgenda({ ...NO_AGENDA_FILTER, showDone: true })).toBe(false);
     expect(isFilteringAgenda({ ...NO_AGENDA_FILTER, query: "x" })).toBe(true);
