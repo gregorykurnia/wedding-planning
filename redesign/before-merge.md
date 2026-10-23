@@ -17,7 +17,7 @@ Sections 1 and 2 change nothing in production, or only add to it. Section 3 is t
 ## 2. Production changes that only add (before the merge)
 
 - [x] **Open access** (owner's call, 2026-10-22): in the Firebase console, Authentication › Sign-in method › Anonymous › Enable. The rules deploy below then lets any visitor in, and the app opens without signing in. Without Anonymous enabled, the app falls back to the sign-in screen.
-- [ ] **Firestore rules** (5.F2, P5-S13 and P5-S14: push subscriptions and presence): `npx firebase deploy --only firestore:rules`. The rules are additive, so the old UI isn't affected. The 4.F3 rules went live on 2026-10-19. Note the date in 5.F2's row of §7.0.
+- [x] **Firestore rules** (5.F2, P5-S13 and P5-S14: push subscriptions and presence): `npx firebase deploy --only firestore:rules`. The rules are additive, so the old UI isn't affected. The 4.F3 rules went live on 2026-10-19. Note the date in 5.F2's row of §7.0.
 - [x] **Server keys in Vercel production** (6.2's owner setup, 6.3): add any that are missing, for Production: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (from `npx web-push generate-vapid-keys`), `CRON_SECRET` (`openssl rand -hex 32`), `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON), and `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. Delete for good fails without the Cloudinary pair, and the Cloudinary key needs the Master Admin role. The daily reminder run starts with the merge's deploy (section 5).
 
 ## 3. Old-UI drift (the last production step before the merge)
@@ -35,7 +35,7 @@ Sections 1 and 2 change nothing in production, or only add to it. Section 3 is t
 - [x] **CLAUDE.md** (8.6): in a redesign session, remove the "The redesign process (until the merge)" section and the "During the redesign" sentence under Git workflow, in one commit on `redesign`. The merge then brings only the new UI's rules.
 - [ ] **Old Register button, not blocking** (Phase 1 review; not routed to a task): the frozen old UI still has a Register button, and the accounts it makes are ones the rules deny (Q2 dropped registration). Accept it for the launch window, or ask a redesign session to hide it in the old UI before the merge.
 - [ ] **Formula range, not blocking** (Phase 1 review, "owner call"): a total row whose range includes another total follows the guide's wording. Nothing waits on this; tell a redesign session if you want it changed.
-- [ ] **Say "release"** when the steps above are ticked. Claude runs the full checks first (lint, build, unit tests, the full e2e suite on production builds, and the old-names check with the fallback excluded), then fast-forwards `main` to `redesign` and pushes. Vercel deploys `main`.
+- [x] **Say "release"** (released 2026-10-23, `main` at c850073, with open access and the owner checks above still open, at the owner's call) when the steps above are ticked. Claude runs the full checks first (lint, build, unit tests, the full e2e suite on production builds, and the old-names check with the fallback excluded), then fast-forwards `main` to `redesign` and pushes. Vercel deploys `main`.
 
 ## 5. After the merge (in this order)
 
