@@ -2,6 +2,7 @@
 
 Newest first. One entry per change: the date, then one to three lines on what changed and why, naming the main files. Test counts, check lists and design detail belong in the commit body, not here.
 
+- 2026-10-23: The owner accepted every open design gap as built: §9.1 G19–G47 closed, decision Q16 in §9.2, needs N19–N47 marked accepted in `redesign/handoff/needs.md`. None goes to the studio.
 - 2026-10-23: Server routes (Delete for good, Test notification, daily reminders) failed to load on Vercel with `ERR_REQUIRE_ESM`: `firebase-admin`'s `jwks-rsa` 4 requires the ES-only `jose` 6. `package.json` overrides `jwks-rsa` to 3.x (`jose` 4, same API).
 - 2026-10-22: Open access for now (owner's call): the app signs every visitor in anonymously and the rules and server routes let any signed-in account in, instead of the two allowlisted addresses (`session.ts`, `firestore.rules`, `verify-request.ts`). `NEXT_PUBLIC_REQUIRE_SIGN_IN=1` brings sign-in back; the e2e servers set it.
 - 2026-10-22: Before the merge: `CLAUDE.md` drops the redesign-process rules so the merge brings only the new UI's; the rollback check passed again after Phase 8. Both ticked in `redesign/before-merge.md`.
