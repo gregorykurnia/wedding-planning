@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { addFinalist } from "@/lib/data/shortlist";
 import { useCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
-import { categoryList } from "@/lib/model/categories";
+import { OTHER_CATEGORY, categoryList, choicesWith } from "@/lib/model/categories";
 import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { MoneyInput } from "@/veil/parts/fields/money";
 import { Banner } from "@/veil/shell/banner";
@@ -28,7 +28,8 @@ export function AddFinalistSheet({ category }: { category: string }) {
   const list = categories.data?.list ?? categoryList([]);
 
   const [name, setName] = useState("");
-  const [chosen, setChosen] = useState(category && list.includes(category) ? category : "Other");
+  // The focused category as it is: the stored list may not have loaded yet, and a category of the couple's own isn't in the common ones.
+  const [chosen, setChosen] = useState(category || OTHER_CATEGORY);
   const [packageName, setPackageName] = useState("");
   const [price, setPrice] = useState<number | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -76,7 +77,7 @@ export function AddFinalistSheet({ category }: { category: string }) {
           />
         </FieldRow>
         <FieldRow label="Category">
-          <CategorySelect value={chosen} onChange={setChosen} categories={list} />
+          <CategorySelect value={chosen} onChange={setChosen} categories={choicesWith(list, chosen)} />
         </FieldRow>
         <FieldRow label="First package">
           <FieldInput placeholder={addSheet.packagePlaceholder} value={packageName} onChange={setPackageName} />
