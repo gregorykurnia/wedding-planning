@@ -54,7 +54,8 @@ export const ADD_FAILED =
 
 // ---------- the categories sheet ----------
 
-export const CATEGORIES_TITLE = "Categories";
+/** The sheet keeps the settings door's name, "Vendor categories", through the launch window (see `DOOR_CATEGORIES`). */
+export const CATEGORIES_TITLE = "Vendor categories";
 
 export const categoriesSub = (partner: string) =>
   `Shared with ${partner}, and used by vendors, the shortlist, the budget and wedding items. “Other” is always there for anything that doesn’t fit.`;

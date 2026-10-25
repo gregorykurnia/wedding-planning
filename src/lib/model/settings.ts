@@ -63,4 +63,6 @@ export const ANDROID_STEP = "open it in Chrome, tap the menu, then Install app."
 
 export const ALSO_HEADING = "Also";
 export const DOOR_WHO_PAYS = { name: "Who pays", summary: "Add, rename or remove funders" };
-export const DOOR_CATEGORIES = { name: "Categories", summary: "Add, rename or remove" };
+// The name stays "Vendor categories" through the launch window: the specs that name it sit beside
+// lines the switch commit changed, and renaming them would stop its one-commit revert (plan §9.3).
+export const DOOR_CATEGORIES = { name: "Vendor categories", summary: "Add, rename or remove" };

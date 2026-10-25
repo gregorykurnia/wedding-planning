@@ -205,7 +205,7 @@ test.describe("the normal set", () => {
   test("P7-S13: the categories sheet's failed add keeps it open across a move to say so (categories-sheet.tsx)", async ({ browser }) => {
     const page = await openFromMenu(browser, "Vendors");
     await page.getByRole("button", { name: "Edit categories" }).click({ timeout: COMPILE_TIMEOUT });
-    const sheet = page.getByRole("dialog", { name: "Categories" });
+    const sheet = page.getByRole("dialog", { name: "Vendor categories" });
     await page.context().setOffline(true);
     await sheet.getByLabel("New category").fill("Held category");
     await sheet.getByRole("button", { name: "Add category" }).click();

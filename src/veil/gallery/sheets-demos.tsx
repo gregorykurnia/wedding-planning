@@ -243,7 +243,7 @@ function CategoriesDemo({ flags }: { flags: FlagsRef }) {
 
   return (
     <Sheet
-      title="Categories"
+      title="Vendor categories"
       sub="Categories you add are shared with Bella. “Other” is always there for anything that doesn’t fit."
     >
       <ul aria-label="Categories" className={styles.list}>

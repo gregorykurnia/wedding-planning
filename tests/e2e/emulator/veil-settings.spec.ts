@@ -203,8 +203,8 @@ test("the doors lead to Who pays and open the vendor categories", async ({ page 
   await openSettings(page);
   await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/budget/who-pays");
 
-  await page.getByRole("link", { name: /^Categories/ }).click();
-  await expect(page.getByRole("dialog", { name: "Categories" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
+  await page.getByRole("link", { name: /Vendor categories/ }).click();
+  await expect(page.getByRole("dialog", { name: "Vendor categories" })).toBeVisible({ timeout: COMPILE_TIMEOUT });
   await expect(page).toHaveURL("/vendors");
 });
 

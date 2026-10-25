@@ -270,7 +270,7 @@ test("a new category can be made from the category select while adding a vendor"
 test("the categories sheet adds, renames and removes any but Other, each with its undo", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   await page.getByRole("button", { name: "Edit categories" }).click();
-  const sheet = page.getByRole("dialog", { name: "Categories" });
+  const sheet = page.getByRole("dialog", { name: "Vendor categories" });
   await expect(sheet.getByText("Shared with Bella, and used by vendors")).toBeVisible();
 
   // Every category with what's in it; all but Other can be renamed and removed.
@@ -342,7 +342,7 @@ test("renaming the focused category keeps the focus on it", async ({ browser }) 
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   await page.getByRole("button", { name: /^Henna art\s*1$/ }).click();
   await page.getByRole("button", { name: "Edit categories" }).click();
-  const sheet = page.getByRole("dialog", { name: "Categories" });
+  const sheet = page.getByRole("dialog", { name: "Vendor categories" });
   await sheet.getByRole("listitem").filter({ hasText: "Henna art" }).getByRole("button", { name: "Rename" }).click();
   await sheet.getByLabel("Rename Henna art").fill("Mehndi");
   await sheet.getByLabel("Rename Henna art").press("Enter");

@@ -201,7 +201,7 @@ test("the categories sheet turns a row into its inline confirm, and keeps the ro
 }) => {
   const section = await openSection(page);
   await section.getByRole("button", { name: "Edit categories" }).click();
-  const dialog = page.getByRole("dialog", { name: "Categories" });
+  const dialog = page.getByRole("dialog", { name: "Vendor categories" });
   const florist = dialog.getByRole("listitem").first();
 
   await florist.getByRole("button", { name: "Remove", exact: true }).click();

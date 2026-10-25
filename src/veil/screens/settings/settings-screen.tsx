@@ -60,7 +60,7 @@ const TEST_SENT = "Test reminder sent. It should appear in a moment.";
  * Wedding settings (guide §5.3; O5, O6, A3, A5, S10): the two names and the
  * wedding date, saved as you go, who can open the planner with Swap them and
  * Sign out, what this device allows for reminders, the install steps, and the
- * doors to Who pays and Categories. Allowing notifications saves this
+ * doors to Who pays and Vendor categories. Allowing notifications saves this
  * device for the daily reminders, and signing out stops them arriving here.
  */
 export function SettingsScreen() {
