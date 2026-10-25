@@ -12,6 +12,8 @@ export interface ItemRecord {
   id: string;
   item: string;
   vendor: string;
+  /** One of the shared categories; an item stored without one reads as Other. */
+  category: string;
   confirmed: boolean;
   types: readonly ItemEvent[];
   persons: readonly ItemPerson[];
@@ -91,12 +93,14 @@ export interface ItemFilter {
   events: readonly ItemEvent[];
   people: readonly ItemPerson[];
   nextOnly: boolean;
+  /** One category's items; "" or left out, every category. */
+  category?: string;
 }
 
-export const NO_ITEM_FILTER: ItemFilter = { query: "", confirmed: "", events: [], people: [], nextOnly: false };
+export const NO_ITEM_FILTER: ItemFilter = { query: "", confirmed: "", events: [], people: [], nextOnly: false, category: "" };
 
 export const isFilteringItems = (f: ItemFilter) =>
-  !!(f.query.trim() || f.confirmed || f.events.length || f.people.length || f.nextOnly);
+  !!(f.query.trim() || f.confirmed || f.events.length || f.people.length || f.nextOnly || f.category);
 
 export const filterItems = <T extends ItemRecord>(items: readonly T[], f: ItemFilter): T[] =>
   items.filter(
@@ -104,6 +108,7 @@ export const filterItems = <T extends ItemRecord>(items: readonly T[], f: ItemFi
       itemMatches(i, f.query) &&
       (!f.confirmed || (f.confirmed === "yes") === i.confirmed) &&
       (!f.nextOnly || i.next) &&
+      (!f.category || i.category === f.category) &&
       (!f.events.length || f.events.some((e) => i.types.includes(e))) &&
       (!f.people.length || f.people.some((p) => isFor(i.persons, p))),
   );
@@ -113,3 +118,55 @@ export function workOnNext<T extends ItemRecord>(items: readonly T[], limit = 12
   const marked = items.filter((i) => i.next);
   return { shown: marked.slice(0, limit), more: Math.max(0, marked.length - limit) };
 }
+
+/**
+ * The category of each of the common items (§9.2 Q12), by its stored id, so
+ * "Start with common items" files them as the wedding items list does
+ * (2026-10-25). One that isn't here starts in Other.
+ */
+export const COMMON_ITEM_CATEGORIES: Readonly<Record<string, string>> = {
+  "master-01-reception-venue": "Venue",
+  "master-02-church-venue": "Venue",
+  "master-03-sangjit-venue": "Venue",
+  "master-04-hotel-h-1-venue": "Venue",
+  "master-05-wedding-organizer": "Wedding Organizer",
+  "master-06-church-food-stalls": "Catering",
+  "master-07-ballroom-decoration": "Decoration",
+  "master-08-church-decoration": "Decoration",
+  "master-09-reception-entertainment": "Entertainment",
+  "master-10-photo-and-video-wedding-day": "Photo and Video",
+  "master-11-reception-and-wedding-bridal-gown": "Bridal Gown",
+  "master-12-groom-suit": "Groom Suit",
+  "master-13-wedding-cake": "Wedding Cake",
+  "master-14-lighting-led": "Decoration",
+  "master-15-reception-mc": "MC",
+  "master-16-printed-invitation": "Invitation",
+  "master-17-digital-invitation-and-wedding-website": "Invitation",
+  "master-18-make-up-artist-bride": "Make Up Artist",
+  "master-19-make-up-artist-groom-and-bride-moms": "Make Up Artist",
+  "master-20-make-up-artist-sister": "Make Up Artist",
+  "master-21-groom-dad-and-brothers-suit": "Family Outfits",
+  "master-22-groom-mom-and-sister-dress": "Family Outfits",
+  "master-23-bride-dad-and-brothers-suit": "Family Outfits",
+  "master-24-bride-mom-dress": "Family Outfits",
+  "master-25-groom-shoes": "Shoes and Accessories",
+  "master-26-souvenir-for-reception": "Souvenir",
+  "master-27-souvenir-for-church": "Souvenir",
+  "master-28-sangjit-mc": "MC",
+  "master-29-photobooth": "Photobooth",
+  "master-30-sangjit-outfit-groom": "Groom Suit",
+  "master-31-sangjit-outfit-bride": "Bridal Gown",
+  "master-32-wedding-ring": "Rings and Jewelry",
+  "master-33-pre-wedding-photographer": "Photo and Video",
+  "master-34-groom-parents-chinese-outfit-sangjit": "Family Outfits",
+  "master-35-bride-parents-chinese-outfit-sangjit": "Family Outfits",
+  "master-36-florist": "Florist",
+  "master-37-sangjit-photography": "Photo and Video",
+  "master-38-sangjit-videography": "Photo and Video",
+  "master-39-transport-pickup": "Transportation",
+  "master-40-wedding-car-decor": "Decoration",
+  "master-41-civil-registration": "Civil Registration",
+  "master-42-bride-wedding-day-jewelry": "Rings and Jewelry",
+  "master-43-bridal-accessories": "Shoes and Accessories",
+  "master-44-bride-nails": "Shoes and Accessories",
+};

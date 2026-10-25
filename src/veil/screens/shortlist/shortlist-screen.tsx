@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFinalistsAndCategories } from "@/lib/data/shortlist";
-import { buildCategories } from "@/lib/model/categories";
+import { categoryList } from "@/lib/model/categories";
 import { n0 } from "@/lib/model/format";
 import { SHORTLIST_ORDERS, startDirection, type ShortlistOrderKey } from "@/lib/model/order";
 import {
@@ -39,7 +39,7 @@ export function ShortlistScreen() {
   return (
     <PageColumn width="wide">
       <ScreenState read={read} what="your shortlist" onRetry={() => window.location.reload()}>
-        {(data) => <Shortlist finalists={data?.[0] ?? []} categories={data?.[1].list ?? buildCategories([])} />}
+        {(data) => <Shortlist finalists={data?.[0] ?? []} categories={data?.[1].list ?? categoryList([])} />}
       </ScreenState>
     </PageColumn>
   );

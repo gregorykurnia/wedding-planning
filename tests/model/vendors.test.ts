@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { buildCategories } from "@/lib/model/categories";
 import { NO_VENDOR_FILTER } from "@/lib/model/search";
 import {
   VENDOR_COLUMNS,
@@ -72,7 +71,8 @@ describe("vendorListItem", () => {
 const list = (...over: Partial<VendorSource>[]) =>
   over.map((o, i) => item({ id: `v${i}`, name: `Vendor ${i}`, ...o }));
 
-const CATEGORIES = buildCategories(["Florist"]);
+// A shared list in its own order (not A to Z), so the order is seen to come from it.
+const CATEGORIES = ["Decoration", "Food", "Groom Suit", "Bride Dress", "Invites", "Makeup Artist", "Music/DJ", "Photos and Videos", "Transportation", "Wedding Cake", "Wedding Organizer", "Florist", "Other"];
 
 describe("vendorView", () => {
   const vendors = list(

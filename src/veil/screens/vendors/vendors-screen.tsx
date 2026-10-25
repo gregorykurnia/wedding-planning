@@ -6,7 +6,7 @@ import { offlineOr } from "@/lib/model/save-state";
 import { useEffect, useRef, useState } from "react";
 import { setVendorKeen, useVendorsAndCategories } from "@/lib/data/vendors";
 import { useSettings } from "@/lib/data/settings";
-import { buildCategories } from "@/lib/model/categories";
+import { categoryList } from "@/lib/model/categories";
 import { exportFileName } from "@/lib/model/csv";
 import { VENDOR_RULED_OUT } from "@/lib/model/labels";
 import { VENDOR_ORDERS, type VendorOrderKey } from "@/lib/model/order";
@@ -58,7 +58,7 @@ export function VendorsScreen() {
   return (
     <PageColumn width="wide">
       <ScreenState read={read} what="your vendors" onRetry={() => window.location.reload()}>
-        {(data) => <VendorsList vendors={data?.[0] ?? []} categories={data?.[1].list ?? buildCategories([])} />}
+        {(data) => <VendorsList vendors={data?.[0] ?? []} categories={data?.[1].list ?? categoryList([])} />}
       </ScreenState>
     </PageColumn>
   );

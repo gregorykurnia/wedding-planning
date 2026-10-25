@@ -58,6 +58,7 @@ export function AddItemsSheet({
     const rows: NewItem[] = names.map((item, index) => ({
       id: made[index],
       item,
+      category: after?.category,
       types: after?.types ?? [],
       persons: after?.persons ?? [],
     }));

@@ -4,7 +4,8 @@ import { arrayRemove, arrayUnion, doc, writeBatch, type DocumentData } from "fir
 import { useMemo } from "react";
 import { LIST_CHANGED, MASTER_LIST_INITIAL_ROWS, renumberMasterList, useMasterListItems } from "@/lib/collections/master-list";
 import type { ItemEvent, ItemPerson } from "@/lib/model/labels";
-import type { ItemRecord } from "@/lib/model/items";
+import { OTHER_CATEGORY } from "@/lib/model/categories";
+import { COMMON_ITEM_CATEGORIES, type ItemRecord } from "@/lib/model/items";
 import { neighboursOf, positionsBetween } from "@/lib/model/row-moves";
 import { logActivity } from "./activity";
 import { requireDb } from "./db";
@@ -33,7 +34,12 @@ export function useItems(): Loaded<ItemRecord[]> {
   const { connection } = useSession();
   const list = useMasterListItems();
   const items = useMemo(
-    () => list.data.map((i) => (i.vendor.trim() === UNKNOWN_VENDOR ? { ...i, vendor: "" } : i)),
+    () =>
+      list.data.map((i) => ({
+        ...i,
+        vendor: i.vendor.trim() === UNKNOWN_VENDOR ? "" : i.vendor,
+        category: i.category?.trim() || OTHER_CATEGORY,
+      })),
     [list.data],
   );
   return readOf(connection, [list], items);
@@ -43,10 +49,10 @@ export function useItems(): Loaded<ItemRecord[]> {
 export const newItemIds = (count: number, opts: WriteOptions = {}): string[] =>
   Array.from({ length: count }, () => newId(COLLECTION, opts));
 
-/** Saves an item's name or vendor, or its star or tick. Names and vendors save as you go. */
+/** Saves an item's name, vendor or category, or its star or tick. Names and vendors save as you go. */
 export function saveItem(
   id: string,
-  patch: { item: string } | { vendor: string } | { next: boolean } | { confirmed: boolean },
+  patch: { item: string } | { vendor: string } | { category: string } | { next: boolean } | { confirmed: boolean },
   opts: WriteOptions = {},
 ): Promise<void> {
   return update(COLLECTION, id, patch, opts);
@@ -77,10 +83,12 @@ export function setItemPerson(id: string, person: ItemPerson, on: boolean, opts:
   return update(COLLECTION, id, { persons: on ? arrayUnion(person) : arrayRemove(person) }, opts);
 }
 
-/** What a new item is made of: the events and people are copied from the row above. */
+/** What a new item is made of: the category, events and people are copied from the row above. */
 export interface NewItem {
   id: string;
   item: string;
+  /** Other when left out. */
+  category?: string;
   types: readonly ItemEvent[];
   persons: readonly ItemPerson[];
 }
@@ -144,6 +152,7 @@ export async function addItems(rows: readonly NewItem[], afterId: string | null,
         id: row.id,
         item: row.item,
         vendor: "",
+        category: row.category || OTHER_CATEGORY,
         confirmed: false,
         types: [...row.types],
         persons: [...row.persons],
@@ -242,6 +251,7 @@ const fromSeed = (row: (typeof MASTER_LIST_INITIAL_ROWS)[number], sortOrder: num
   id: row.id,
   item: row.item,
   vendor: row.vendor.trim() === UNKNOWN_VENDOR ? "" : row.vendor,
+  category: COMMON_ITEM_CATEGORIES[row.id] ?? OTHER_CATEGORY,
   confirmed: row.confirmed,
   types: [],
   persons: [],

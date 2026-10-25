@@ -28,6 +28,10 @@ export const CONFIRMED_CHOICES = [
 
 export const EVENTS_LABEL = "Events";
 export const ANYONE = "Anyone";
+
+/** The Category filter's first choice: every category. */
+export const ANY_CATEGORY = "Any";
+
 export const PEOPLE_FILTER_LABEL = "People";
 export const NEXT_ONLY = "Work on next only";
 

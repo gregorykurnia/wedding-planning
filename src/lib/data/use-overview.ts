@@ -9,6 +9,7 @@ import { venueFromDoc, vendorFromDoc, type VendorDoc, type VenueDoc } from "@/li
 import { bookingsFrom, type Booking } from "@/lib/model/bookings";
 import type { EventRecord } from "@/lib/model/agenda";
 import type { GuestRecord } from "@/lib/model/guests";
+import { OTHER_CATEGORY } from "@/lib/model/categories";
 import type { ItemRecord } from "@/lib/model/items";
 import type { TaskRecord } from "@/lib/model/tasks";
 import { useCollection } from "@/lib/use-collection";
@@ -59,7 +60,7 @@ export function useOverview(): Loaded<OverviewData> {
       bookings: bookingsFrom(vendors.data, venues.data),
       tasks: todos.data,
       guests: guests.data,
-      items: masterList.data,
+      items: masterList.data.map((i) => ({ ...i, category: i.category || OTHER_CATEGORY })),
       funderNames: new Map(funders.data.funders.map((f) => [f.id, f.name])),
       related,
     };

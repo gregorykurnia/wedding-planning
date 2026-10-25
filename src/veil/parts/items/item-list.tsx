@@ -10,6 +10,8 @@ import styles from "./items.module.css";
 export interface ItemListProps {
   /** The rows in the order shown. */
   items: readonly ItemRecord[];
+  /** The shared categories each row's select offers. */
+  categories: readonly string[];
   actions: ItemActions;
   /** Our own order with no sort or filter on. Otherwise there are no handles and nothing moves. */
   reorderable: boolean;
@@ -26,7 +28,7 @@ export interface ItemListProps {
  * moves the row one place and keeps focus on its handle, and a screen reader
  * hears where it went. Nothing moves while a sort or filter is on.
  */
-export function ItemList({ items, actions, reorderable, onReorder, failed, demo = false }: ItemListProps) {
+export function ItemList({ items, categories, actions, reorderable, onReorder, failed, demo = false }: ItemListProps) {
   const list = useRef<HTMLUListElement>(null);
   const [drag, setDrag] = useState<string | null>(null);
   const [over, setOver] = useState<{ id: string; edge: DropEdge } | null>(null);
@@ -97,6 +99,7 @@ export function ItemList({ items, actions, reorderable, onReorder, failed, demo 
           <ItemRow
             key={item.id}
             item={item}
+            categories={categories}
             actions={actions}
             reorderable={reorderable}
             demo={demo}

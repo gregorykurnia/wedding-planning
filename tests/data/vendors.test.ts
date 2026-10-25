@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { addCategory } from "@/lib/data/categories";
+import { DEFAULT_CATEGORIES } from "@/lib/model/categories";
 import {
   addPriceOption,
   addVendor,
@@ -117,13 +118,15 @@ describe("setVendorKeen", () => {
 });
 
 describe("addCategory", () => {
-  it("adds one of ours, trimmed, under the id the form made", async () => {
+  it("adds one, trimmed, under the id the form made, storing the common ones with it the first time", async () => {
     expect(await addCategory("c-new", "  Henna art ", g())).toBe("Henna art");
     expect(await read("vendorCategories", "c-new")).toMatchObject({ name: "Henna art", createdBy: gregory.uid });
+    expect(await read("vendorCategories", "default-venue")).toMatchObject({ name: "Venue", createdBy: gregory.uid });
+    expect((await getDocs(collection(gregory.db, "vendorCategories"))).size).toBe(DEFAULT_CATEGORIES.length + 1);
   });
 
   it("refuses a name that is taken (without regard to case), reserved, empty or too long", async () => {
-    await expect(addCategory("c1", "food", g())).rejects.toThrow(/already a category called Food/);
+    await expect(addCategory("c1", "catering", g())).rejects.toThrow(/already a category called Catering/);
     await expect(addCategory("c1", "other", g())).rejects.toThrow(/already a category called Other/);
     await expect(addCategory("c1", " all ", g())).rejects.toThrow(/All/);
     await expect(addCategory("c1", "  ", g())).rejects.toThrow(/Give the category a name/);
@@ -140,7 +143,7 @@ describe("addCategory", () => {
     await addCategory("c1", "Henna art", g());
     // The first try landed after its timeout; the retry finds it and adds nothing.
     expect(await addCategory("c1", "Henna art", g())).toBe("Henna art");
-    expect((await getDocs(collection(gregory.db, "vendorCategories"))).size).toBe(1);
+    expect((await getDocs(collection(gregory.db, "vendorCategories"))).size).toBe(DEFAULT_CATEGORIES.length + 1);
     // Another category with that name is still refused.
     await expect(addCategory("c2", "Henna art", g())).rejects.toThrow(/already a category/);
   });

@@ -20,6 +20,7 @@ import { KeenHeart } from "@/veil/parts/keen/keen-heart";
 import { StageThread } from "@/veil/parts/stage/stage-thread";
 import { WhatsAppLink } from "@/veil/parts/whatsapp/whatsapp-link";
 import { useFlasher, type FlashTarget } from "@/veil/shell/flash";
+import { categoryList } from "@/lib/model/categories";
 
 /**
  * Task 3.5's gallery section: every ledger row and its states, drawn from fixed
@@ -202,6 +203,7 @@ const AGENDA: AgendaItem[] = [
 
 const item = (over: Partial<ItemRecord> & Pick<ItemRecord, "id" | "item" | "sortOrder">): ItemRecord => ({
   vendor: "",
+  category: "Other",
   confirmed: false,
   types: [],
   persons: ["General"],
@@ -363,8 +365,8 @@ export function LedgerDemos() {
         <TaskRow task={TASK} today={TODAY} actions={{}} />
       </ul>
       <ul aria-label="Item rows in a state" style={{ listStyle: "none", margin: 0, padding: 0 }}>
-        <ItemRow item={ITEMS[0]} actions={{}} reorderable={false} />
-        <ItemRow item={ITEMS[1]} actions={{}} reorderable={false} failedFields={new Set(["vendor"] as const)} />
+        <ItemRow item={ITEMS[0]} categories={categoryList([])} actions={{}} reorderable={false} />
+        <ItemRow item={ITEMS[1]} categories={categoryList([])} actions={{}} reorderable={false} failedFields={new Set(["vendor"] as const)} />
       </ul>
       <p>Empty meta keeps its height: no category or funder on Hotel Ballroom, no contact on Studio Dimas, an untitled document with no words, a file with no category or description.</p>
     </div>

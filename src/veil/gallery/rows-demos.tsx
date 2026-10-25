@@ -15,6 +15,7 @@ import type { ItemField } from "@/veil/parts/items/item-text";
 import { WorkOnNextCard } from "@/veil/parts/items/work-on-next-card";
 import { FinishedTasks } from "@/veil/parts/tasks/finished-tasks";
 import { TaskRow, type TaskActions } from "@/veil/parts/tasks/task-row";
+import { categoryList } from "@/lib/model/categories";
 
 /**
  * Task 3.12's gallery section: task, item and guest rows, drawn from fixed fake
@@ -47,6 +48,7 @@ const TASKS: TaskRecord[] = [
 
 const item = (over: Partial<ItemRecord> & Pick<ItemRecord, "id" | "item" | "sortOrder">): ItemRecord => ({
   vendor: "",
+  category: "Other",
   confirmed: false,
   types: [],
   persons: ["General"],
@@ -265,6 +267,7 @@ export function RowsDemos() {
       <WorkOnNextCard {...next} />
       <ItemList
         items={shownItems}
+        categories={categoryList([])}
         actions={itemActions}
         reorderable={!sorted}
         demo={demo}

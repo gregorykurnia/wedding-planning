@@ -132,6 +132,7 @@ function fromDoc(id: string, data: DocumentData): MasterListItem {
     id,
     item: typeof data.item === "string" ? data.item : "",
     vendor: typeof data.vendor === "string" ? data.vendor : "",
+    category: typeof data.category === "string" ? data.category : "",
     confirmed: data.confirmed === true,
     types: fromDocArray(data.types, MASTER_LIST_TYPE_OPTIONS),
     persons: fromDocArray(data.persons, MASTER_LIST_PERSON_OPTIONS),

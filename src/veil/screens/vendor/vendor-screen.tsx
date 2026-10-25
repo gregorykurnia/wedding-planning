@@ -62,7 +62,7 @@ import {
 } from "@/lib/model/vendor-detail";
 import { Btn } from "@/veil/parts/actions/btn";
 import { TextLink } from "@/veil/parts/actions/text-link";
-import { FieldInput, FieldRow, Fields, FieldSelect } from "@/veil/parts/fields/fields";
+import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { NumberInput } from "@/veil/parts/fields/number";
 import { Notes } from "@/veil/parts/fields/notes";
 import { SaveLine, SaveScopeProvider } from "@/veil/parts/fields/save-scope";
@@ -84,6 +84,7 @@ import { useSheets } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { AddPriceOptionSheet, EditPriceOptionSheet } from "./price-option-sheet";
 import styles from "./vendor-screen.module.css";
+import { CategorySelect } from "@/veil/parts/fields/category-select";
 
 const VENDORS = "/vendors";
 
@@ -362,7 +363,7 @@ function Detail({
           </div>
         </FieldRow>
         <FieldRow label="Category" field={category}>
-          <FieldSelect {...category.bind} options={page.categories.map((c) => ({ value: c, label: c }))} />
+          <CategorySelect {...category.bind} categories={page.categories} />
         </FieldRow>
         <FieldRow label="Review rating" field={rating} hint="Out of 5, from their public reviews">
           <NumberInput

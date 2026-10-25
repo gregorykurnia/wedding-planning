@@ -141,6 +141,7 @@ const item = (over: Partial<ItemRecord> = {}): ItemRecord => ({
   id: "i1",
   item: "Wedding cake",
   vendor: "",
+  category: "Wedding Cake",
   confirmed: false,
   types: ["Reception"],
   persons: ["General"],
@@ -172,7 +173,7 @@ describe("ItemRow", () => {
   const draw = (over: Partial<Parameters<typeof ItemRow>[0]> = {}) =>
     markup(
       <ul>
-        <ItemRow item={item()} actions={{}} reorderable {...over} />
+        <ItemRow item={item()} categories={["Venue", "Wedding Cake", "Other"]} actions={{}} reorderable {...over} />
       </ul>,
     );
 
@@ -187,6 +188,16 @@ describe("ItemRow", () => {
     expect(html).toContain('aria-label="Confirmed: Wedding cake"');
     expect(html).toContain('aria-label="More for Wedding cake"');
     expect(html).toContain('draggable="true"');
+  });
+
+  it("has a category select with the shared list, and the item's own category even when it isn't in it", () => {
+    const html = draw();
+    expect(html).toContain('aria-label="Category for Wedding cake"');
+    expect(html).toMatch(/<option value="Wedding Cake" selected="">Wedding Cake<\/option>/);
+    expect(count(html, /<option /g)).toBe(3);
+    const own = draw({ item: item({ category: "Henna" }) });
+    expect(own).toMatch(/<option value="Henna" selected="">Henna<\/option>/);
+    expect(count(own, /<option /g)).toBe(4);
   });
 
   it("has no handle and can't be dragged while a sort or filter is on", () => {
@@ -244,6 +255,7 @@ describe("ItemList and WorkOnNextCard", () => {
     const html = markup(
       <ItemList
         items={[item({ id: "a", item: "A" }), item({ id: "b", item: "B" })]}
+        categories={["Wedding Cake", "Other"]}
         actions={{}}
         reorderable
         onReorder={() => {}}

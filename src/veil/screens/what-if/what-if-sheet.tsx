@@ -6,7 +6,7 @@ import { splitWhatIf, addWhatIfPart, removeWhatIfPart } from "@/lib/data/booking
 import { useAutosaveField } from "@/lib/data/use-autosave-field";
 import { addWhatIf, setWhatIfField, setWhatIfPartField, useWhatIfPage } from "@/lib/data/what-if";
 import { newId } from "@/lib/data/write";
-import { buildCategories } from "@/lib/model/categories";
+import { categoryList } from "@/lib/model/categories";
 import { rp } from "@/lib/model/format";
 import { NOT_ASSIGNED, whatIfTotal, type Funder, type WhatIfPartRecord } from "@/lib/model/money";
 import {
@@ -38,6 +38,7 @@ import { CreateSheetActions, EditSheetActions, Sheet, useSheet } from "@/veil/sh
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./what-if-sheet.module.css";
 import { OfflineOr } from "@/veil/parts/fields/offline-or";
+import { CategorySelect } from "@/veil/parts/fields/category-select";
 
 /** The funders as chips or a select: each one, then Not assigned (the empty value). */
 const funderOptions = (funders: readonly Funder[]) => [
@@ -46,9 +47,6 @@ const funderOptions = (funders: readonly Funder[]) => [
 ];
 
 /** The categories to offer, with the item's own when it isn't in the list any more. */
-const categoryOptions = (categories: readonly string[], current?: string) =>
-  [...categories, ...(current && !categories.includes(current) ? [current] : [])].map((c) => ({ value: c, label: c }));
-
 /**
  * "Add a what-if item" (guide §5.10, B8, B10): what it is, category, price and who
  * would pay, with Cancel and Add item. A name is enough. The record's id is made
@@ -62,7 +60,7 @@ export function AddWhatIfSheet() {
   const flash = useFlasher();
   const read = useWhatIfPage();
   const funders = read.data?.funders ?? [];
-  const categories = read.data?.categories ?? buildCategories([]);
+  const categories = read.data?.categories ?? categoryList([]);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Other");
@@ -113,7 +111,7 @@ export function AddWhatIfSheet() {
           />
         </FieldRow>
         <FieldRow label="Category">
-          <FieldSelect value={category} onChange={setCategory} options={categoryOptions(categories)} />
+          <CategorySelect value={category} onChange={setCategory} categories={categories} />
         </FieldRow>
         <FieldRow label="Price">
           <MoneyInput value={price} onCommit={setPrice} />
@@ -241,7 +239,7 @@ function EditBody({ item, funders, categories }: { item: WhatIfDoc; funders: Fun
           <FieldInput {...name.bind} placeholder="For example, a photo booth" />
         </FieldRow>
         <FieldRow label="Category" field={category}>
-          <FieldSelect {...category.bind} options={categoryOptions(categories, item.category)} />
+          <CategorySelect {...category.bind} categories={categories} />
         </FieldRow>
         {!inParts && (
           <>

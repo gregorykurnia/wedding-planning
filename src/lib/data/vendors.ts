@@ -2,13 +2,13 @@
 
 import { useMemo } from "react";
 import { useCollection } from "@/lib/use-collection";
-import { useCustomVendorCategories, type CustomVendorCategory } from "@/lib/collections/vendor-categories";
+import { useCustomVendorCategories } from "@/lib/collections/vendor-categories";
 import { fileFromDoc, filesForRecord, type FileDoc } from "@/lib/data/adapters/files";
 import { vendorFromDoc, type VendorDoc } from "@/lib/data/adapters/bookings";
 import { finalistFromDoc, type FinalistDoc } from "@/lib/data/adapters/shortlist";
 import type { IsoDate } from "@/lib/model/bookings";
 import { isVendorBooked } from "@/lib/model/bookings";
-import { buildCategories } from "@/lib/model/categories";
+import { categoryList, storedOrDefault, type StoredCategory } from "@/lib/model/categories";
 import { vendorDetail, type VendorDetail, type VendorFile } from "@/lib/model/vendor-detail";
 import { vendorListItem, type VendorListItem } from "@/lib/model/vendors";
 import { isListedVendor } from "@/lib/model/search";
@@ -59,9 +59,9 @@ export function useVendors(): Loaded<VendorListItem[]> {
 }
 
 export interface CategoriesData {
-  /** The ones we added, with the id each is stored under. */
-  custom: CustomVendorCategory[];
-  /** Built-ins, ours in the order they were added, then Other. */
+  /** Every category but Other, with the id it is (or will be) stored under. */
+  stored: readonly StoredCategory[];
+  /** A to Z, then Other. */
   list: string[];
 }
 
@@ -70,7 +70,7 @@ export function useCategories(): Loaded<CategoriesData> {
   const { connection } = useSession();
   const custom = useCustomVendorCategories();
   const data = useMemo(
-    () => ({ custom: custom.data, list: buildCategories(custom.data.map((c) => c.name)) }),
+    () => ({ stored: storedOrDefault(custom.data), list: categoryList(custom.data) }),
     [custom.data],
   );
   return readOf(connection, [custom], data);
@@ -160,7 +160,7 @@ export function setVendorKeen(id: string, keen: boolean, opts: WriteOptions = {}
 export interface VendorPage {
   /** Null when there is no such vendor here (an old link), or it was removed. */
   vendor: VendorDetail | null;
-  /** Built-ins, ours, then Other; the vendor's own category is in it even if it isn't a known one. */
+  /** A to Z, then Other; the vendor's own category is in it even if it isn't a known one. */
   categories: string[];
 }
 
@@ -178,7 +178,7 @@ export function useVendor(id: string): Loaded<VendorPage> {
   const custom = useCustomVendorCategories();
 
   const page = useMemo<VendorPage>(() => {
-    const known = buildCategories(custom.data.map((c) => c.name));
+    const known = categoryList(custom.data);
     const doc = vendors.data.find((v) => v.id === id && isListedVendor(v));
     if (!doc) return { vendor: null, categories: known };
     const byId = new Map(files.data.map((f) => [f.id, f]));

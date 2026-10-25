@@ -17,7 +17,9 @@ import {
   type Placed,
 } from "@/lib/data/items";
 import { useSession } from "@/lib/data/session";
+import { useCategories } from "@/lib/data/vendors";
 import { WriteError } from "@/lib/data/write-error";
+import { categoryList, focusCategories } from "@/lib/model/categories";
 import { n0 } from "@/lib/model/format";
 import {
   filterItems,
@@ -66,6 +68,7 @@ import styles from "./items-screen.module.css";
 import {
   ADD_ITEMS,
   ANYONE,
+  ANY_CATEGORY,
   COMMON_FAILED,
   CONFIRMED_CHOICES,
   DEMO_ADDING,
@@ -91,6 +94,13 @@ import {
   startedWith,
 } from "./items-text";
 import { OfflineOr } from "@/veil/parts/fields/offline-or";
+
+/** The Category filter: every category that holds an item, with how many, after "Any". */
+const categoryChoices = (categories: readonly string[], items: readonly ItemRecord[], chosen: string) => {
+  const held = focusCategories(categories, items);
+  const shown = chosen && !held.some((c) => c.name === chosen) ? [...held, { name: chosen, count: 0 }] : held;
+  return [{ value: "", label: ANY_CATEGORY }, ...shown.map((c) => ({ value: c.name, label: `${c.name} (${n0(c.count)})` }))];
+};
 
 /** Items shown at a time (guide §6.8: 150 at a time on this screen). */
 const PAGE = 150;
@@ -155,6 +165,8 @@ function Items({ items }: { items: ItemRecord[] }) {
   const [events, setEvents] = useState<ItemEvent[]>([]);
   const [people, setPeople] = useState<ItemPerson[]>([]);
   const [nextOnly, setNextOnly] = useState(false);
+  const [category, setCategory] = useState("");
+  const categories = useCategories().data?.list ?? categoryList([]);
   const [order, setOrder] = useState<OrderState<ItemOrderKey>>(OWN);
   const [shown, setShown] = useState(PAGE);
 
@@ -187,12 +199,15 @@ function Items({ items }: { items: ItemRecord[] }) {
     if (moves.current.read()) setPending(null);
   }, [stored]);
 
-  const filter: ItemFilter = { query, confirmed, events, people, nextOnly };
+  const filter: ItemFilter = { query, confirmed, events, people, nextOnly, category };
   const filtering = isFilteringItems(filter);
   const reorderable = order.key === "own" && !filtering;
   const counts = itemCounts(items);
 
-  const matched = useMemo(() => filterItems(own, { query, confirmed, events, people, nextOnly }), [own, query, confirmed, events, people, nextOnly]);
+  const matched = useMemo(
+    () => filterItems(own, { query, confirmed, events, people, nextOnly, category }),
+    [own, query, confirmed, events, people, nextOnly, category],
+  );
   const view = useMemo(() => (order.key === "own" ? matched : orderItems(matched, order.key, order.direction)), [matched, order]);
   const rows = useMemo(() => {
     if (held.size === 0) return view.slice(0, shown);
@@ -245,6 +260,7 @@ function Items({ items }: { items: ItemRecord[] }) {
     setEvents([]);
     setPeople([]);
     setNextOnly(false);
+    setCategory("");
     setShown(PAGE);
   };
 
@@ -322,7 +338,7 @@ function Items({ items }: { items: ItemRecord[] }) {
   function addBelow(item: ItemRecord) {
     const [id] = newItemIds(1);
     attemptList(`below:${item.id}`, addBelowFailed(item.item), async () => {
-      await add([{ id, item: "", types: item.types, persons: item.persons }], item.id);
+      await add([{ id, item: "", category: item.category, types: item.types, persons: item.persons }], item.id);
       showNew(id, true, item, 1);
     });
   }
@@ -365,6 +381,7 @@ function Items({ items }: { items: ItemRecord[] }) {
     // away and brings back still shows a change that hasn't saved (Phase 4 review S23).
     onName: (item, name) => attempt(item, "name", () => saveItem(item.id, { item: name }), { item: name }),
     onVendor: (item, vendor) => attempt(item, "vendor", () => saveItem(item.id, { vendor }), { vendor }),
+    onCategory: (item, category) => attempt(item, "category", () => saveItem(item.id, { category }), { category }),
     onToggleEvent: (item, event) => {
       const on = !item.types.includes(event);
       attempt(item, "events", () => setItemEvent(item.id, event, on), { types: withEvent(item.types, event, on) });
@@ -486,6 +503,12 @@ function Items({ items }: { items: ItemRecord[] }) {
           options={CONFIRMED_CHOICES}
           onChange={(value) => narrow(setConfirmed)(value as ItemFilter["confirmed"])}
         />
+        <FilterSelect
+          label="Category"
+          value={category}
+          options={categoryChoices(categories, items, category)}
+          onChange={narrow(setCategory)}
+        />
         <div className={styles.chips} role="group" aria-label={EVENTS_LABEL}>
           {ITEM_EVENTS.map((event) => (
             <Chip
@@ -534,6 +557,7 @@ function Items({ items }: { items: ItemRecord[] }) {
           {count && <CountLine>{count}</CountLine>}
           <ItemList
             items={rows}
+            categories={categories}
             actions={actions}
             reorderable={reorderable}
             onReorder={reorder}

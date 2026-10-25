@@ -2,21 +2,23 @@
 
 import { useRef, useState } from "react";
 import { addCategory, removeCategory, renameCategory } from "@/lib/data/categories";
+import { useItems } from "@/lib/data/items";
 import { usePartnerName } from "@/lib/data/partner";
 import { useOnline } from "@/lib/data/session";
 import { useVendorsAndCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
 import {
-  buildCategories,
+  categoryList,
   categoryRows,
   charactersLeft,
   MAX_CATEGORY_LENGTH,
+  OTHER_CATEGORY,
   validateCategoryName,
   type CategoryRow,
 } from "@/lib/model/categories";
 import { offlineOr } from "@/lib/model/save-state";
 import { TextLink } from "@/veil/parts/actions/text-link";
-import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
+import { FieldInput, FieldRow, Fields, FieldSelect } from "@/veil/parts/fields/fields";
 import { InlineRename } from "@/veil/parts/fields/inline-rename";
 import { MenuCardList, type MenuOption } from "@/veil/parts/menu-card/menu-card-list";
 import { InlineConfirm } from "@/veil/shell/confirm";
@@ -30,17 +32,21 @@ import {
   categoryNote,
   categoryRemoved,
   categoryRenamed,
+  CATEGORIES_TITLE,
   charactersNote,
+  MOVE_TO_LABEL,
   removeBody,
 } from "./vendors-text";
 
 type Mode = { kind: "rename" | "remove"; name: string } | null;
 
 /**
- * "Vendor categories" (guide §5.11, F14, F23): the categories as a menu card,
- * with Rename and Remove on the ones we added (both undoable), and a field for a
- * new one. It reads the lists itself, since a sheet is opened once and must keep
- * up with the partner's changes.
+ * "Categories" (guide §5.11, F14, F23): the shared categories as a menu card,
+ * with Rename and Remove on every one but Other (both undoable), and a field for
+ * a new one. Remove asks where what's in it goes, Other unless another is
+ * chosen, so two categories that mean the same can be made one. It reads the
+ * lists itself, since a sheet is opened once and must keep up with the
+ * partner's changes.
  */
 export function CategoriesSheet({
   onRenamed,
@@ -54,11 +60,13 @@ export function CategoriesSheet({
   const toast = useToast();
   const partner = usePartnerName().name;
   const read = useVendorsAndCategories();
-  const [vendors, categories] = read.data ?? [[], { custom: [], list: buildCategories([]) }];
+  const [vendors, categories] = read.data ?? [[], { stored: [], list: categoryList([]) }];
+  const items = useItems().data ?? [];
 
   const [mode, setMode] = useState<Mode>(null);
   const [text, setText] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
+  const [moveTo, setMoveTo] = useState(OTHER_CATEGORY);
   const [adding, setAdding] = useState(false);
   const id = useRef<string | null>(null);
   const removal = useRef<Awaited<ReturnType<typeof removeCategory>> | null>(null);
@@ -66,11 +74,7 @@ export function CategoriesSheet({
   useSheetFailure(problem === CATEGORY_ADD_FAILED);
   const offline = !useOnline();
 
-  const rows = categoryRows(
-    categories.custom.map((c) => c.name),
-    vendors,
-  );
-  const idOf = (name: string) => categories.custom.find((c) => c.name === name)?.id;
+  const rows = categoryRows(categories.stored, vendors, items);
 
   async function add() {
     if (adding) return;
@@ -95,8 +99,7 @@ export function CategoriesSheet({
 
   function option(row: CategoryRow): MenuOption {
     const base: MenuOption = { id: row.name, name: row.name, note: categoryNote(row) };
-    if (row.kind !== "ours") return base;
-    const categoryId = idOf(row.name);
+    const categoryId = row.id;
     if (!categoryId) return base;
     if (mode?.name === row.name && mode.kind === "rename") {
       return {
@@ -130,10 +133,23 @@ export function CategoriesSheet({
                 Remove <b dir="auto">{row.name}</b>?
               </>
             }
-            body={removeBody(row.count)}
+            body={removeBody(row)}
+            extra={
+              row.vendors + row.items > 0 && (
+                <Fields>
+                  <FieldRow label={MOVE_TO_LABEL}>
+                    <FieldSelect
+                      value={moveTo}
+                      onChange={setMoveTo}
+                      options={categories.list.filter((c) => c !== row.name).map((c) => ({ value: c, label: c }))}
+                    />
+                  </FieldRow>
+                </Fields>
+              )
+            }
             action="Remove category"
             run={async () => {
-              removal.current = await removeCategory(categoryId);
+              removal.current = await removeCategory(categoryId, moveTo);
             }}
             onKeep={() => setMode(null)}
             onDone={() => {
@@ -141,7 +157,7 @@ export function CategoriesSheet({
               setMode(null);
               onRemoved(row.name);
               if (done) {
-                toast.undoable(categoryRemoved(done.name), async () => {
+                toast.undoable(categoryRemoved(done.name, done.moved ? done.to : null), async () => {
                   await done.undo();
                 });
               }
@@ -155,7 +171,13 @@ export function CategoriesSheet({
       actions: (
         <>
           <TextLink onClick={() => setMode({ kind: "rename", name: row.name })}>Rename</TextLink>
-          <TextLink tone="rose" onClick={() => setMode({ kind: "remove", name: row.name })}>
+          <TextLink
+            tone="rose"
+            onClick={() => {
+              setMoveTo(OTHER_CATEGORY);
+              setMode({ kind: "remove", name: row.name });
+            }}
+          >
             Remove
           </TextLink>
         </>
@@ -164,7 +186,7 @@ export function CategoriesSheet({
   }
 
   return (
-    <Sheet title="Vendor categories" sub={categoriesSub(partner === "Your partner" ? "your partner" : partner)}>
+    <Sheet title={CATEGORIES_TITLE} sub={categoriesSub(partner === "Your partner" ? "your partner" : partner)}>
       <MenuCardList options={rows.map(option)} />
       {/* One text field, so Enter submits the form and adds the category. */}
       <form

@@ -68,6 +68,7 @@ import { PageColumn } from "@/veil/shell/page-column";
 import { ScreenState } from "@/veil/shell/screen-state";
 import { useToast } from "@/veil/shell/toasts";
 import styles from "./booking-screen.module.css";
+import { CategorySelect } from "@/veil/parts/fields/category-select";
 
 const BOOKINGS = "/budget/bookings";
 
@@ -327,7 +328,7 @@ function Detail({
           {booking.kind === "venue" ? (
             <StaticValue>Venue</StaticValue>
           ) : (
-            <FieldSelect {...category.bind} options={page.categories.map((c) => ({ value: c, label: c }))} />
+            <CategorySelect {...category.bind} categories={page.categories} />
           )}
         </FieldRow>
         {inParts ? (

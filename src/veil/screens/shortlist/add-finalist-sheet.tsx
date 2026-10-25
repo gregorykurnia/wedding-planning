@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { addFinalist } from "@/lib/data/shortlist";
 import { useCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
-import { buildCategories } from "@/lib/model/categories";
-import { FieldInput, FieldRow, Fields, FieldSelect } from "@/veil/parts/fields/fields";
+import { categoryList } from "@/lib/model/categories";
+import { FieldInput, FieldRow, Fields } from "@/veil/parts/fields/fields";
 import { MoneyInput } from "@/veil/parts/fields/money";
 import { Banner } from "@/veil/shell/banner";
 import { useFlasher } from "@/veil/shell/flash";
@@ -13,6 +13,7 @@ import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
 import { useToast } from "@/veil/shell/toasts";
 import { NAME_MISSING, ADD_FAILED, addSheet, addedToast } from "./shortlist-text";
 import { OfflineOr } from "@/veil/parts/fields/offline-or";
+import { CategorySelect } from "@/veil/parts/fields/category-select";
 
 /**
  * "Add a finalist" (guide §5.13, F21): Name, Category, First package, Its price.
@@ -24,7 +25,7 @@ export function AddFinalistSheet({ category }: { category: string }) {
   const toast = useToast();
   const flash = useFlasher();
   const categories = useCategories();
-  const list = categories.data?.list ?? buildCategories([]);
+  const list = categories.data?.list ?? categoryList([]);
 
   const [name, setName] = useState("");
   const [chosen, setChosen] = useState(category && list.includes(category) ? category : "Other");
@@ -75,7 +76,7 @@ export function AddFinalistSheet({ category }: { category: string }) {
           />
         </FieldRow>
         <FieldRow label="Category">
-          <FieldSelect value={chosen} onChange={setChosen} options={list.map((c) => ({ value: c, label: c }))} />
+          <CategorySelect value={chosen} onChange={setChosen} categories={list} />
         </FieldRow>
         <FieldRow label="First package">
           <FieldInput placeholder={addSheet.packagePlaceholder} value={packageName} onChange={setPackageName} />

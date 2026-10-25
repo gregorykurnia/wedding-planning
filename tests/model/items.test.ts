@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { MASTER_LIST_INITIAL_ROWS } from "@/lib/collections/master-list";
+import { DEFAULT_CATEGORIES } from "@/lib/model/categories";
 import {
+  COMMON_ITEM_CATEGORIES,
   NO_ITEM_FILTER,
   filterItems,
   isFilteringItems,
@@ -18,6 +21,7 @@ let n = 0;
 const item = (over: Partial<ItemRecord> = {}): ItemRecord => ({
   id: `i${++n}`,
   item: `Item ${n}`,
+  category: "Other",
   vendor: "",
   confirmed: false,
   types: [],
@@ -103,6 +107,22 @@ describe("filterItems", () => {
     expect(isFilteringItems({ ...NO_ITEM_FILTER, query: " " })).toBe(false);
     expect(isFilteringItems({ ...NO_ITEM_FILTER, events: ["Sangjit"] })).toBe(true);
     expect(isFilteringItems({ ...NO_ITEM_FILTER, nextOnly: true })).toBe(true);
+  });
+});
+
+describe("item categories", () => {
+  it("narrows to one category, and counts as a filter", () => {
+    const list = [item({ item: "Ballroom", category: "Decoration" }), item({ item: "Cake", category: "Wedding Cake" }), item({ item: "Car" })];
+    expect(filterItems(list, { ...NO_ITEM_FILTER, category: "Decoration" }).map((i) => i.item)).toEqual(["Ballroom"]);
+    expect(filterItems(list, { ...NO_ITEM_FILTER, category: "Other" }).map((i) => i.item)).toEqual(["Car"]);
+    expect(filterItems(list, NO_ITEM_FILTER)).toHaveLength(3);
+    expect(isFilteringItems({ ...NO_ITEM_FILTER, category: "Decoration" })).toBe(true);
+    expect(isFilteringItems(NO_ITEM_FILTER)).toBe(false);
+  });
+
+  it("files every common item under one of the common categories", () => {
+    for (const row of MASTER_LIST_INITIAL_ROWS) expect(DEFAULT_CATEGORIES).toContain(COMMON_ITEM_CATEGORIES[row.id]);
+    expect(Object.keys(COMMON_ITEM_CATEGORIES)).toHaveLength(MASTER_LIST_INITIAL_ROWS.length);
   });
 });
 

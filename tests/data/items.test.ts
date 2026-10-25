@@ -70,8 +70,9 @@ describe("saving an item", () => {
     await saveItem("cake", { vendor: "Manis" }, g());
     await saveItem("cake", { next: true }, g());
     await saveItem("cake", { confirmed: true }, g());
+    await saveItem("cake", { category: "Wedding Cake" }, g());
     const cake = await read("cake");
-    expect(cake).toMatchObject({ item: "Wedding cake", vendor: "Manis", next: true, confirmed: true, updatedBy: gregory.uid });
+    expect(cake).toMatchObject({ item: "Wedding cake", vendor: "Manis", category: "Wedding Cake", next: true, confirmed: true, updatedBy: gregory.uid });
   });
 
   it("tells the partner when an item is confirmed, not when it is unconfirmed", async () => {
@@ -136,7 +137,7 @@ describe("adding items", () => {
     const [one, two] = newItemIds(2, g());
     await addItems(
       [
-        { id: one, item: "Bride's mother's makeup", types: ["Reception"], persons: ["Bride Mom"] },
+        { id: one, item: "Bride's mother's makeup", category: "Make Up Artist", types: ["Reception"], persons: ["Bride Mom"] },
         { id: two, item: "Groom's father's suit", types: ["Reception"], persons: ["Bride Mom"] },
       ],
       "a",
@@ -144,7 +145,8 @@ describe("adding items", () => {
       g(),
     );
     expect(await order()).toEqual(["a", one, two, "b"]);
-    expect(await read(one)).toMatchObject({ item: "Bride's mother's makeup", types: ["Reception"], persons: ["Bride Mom"], confirmed: false, next: false, createdBy: gregory.uid });
+    expect(await read(one)).toMatchObject({ item: "Bride's mother's makeup", category: "Make Up Artist", types: ["Reception"], persons: ["Bride Mom"], confirmed: false, next: false, createdBy: gregory.uid });
+    expect(await read(two)).toMatchObject({ category: "Other" });
   });
 
   // Phase 5 review S18: the screen shows a move before it lands, so its order isn't the stored one.
@@ -455,6 +457,13 @@ describe("starting with common items", () => {
     await startWithCommonItems(true, g());
     expect(await read("master-04-hotel-h-1-venue")).toMatchObject({ vendor: "", confirmed: false });
     expect(await read("master-01-reception-venue")).toMatchObject({ vendor: "The Langham Jakarta", confirmed: true });
+  });
+
+  it("files each common item under its category", async () => {
+    await startWithCommonItems(true, g());
+    expect(await read("master-01-reception-venue")).toMatchObject({ category: "Venue" });
+    expect(await read("master-19-make-up-artist-groom-and-bride-moms")).toMatchObject({ category: "Make Up Artist" });
+    expect(await read("master-44-bride-nails")).toMatchObject({ category: "Shoes and Accessories" });
   });
 
   it("never fills in a tracker that was emptied on purpose by itself, only by the button", async () => {

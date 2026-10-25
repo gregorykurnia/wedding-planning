@@ -143,6 +143,8 @@ export interface InlineConfirmProps {
   question: ReactNode;
   /** What goes with it: "Its 4 vendors move to Other." */
   body?: ReactNode;
+  /** A control that goes with the question (where a removed category's records go), under it. */
+  extra?: ReactNode;
   /** The rose action: "Remove category". Its busy label is the gerund of its first word. */
   action: string;
   /** The write. The action stays busy until it resolves; a rejection keeps the question open. */
@@ -158,7 +160,7 @@ export interface InlineConfirmProps {
  * Keep it first and the rose action. It must be shown inside a sheet, since its
  * busy state holds that sheet open.
  */
-export function InlineConfirm({ question, body, action, run, onKeep, onDone }: InlineConfirmProps) {
+export function InlineConfirm({ question, body, extra, action, run, onKeep, onDone }: InlineConfirmProps) {
   useSheet(); // only inside a sheet: it holds that sheet while busy
   const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
   const [failure, setFailure] = useState<ConfirmFailure | null>(null);
@@ -192,6 +194,7 @@ export function InlineConfirm({ question, body, action, run, onKeep, onDone }: I
         {question}
         {body !== undefined && <> {body}</>}
       </p>
+      {extra}
       {state === "failed" && failure && <Failure failure={failure} />}
       <div className={styles.inlineActs}>
         <TextLink key={failure && !failure.retry ? "only" : "keep"} autoFocus disabled={isBusy} onClick={onKeep}>

@@ -1,5 +1,5 @@
 import { contentFields } from "@/lib/data/adapters/documents";
-import { BUILT_IN_CATEGORIES, OTHER_CATEGORY } from "@/lib/model/categories";
+import { DEFAULT_STORED, OTHER_CATEGORY } from "@/lib/model/categories";
 import { RECORD_ROOT_FOLDER, type RecordKind } from "@/lib/data/adapters/files";
 import { htmlToDoc } from "./html";
 import type { ProtoBooking, ProtoFile, ProtoPart, ProtoSet, ProtoVendor, ProtoVenue } from "./prototype";
@@ -35,13 +35,12 @@ const onDay = (iso: string, index = 0) => new Date(Date.parse(`${iso}T08:00:00Z`
 const stamped = (when: Date, by: string): Doc => ({ createdAt: when, createdBy: by, updatedAt: when, updatedBy: by });
 
 const STORED_CATEGORY: Record<string, string> = {
-  Catering: "Food",
-  "Photo and video": "Photos and Videos",
-  "Bride's attire": "Bride Dress",
+  "Photo and video": "Photo and Video",
+  "Bride's attire": "Bridal Gown",
   "Groom's attire": "Groom Suit",
-  Music: "Music/DJ",
-  Makeup: "Makeup Artist",
-  Invitations: "Invites",
+  Music: "Entertainment",
+  Makeup: "Make Up Artist",
+  Invitations: "Invitation",
   Transport: "Transportation",
   "Wedding cake": "Wedding Cake",
 };
@@ -279,12 +278,14 @@ export function buildFixture(set: ProtoSet, ctx: FixtureContext): FixtureDocs {
     put("members", account.uid, { email: account.email, provider: "password", lastSeenAt: at(i) });
   }
   set.funders.forEach((f, i) => put("funders", f.id, { name: f.name, order: i, ...stamped(at(i), me) }));
-  const known = new Set<string>([...BUILT_IN_CATEGORIES, OTHER_CATEGORY, "Venue"].map((c) => c.toLowerCase()));
+  // Every category is stored, as the app stores the common ones on its first change, then the set's own.
+  const known = new Set<string>([...DEFAULT_STORED.map((c) => c.name), OTHER_CATEGORY].map((c) => c.toLowerCase()));
   const custom = [...set.vendorCats.map((c) => c.name), ...set.categories].map(category).filter((c) => {
     const key = c.toLowerCase();
     return known.has(key) ? false : (known.add(key), true);
   });
-  custom.forEach((name, i) => put("vendorCategories", `category-${i}`, { name, ...stamped(at(i), me) }));
+  DEFAULT_STORED.forEach((c, i) => put("vendorCategories", c.id, { name: c.name, ...stamped(at(i), me) }));
+  custom.forEach((name, i) => put("vendorCategories", `category-${i}`, { name, ...stamped(at(DEFAULT_STORED.length + i), me) }));
 
   // Vendors, venues and the bookings they hold.
   const vendorIds = new Set(set.vendors.map((v) => v.id));

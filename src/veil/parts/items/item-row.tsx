@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type DragEventHandler, type KeyboardEvent } from "react";
+import { choicesWith } from "@/lib/model/categories";
 import { namedPeople, peopleNames, peopleText, type ItemRecord } from "@/lib/model/items";
 import { ITEM_EVENTS, type ItemEvent, type ItemPerson } from "@/lib/model/labels";
 import type { DropEdge } from "@/lib/model/row-moves";
+import { Chevron } from "@/veil/icons/chevron";
 import { SixDotHandle } from "@/veil/icons/six-dot-handle";
 import { Star } from "@/veil/icons/star";
 import { Tick } from "@/veil/icons/tick";
@@ -33,6 +35,7 @@ const join = (...names: (string | false | null | undefined)[]) => names.filter(B
 export interface ItemActions {
   onName?: (item: ItemRecord, name: string) => void;
   onVendor?: (item: ItemRecord, vendor: string) => void;
+  onCategory?: (item: ItemRecord, category: string) => void;
   onToggleEvent?: (item: ItemRecord, event: ItemEvent) => void;
   /** One person ticked (`on`) or unticked in the "who it's for" menu; "General" clears everyone (N12). */
   onPerson?: (item: ItemRecord, person: ItemPerson, on: boolean) => void;
@@ -44,6 +47,8 @@ export interface ItemActions {
 
 export interface ItemRowProps {
   item: ItemRecord;
+  /** The shared categories, A to Z, then Other. */
+  categories: readonly string[];
   actions: ItemActions;
   /** Our own order, with no sort or filter on: the handle shows and Move up and Move down are in the menu. */
   reorderable: boolean;
@@ -73,14 +78,15 @@ export interface ItemRowProps {
 
 /**
  * One wedding item (guide §4.28). A desktop row reads: handle · item name
- * (serif input) · vendor · events (four small chips) · who it's for (a menu of
- * checks, N12) · star
+ * (serif input) · category (a small select) · vendor · events (four small
+ * chips) · who it's for (a menu of checks, N12) · star
  * (work on next) · tick (confirmed) · ⋯. Under 860px it stacks, the handle,
  * name, star, tick and ⋯ on top. Every change saves at once; a change that
  * didn't save keeps what was typed, rings the field and offers Try again.
  */
 export function ItemRow({
   item,
+  categories,
   actions,
   reorderable,
   failedFields = NONE,
@@ -207,6 +213,21 @@ export function ItemRow({
           if (event.key === "Enter") commitName(event.currentTarget.value);
         }}
       />
+      <span className={join(styles.cat, ringed("category"))}>
+        <select
+          value={item.category}
+          disabled={demo}
+          aria-label={`Category for ${item.item}`}
+          onChange={(event) => actions.onCategory?.(item, event.target.value)}
+        >
+          {choicesWith(categories, item.category).map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <Chevron className={styles.catChevron} />
+      </span>
       <input
         className={styles.vd}
         dir="auto"

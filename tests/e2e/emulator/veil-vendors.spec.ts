@@ -3,6 +3,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { restorePairing } from "../seed";
+import { DEFAULT_STORED } from "@/lib/model/categories";
 
 test.afterEach(closeOtherContexts);
 
@@ -59,6 +60,8 @@ test.beforeEach(async () => {
     partnerName: "Bella",
     partnerEmail: TEST_ACCOUNTS[1].email,
   });
+  // The common categories, stored as the app stores them on the first change, and one of our own.
+  for (const c of DEFAULT_STORED) await put("vendorCategories", c.id, { name: c.name, createdAt: new Date("2026-05-01T10:00:00Z") });
   await put("vendorCategories", "cat-henna", { name: "Henna art", createdAt: new Date("2026-06-01T10:00:00Z") });
   await put(
     "vendors",
@@ -77,9 +80,9 @@ test.beforeEach(async () => {
       ],
     }),
   );
-  await put("vendors", "v2", vendor("Dapur Lestari Catering", { category: "Food", contractStatus: "Inquiring" }));
+  await put("vendors", "v2", vendor("Dapur Lestari Catering", { category: "Catering", contractStatus: "Inquiring" }));
   await put("vendors", "v3", vendor("Pelaminan Ayu", { category: "Decoration", contractStatus: "Rejected" }));
-  await put("vendors", "v4", vendor("Sunday Sound", { category: "Music/DJ", notes: "Do they have a harpist?" }));
+  await put("vendors", "v4", vendor("Sunday Sound", { category: "Entertainment", notes: "Do they have a harpist?" }));
   await put("vendors", "v5", vendor("Mehndi House", { category: "Henna art" }));
   await put("shortlist", "s1", { name: "Kebun Bunga Atelier", type: "Decoration", sourceVendorId: "v1", subEntries: [] });
 });
@@ -109,11 +112,11 @@ test("lists the vendors under their categories, with the hero, chips and rows", 
   const chips = page.getByRole("group", { name: "Focus on a category" });
   await expect(chips.getByRole("button", { name: /^All\s*5$/ })).toHaveAttribute("aria-pressed", "true");
   await expect(chips.getByRole("button", { name: /^Decoration\s*2$/ })).toBeVisible();
-  await expect(chips.getByRole("button", { name: /^Music\/DJ\s*1$/ })).toBeVisible();
+  await expect(chips.getByRole("button", { name: /^Entertainment\s*1$/ })).toBeVisible();
   await expect(chips.getByRole("button", { name: "Edit categories" })).toBeVisible();
 
-  // Headings with counts, built-ins first in the shared order, ours after, and Other last.
-  await expect(page.getByRole("heading", { level: 2 })).toHaveText([/Decoration\s*2 vendors/, /Food\s*1 vendor/, /Music\/DJ\s*1 vendor/, /Henna art\s*1 vendor/]);
+  // Headings with counts, in the shared list's order: A to Z, and Other last.
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([/Catering\s*1 vendor/, /Decoration\s*2 vendors/, /Entertainment\s*1 vendor/, /Henna art\s*1 vendor/]);
 
   // A full row: the preferred price, rating, stage, WhatsApp, shortlist and options.
   const row = rowOf(page, "Kebun Bunga Atelier");
@@ -165,7 +168,7 @@ test("search, a category, the keen filter and the orders narrow the list, with a
   await expect(page.getByRole("heading", { level: 2 })).toHaveCount(0);
   const names = page.locator('ul[aria-label="Vendors"] > li a[href^="/vendors/v"]');
   await expect(names.first()).toHaveText("Dapur Lestari Catering");
-  await expect(rowOf(page, "Dapur Lestari Catering")).toContainText("Food");
+  await expect(rowOf(page, "Dapur Lestari Catering")).toContainText("Catering");
   await page.getByRole("button", { name: "Ascending" }).click();
   await expect(page.getByRole("button", { name: "Descending" })).toBeVisible();
   await expect(names.first()).toHaveText("Sunday Sound");
@@ -232,74 +235,114 @@ test("adds a vendor with a name, starts another, and undoes the add", async ({ b
 
 test("adding from a focused category starts in that category", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
-  await page.getByRole("button", { name: /^Food\s*1$/ }).click();
+  await page.getByRole("button", { name: /^Catering\s*1$/ }).click();
   await page.getByRole("button", { name: "Add a vendor" }).click();
-  await expect(page.getByRole("dialog", { name: "Add a vendor" }).getByLabel("Category")).toHaveValue("Food");
+  await expect(page.getByRole("dialog", { name: "Add a vendor" }).getByLabel("Category")).toHaveValue("Catering");
 });
 
-test("the categories sheet adds, renames and removes ours, each with its undo", async ({ browser }) => {
+test("a new category can be made from the category select while adding a vendor", async ({ browser }) => {
+  const page = await signInAs(browser, TEST_ACCOUNTS[0]);
+  await page.getByRole("button", { name: "Add a vendor" }).click();
+  const sheet = page.getByRole("dialog", { name: "Add a vendor" });
+  await sheet.getByLabel("Name").fill("Kembang Api Nusantara");
+  await sheet.getByLabel("Category", { exact: true }).selectOption({ label: "New category…" });
+  const field = sheet.getByLabel("Name of the new category");
+  await expect(field).toBeFocused();
+
+  // A taken name is refused in place; Escape goes back to the category chosen before.
+  await field.fill("catering");
+  await field.press("Enter");
+  await expect(sheet.getByText("There's already a category called Catering.")).toBeVisible();
+  await field.press("Escape");
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByLabel("Category", { exact: true })).toHaveValue("Other");
+
+  // Enter adds it to the shared list and picks it; the vendor goes in it.
+  await sheet.getByLabel("Category", { exact: true }).selectOption({ label: "New category…" });
+  await sheet.getByLabel("Name of the new category").fill("Fireworks");
+  await sheet.getByLabel("Name of the new category").press("Enter");
+  await expect(sheet.getByLabel("Category", { exact: true })).toHaveValue("Fireworks");
+  await sheet.getByRole("button", { name: "Add vendor" }).click();
+  await expect(sheet).toBeHidden();
+  await expect(page.getByRole("heading", { level: 2, name: /Fireworks/ })).toHaveText(/Fireworks\s*1 vendor/);
+});
+
+test("the categories sheet adds, renames and removes any but Other, each with its undo", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   await page.getByRole("button", { name: "Edit categories" }).click();
-  const sheet = page.getByRole("dialog", { name: "Vendor categories" });
-  await expect(sheet.getByText("Categories you add are shared with Bella.")).toBeVisible();
+  const sheet = page.getByRole("dialog", { name: "Categories" });
+  await expect(sheet.getByText("Shared with Bella, and used by vendors")).toBeVisible();
 
-  // Ours, built-in and the catch-all, with their counts.
+  // Every category with what's in it; all but Other can be renamed and removed.
   const card = sheet.getByRole("listitem");
-  await expect(card.filter({ hasText: "Henna art" })).toContainText("Ours, 1 vendor");
-  await expect(card.filter({ hasText: "Food" })).toContainText("1 vendor");
-  await expect(card.filter({ hasText: "Other" })).toContainText("Catch-all, 0 vendors");
-  await expect(card.filter({ hasText: "Food" }).getByRole("button", { name: "Rename" })).toHaveCount(0);
+  const rowNamed = (name: string) => card.filter({ has: page.getByText(name, { exact: true }) });
+  await expect(rowNamed("Henna art")).toContainText("1 vendor");
+  await expect(rowNamed("Catering")).toContainText("1 vendor");
+  await expect(rowNamed("Florist")).toContainText("Empty");
+  await expect(rowNamed("Other")).toContainText("Catch-all");
+  await expect(rowNamed("Catering").getByRole("button", { name: "Rename" })).toBeVisible();
+  await expect(rowNamed("Other").getByRole("button", { name: "Rename" })).toHaveCount(0);
 
   // A new category: counting down, refused when taken, then added.
   const field = sheet.getByLabel("New category");
   await expect(sheet.getByText("40 characters left")).toBeVisible();
-  await field.fill("Catering");
-  await expect(sheet.getByText("32 characters left")).toBeVisible();
-  await field.fill("food");
+  await field.fill("Live band");
+  await expect(sheet.getByText("31 characters left")).toBeVisible();
+  await field.fill("catering");
   await sheet.getByRole("button", { name: "Add category" }).click();
-  await expect(sheet.getByText("There's already a category called Food.")).toBeVisible();
+  await expect(sheet.getByText("There's already a category called Catering.")).toBeVisible();
   await field.fill("Live band");
   await field.press("Enter");
-  await expect(card.filter({ hasText: "Live band" })).toContainText("Ours, 0 vendors");
+  await expect(rowNamed("Live band")).toContainText("Empty");
   await expect(page.getByRole("status").getByText("Added Live band")).toBeVisible();
   await expect(field).toHaveValue("");
 
   // Rename: a taken name is refused in place, a good one saves with an undo.
-  await card.filter({ hasText: "Henna art" }).getByRole("button", { name: "Rename" }).click();
+  await rowNamed("Henna art").getByRole("button", { name: "Rename" }).click();
   const rename = sheet.getByLabel("Rename Henna art");
   // A category's own cap, not the rename field's usual 60 (P4-S12, P5-S15).
   await expect(rename).toHaveAttribute("maxlength", "40");
-  await rename.fill("Food");
+  await rename.fill("Catering");
   await rename.press("Enter");
-  await expect(sheet.getByText("There's already a category called Food.")).toBeVisible();
+  await expect(sheet.getByText("There's already a category called Catering.")).toBeVisible();
   await rename.fill("Mehndi");
   await rename.press("Enter");
-  await expect(card.filter({ hasText: "Mehndi" })).toContainText("Ours, 1 vendor");
+  await expect(rowNamed("Mehndi")).toContainText("1 vendor");
   await page.getByRole("status").getByRole("button", { name: "Undo" }).click();
-  await expect(card.filter({ hasText: "Henna art" })).toBeVisible();
+  await expect(rowNamed("Henna art")).toBeVisible();
 
-  // Remove: asked inline, its vendors move to Other, and Undo brings it all back.
-  await card.filter({ hasText: "Henna art" }).getByRole("button", { name: "Remove" }).click();
-  await expect(sheet.getByText("Remove Henna art? Its 1 vendor move to Other.")).toBeVisible();
+  // Remove: asked inline, its vendor moves to Other unless another is chosen, and Undo brings it all back.
+  await rowNamed("Henna art").getByRole("button", { name: "Remove" }).click();
+  await expect(sheet.getByText("Remove Henna art? Its 1 vendor moves to the category below.")).toBeVisible();
+  await expect(sheet.getByLabel("Move them to")).toHaveValue("Other");
   await sheet.getByRole("button", { name: "Keep it" }).click();
-  await expect(card.filter({ hasText: "Henna art" })).toBeVisible();
-  await card.filter({ hasText: "Henna art" }).getByRole("button", { name: "Remove" }).click();
+  await expect(rowNamed("Henna art")).toBeVisible();
+  await rowNamed("Henna art").getByRole("button", { name: "Remove" }).click();
   await sheet.getByRole("button", { name: "Remove category" }).click();
-  await expect(card.filter({ hasText: "Henna art" })).toHaveCount(0);
-  await expect(card.filter({ hasText: "Other" })).toContainText("Catch-all, 1 vendor");
+  await expect(rowNamed("Henna art")).toHaveCount(0);
+  await expect(rowNamed("Other")).toContainText("Catch-all, 1 vendor");
   await page.getByRole("status").getByRole("button", { name: "Undo" }).click();
-  await expect(card.filter({ hasText: "Henna art" })).toContainText("Ours, 1 vendor");
-  await expect(card.filter({ hasText: "Other" })).toContainText("Catch-all, 0 vendors");
+  await expect(rowNamed("Henna art")).toContainText("1 vendor");
+  await expect(rowNamed("Other")).not.toContainText("vendor");
+
+  // Two that mean the same become one: Catering's vendor moves into Decoration.
+  await rowNamed("Catering").getByRole("button", { name: "Remove" }).click();
+  await sheet.getByLabel("Move them to").selectOption("Decoration");
+  await sheet.getByRole("button", { name: "Remove category" }).click();
+  await expect(rowNamed("Catering")).toHaveCount(0);
+  await expect(rowNamed("Decoration")).toContainText("3 vendors");
+  await expect(page.getByRole("status").getByText("Removed Catering, moved to Decoration")).toBeVisible();
 
   await sheet.getByRole("button", { name: "Done" }).click();
   await expect(sheet).toBeHidden();
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([/Decoration\s*3 vendors/, /Entertainment\s*1 vendor/, /Henna art\s*1 vendor/]);
 });
 
 test("renaming the focused category keeps the focus on it", async ({ browser }) => {
   const page = await signInAs(browser, TEST_ACCOUNTS[0]);
   await page.getByRole("button", { name: /^Henna art\s*1$/ }).click();
   await page.getByRole("button", { name: "Edit categories" }).click();
-  const sheet = page.getByRole("dialog", { name: "Vendor categories" });
+  const sheet = page.getByRole("dialog", { name: "Categories" });
   await sheet.getByRole("listitem").filter({ hasText: "Henna art" }).getByRole("button", { name: "Rename" }).click();
   await sheet.getByLabel("Rename Henna art").fill("Mehndi");
   await sheet.getByLabel("Rename Henna art").press("Enter");

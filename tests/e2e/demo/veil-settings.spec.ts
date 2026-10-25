@@ -47,7 +47,7 @@ test("has the reminders, the install steps and the two doors", async ({ page }) 
   await expect(page.getByText("open it in Chrome, tap the menu, then Install app.")).toBeVisible();
 
   await expect(page.getByRole("link", { name: /Who pays/ })).toHaveAttribute("href", "/budget/who-pays");
-  await expect(page.getByRole("link", { name: /Vendor categories/ })).toHaveAttribute("href", "/vendors?categories=1");
+  await expect(page.getByRole("link", { name: /^Categories/ })).toHaveAttribute("href", "/vendors?categories=1");
 });
 
 test("the notification button is off in demonstration mode", async ({ page }) => {

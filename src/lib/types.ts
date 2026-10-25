@@ -157,6 +157,8 @@ export interface MasterListItem {
   id: string;
   item: string;
   vendor: string;
+  /** The new UI's category (2026-10-25); the old screens neither show nor change it. */
+  category?: string;
   confirmed: boolean;
   types: MasterListType[];
   persons: MasterListPerson[];

@@ -113,8 +113,8 @@ const item = (name: string, sortOrder: number, over: Record<string, Value> = {})
 });
 
 const SEED: [string, Record<string, Value>][] = [
-  ["it-venue", item("Reception venue", 0, { vendor: "The Langham", confirmed: true, types: ["Reception"] })],
-  ["it-cake", item("Wedding cake", 1, { types: ["Reception"], next: true })],
+  ["it-venue", item("Reception venue", 0, { vendor: "The Langham", confirmed: true, types: ["Reception"], category: "Venue" })],
+  ["it-cake", item("Wedding cake", 1, { types: ["Reception"], next: true, category: "Wedding Cake" })],
   ["it-gown", item("Bride's gown", 2, { vendor: "Maison Ayu", confirmed: true, types: ["Matrimony", "Reception"], persons: ["Bride"] })],
   ["it-makeup", item("Makeup for both mothers", 3, { vendor: "Sherly Team", types: ["Sangjit"], persons: ["Bride Mom", "Groom Mom"], next: true })],
   ["it-suits", item("Suits for the groom's father and brother", 4, { types: ["Matrimony"], persons: ["Groom Dad", "Groom Brother"] })],
@@ -225,6 +225,25 @@ test("every change saves at once: name, vendor, events, people, star and tick", 
 
   // Confirming tells the partner.
   await expect.poll(async () => (await all("activity")).map((a) => a.kind)).toContain("item.confirmed");
+});
+
+test("each item has a category from the shared list: it saves at once and narrows the list", async ({ browser }) => {
+  const page = await openItems(browser);
+  await expect(row(page, "it-cake").getByLabel("Category for Wedding cake")).toHaveValue("Wedding Cake");
+  // An item stored with none reads as Other.
+  await expect(row(page, "it-pillow").getByLabel("Category for Ring bearer's pillow")).toHaveValue("Other");
+
+  await row(page, "it-pillow").getByLabel("Category for Ring bearer's pillow").selectOption("Rings and Jewelry");
+  await expect.poll(async () => (await read("it-pillow"))?.category).toBe("Rings and Jewelry");
+
+  // The filter offers the categories that hold an item, with counts.
+  const filter = page.getByLabel("Category", { exact: true });
+  await expect(filter.locator("option")).toHaveText(["Any", "Rings and Jewelry (1)", "Venue (1)", "Wedding Cake (1)", "Other (4)"]);
+  await filter.selectOption("Rings and Jewelry");
+  await expectRows(page, ["it-pillow"]);
+  await page.getByRole("button", { name: "Show everything" }).first().click();
+  await expect(filter).toHaveValue("");
+  await expectRows(page, ["it-venue", "it-cake", "it-gown", "it-makeup", "it-suits", "it-pillow", "it-photo"]);
 });
 
 test("two changes that didn't save show together, a later save on the row clears neither, and Try again saves both", async ({ browser }) => {

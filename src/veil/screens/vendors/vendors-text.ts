@@ -54,13 +54,22 @@ export const ADD_FAILED =
 
 // ---------- the categories sheet ----------
 
-export const categoriesSub = (partner: string) =>
-  `Categories you add are shared with ${partner}. “Other” is always there for anything that doesn’t fit.`;
+export const CATEGORIES_TITLE = "Categories";
 
-/** "Ours, 3 vendors", "Catch-all, 2 vendors", or just "5 vendors" for a built-in. */
+export const categoriesSub = (partner: string) =>
+  `Shared with ${partner}, and used by vendors, the shortlist, the budget and wedding items. “Other” is always there for anything that doesn’t fit.`;
+
+/** What's in a category: "3 vendors, 2 items", "Empty"; Other is also "Catch-all". */
+function contents(row: CategoryRow): string {
+  const parts = [row.vendors ? plural(row.vendors, "vendor") : "", row.items ? plural(row.items, "item") : ""].filter(Boolean);
+  return parts.join(", ");
+}
+
+/** "3 vendors, 2 items", "Empty", "Catch-all, 2 vendors". */
 export function categoryNote(row: CategoryRow): string {
-  const count = plural(row.count, "vendor");
-  return row.kind === "ours" ? `Ours, ${count}` : row.kind === "catch-all" ? `Catch-all, ${count}` : count;
+  const held = contents(row);
+  if (row.id === null) return held ? `Catch-all, ${held}` : "Catch-all";
+  return held || "Empty";
 }
 
 /** "40 characters left", counting down; past the limit it says how many too many. */
@@ -70,11 +79,17 @@ export function charactersNote(left: number): string {
     : `${plural(-left, "character")} over the limit of ${MAX_CATEGORY_LENGTH}`;
 }
 
-/** "Its 4 vendors move to Other." and nothing for a category that holds none. */
-export const removeBody = (count: number): string | undefined =>
-  count ? `Its ${plural(count, "vendor")} move to Other.` : undefined;
+/** "Its 4 vendors and 2 items move to the category below." and nothing for a category that holds none. */
+export const removeBody = (row: CategoryRow): string | undefined => {
+  const held = contents(row).replace(", ", " and ");
+  return held ? `Its ${held} ${row.vendors + row.items === 1 ? "moves" : "move"} to the category below.` : undefined;
+};
+
+export const MOVE_TO_LABEL = "Move them to";
 
 export const categoryAdded = (name: string) => `Added ${name}`;
 export const categoryRenamed = (name: string) => `Renamed to ${name}`;
-export const categoryRemoved = (name: string) => `Removed ${name}`;
+/** "Removed Venue Sangjit", "Removed Venue Sangjit, moved to Venue". */
+export const categoryRemoved = (name: string, movedTo: string | null = null) =>
+  movedTo ? `Removed ${name}, moved to ${movedTo}` : `Removed ${name}`;
 export const CATEGORY_ADD_FAILED = "Couldn’t add the category. What you typed is kept. Try again.";

@@ -8,7 +8,7 @@
 .irow,
 .ihead {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 44px 72px 34px;
+  grid-template-columns: 26px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.5fr) minmax(0, 0.95fr) 44px 72px 34px;
   /* 10px, as items.html's .ihead and .irow. At 8px the events column is 4px wider, so a third chip fits on its first line. */
   gap: calc(var(--space-2) + var(--space-hair));
   align-items: center;
@@ -121,6 +121,54 @@ button.handle:focus-visible {
 .failed .nm[aria-invalid="true"] {
   background: var(--surface-page);
   box-shadow: var(--ring-field-failed);
+}
+
+/* The category: a small select that reads as text, its chevron drawn beside it, as the toolbar's selects. */
+.cat {
+  position: relative;
+  display: block;
+  min-width: 0;
+  border-radius: var(--radius-input);
+}
+
+.cat select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 7px calc(var(--space-4) + var(--space-hair)) 7px var(--space-2);
+  border-radius: var(--radius-input);
+  font: inherit;
+  font-size: var(--text-small);
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.cat select:hover:not(:disabled) {
+  background: var(--hover-input);
+}
+
+.cat select:focus-visible {
+  outline: none;
+  background: var(--surface-page);
+  box-shadow: var(--ring-field);
+}
+
+.cat select:disabled {
+  cursor: default;
+}
+
+.catChevron {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  width: 10px;
+  height: 10px;
+  color: var(--color-text-muted);
+  transform: translateY(-50%) rotate(90deg);
+  pointer-events: none;
 }
 
 /* A one-tap change that didn't save rings its control, as the RSVP switch is ringed. */
@@ -328,6 +376,7 @@ button.handle:focus-visible {
     grid-template-columns: 26px 1fr 40px 40px 34px;
     grid-template-areas:
       "h n s c m"
+      ". g g g g"
       ". v v v v"
       ". e e e e"
       ". p p p p";
@@ -346,6 +395,17 @@ button.handle:focus-visible {
 
   .vd {
     grid-area: v;
+  }
+
+  .cat {
+    grid-area: g;
+    justify-self: start;
+    max-width: 100%;
+  }
+
+  .cat select {
+    width: auto;
+    max-width: 100%;
   }
 
   .evs {

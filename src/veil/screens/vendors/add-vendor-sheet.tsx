@@ -3,8 +3,9 @@
 import { useRef, useState } from "react";
 import { addVendor, useCategories } from "@/lib/data/vendors";
 import { newId } from "@/lib/data/write";
-import { buildCategories } from "@/lib/model/categories";
-import { FieldInput, FieldRow, Fields, FieldSelect, FieldText } from "@/veil/parts/fields/fields";
+import { categoryList } from "@/lib/model/categories";
+import { CategorySelect } from "@/veil/parts/fields/category-select";
+import { FieldInput, FieldRow, Fields, FieldText } from "@/veil/parts/fields/fields";
 import { Banner } from "@/veil/shell/banner";
 import { useFlasher } from "@/veil/shell/flash";
 import { CreateSheetActions, Sheet, useSheet } from "@/veil/shell/sheet";
@@ -25,7 +26,7 @@ export function AddVendorSheet({ category }: { category: string }) {
   const toast = useToast();
   const flash = useFlasher();
   const categories = useCategories();
-  const list = categories.data?.list ?? buildCategories([]);
+  const list = categories.data?.list ?? categoryList([]);
 
   const [name, setName] = useState("");
   const [chosen, setChosen] = useState(category && list.includes(category) ? category : "Other");
@@ -87,11 +88,7 @@ export function AddVendorSheet({ category }: { category: string }) {
           />
         </FieldRow>
         <FieldRow label="Category">
-          <FieldSelect
-            value={chosen}
-            onChange={setChosen}
-            options={list.map((c) => ({ value: c, label: c }))}
-          />
+          <CategorySelect value={chosen} onChange={setChosen} categories={list} />
         </FieldRow>
         <FieldRow label="Contact person">
           <FieldInput value={contactName} onChange={setContactName} />

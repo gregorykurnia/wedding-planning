@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { collection, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from "firebase/firestore";
+import { DEFAULT_CATEGORIES } from "@/lib/model/categories";
 import { bookingsFrom, isVendorBooked, isVenueBooked } from "@/lib/model/bookings";
 import { byFunder, totals } from "@/lib/model/money";
 import { vendorFromDoc, venueFromDoc } from "@/lib/data/adapters/bookings";
@@ -469,6 +470,7 @@ describe("funders", () => {
 describe("categories", () => {
   beforeEach(async () => {
     await setDoc(doc(gregory.db, "vendorCategories", "c1"), { name: "Henna", createdAt: Timestamp.fromMillis(5) });
+    await setDoc(doc(gregory.db, "vendorCategories", "c2"), { name: "Food", createdAt: Timestamp.fromMillis(6) });
     await setDoc(doc(gregory.db, "vendors", "v1"), vendorDoc({ category: "Henna", confirmedType: "Henna" }));
     await setDoc(doc(gregory.db, "vendors", "v2"), vendorDoc({ category: "Food", confirmedType: "Food" }));
     await setDoc(doc(gregory.db, "shortlist", "s1"), {
@@ -476,28 +478,32 @@ describe("categories", () => {
       type: "Henna",
       subEntries: [{ id: "k1", name: "Basic", type: "Henna" }],
     });
+    await setDoc(doc(gregory.db, "masterListItems", "m1"), { item: "Henna night", category: "Henna", sortOrder: 0 });
   });
 
-  it("renames ours everywhere it's used, refuses a taken name, and undo puts it back", async () => {
+  it("renames one everywhere it's used, refuses a taken name, and undo puts it back", async () => {
     await expect(renameCategory("c1", "food", g())).rejects.toThrow(/already a category called Food/);
     const renamed = await renameCategory("c1", "Henna art", g());
     expect(await read("vendorCategories", "c1")).toMatchObject({ name: "Henna art" });
     expect(await read("vendors", "v1")).toMatchObject({ category: "Henna art", confirmedType: "Henna art" });
     expect(await read("vendors", "v2")).toMatchObject({ category: "Food" });
     expect(await read("shortlist", "s1")).toMatchObject({ type: "Henna art", subEntries: [{ type: "Henna art" }] });
+    expect(await read("masterListItems", "m1")).toMatchObject({ category: "Henna art" });
 
     await renamed.undo();
     expect(await read("vendorCategories", "c1")).toMatchObject({ name: "Henna" });
     expect(await read("vendors", "v1")).toMatchObject({ category: "Henna", confirmedType: "Henna" });
     expect(await read("shortlist", "s1")).toMatchObject({ type: "Henna", subEntries: [{ type: "Henna" }] });
+    expect(await read("masterListItems", "m1")).toMatchObject({ category: "Henna" });
   });
 
-  it("removes ours, moving vendors and finalists to Other; undo brings the category back in its place", async () => {
-    const removed = await removeCategory("c1", g());
-    expect(removed.moved).toBe(2);
+  it("removes one, moving vendors, finalists and items to Other; undo brings the category back", async () => {
+    const removed = await removeCategory("c1", undefined, g());
+    expect(removed).toMatchObject({ moved: 3, to: "Other" });
     expect(await exists("vendorCategories", "c1")).toBe(false);
     expect(await read("vendors", "v1")).toMatchObject({ category: "Other", confirmedType: "Other" });
     expect(await read("shortlist", "s1")).toMatchObject({ type: "Other" });
+    expect(await read("masterListItems", "m1")).toMatchObject({ category: "Other" });
 
     // Bella moves the finalist to Food before the undo: it stays in Food.
     await setDoc(doc(bella.db, "shortlist", "s1"), { type: "Food" }, { merge: true });
@@ -507,6 +513,32 @@ describe("categories", () => {
     expect((category?.createdAt as Timestamp).toMillis()).toBe(5);
     expect(await read("vendors", "v1")).toMatchObject({ category: "Henna", confirmedType: "Henna" });
     expect(await read("shortlist", "s1")).toMatchObject({ type: "Food", subEntries: [{ type: "Henna" }] });
+    expect(await read("masterListItems", "m1")).toMatchObject({ category: "Henna" });
+  });
+
+  it("removes one into another category, making the two one; refuses a category that isn't there", async () => {
+    await expect(removeCategory("c1", "Fireworks", g())).rejects.toMatchObject({ code: "missing" });
+    await expect(removeCategory("c1", "Henna", g())).rejects.toMatchObject({ code: "missing" });
+    const merged = await removeCategory("c1", "food", g());
+    expect(merged).toMatchObject({ moved: 3, to: "Food" });
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Food", confirmedType: "Food" });
+    expect(await read("shortlist", "s1")).toMatchObject({ type: "Food", subEntries: [{ type: "Food" }] });
+    expect(await read("masterListItems", "m1")).toMatchObject({ category: "Food" });
+    await merged.undo();
+    expect(await read("vendors", "v1")).toMatchObject({ category: "Henna" });
+    // v2 was in Food before, so the undo leaves it there.
+    expect(await read("vendors", "v2")).toMatchObject({ category: "Food" });
+  });
+
+  it("can change a common category before any is stored, storing the rest first", async () => {
+    await deleteDoc(doc(gregory.db, "vendorCategories", "c1"));
+    await deleteDoc(doc(gregory.db, "vendorCategories", "c2"));
+    await setDoc(doc(gregory.db, "vendors", "v3"), vendorDoc({ category: "Florist", confirmedType: "Florist" }));
+    await removeCategory("default-florist", "Decoration", g());
+    expect(await exists("vendorCategories", "default-florist")).toBe(false);
+    expect(await read("vendorCategories", "default-decoration")).toMatchObject({ name: "Decoration" });
+    expect((await getDocs(collection(gregory.db, "vendorCategories"))).size).toBe(DEFAULT_CATEGORIES.length - 1);
+    expect(await read("vendors", "v3")).toMatchObject({ category: "Decoration" });
   });
 });
 

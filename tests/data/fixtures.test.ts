@@ -1,4 +1,5 @@
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { DEFAULT_CATEGORIES } from "@/lib/model/categories";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { TEST_ACCOUNTS } from "../e2e/emulator-config";
 import { FIXTURE_NAMES, type FixtureName } from "../fixtures";
@@ -68,7 +69,7 @@ describe("normal", () => {
       ["Second instalment", 55_500_000, 0],
       ["Final payment", 55_500_000, 0],
     ]);
-    expect(lestari).toMatchObject({ category: "Food", kind: "vendor", from: "vendor", bookedOn: "2026-08-11", estimate: 150_000_000 });
+    expect(lestari).toMatchObject({ category: "Catering", kind: "vendor", from: "vendor", bookedOn: "2026-08-11", estimate: 150_000_000 });
     expect(byName.get("Villa Samaya Ubud")).toMatchObject({ kind: "venue", category: "Venue", estimate: 380_000_000 });
     expect(byName.get("Villa Samaya Ubud")!.parts).toHaveLength(3);
     expect(byName.get("Kirana Makeup")).toMatchObject({ price: 18_500_000, paid: 20_000_000 });
@@ -147,7 +148,7 @@ describe("empty", () => {
   });
 
   it("keeps the couple, who pays and the categories, and plans nothing", async () => {
-    expect(counts).toEqual({ settings: 1, members: 2, funders: 4, vendorCategories: 4 });
+    expect(counts).toEqual({ settings: 1, members: 2, funders: 4, vendorCategories: DEFAULT_CATEGORIES.length + 4 });
     for (const name of ["vendors", "venues", "shortlist", "guests", "masterListItems", "masterListMeta", "notes", "weddingFiles", "todos", "scheduleEvents"]) {
       expect(await docsOf(name), name).toEqual([]);
     }

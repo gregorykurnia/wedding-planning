@@ -22,7 +22,6 @@ import {
   type OrderableItem,
 } from "@/lib/model/order";
 import type { Booking, FunderId } from "@/lib/model/bookings";
-import { buildCategories } from "@/lib/model/categories";
 
 const ids = <T extends { id: string }>(rows: T[]) => rows.map((r) => r.id);
 
@@ -287,7 +286,8 @@ const vendor = (over = {}) => ({
 });
 
 describe("orderVendors", () => {
-  const categories = buildCategories(["Sangjit gifts"]);
+  // A shared list in its own order (not A to Z), so the order is seen to come from it.
+  const categories = ["Decoration", "Food", "Groom Suit", "Bride Dress", "Invites", "Makeup Artist", "Music/DJ", "Photos and Videos", "Transportation", "Wedding Cake", "Wedding Organizer", "Sangjit gifts", "Other"];
   const list = [
     vendor({ id: "a", name: "Dapur Lestari", category: "Food", contractStatus: "Chosen", bridestoryRating: 4.8, bridestoryReviewCount: 312, createdAt: 3 }),
     vendor({ id: "b", name: "Rasa Nusantara", category: "Food", contractStatus: "Rejected", bridestoryRating: 4.3, bridestoryReviewCount: 88, createdAt: 4 }),
@@ -350,7 +350,7 @@ describe("orderVenues", () => {
 });
 
 describe("orderFinalists", () => {
-  const categories = buildCategories([]);
+  const categories = ["Decoration", "Food", "Groom Suit", "Bride Dress", "Invites", "Makeup Artist", "Music/DJ", "Photos and Videos", "Transportation", "Wedding Cake", "Wedding Organizer", "Other"];
   const finalist = (id: string, name: string, type: string, price: number, reviews: number | null, followers: number | null, extra = {}) => ({
     id,
     name,

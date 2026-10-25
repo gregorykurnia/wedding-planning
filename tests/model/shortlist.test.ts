@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { buildCategories } from "@/lib/model/categories";
 import {
   CARD_PACKAGES,
   finalistListItem,
@@ -16,7 +15,8 @@ import {
 
 // Task 4.13: the Shortlist as the screen reads it (guide §5.13; F17–F19).
 
-const CATEGORIES = buildCategories([]);
+// A shared list in its own order (not A to Z), so the order is seen to come from it.
+const CATEGORIES = ["Decoration", "Food", "Groom Suit", "Bride Dress", "Invites", "Makeup Artist", "Music/DJ", "Photos and Videos", "Transportation", "Wedding Cake", "Wedding Organizer", "Other"];
 
 const source = (id: string, name: string, over: Partial<FinalistSource> = {}): FinalistSource => ({
   id,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CategoryRow } from "@/lib/model/categories";
 import {
   categoryNote,
+  categoryRemoved,
   charactersNote,
   countText,
   exportLabel,
@@ -58,12 +59,15 @@ describe("export words", () => {
 });
 
 describe("the categories sheet's words", () => {
-  const row = (kind: CategoryRow["kind"], count: number): CategoryRow => ({ name: "X", kind, count });
+  const row = (id: string | null, vendors: number, items = 0): CategoryRow => ({ name: "X", id, vendors, items });
 
-  it("tells ours and the catch-all from the built-ins", () => {
-    expect(categoryNote(row("ours", 3))).toBe("Ours, 3 vendors");
-    expect(categoryNote(row("catch-all", 2))).toBe("Catch-all, 2 vendors");
-    expect(categoryNote(row("built-in", 1))).toBe("1 vendor");
+  it("says what's in each category, and which is the catch-all", () => {
+    expect(categoryNote(row("c1", 3, 2))).toBe("3 vendors, 2 items");
+    expect(categoryNote(row("c1", 1))).toBe("1 vendor");
+    expect(categoryNote(row("c1", 0, 1))).toBe("1 item");
+    expect(categoryNote(row("c1", 0))).toBe("Empty");
+    expect(categoryNote(row(null, 2))).toBe("Catch-all, 2 vendors");
+    expect(categoryNote(row(null, 0))).toBe("Catch-all");
   });
 
   it("counts characters down, then says how far over", () => {
@@ -73,9 +77,15 @@ describe("the categories sheet's words", () => {
     expect(charactersNote(-3)).toBe("3 characters over the limit of 40");
   });
 
-  it("says where a removed category's vendors go, and nothing when it holds none", () => {
-    expect(removeBody(4)).toBe("Its 4 vendors move to Other.");
-    expect(removeBody(1)).toBe("Its 1 vendor move to Other.");
-    expect(removeBody(0)).toBeUndefined();
+  it("says a removed category's vendors and items move, and nothing when it holds none", () => {
+    expect(removeBody(row("c1", 4, 2))).toBe("Its 4 vendors and 2 items move to the category below.");
+    expect(removeBody(row("c1", 1))).toBe("Its 1 vendor moves to the category below.");
+    expect(removeBody(row("c1", 0, 3))).toBe("Its 3 items move to the category below.");
+    expect(removeBody(row("c1", 0))).toBeUndefined();
+  });
+
+  it("says where a removed category's records went", () => {
+    expect(categoryRemoved("Venue Sangjit", "Venue")).toBe("Removed Venue Sangjit, moved to Venue");
+    expect(categoryRemoved("Henna")).toBe("Removed Henna");
   });
 });

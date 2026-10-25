@@ -197,6 +197,7 @@ const guest = (id: string, rsvpStatus: GuestRecord["rsvpStatus"], plusOnes = 0):
 const item = (id: string, confirmed: boolean): ItemRecord => ({
   id,
   item: id,
+  category: "Other",
   vendor: "",
   confirmed,
   types: [],

@@ -16,9 +16,14 @@ import {
   venueStageLabel,
 } from "@/lib/model/labels";
 import {
-  BUILT_IN_CATEGORIES,
+  DEFAULT_CATEGORIES,
+  DEFAULT_STORED,
   OTHER_CATEGORY,
   buildCategories,
+  categoryList,
+  choicesWith,
+  defaultCategoryId,
+  storedOrDefault,
   categoryRank,
   categoryRows,
   charactersLeft,
@@ -93,24 +98,37 @@ describe("labels", () => {
 });
 
 describe("categories", () => {
-  it("lists built-ins, then ours in the order added, with Other last", () => {
-    const list = buildCategories(["Sangjit gifts", "Pre-wedding"]);
-    expect(list.slice(0, BUILT_IN_CATEGORIES.length)).toEqual([...BUILT_IN_CATEGORIES]);
-    expect(list.slice(-3)).toEqual(["Sangjit gifts", "Pre-wedding", OTHER_CATEGORY]);
-    expect(buildCategories([])).toEqual([...BUILT_IN_CATEGORIES, OTHER_CATEGORY]);
+  it("lists the common categories A to Z while none are stored, with Other last", () => {
+    const list = categoryList([]);
+    expect(list).toHaveLength(DEFAULT_CATEGORIES.length + 1);
+    expect(list.slice(0, 3)).toEqual(["Bridal Gown", "Catering", "Civil Registration"]);
+    expect(list[list.length - 1]).toBe(OTHER_CATEGORY);
+  });
+
+  it("lists only the stored ones once any are, A to Z, with Other last", () => {
+    const list = categoryList([
+      { id: "a", name: "Venue" },
+      { id: "b", name: "Sangjit gifts" },
+      { id: "c", name: "catering" },
+    ]);
+    expect(list).toEqual(["catering", "Sangjit gifts", "Venue", OTHER_CATEGORY]);
   });
 
   it("drops duplicates, blanks, All and a second Other, ignoring case", () => {
-    const list = buildCategories(["food", "Sangjit gifts", "SANGJIT GIFTS", "  ", "other", "All"]);
-    expect(list.filter((c) => c.toLowerCase() === "food")).toEqual(["Food"]);
-    expect(list.filter((c) => c.toLowerCase() === "sangjit gifts")).toEqual(["Sangjit gifts"]);
-    expect(list.filter((c) => c.toLowerCase() === "other")).toEqual(["Other"]);
-    expect(list.map((c) => c.toLowerCase())).not.toContain("all");
-    expect(list[list.length - 1]).toBe("Other");
+    const list = buildCategories(["Food", "food", "Sangjit gifts", "SANGJIT GIFTS", "  ", "other", "All"]);
+    expect(list).toEqual(["Food", "Sangjit gifts", "Other"]);
+  });
+
+  it("stores the common ones under ids that are the same everywhere", () => {
+    expect(defaultCategoryId("Photo and Video")).toBe("default-photo-and-video");
+    expect(defaultCategoryId("MC")).toBe("default-mc");
+    expect(new Set(DEFAULT_STORED.map((c) => c.id)).size).toBe(DEFAULT_CATEGORIES.length);
+    expect(storedOrDefault([])).toBe(DEFAULT_STORED);
+    expect(storedOrDefault([{ id: "x", name: "Henna" }])).toEqual([{ id: "x", name: "Henna" }]);
   });
 
   it("rejects a name that is empty, too long, reserved or taken", () => {
-    const existing = buildCategories(["Catering"]);
+    const existing = ["Catering"];
     expect(validateCategoryName("  ", existing)).toBe("Give the category a name.");
     expect(validateCategoryName("x".repeat(41), existing)).toBe("Keep it to 40 characters or fewer.");
     expect(validateCategoryName("x".repeat(40), existing)).toBeNull();
@@ -130,20 +148,35 @@ describe("categories", () => {
     expect(charactersLeft("x".repeat(45))).toBe(-5);
   });
 
-  it("describes each category for the categories sheet", () => {
-    const rows = categoryRows(["Sangjit gifts"], [
-      { category: "Food" },
-      { category: "Sangjit gifts" },
-      { category: "Sangjit gifts" },
+  it("describes each category for the categories sheet: its id and what's in it", () => {
+    const stored = [
+      { id: "c1", name: "Venue" },
+      { id: "c2", name: "Sangjit gifts" },
+    ];
+    const rows = categoryRows(stored, [{ category: "Venue" }, { category: "Sangjit gifts" }, { category: "Sangjit gifts" }, { category: "Other" }], [
+      { category: "Venue" },
+      { category: "Other" },
       { category: "Other" },
     ]);
-    expect(rows.find((r) => r.name === "Food")).toEqual({ name: "Food", kind: "built-in", count: 1 });
-    expect(rows.find((r) => r.name === "Sangjit gifts")).toEqual({ name: "Sangjit gifts", kind: "ours", count: 2 });
-    expect(rows[rows.length - 1]).toEqual({ name: "Other", kind: "catch-all", count: 1 });
+    expect(rows).toEqual([
+      { name: "Sangjit gifts", id: "c2", vendors: 2, items: 0 },
+      { name: "Venue", id: "c1", vendors: 1, items: 1 },
+      { name: "Other", id: null, vendors: 1, items: 2 },
+    ]);
+    // While none are stored, the rows carry the ids the common ones will be stored under.
+    expect(categoryRows([], []).find((r) => r.name === "Florist")?.id).toBe("default-florist");
+  });
+
+  it("offers a record's own category in its picker even when it isn't in the list", () => {
+    const list = ["Venue", "Other"];
+    expect(choicesWith(list, "Venue")).toEqual(list);
+    expect(choicesWith(list, "venue")).toEqual(list);
+    expect(choicesWith(list, "Henna")).toEqual(["Venue", "Henna", "Other"]);
+    expect(choicesWith(list, "")).toEqual(list);
   });
 
   it("ranks by list position, with unknown names after every known one", () => {
-    const list = buildCategories(["Sangjit gifts"]);
+    const list = buildCategories(["Sangjit gifts", "Decoration"]);
     expect(categoryRank(list, "Decoration")).toBe(0);
     expect(categoryRank(list, "decoration")).toBe(0);
     expect(categoryRank(list, "Other")).toBe(list.length - 1);
@@ -151,7 +184,7 @@ describe("categories", () => {
   });
 
   it("offers a focus chip only for categories that hold something", () => {
-    const list = buildCategories(["Sangjit gifts"]);
+    const list = buildCategories(["Sangjit gifts", "Decoration", "Wedding Cake"]);
     const chips = focusCategories(list, [
       { category: "Wedding Cake" },
       { category: "Decoration" },

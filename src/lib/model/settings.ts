@@ -63,4 +63,4 @@ export const ANDROID_STEP = "open it in Chrome, tap the menu, then Install app."
 
 export const ALSO_HEADING = "Also";
 export const DOOR_WHO_PAYS = { name: "Who pays", summary: "Add, rename or remove funders" };
-export const DOOR_CATEGORIES = { name: "Vendor categories", summary: "Your own categories" };
+export const DOOR_CATEGORIES = { name: "Categories", summary: "Add, rename or remove" };

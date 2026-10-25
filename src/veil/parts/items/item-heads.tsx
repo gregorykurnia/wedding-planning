@@ -6,6 +6,7 @@ export function ItemHeads() {
     <div className={styles.ihead} aria-hidden="true">
       <span />
       <span>Item</span>
+      <span>Category</span>
       <span>Vendor</span>
       <span>Events</span>
       <span>Who it’s for</span>
