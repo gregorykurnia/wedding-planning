@@ -100,7 +100,7 @@ test("B2 add a booking directly: a name is needed, the rest is kept, and it land
   await expect(page.getByLabel("What it is")).toBeFocused();
 
   await page.getByLabel("What it is").fill("Wedding rings");
-  await page.getByLabel("Category").selectOption("Music/DJ");
+  await page.getByLabel("Category").selectOption("Entertainment");
   await page.getByLabel("Agreed price").fill("25000000");
   await page.getByLabel("Agreed price").blur();
   await expect(page.getByLabel("Agreed price")).toHaveValue("Rp 25.000.000");
@@ -215,7 +215,7 @@ async function openWhatIf(page: Page) {
   await put("vendors", "v1", vendor("Villa Samaya", { category: "Other", totalPrice: 300_000_000, budgetSpent: 0 }));
   await put("hypotheticalItems", "w1", whatIf("Fireworks over the lake"));
   await put("hypotheticalItems", "w2", whatIf("Live band for the reception", {
-    type: "Music/DJ",
+    type: "Entertainment",
     totalPrice: 0,
     funder: null,
     subEntries: [
@@ -224,7 +224,7 @@ async function openWhatIf(page: Page) {
     ],
     createdAt: new Date("2026-05-02T10:00:00Z"),
   }));
-  await put("hypotheticalItems", "w3", whatIf("Second photographer", { type: "Photos and Videos", totalPrice: 8_000_000, funder: null, createdAt: new Date("2026-05-03T10:00:00Z") }));
+  await put("hypotheticalItems", "w3", whatIf("Second photographer", { type: "Photo and Video", totalPrice: 8_000_000, funder: null, createdAt: new Date("2026-05-03T10:00:00Z") }));
   await openAt(page, "/budget/what-if");
   await expect(page.getByRole("heading", { name: "What-if items", level: 1 })).toBeAttached({ timeout: COMPILE_TIMEOUT });
 }

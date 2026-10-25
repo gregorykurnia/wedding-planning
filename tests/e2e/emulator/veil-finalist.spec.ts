@@ -152,14 +152,14 @@ test.beforeEach(async () => {
     "shortlist",
     "s2",
     finalist("Arka Visual", {
-      type: "Photos and Videos",
+      type: "Photo and Video",
       price: 15_000_000,
       priceDescription: "Full day",
-      subEntries: [{ id: "k2", name: "Half day", type: "Photos and Videos", price: 9_000_000, priceDescription: "Half day" }],
+      subEntries: [{ id: "k2", name: "Half day", type: "Photo and Video", price: 9_000_000, priceDescription: "Half day" }],
       preferredPackageId: "main",
     }),
   );
-  await put("shortlist", "s3", finalist("Bare Studio", { type: "Music/DJ" }));
+  await put("shortlist", "s3", finalist("Bare Studio", { type: "Entertainment" }));
 });
 
 async function signInAs(
@@ -277,7 +277,7 @@ test("a link that leads nowhere says the finalist isn't here", async ({ browser 
 
 test("a finalist that became a booking carries the flag and a way to the booking, and offers no more booking", async ({ browser }) => {
   await put("vendors", "v4", vendor("Booked Band", { contractStatus: "Chosen", booking: { on: "2026-09-01", from: "finalist", removed: false } }));
-  await put("shortlist", "s4", finalist("Booked Band", { type: "Music/DJ", price: 5_000_000, priceDescription: "Evening", movedTo: { kind: "booking", id: "vendor-v4" } }));
+  await put("shortlist", "s4", finalist("Booked Band", { type: "Entertainment", price: 5_000_000, priceDescription: "Evening", movedTo: { kind: "booking", id: "vendor-v4" } }));
   const page = await signInAs(browser, TEST_ACCOUNTS[0], "s4");
   await expect(page.getByText("Now a booking", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the booking" })).toHaveAttribute("href", "/budget/bookings/vendor-v4");
@@ -518,7 +518,7 @@ test("removing a finalist asks first, says it in place, and can be undone", asyn
 
 test("removing one with no vendor behind it says its own files stay, and a booking stays in the budget", async ({ browser }) => {
   await put("vendors", "v4", vendor("Booked Band", { contractStatus: "Chosen", booking: { on: "2026-09-01", from: "finalist", removed: false } }));
-  await put("shortlist", "s4", finalist("Booked Band", { type: "Music/DJ", price: 5_000_000, priceDescription: "Evening", movedTo: { kind: "booking", id: "vendor-v4" } }));
+  await put("shortlist", "s4", finalist("Booked Band", { type: "Entertainment", price: 5_000_000, priceDescription: "Evening", movedTo: { kind: "booking", id: "vendor-v4" } }));
   await put("weddingFiles", "f-band", file("Band-rider.pdf", { kind: "finalist", id: "s4" }));
   const page = await signInAs(browser, TEST_ACCOUNTS[0], "s4");
   await page.getByRole("button", { name: "Remove from the shortlist" }).click();

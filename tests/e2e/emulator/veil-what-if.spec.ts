@@ -75,7 +75,7 @@ test.beforeEach(async () => {
   });
   await put("hypotheticalItems", "w2", {
     name: "Live band for the reception",
-    type: "Music/DJ",
+    type: "Entertainment",
     totalPrice: 0,
     funder: null,
     subEntries: [
@@ -86,7 +86,7 @@ test.beforeEach(async () => {
   });
   await put("hypotheticalItems", "w3", {
     name: "Second photographer",
-    type: "Photos and Videos",
+    type: "Photo and Video",
     totalPrice: 8_000_000,
     funder: null,
     subEntries: [],
@@ -130,7 +130,7 @@ test("shows the projected total, who would pay the extra and the items", async (
   await expect(page.getByRole("heading", { name: /Items/ })).toContainText("3 items");
   await expect(entry(page, "w1")).toContainText("Rp 12.000.000");
   await expect(entry(page, "w1")).toContainText("Decoration, would be paid by Greg");
-  await expect(entry(page, "w3")).toContainText("Photos and Videos, would be paid by nobody yet");
+  await expect(entry(page, "w3")).toContainText("Photo and Video, would be paid by nobody yet");
   // An item in parts: the price is the parts added up, with each part under it.
   await expect(entry(page, "w2")).toContainText("Rp 30.000.000");
   await expect(entry(page, "w2")).toContainText("Deposit");
@@ -168,7 +168,7 @@ test("adds an item, turns back a missing name, and undoes the add", async ({ bro
   await expect(sheet.getByLabel("What it is")).toBeFocused();
 
   await sheet.getByLabel("What it is").fill("Photo booth");
-  await sheet.getByLabel("Category").selectOption("Photos and Videos");
+  await sheet.getByLabel("Category").selectOption("Photo and Video");
   await sheet.getByLabel("Price").fill("15000000");
   await sheet.getByRole("radio", { name: "Bella" }).click();
   await sheet.getByRole("button", { name: "Add item" }).click();
@@ -176,7 +176,7 @@ test("adds an item, turns back a missing name, and undoes the add", async ({ bro
 
   const added = page.locator('[data-whatif-id]').filter({ hasText: "Photo booth" });
   await expect(added).toContainText("Rp 15.000.000");
-  await expect(added).toContainText("Photos and Videos, would be paid by Bella");
+  await expect(added).toContainText("Photo and Video, would be paid by Bella");
   await expect(toasts(page).getByText("Added Photo booth")).toBeVisible();
   await expect(page.getByText(/^Rp\s?365\.000\.000$/)).toBeVisible();
   await expect(page.getByRole("heading", { name: /Items/ })).toContainText("4 items");
@@ -201,7 +201,7 @@ test("an item's sheet saves as you go and the numbers follow", async ({ browser 
   await sheet.getByLabel("Price").fill("15000000");
   await sheet.getByLabel("Price").press("Enter");
   await sheet.getByRole("radio", { name: "Bella" }).click();
-  await sheet.getByLabel("Category").selectOption("Photos and Videos");
+  await sheet.getByLabel("Category").selectOption("Photo and Video");
   await sheet.getByLabel("What it is").fill("Fireworks and lanterns");
   await sheet.getByLabel("What it is").press("Enter");
   await expect(sheet.getByText("Saved")).toBeVisible();
@@ -210,12 +210,12 @@ test("an item's sheet saves as you go and the numbers follow", async ({ browser 
   await expect(sheet).toBeHidden();
   await expect(entry(page, "w1")).toContainText("Fireworks and lanterns");
   await expect(entry(page, "w1")).toContainText("Rp 15.000.000");
-  await expect(entry(page, "w1")).toContainText("Photos and Videos, would be paid by Bella");
+  await expect(entry(page, "w1")).toContainText("Photo and Video, would be paid by Bella");
   await expect(page.getByText("Rp 300.000.000 already committed, plus Rp 53.000.000 in what-if items")).toBeVisible();
 
   const doc = await stored("hypotheticalItems", "w1");
   expect(doc?.name.stringValue).toBe("Fireworks and lanterns");
-  expect(doc?.type.stringValue).toBe("Photos and Videos");
+  expect(doc?.type.stringValue).toBe("Photo and Video");
   expect(doc?.totalPrice.integerValue).toBe("15000000");
   expect(doc?.funder.stringValue).toBe("f-bella");
 

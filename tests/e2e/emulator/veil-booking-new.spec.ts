@@ -58,7 +58,7 @@ test("adds a booking that lands on Bookings with its amounts, funder, date and n
   const name = `Rings ${Date.now()}`;
   await signInAndOpenForm(page);
   await page.getByLabel("What it is").fill(name);
-  await page.getByLabel("Category").selectOption("Music/DJ");
+  await page.getByLabel("Category").selectOption("Entertainment");
   await page.getByLabel("Agreed price").fill("25000000");
   await page.getByLabel("Agreed price").blur();
   await expect(page.getByLabel("Agreed price")).toHaveValue("Rp 25.000.000");

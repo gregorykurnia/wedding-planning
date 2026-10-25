@@ -111,6 +111,8 @@ test.describe("item rows", () => {
   });
 
   test("dragging a row by its handle moves it, with a rose line while it is over another row", async ({ page }) => {
+    // Tall enough for both rows: Playwright scrolls to the target mid-drag, and the drag then starts from the wrong row.
+    await page.setViewportSize({ width: 1280, height: 1000 });
     const section = await openSection(page);
     const before = await names(section);
     const from = section.locator('[data-item-id="i6"]');

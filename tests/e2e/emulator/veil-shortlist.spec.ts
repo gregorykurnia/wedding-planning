@@ -2,6 +2,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { EMULATOR_PROJECT_ID, FIRESTORE_EMULATOR, TEST_ACCOUNTS } from "../emulator-config";
 import { COMPILE_TIMEOUT, closeOtherContexts } from "../helpers";
 import { restorePairing } from "../seed";
+import { DEFAULT_STORED } from "@/lib/model/categories";
 
 test.afterEach(closeOtherContexts);
 
@@ -70,6 +71,9 @@ async function seedShortlist(withFinalists = true) {
     partnerName: "Bella",
     partnerEmail: TEST_ACCOUNTS[1].email,
   });
+  // The common categories and one of the couple's own, Food, which sorts between Decoration and Photo and Video.
+  for (const c of DEFAULT_STORED) await put("vendorCategories", c.id, { name: c.name, createdAt: new Date("2026-05-01T10:00:00Z") });
+  await put("vendorCategories", "cat-food", { name: "Food", createdAt: new Date("2026-05-01T10:00:00Z") });
   if (!withFinalists) return;
   await put(
     "shortlist",
@@ -106,7 +110,7 @@ async function seedShortlist(withFinalists = true) {
     "shortlist",
     "f3",
     finalist("Arka Visual", {
-      type: "Photos and Videos",
+      type: "Photo and Video",
       price: 18_000_000,
       priceDescription: "Signature",
       bridestoryReviewers: 64,
@@ -164,14 +168,14 @@ test("lists the finalists under their categories, as cards", async ({ browser })
   await expect(chips.getByRole("button", { name: /^All$/ })).toHaveAttribute("aria-pressed", "true");
   await expect(chips.getByRole("button", { name: /^Decoration\s*2$/ })).toBeVisible();
   await expect(chips.getByRole("button", { name: /^Food\s*1$/ })).toBeVisible();
-  await expect(chips.getByRole("button", { name: /^Photos and Videos\s*1$/ })).toBeVisible();
+  await expect(chips.getByRole("button", { name: /^Photo and Video\s*1$/ })).toBeVisible();
   await expect(chips.getByRole("button", { name: "Edit categories" })).toHaveCount(0);
 
   // Headings follow the shared category order, with counts.
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     /Decoration\s*2 finalists/,
     /Food\s*1 finalist/,
-    /Photos and Videos\s*1 finalist/,
+    /Photo and Video\s*1 finalist/,
   ]);
 
   // A full card: reviews and followers, packages with the leaning one marked, the next step.
@@ -251,7 +255,7 @@ test("adds a finalist straight to the shortlist, then undoes it", async ({ brows
   await expect(sheet.getByLabel("Name")).toBeFocused();
 
   await sheet.getByLabel("Name").fill("Lumina Wedding Photography");
-  await sheet.getByLabel("Category").selectOption("Photos and Videos");
+  await sheet.getByLabel("Category").selectOption("Photo and Video");
   await sheet.getByLabel("First package").fill("Full day");
   await sheet.getByLabel("Its price").fill("24000000");
   await sheet.getByRole("button", { name: "Add finalist" }).click();

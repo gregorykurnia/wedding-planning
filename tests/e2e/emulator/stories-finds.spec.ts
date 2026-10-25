@@ -219,7 +219,7 @@ test("F7 WhatsApp: a phone number with a leading 0 opens WhatsApp on the country
   await resetData();
   await put("vendors", "v1", vendor("Kebun Bunga Atelier", { contactName: "Bu Ayu", contactPhone: "0812 3456 7890" }));
   await put("shortlist", "s1", finalist("Kebun Bunga Atelier", { type: "Decoration", contactName: "Bu Ayu", contactPhone: "0812 3456 7890", sourceVendorId: "v1" }));
-  await put("shortlist", "s2", finalist("Bare Studio", { type: "Music/DJ" }));
+  await put("shortlist", "s2", finalist("Bare Studio", { type: "Entertainment" }));
   await openAt(page, "/vendors/v1");
   await expect(page.getByRole("link", { name: "Message on WhatsApp" })).toHaveAttribute("href", "https://wa.me/6281234567890", { timeout: COMPILE_TIMEOUT });
   await page.goto("/vendors/shortlist/s1");
@@ -250,8 +250,8 @@ async function seedFinalists() {
     preferredPackageId: "k1",
     subEntries: [pkg("k1", "Gold", 62_500_000)],
   }));
-  await put("shortlist", "s2", finalist("Arka Visual", { type: "Photos and Videos", price: 18_000_000, priceDescription: "Signature", bridestoryReviewers: 64, igFollowers: 98_765_432, subEntries: [pkg("k2", "Half day", 9_000_000)], preferredPackageId: "main" }));
-  await put("shortlist", "s3", finalist("Dapur Lestari Catering", { type: "Food", price: 80_000_000, priceDescription: "Buffet for 300", createdAt: new Date("2026-05-04T10:00:00Z") }));
+  await put("shortlist", "s2", finalist("Arka Visual", { type: "Photo and Video", price: 18_000_000, priceDescription: "Signature", bridestoryReviewers: 64, igFollowers: 98_765_432, subEntries: [pkg("k2", "Half day", 9_000_000)], preferredPackageId: "main" }));
+  await put("shortlist", "s3", finalist("Dapur Lestari Catering", { type: "Catering", price: 80_000_000, priceDescription: "Buffet for 300", createdAt: new Date("2026-05-04T10:00:00Z") }));
   await put("shortlist", "s4", finalist("Pelaminan Ayu", { type: "Decoration", price: 30_000_000, priceDescription: "Classic", createdAt: new Date("2026-05-03T10:00:00Z") }));
 }
 
@@ -304,7 +304,7 @@ test("F19 finalists by category: a focus narrows the cards, and the orders reord
   await seedFinalists();
   await openAt(page, "/vendors/shortlist");
   await expect(page.getByText("4 finalists in 3 categories")).toBeVisible({ timeout: COMPILE_TIMEOUT });
-  await expect(page.getByRole("heading", { level: 2 })).toHaveText([/Decoration\s*2 finalists/, /Food\s*1 finalist/, /Photos and Videos\s*1 finalist/]);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([/Catering\s*1 finalist/, /Decoration\s*2 finalists/, /Photo and Video\s*1 finalist/]);
 
   await page.getByRole("button", { name: /^Decoration\s*2$/ }).click();
   await expect(page.getByRole("button", { name: /^Decoration\s*2$/ })).toHaveAttribute("aria-pressed", "true");
@@ -344,7 +344,7 @@ test("F21 finalist from scratch: added straight to the shortlist with a package 
   await expect(sheet.getByText("Give the finalist a name.")).toBeVisible();
 
   await sheet.getByLabel("Name").fill("Lumina Wedding Photography");
-  await sheet.getByLabel("Category").selectOption("Photos and Videos");
+  await sheet.getByLabel("Category").selectOption("Photo and Video");
   await sheet.getByLabel("First package").fill("Full day");
   await sheet.getByLabel("Its price").fill("24000000");
   await sheet.getByRole("button", { name: "Add finalist" }).click();
@@ -354,7 +354,7 @@ test("F21 finalist from scratch: added straight to the shortlist with a package 
   await expect(added).toContainText("Rp 24.000.000");
   await expect(page.getByText("5 finalists in 3 categories")).toBeVisible();
   const doc = (await stored("shortlist")).find((d) => d.name === "Lumina Wedding Photography");
-  expect(doc).toMatchObject({ type: "Photos and Videos", price: 24_000_000, priceDescription: "Full day" });
+  expect(doc).toMatchObject({ type: "Photo and Video", price: 24_000_000, priceDescription: "Full day" });
   expect(doc?.sourceVendorId ?? null).toBeNull();
 
   await toasts(page).getByRole("button", { name: "Undo" }).click();

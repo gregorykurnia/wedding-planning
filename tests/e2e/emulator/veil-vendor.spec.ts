@@ -107,7 +107,7 @@ test.beforeEach(async () => {
       ],
     }),
   );
-  await put("vendors", "v2", vendor("Dapur Lestari Catering", { category: "Food", contractStatus: "Inquiring" }));
+  await put("vendors", "v2", vendor("Dapur Lestari Catering", { category: "Catering", contractStatus: "Inquiring" }));
   await put("vendors", "v3", vendor("Nusantara Pelaminan", { category: "Decoration", contractStatus: "Rejected" }));
   await put("shortlist", "s1", { name: "Kebun Bunga Atelier", type: "Decoration", sourceVendorId: "v1", subEntries: [] });
   await put("weddingFiles", "f1", {
@@ -192,7 +192,7 @@ test("a vendor with no prices says so, and offers the shortlist", async ({ brows
   await expect(page.getByText("No prices yet. When they send a price list, add each option here.")).toBeVisible();
   await expect(page.getByText("Nothing written yet.")).toBeVisible();
   await expect(page.getByRole("heading", { name: /^Files\s*None yet$/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Narrowing down Food?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Narrowing down Catering?" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Copy to the shortlist" })).toBeVisible();
 });
 
@@ -224,10 +224,10 @@ test("fields save as you go, say so, and survive a reload", async ({ browser }) 
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
   await expect.poll(async () => (await stored("vendors", "v1"))?.contactName).toBe("Bu Ayu Lestari");
 
-  await page.getByLabel("Category").selectOption("Food");
-  await expect.poll(async () => (await stored("vendors", "v1"))?.category).toBe("Food");
-  expect((await stored("vendors", "v1"))?.confirmedType).toBe("Food");
-  await expect(page.getByRole("heading", { name: "Narrowing down Food?" })).toHaveCount(0); // it is on the shortlist already
+  await page.getByLabel("Category").selectOption("Catering");
+  await expect.poll(async () => (await stored("vendors", "v1"))?.category).toBe("Catering");
+  expect((await stored("vendors", "v1"))?.confirmedType).toBe("Catering");
+  await expect(page.getByRole("heading", { name: "Narrowing down Catering?" })).toHaveCount(0); // it is on the shortlist already
 
   await page.getByLabel("Review rating").fill("4,9");
   await page.getByLabel("Review rating").blur();
@@ -409,7 +409,7 @@ test("removing a vendor that is a booking keeps the booking in the budget", asyn
   await put(
     "vendors",
     "v4",
-    vendor("Booked Band", { category: "Music/DJ", contractStatus: "Chosen", booking: { on: "2026-09-01", from: "vendor", removed: false }, totalPrice: 5_000_000 }),
+    vendor("Booked Band", { category: "Entertainment", contractStatus: "Chosen", booking: { on: "2026-09-01", from: "vendor", removed: false }, totalPrice: 5_000_000 }),
   );
   const page = await signInAs(browser, TEST_ACCOUNTS[0], "v4");
   await page.getByRole("button", { name: "Remove this vendor" }).click();

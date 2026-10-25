@@ -52,7 +52,7 @@ test("add a vendor, mark it Chosen, split its booking into parts and record a pa
   await page.getByRole("button", { name: "Add a vendor" }).click({ timeout: COMPILE_TIMEOUT });
   const sheet = page.getByRole("dialog", { name: "Add a vendor" });
   await sheet.getByLabel("Name").fill("Dapur Lestari Catering");
-  await sheet.getByLabel("Category").selectOption("Food");
+  await sheet.getByLabel("Category").selectOption("Catering");
   await sheet.getByRole("button", { name: "Add vendor" }).click();
   await expect(sheet).toBeHidden();
 
