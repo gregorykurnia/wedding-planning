@@ -42,6 +42,7 @@
   --surface-petal:           #fdf6f8;  /* table title row, table bar, skeleton shine */
   --surface-mist:            #fbf5f6;  /* file thumbnails, previews, code blocks */
   --surface-warm:            #fffaf2;  /* worked-out totals, today in the month, a "work on next" row */
+  --surface-settled:         #f4f9f5;  /* a confirmed wedding item (owner, 2026-10-25) */
   --surface-flag-calm:       #f6eef0;  /* [.flag.calm] a date flag that needs nothing yet */
   --surface-banner:          rgba(244,234,215,.75); /* [.banner] demonstration mode, partner in the document */
   --surface-note:            rgba(244,234,215,.6);  /* [.sorted-note] "Sorted for now" */
@@ -75,6 +76,7 @@
   /* Sage: settled and done, used sparingly. */
   --accent-settled-text:     #4f6b55;  /* [--sage-ink] "Paid in full", tasks, WhatsApp, saved tick, RSVP attending */
   --accent-settled-wash:     #e3f0e6;  /* confirmed tick fill (items) */
+  --accent-settled-edge:     #8fb398;  /* the left edge of a confirmed wedding item; as heavy as --accent-thread (owner, 2026-10-25) */
 
   /* Small one-offs */
   --accent-toast-action:     #f0d9a8;  /* Undo / Open in a toast, on ink */
@@ -262,6 +264,7 @@
   --ring-cell:         inset 0 0 0 2px var(--accent-attention); /* the cell holding the cursor in a table */
   --ring-selected:     inset 0 0 0 2px var(--color-text);       /* the chosen day in the month */
   --edge-next-row:     inset 3px 0 0 var(--accent-thread);      /* a wedding item marked "work on next" */
+  --edge-confirmed-row: inset 3px 0 0 var(--accent-settled-edge); /* a confirmed wedding item */
   --edge-drop-above:   inset 0 2px 0 var(--accent-attention);   /* drag-and-drop target line */
   --edge-drop-below:   inset 0 -2px 0 var(--accent-attention);
 
@@ -390,6 +393,7 @@
     4.78  --accent-attention-text on --glow-blush
     5.89  --accent-settled-text on white; white on it (RSVP attending)
     5.01  --accent-settled-text on --accent-settled-wash
+    5.33  --color-text-muted on --surface-settled (a confirmed item's vendor placeholder)
     5.02  --accent-gold-text on white
     4.83  --accent-gold-text on --surface-warm (totals, today)
     4.66  --accent-gold-text on --surface-mist (file type on a tile)
@@ -407,8 +411,10 @@
    Non-text marks (need 3:1 when they carry meaning)
     4.15  focus ring (--accent-attention) on white; 3.48 against the ink button it surrounds
     3.34  idle keen heart, drag handle, star, tick and tick-box ring (--color-control-outline)
+    3.13  the same on --surface-settled (a confirmed item's handle and star)
     5.02  payment dots in the month (--accent-gold-text); every cell's label also names what's on that day
     2.36  thread fill, stage steps (--accent-thread)       below 3:1, but both repeat their meaning in words ("54% paid", the stage name)
+    2.32  a confirmed item's edge (--accent-settled-edge)   below 3:1, but the pressed tick says it too
     1.43  --color-edge (chip, field and quiet-button edges)            identification relies on the text inside
     1.19  --accent-thread-track (thread track)                         decorative
    ===================================================================== */

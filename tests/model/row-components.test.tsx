@@ -212,6 +212,11 @@ describe("ItemRow", () => {
     expect(html).toMatch(/aria-pressed="true"[^>]*aria-label="Confirmed: Wedding cake"/);
   });
 
+  it("tints a confirmed row and leaves an open one plain", () => {
+    expect(draw({ item: item({ confirmed: true }) })).toMatch(/<li class="[^"]*confirmed/);
+    expect(draw({ item: item({ confirmed: false }) })).not.toMatch(/<li class="[^"]*confirmed/);
+  });
+
   it("says what failed, keeps the vendor typed and offers Try again", () => {
     const html = draw({ item: item({ vendor: "Bespoke Tailor Bali" }), failedFields: new Set(["vendor"] as const) });
     expect(html).toContain('aria-invalid="true"');

@@ -174,6 +174,7 @@ export function ItemRow({
       className={join(
         styles.irow,
         item.next && styles.next,
+        item.confirmed && styles.confirmed,
         anyFailed && styles.failed,
         dragging && styles.dragging,
         dropEdge === "above" && styles.dropAbove,

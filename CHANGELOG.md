@@ -2,6 +2,7 @@
 
 Newest first. One entry per change: the date, then one to three lines on what changed and why, naming the main files. Test counts, check lists and design detail belong in the commit body, not here.
 
+- 2026-10-25: A confirmed wedding item's row is pale sage with a sage left edge, so what's settled stands apart from what's still open, beyond the small tick (`items.module.css`, `item-row.tsx`; new tokens `--surface-settled`, `--accent-settled-edge`, `--edge-confirmed-row` in both copies of `tokens.css`; guide §4.28).
 - 2026-10-25: Adding a vendor or a finalist while a category is focused starts in that category again when it is one of the couple's own; it fell back to Other because the sheet chose before the stored list loaded (`add-vendor-sheet.tsx`, `add-finalist-sheet.tsx`).
 - 2026-10-25: One category list for vendors, the shortlist, bookings, what-if items and now wedding items, named after the wedding items (`DEFAULT_CATEGORIES` in `src/lib/model/categories.ts`). Every category but Other can be renamed or removed, and Remove can move what's in it into another category (`src/lib/data/categories.ts`, `categories-sheet.tsx`). Items get a Category column and filter, and every category select offers "New category…" (`category-select.tsx`). `scripts/categories-2026-10.mts` renames the live records.
 - 2026-10-23: `eslint.config.mjs` ignores the screenshot builds (`.next-shots*`) and the vendored PDF.js worker, so a full lint run reports our code only.

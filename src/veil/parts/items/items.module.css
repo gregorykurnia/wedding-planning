@@ -38,6 +38,12 @@
   box-shadow: var(--edge-next-row);
 }
 
+/* A confirmed item reads as settled at a glance: a pale sage row with a sage edge (owner, 2026-10-25). It wins over "work on next". */
+.confirmed {
+  background: var(--surface-settled);
+  box-shadow: var(--edge-confirmed-row);
+}
+
 .dropAbove {
   box-shadow: var(--edge-drop-above);
 }
